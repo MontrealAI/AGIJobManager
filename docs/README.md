@@ -8,6 +8,7 @@ Guides for buyers, agents, reviewers, operators and developers. **These are curr
 - **Enable free agent identities:** [owner configuration walkthrough](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route).
 - **Understand missing or poor work:** [buyer protection](BUYER_PROTECTION.md) and [job specification template](BUYER_JOB_TEMPLATE.md).
 - **Follow a real worked example:** [Genesis artwork job under today's rules](examples/GENESIS_JOB_TODAY.md), with historical evidence and a reproducible local simulation.
+- **Name a new deployment:** [distinct ENS namespaces and the historical contract catalog](ENS/DEPLOYMENT_NAMESPACES.md).
 
 ## Start here in one minute
 
@@ -66,7 +67,7 @@ If another document conflicts with these in an operational detail, follow the ca
 ## Canonical ENS behavior (single source of truth)
 
 - **Name format:** `<prefix><jobId>.<jobsRootName>`
-- **Current defaults:** prefix `agijob` with names like `agijob0.alpha.jobs.agi.eth`, `agijob1.alpha.jobs.agi.eth`
+- **Fresh deployment policy:** prefix `job-` under a root derived from chain ID and full manager address. The [namespace guide](ENS/DEPLOYMENT_NAMESPACES.md) covers deployment checks and historical names; the Solidity constructor alone still defaults to `agijob`.
 - **Responsibility split:** AGIJobManager decides numeric `jobId`; ENSJobPages decides prefix/root + snapshotting + ENS writes
 - **Fresh USDC cutover order:** deploy a separate helper -> have the ENS parent create its dedicated wrapped-root token owned by the helper -> wire only the new manager -> validate creation, delegated writes and terminal revocation -> consider locks. Preserve original jobs and wiring.
 - **Safety model:** ENS hooks are best-effort and non-fatal to settlement/dispute outcomes

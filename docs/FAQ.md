@@ -44,9 +44,9 @@ Yes. A buyer-win outcome preserves the full job escrow. Reviewer rewards come fr
 
 ## ENS metadata in one minute
 - Settlement and ENS metadata are intentionally decoupled: settlement can succeed even if ENS writes fail.
-- ENS name format is `<prefix><jobId>.<jobsRootName>` with default prefix `agijob`.
+- ENS name format is `<prefix><jobId>.<jobsRootName>`. Fresh tooling sets `job-` and derives a root from chain ID and full manager address; [see examples and historical names](ENS/DEPLOYMENT_NAMESPACES.md). The constructor alone still defaults to `agijob`.
 - Prefix changes do not rename already snapshotted legacy labels.
-- ENSJobPages replacement requires manual NameWrapper approval and manual `setEnsJobPages(...)` wiring.
+- Same-manager ENSJobPages replacement preserves the root and prefix, requires reviewed authority over that root and manual `setEnsJobPages(...)` wiring. Broad NameWrapper approval is not a default fresh-deployment step.
 
 ## Why does `approve` matter, and should I use exact amounts?
 AGIJobManager pulls USDC with `transferFrom`. Approve the exact escrow or quoted bond on the USDC contract, then submit the separate job action from the same wallet. Agents, validators, and manual disputants need allowances for their own bonds. Keep ETH for gas; revoke unused allowances when no longer needed.

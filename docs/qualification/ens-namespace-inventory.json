@@ -1,0 +1,393 @@
+{
+  "block": 26005171,
+  "hash": "0x44210b0443babc74985fc4adaf8e69679803c0a8ca5ff759d7ef9054ff8ee149",
+  "helpers": {
+    "genesis": {
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "jobsRootName": "alpha.jobs.agi.eth",
+      "jobsRootNode": "0xc164c9558a3c429519a9b2eba9f650025731fccc46b3a5664283bcab84f7e690",
+      "jobLabelPrefix": "agijob",
+      "jobManager": "0xB3AAeb69b630f0299791679c063d68d6687481d1",
+      "owner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+      "nameWrapper": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+      "ens": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "publicResolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+      "configLocked": false,
+      "jobEnsName": "job-0.alpha.jobs.agi.eth"
+    },
+    "prime": {
+      "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+      "jobsRootName": "alpha.jobs.agi.eth",
+      "jobsRootNode": "0xc164c9558a3c429519a9b2eba9f650025731fccc46b3a5664283bcab84f7e690",
+      "jobLabelPrefix": "agijob-",
+      "jobManager": "0xF8fc6572098DDcAc4560E17cA4A683DF30ea993e",
+      "owner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+      "nameWrapper": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+      "ens": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "publicResolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+      "configLocked": false,
+      "jobEnsName": "agijob-0.alpha.jobs.agi.eth"
+    },
+    "employerBurn": {
+      "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+      "jobsRootName": "alpha.jobs.agi.eth",
+      "jobsRootNode": "0xc164c9558a3c429519a9b2eba9f650025731fccc46b3a5664283bcab84f7e690",
+      "jobLabelPrefix": "aijob",
+      "jobManager": "0xBF6699c1F24BEBBFaBb515583e88a055BF2F9eC2",
+      "owner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+      "nameWrapper": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+      "ens": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "publicResolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+      "configLocked": false,
+      "jobEnsName": "aijob0.alpha.jobs.agi.eth"
+    }
+  },
+  "chainId": 1,
+  "scope": "Read-only observation of the three supplied ENS helpers at a finalized block; no public transactions, no Ethereum state proof, no qualification of unrelated Prime discovery or completion-NFT code.",
+  "blockTimestampUTC": "2026-09-18T15:05:59.000Z",
+  "rpc": "https://eth-mainnet.g.alchemy.com/public",
+  "abi": [
+    "function jobsRootName() view returns(string)",
+    "function jobsRootNode() view returns(bytes32)",
+    "function jobLabelPrefix() view returns(string)",
+    "function jobManager() view returns(address)",
+    "function owner() view returns(address)",
+    "function nameWrapper() view returns(address)",
+    "function ens() view returns(address)",
+    "function publicResolver() view returns(address)",
+    "function configLocked() view returns(bool)",
+    "function jobEnsName(uint256) view returns(string)"
+  ],
+  "reads": [
+    {
+      "deployment": "genesis",
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "name": "jobsRootName",
+      "data": "0xb83614bf",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000012616c7068612e6a6f62732e6167692e6574680000000000000000000000000000"
+      }
+    },
+    {
+      "deployment": "genesis",
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "name": "jobsRootNode",
+      "data": "0x54e70d0c",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0xc164c9558a3c429519a9b2eba9f650025731fccc46b3a5664283bcab84f7e690"
+      }
+    },
+    {
+      "deployment": "genesis",
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "name": "jobLabelPrefix",
+      "data": "0x7df89cf6",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000066167696a6f620000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "deployment": "genesis",
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "name": "jobManager",
+      "data": "0x3df395a3",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000b3aaeb69b630f0299791679c063d68d6687481d1"
+      }
+    },
+    {
+      "deployment": "genesis",
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "name": "owner",
+      "data": "0x8da5cb5b",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000a9ed0539c2fbc5c6bc15a2e168bd9bcd07c01201"
+      }
+    },
+    {
+      "deployment": "genesis",
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "name": "nameWrapper",
+      "data": "0xa8e5fbc0",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000d4416b13d2b3a9abae7acd5d6c2bbdbe25686401"
+      }
+    },
+    {
+      "deployment": "genesis",
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "name": "ens",
+      "data": "0x3f15457f",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x00000000000000000000000000000000000c2e074ec69a0dfb2997ba6c7d2e1e"
+      }
+    },
+    {
+      "deployment": "genesis",
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "name": "publicResolver",
+      "data": "0xf8256121",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000f29100983e058b709f3d539b0c765937b804ac15"
+      }
+    },
+    {
+      "deployment": "genesis",
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "name": "configLocked",
+      "data": "0x1ad780bd",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "deployment": "genesis",
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "name": "jobEnsName",
+      "data": "0x164db96f0000000000000000000000000000000000000000000000000000000000000000",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000186a6f622d302e616c7068612e6a6f62732e6167692e6574680000000000000000"
+      }
+    },
+    {
+      "deployment": "prime",
+      "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+      "name": "jobsRootName",
+      "data": "0xb83614bf",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000012616c7068612e6a6f62732e6167692e6574680000000000000000000000000000"
+      }
+    },
+    {
+      "deployment": "prime",
+      "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+      "name": "jobsRootNode",
+      "data": "0x54e70d0c",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0xc164c9558a3c429519a9b2eba9f650025731fccc46b3a5664283bcab84f7e690"
+      }
+    },
+    {
+      "deployment": "prime",
+      "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+      "name": "jobLabelPrefix",
+      "data": "0x7df89cf6",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000076167696a6f622d00000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "deployment": "prime",
+      "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+      "name": "jobManager",
+      "data": "0x3df395a3",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000f8fc6572098ddcac4560e17ca4a683df30ea993e"
+      }
+    },
+    {
+      "deployment": "prime",
+      "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+      "name": "owner",
+      "data": "0x8da5cb5b",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000a9ed0539c2fbc5c6bc15a2e168bd9bcd07c01201"
+      }
+    },
+    {
+      "deployment": "prime",
+      "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+      "name": "nameWrapper",
+      "data": "0xa8e5fbc0",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000d4416b13d2b3a9abae7acd5d6c2bbdbe25686401"
+      }
+    },
+    {
+      "deployment": "prime",
+      "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+      "name": "ens",
+      "data": "0x3f15457f",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x00000000000000000000000000000000000c2e074ec69a0dfb2997ba6c7d2e1e"
+      }
+    },
+    {
+      "deployment": "prime",
+      "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+      "name": "publicResolver",
+      "data": "0xf8256121",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000f29100983e058b709f3d539b0c765937b804ac15"
+      }
+    },
+    {
+      "deployment": "prime",
+      "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+      "name": "configLocked",
+      "data": "0x1ad780bd",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "deployment": "prime",
+      "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+      "name": "jobEnsName",
+      "data": "0x164db96f0000000000000000000000000000000000000000000000000000000000000000",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001b6167696a6f622d302e616c7068612e6a6f62732e6167692e6574680000000000"
+      }
+    },
+    {
+      "deployment": "employerBurn",
+      "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+      "name": "jobsRootName",
+      "data": "0xb83614bf",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000012616c7068612e6a6f62732e6167692e6574680000000000000000000000000000"
+      }
+    },
+    {
+      "deployment": "employerBurn",
+      "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+      "name": "jobsRootNode",
+      "data": "0x54e70d0c",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0xc164c9558a3c429519a9b2eba9f650025731fccc46b3a5664283bcab84f7e690"
+      }
+    },
+    {
+      "deployment": "employerBurn",
+      "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+      "name": "jobLabelPrefix",
+      "data": "0x7df89cf6",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000561696a6f62000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "deployment": "employerBurn",
+      "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+      "name": "jobManager",
+      "data": "0x3df395a3",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000bf6699c1f24bebbfabb515583e88a055bf2f9ec2"
+      }
+    },
+    {
+      "deployment": "employerBurn",
+      "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+      "name": "owner",
+      "data": "0x8da5cb5b",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000a9ed0539c2fbc5c6bc15a2e168bd9bcd07c01201"
+      }
+    },
+    {
+      "deployment": "employerBurn",
+      "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+      "name": "nameWrapper",
+      "data": "0xa8e5fbc0",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000d4416b13d2b3a9abae7acd5d6c2bbdbe25686401"
+      }
+    },
+    {
+      "deployment": "employerBurn",
+      "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+      "name": "ens",
+      "data": "0x3f15457f",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x00000000000000000000000000000000000c2e074ec69a0dfb2997ba6c7d2e1e"
+      }
+    },
+    {
+      "deployment": "employerBurn",
+      "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+      "name": "publicResolver",
+      "data": "0xf8256121",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x000000000000000000000000f29100983e058b709f3d539b0c765937b804ac15"
+      }
+    },
+    {
+      "deployment": "employerBurn",
+      "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+      "name": "configLocked",
+      "data": "0x1ad780bd",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "deployment": "employerBurn",
+      "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+      "name": "jobEnsName",
+      "data": "0x164db96f0000000000000000000000000000000000000000000000000000000000000000",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001961696a6f62302e616c7068612e6a6f62732e6167692e65746800000000000000"
+      }
+    }
+  ]
+}

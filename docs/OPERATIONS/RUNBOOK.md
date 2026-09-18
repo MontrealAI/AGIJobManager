@@ -8,7 +8,7 @@
 - `AGIJobManager.ensJobPages` points to the new ENSJobPages address.
 - ENS Registry reports NameWrapper as owner of the dedicated root; NameWrapper reports the new helper as wrapped-token owner. The qualified route uses no new token or blanket operator approval.
 - Creation, actual delegated writes and terminal revocation succeed without skipped/failed ENS hooks.
-- Future jobs resolve under `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`).
+- Fresh deployment tooling uses `job-<jobId>` under a root derived from chain ID and full manager address; [check the namespace plan](../ENS/DEPLOYMENT_NAMESPACES.md). Replacement keeps the same manager's existing root and prefix.
 - Legacy jobs and labels remain on their original manager/helper; same-manager helper replacement migrations are separately reviewed.
 
 ## Never do this by accident

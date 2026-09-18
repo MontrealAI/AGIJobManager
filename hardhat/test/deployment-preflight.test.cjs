@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
 const realEthers = require('ethers');
+const { deriveNamespace } = require('../scripts/ens-namespace.cjs');
 const temporaryFolders = new Set();
 test.after(() => { for (const folder of temporaryFolders) fs.rmSync(folder, { recursive: true, force: true }); });
 const hash = value => realEthers.zeroPadValue(realEthers.toBeHex(value), 32);
@@ -307,13 +308,19 @@ test('explorer outage fails deployment outcome while preserving paused manager a
 function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificationError, noSigner = false,
   verifierEnabled = true, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', runtimeCode = '0x6000', failAction, finalOwnerMismatch = false,
   managerPendingOwner = ZERO, managerIntakePaused = true, missingBuildInfo = false, artifactMismatch = false,
-  compilerVersion = '0.8.37', observedRuntimeCode = '0x6000' } = {}) {
+  compilerVersion = '0.8.37', observedRuntimeCode = '0x6000', currentHelper = ZERO, nextJobId = 0n,
+  rootOwner = ZERO, rootResolver = ZERO, rootTTL = 0n, parentOwner = A, rootAppearsAfterPlan = false,
+  replacedManager = B, replacedRegistry = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+  replacedRoot = 'existing-usdc.alpha.jobs.agi.eth', replacedPrefix = 'agijob-' } = {}) {
   const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'agi-ens-deployment-'));
   temporaryFolders.add(folder);
   let broadcasts = 0;
   let currentOwner = A;
   let configLocked = false;
   let configuredManager = ZERO;
+  let configuredPrefix = 'agijob';
+  let deployedArgs;
+  let rootReads = 0;
   const actions = [];
   const makeTx = action => {
     actions.push(action);
@@ -324,16 +331,32 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
   let deploymentTx;
   const ensPages = { getAddress: async () => B, waitForDeployment: async () => {}, deploymentTransaction: () => deploymentTx,
     setJobManager: async value => { configuredManager = value; return makeTx('setJobManager'); },
+    setJobLabelPrefix: async value => { configuredPrefix = value; return makeTx('setJobLabelPrefix'); },
     transferOwnership: async value => { currentOwner = value; return makeTx('transferOwnership'); },
     lockConfiguration: async () => { configLocked = true; return makeTx('lockConfiguration'); },
-    owner: async () => finalOwnerMismatch ? ZERO : currentOwner, jobManager: async () => configuredManager, configLocked: async () => configLocked };
+    owner: async () => finalOwnerMismatch ? ZERO : currentOwner, jobManager: async () => configuredManager, configLocked: async () => configLocked,
+    jobLabelPrefix: async () => configuredPrefix, jobsRootName: async () => deployedArgs[4], jobsRootNode: async () => deployedArgs[3] };
   const provider = { getNetwork: async () => ({ chainId: BigInt(chainId) }), estimateGas: async () => estimatedGas, getCode: async () => observedRuntimeCode };
   const managerToken = chainId === 11155111 ? '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' : TOKEN;
   const mockEthers = { ...realEthers, provider, getSigners: async () => noSigner ? [] : [{ address: A }],
-    Contract: function (address) { return address === managerToken ? { decimals: async () => 6 } : { usdcToken: async () => managerToken,
-      owner: async () => A, pendingOwner: async () => managerPendingOwner, paused: async () => managerIntakePaused }; },
-    getContractAt: async () => ({ owner: async () => A }),
-    getContractFactory: async () => ({ getDeployTransaction: async () => ({ data: creationData }), deploy: async (...args) => { assert.ok(args.at(-1).gasLimit <= 16777216n); broadcasts += 1; deploymentTx = makeTx('deploy'); return ensPages; } }),
+    Contract: function (address) {
+      if (address === managerToken) return { decimals: async () => 6 };
+      if (address === D) return { jobManager: async () => replacedManager, jobsRootName: async () => replacedRoot,
+        jobsRootNode: async () => realEthers.namehash(replacedRoot), jobLabelPrefix: async () => replacedPrefix, ens: async () => replacedRegistry };
+      return { usdcToken: async () => managerToken, owner: async () => A, pendingOwner: async () => managerPendingOwner,
+        paused: async () => managerIntakePaused, ensJobPages: async () => currentHelper, nextJobId: async () => nextJobId };
+    },
+    getContractAt: async (_abi, target) => ({ target, resolver: async () => rootResolver, ttl: async () => rootTTL,
+      owner: async node => {
+        if (env.ENS_DEPLOYMENT_MODE === 'replacement') return rootOwner;
+        const plan = deriveNamespace({ chainId, jobManager: B, parentName: env.JOBS_PARENT_NAME || 'alpha.jobs.agi.eth' });
+        if (node === plan.parentNode) return parentOwner;
+        rootReads++;
+        return rootAppearsAfterPlan && rootReads > 2 ? A : rootOwner;
+      } }),
+    getContractFactory: async () => ({ getDeployTransaction: async () => ({ data: creationData }), deploy: async (...args) => {
+      assert.ok(args.at(-1).gasLimit <= 16777216n); deployedArgs = args; broadcasts += 1; deploymentTx = makeTx('deploy'); return ensPages;
+    } }),
   };
   const module = { exports: {} };
   const artifact = { sourceName: 'contracts/ens/ENSJobPages.sol', contractName: 'ENSJobPages', bytecode: creationData, deployedBytecode: runtimeCode };
@@ -346,11 +369,12 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
     if (name === './runtime.cjs') return { getRuntime: async () => mockRequire('hardhat') };
     if (name === './deploy.cjs') return require('../scripts/deploy.cjs');
     if (name === './deployment-safety.cjs') return require('../scripts/deployment-safety.cjs');
+    if (name === './ens-namespace.cjs') return require('../scripts/ens-namespace.cjs');
     if (name === '../../scripts/lib/usdc') return require('../../scripts/lib/usdc');
     return require(name);
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/deploy-ens-job-pages.cjs'), 'utf8'), {
-    module, exports: module.exports, require: mockRequire, __dirname: path.join(folder, 'scripts'), process: { env: { JOB_MANAGER: B, JOBS_ROOT_NAME: 'usdc-v092.alpha.jobs.agi.eth', VERIFY: '1', FINAL_OWNER: C,
+    module, exports: module.exports, require: mockRequire, __dirname: path.join(folder, 'scripts'), process: { env: { JOB_MANAGER: B, VERIFY: '1', FINAL_OWNER: C,
       VERIFY_DELAY_MS: '0', DEPLOY_CONFIRM_MAINNET: 'I_UNDERSTAND_MAINNET_DEPLOYMENT', ...env } },
     console: { log() {}, error() {} }, setTimeout,
   });
@@ -360,10 +384,73 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
   } };
 }
 
-test('ENS deployment requires an explicit namespace before any broadcast', async () => {
-  const harness = ensHarness({ env: { JOBS_ROOT_NAME: '' } });
-  await assert.rejects(harness.main(), /JOBS_ROOT_NAME is required.*legacy manager/);
+test('ENS deployment derives a unique root from the full manager address and chain, then configures job- labels', async () => {
+  const harness = ensHarness();
+  await harness.main();
+  const plan = deriveNamespace({ chainId: 1, jobManager: B });
+  assert.equal(plan.jobsRootName, `usdc-1-${B.slice(2)}.alpha.jobs.agi.eth`);
+  assert.equal(plan.firstJobName, `job-0.${plan.jobsRootName}`);
+  assert.equal(harness.receipt().namespace.jobsRootName, plan.jobsRootName);
+  assert.equal(harness.receipt().configuredPrefix, 'job-');
+  assert.notEqual(plan.jobsRootNode, deriveNamespace({ chainId: 1, jobManager: D }).jobsRootNode);
+  assert.notEqual(plan.jobsRootNode, deriveNamespace({ chainId: 11155111, jobManager: B }).jobsRootNode);
+});
+
+test('fresh ENS rejects used roots, residual records, unowned parents and reused manager state before broadcast', async () => {
+  for (const [options, message] of [
+    [{ rootOwner: A }, /already has ownership or records/],
+    [{ rootResolver: A }, /already has ownership or records/],
+    [{ rootTTL: 1n }, /already has ownership or records/],
+    [{ parentOwner: ZERO }, /JOBS_PARENT_NAME is unowned/],
+    [{ currentHelper: D }, /no configured helper/],
+    [{ nextJobId: 1n }, /no allocated job IDs/],
+    [{ env: { JOB_LABEL_PREFIX: 'agijob' } }, /Fresh JOB_LABEL_PREFIX/],
+    [{ env: { ENS_DEPLOYMENT_MODE: 'unknown' } }, /must be fresh or replacement/],
+    [{ env: { REPLACES_ENS_JOB_PAGES: D } }, /requires ENS_DEPLOYMENT_MODE/],
+    [{ env: { JOBS_ROOT_NODE: hash(123) } }, /JOBS_ROOT_NODE mismatch/],
+  ]) {
+    const harness = ensHarness(options);
+    await assert.rejects(harness.main(), message);
+    assert.equal(harness.broadcasts(), 0);
+  }
+});
+
+test('fresh ENS rechecks root availability after gas planning and refuses a raced namespace', async () => {
+  const harness = ensHarness({ rootAppearsAfterPlan: true });
+  await assert.rejects(harness.main(), /already has ownership or records/);
   assert.equal(harness.broadcasts(), 0);
+  assert.equal(harness.receipt().status, 'failed');
+});
+
+test('same-manager ENS replacement preserves its existing root and prefix', async () => {
+  const harness = ensHarness({ currentHelper: D, nextJobId: 12n, rootOwner: A,
+    env: { ENS_DEPLOYMENT_MODE: 'replacement', REPLACES_ENS_JOB_PAGES: D } });
+  await harness.main();
+  const receipt = harness.receipt();
+  assert.equal(receipt.namespace.mode, 'replacement');
+  assert.equal(receipt.namespace.replaces, D);
+  assert.equal(receipt.namespace.jobsRootName, 'existing-usdc.alpha.jobs.agi.eth');
+  assert.equal(receipt.configuredPrefix, 'agijob-');
+  assert.equal(receipt.namespace.firstJobName, null, 'A future-prefix preview is not the historical job-zero name');
+});
+
+test('replacement cannot import another manager namespace or silently rename old jobs', async () => {
+  const defaults = { ENS_DEPLOYMENT_MODE: 'replacement', REPLACES_ENS_JOB_PAGES: D };
+  for (const [options, message] of [
+    [{ currentHelper: ZERO }, /current ensJobPages pointer/],
+    [{ replacedManager: A }, /same manager and ENS registry/],
+    [{ replacedRegistry: A }, /same manager and ENS registry/],
+    [{ rootOwner: ZERO }, /root is unowned/],
+    [{ env: { REPLACES_ENS_JOB_PAGES: '' } }, /must be a nonzero address/],
+    [{ env: { JOBS_ROOT_NAME: 'other.alpha.jobs.agi.eth' } }, /preserves the current jobs root and prefix/],
+    [{ env: { JOB_LABEL_PREFIX: 'new-' } }, /preserves the current jobs root and prefix/],
+    [{ env: { JOBS_PARENT_NAME: 'alpha.jobs.agi.eth' } }, /applies only to fresh/],
+    [{ replacedPrefix: 'job1' }, /prefix is unsupported/],
+  ]) {
+    const harness = ensHarness({ currentHelper: D, rootOwner: A, ...options, env: { ...defaults, ...options.env } });
+    await assert.rejects(harness.main(), message);
+    assert.equal(harness.broadcasts(), 0);
+  }
 });
 
 test('ENS deployment requires a reviewed owner, enabled verification and an accepted paused manager', async () => {
@@ -390,16 +477,18 @@ test('Sepolia ENS requires network-specific contracts and accepts an explicit un
     assert.equal(harness.broadcasts(), 0);
   }
   const complete = ensHarness({ chainId: 11155111, networkName: 'sepolia', env: {
-    DRY_RUN: '1', ENS_REGISTRY: A, NAME_WRAPPER: ZERO, PUBLIC_RESOLVER: A,
+    DRY_RUN: '1', ENS_REGISTRY: A, NAME_WRAPPER: ZERO, PUBLIC_RESOLVER: A, JOBS_PARENT_NAME: 'jobs.example.eth',
   } });
   await complete.main();
   assert.equal(complete.broadcasts(), 0);
 });
 
-test('ENS deployment refuses the legacy manager namespace for a fresh mainnet USDC manager', async () => {
-  const harness = ensHarness({ env: { JOBS_ROOT_NAME: 'alpha.jobs.agi.eth' } });
-  await assert.rejects(harness.main(), /legacy alpha.jobs.agi.eth namespace is reserved/);
-  assert.equal(harness.broadcasts(), 0);
+test('ENS deployment refuses legacy roots, release-name roots and another manager\'s derived namespace', async () => {
+  for (const root of ['alpha.jobs.agi.eth', 'usdc-v095.alpha.jobs.agi.eth', deriveNamespace({ chainId: 1, jobManager: D }).jobsRootName]) {
+    const harness = ensHarness({ env: { JOBS_ROOT_NAME: root } });
+    await assert.rejects(harness.main(), /must match this deployment's derived namespace/);
+    assert.equal(harness.broadcasts(), 0);
+  }
 });
 
 test('ENS deployment rejects mismatched RPC chains and unsafe confirmation counts before broadcasting', async () => {
@@ -513,13 +602,13 @@ test('manager stops on unsuccessful mined receipt and preserves the pending tran
 test('ENS verifies before irreversible locking and ownership handoff and preserves the final receipt', async () => {
   const harness = ensHarness({ env: { LOCK_CONFIG: '1', FINAL_OWNER: C } });
   await harness.main();
-  assert.deepEqual(harness.actions, ['deploy', 'setJobManager', 'verify', 'lockConfiguration', 'transferOwnership']);
+  assert.deepEqual(harness.actions, ['deploy', 'setJobManager', 'setJobLabelPrefix', 'verify', 'lockConfiguration', 'transferOwnership']);
   const receipt = harness.receipt();
   assert.equal(receipt.status, 'configured');
   assert.equal(receipt.currentOwner, C);
   assert.equal(receipt.configLocked, true);
   assert.equal(receipt.verification.status, 'verified');
-  assert.equal(receipt.transactions.length, 4);
+  assert.equal(receipt.transactions.length, 5);
   assert.equal(receipt.runtimeCodeHash, realEthers.keccak256('0x6000'));
   assert.equal(receipt.expectedRuntimeCodeHash, receipt.runtimeCodeHash);
   assert.equal(receipt.compiler.version, '0.8.37');
@@ -550,7 +639,7 @@ test('ENS rejects missing or substituted compiler artifacts before deployment an
 test('ENS verifier outage leaves locking and ownership untouched with a recoverable journal', async () => {
   const harness = ensHarness({ env: { LOCK_CONFIG: '1', FINAL_OWNER: C }, verificationError: 'not already verified; explorer unavailable' });
   await assert.rejects(harness.main(), /was deployed but explorer verification failed/);
-  assert.deepEqual(harness.actions, ['deploy', 'setJobManager', 'verify']);
+  assert.deepEqual(harness.actions, ['deploy', 'setJobManager', 'setJobLabelPrefix', 'verify']);
   const receipt = harness.receipt();
   assert.equal(receipt.status, 'failed');
   assert.equal(receipt.address, B);

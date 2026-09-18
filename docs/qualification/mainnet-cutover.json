@@ -67,9 +67,11 @@
     "hardhat/package.json": "f54c92738c6ff40bb8dfb99d0d988bcad6b273b1a4d8359cfdedb86feaf426f9",
     "hardhat/qualification/cutover-pin.json": "1da5c523c8d1e7629f2630844d02040bd6ca14a6961a41b259cf9af7bb7397d6",
     "hardhat/qualification/legacy-snapshot.cjs": "073b4e6ce4311246985d8c4740018fec967f7042e1b6a233a56142812daf6a31",
+    "hardhat/scripts/deploy-ens-job-pages.cjs": "9fadc4b8c031502c0339d6c0277d3b941eb33692479cf5090953849dc7275411",
     "hardhat/scripts/deployment-safety.cjs": "b228b076c6f09896a5ad55956d2e4b787d08d6c26045d7120e9bb4593bfe2d69",
+    "hardhat/scripts/ens-namespace.cjs": "c4a940e7dbdd105fe1751631bf13d5e036696fdeb442afcf6cc9cb3d256a9bae",
     "hardhat/scripts/runtime.cjs": "d4618f6912ac7bde79facd0c81f81547135a1b9691f850811d4013a676b4cca2",
-    "hardhat/test/mainnet-cutover.test.js": "e70c5a73fc3b37e98a17657dee60cd84e96dab8a527e47cfcb45108f1ccc83c2",
+    "hardhat/test/mainnet-cutover.test.js": "80d672b66b71d99c64dc8c6cf6cc597c29e8d2c66098c3eaee39213e491f8cbc",
     "package-lock.json": "5a191212490843ecef205539dd3fe85fe11bf9dabf26f6e479b65689f5d92735",
     "package.json": "e105b5026dbf030c30a010d528ef82f9b1980cbfc2e728860cbb4718d3a4a337",
     "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
@@ -451,7 +453,7 @@
       }
     ]
   },
-  "newEnsRoot": "usdc-v095.alpha.jobs.agi.eth",
+  "newEnsRoot": "usdc-1-09184b594c86ddcd2cfc4921c53e382ad99cba9d.alpha.jobs.agi.eth",
   "newEnsRootAuthority": {
     "path": "NameWrapper token owner",
     "registryOwner": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",

@@ -30,7 +30,7 @@ Complete the [launch checklist](LAUNCH_CHECKLIST.md) for the actual instance. It
 | `migrateLegacyWrappedJobPage(jobId, exactLabel)` for existing pages of the same manager only | ENSJobPages owner |
 | Reviewed irreversible lock | Owner of the contract being locked |
 
-A fresh USDC launch preserves the original manager, helper, namespace, approvals and jobs, and uses a separate helper/root. Future jobs use the configured `<prefix><jobId>.<jobsRootName>` label, with `agijob` as the default prefix. Existing snapshotted labels stay stable unless explicitly migrated or imported. Verify the actual root, prefix, approvals and legacy-label inventory before cutover.
+A fresh USDC launch preserves the original manager, helper, namespace, approvals and jobs, and uses a separate helper/root. Fresh tooling sets `job-` and derives the root from chain ID and the full manager address; see the [namespace policy](ENS/DEPLOYMENT_NAMESPACES.md). Same-manager replacement preserves the existing root and prefix. Read exact historical labels from their helper, and verify root, prefix, authority and the label inventory before cutover.
 
 ## Manual vs automated (owner-safe expectations)
 

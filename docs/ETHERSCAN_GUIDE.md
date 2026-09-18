@@ -8,7 +8,7 @@ Use this guide if you only have:
 
 - Deployments use the reviewed Hardhat workflow. A verified explorer can submit owner writes after checking the network, contract, signer and exact inputs; explorer use alone does not establish safety.
 - Fresh USDC cutover uses a separate helper and dedicated root directly owned by it, then `setEnsJobPages` on the new manager. Preserve the original manager, helper, root and existing jobs. Broad NameWrapper approval is not the default.
-- ENS naming is `<prefix><jobId>.<jobsRootName>`; `agijob` is the default prefix and the new dedicated root must be configured explicitly.
+- ENS naming is `<prefix><jobId>.<jobsRootName>`. Current fresh-deployment tooling sets `job-` and derives a root from chain ID and full manager address; see the [namespace policy](ENS/DEPLOYMENT_NAMESPACES.md). Same-manager replacement preserves the existing root and prefix.
 - ENS writes are best-effort: settlement can succeed even if ENS side effects fail.
 - Treat `lockIdentityConfiguration()` and `lockConfiguration()` as irreversible and postpone until full post-cutover validation.
 

@@ -57,7 +57,7 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
 - **Canonical deployment path:** Hardhat (`hardhat/README.md`). Legacy snapshot migrations are retired.
 - **Fresh USDC ENS cutover:** deploy a separate helper -> establish its ownership of a dedicated wrapped jobs-root token -> wire only the new manager and helper -> validate a full ENS lifecycle -> consider locks. Preserve the existing legacy manager, jobs, helper, root and approvals.
 - **Same-manager helper replacement:** use the [replacement runbook](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md); any existing-page migration or broader NameWrapper authority needs separate review.
-- **Canonical ENS naming format:** `<prefix><jobId>.<jobsRootName>` with default prefix `agijob`.
+- **Fresh ENS names:** `job-<jobId>.usdc-<chainId>-<full-lowercase-manager-address-without-0x>.alpha.jobs.agi.eth`. The [namespace guide](docs/ENS/DEPLOYMENT_NAMESPACES.md) explains automatic derivation and preservation of historical names.
 - **Canonical ownership split:**
   - `AGIJobManager owner` controls `setEnsJobPages(...)` and AGIJobManager governance.
   - `ENS parent owner` authorizes creation of the dedicated root; manager ownership alone grants no ENS parent authority.
@@ -145,12 +145,10 @@ Legacy docs:
 ## ENSJobPages in one minute
 
 - `AGIJobManager` provides the numeric `jobId`.
-- `ENSJobPages` provides the label prefix (`jobLabelPrefix`, default `agijob`) and root suffix (`jobsRootName`, explicitly configured for the new deployment).
+- `ENSJobPages` provides the label prefix and root suffix. The current fresh-deployment script sets `job-` and derives the root from the chain ID and full manager address; the Solidity constructor alone still defaults to `agijob`.
 - Effective ENS name format is: `<prefix><jobId>.<jobsRootName>`.
-- With the fork-rehearsed proposal `usdc-v095.alpha.jobs.agi.eth`, names are:
-  - `agijob0.usdc-v095.alpha.jobs.agi.eth`
-  - `agijob1.usdc-v095.alpha.jobs.agi.eth`
-- This namespace is a tested proposal, not a live deployment. The legacy `alpha.jobs.agi.eth` root remains in use by the original manager.
+- Fresh mainnet names use `job-0` and `job-1` under `usdc-1-<full-manager-address-without-0x>.alpha.jobs.agi.eth`. The address is all 40 lowercase hexadecimal characters; the script prints the concrete name for review.
+- The fork exercises this scheme locally. No live USDC deployment is supplied. Genesis, Prime and Employer Burn names under the shared parent remain historical; see the [deployment catalog](docs/ENS/DEPLOYMENT_NAMESPACES.md#existing-mainnet-names-to-preserve).
 - Prefix updates only affect jobs whose labels are not yet snapshotted.
 - ENS hooks are best-effort and non-fatal to core settlement; protocol settlement can succeed even when ENS writes fail.
 
@@ -161,7 +159,7 @@ See full behavior details: [`docs/ENS/ENS_JOB_PAGES_OVERVIEW.md`](docs/ENS/ENS_J
 1. Read the official Hardhat guide and prepare `.env` + deploy config.
 2. From the repository root, run `cd hardhat`, then `npm run compile` and the documented `DRY_RUN=1` rehearsal.
 3. Deploy `AGIJobManager` with mainnet confirmation gate.
-4. Deploy the separate `ENSJobPages` with the explicitly reviewed `JOBS_ROOT_NAME` via the documented Hardhat command.
+4. Review the derived namespace in a read-only plan, then deploy the separate `ENSJobPages` with `ENS_DEPLOYMENT_MODE=fresh` via the documented Hardhat command.
 5. Have the ENS parent owner create the dedicated root with the new helper as its owner; the new manager owner then calls `setEnsJobPages(newEnsJobPages)`. Verify the helper also points to the new manager.
 6. Preserve the old manager, original-token obligations, helper, namespace, approvals and existing jobs. Page migration is a separate same-manager replacement procedure, not the USDC cutover.
 7. Verify source and results on Etherscan, complete two-step owner acceptance, and run the read-only deployment readiness checker while intake remains paused.

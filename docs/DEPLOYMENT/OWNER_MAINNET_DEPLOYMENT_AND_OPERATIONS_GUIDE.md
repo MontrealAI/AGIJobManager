@@ -148,7 +148,7 @@ Read [owner controls](../OWNER_CONTROLS.md), the [owner runbook](../OWNER_RUNBOO
 
 ## 9) Optional ENSJobPages replacement
 
-ENS job pages are an optional metadata integration, separate from escrow settlement and participant authorization. A fresh USDC launch needs a dedicated helper and namespace and must preserve the original mainnet manager, helper, root and jobs; follow the [cutover qualification](../qualification/USDC_CUTOVER.md). The [replacement guide](ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) covers a separately reviewed helper replacement on the same USDC manager. Before any broadcast, review `JOB_MANAGER`, `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, intended owner, `VERIFY` and `LOCK_CONFIG`.
+ENS job pages are an optional metadata integration, separate from escrow settlement and participant authorization. A fresh USDC launch needs a dedicated helper and namespace and must preserve the original mainnet manager, helper, root and jobs; follow the [cutover qualification](../qualification/USDC_CUTOVER.md). The [replacement guide](ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) covers a separately reviewed helper replacement on the same USDC manager. Before any broadcast, review `JOB_MANAGER`, `ENS_DEPLOYMENT_MODE`, the derived or preserved namespace plan, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, intended owner, `VERIFY` and `LOCK_CONFIG`. Optional root/namehash/prefix assertions must agree with the plan.
 
 | Step | Responsible party and expected behavior |
 | --- | --- |
@@ -160,7 +160,7 @@ ENS job pages are an optional metadata integration, separate from escrow settlem
 | Verify cutover | Read both new manager/helper pointers, their separate owners and configured root/resolver/wrapper authority. Require creation, delegated writes and terminal revocation without skipped/failed ENS hooks. Reconcile the preserved legacy inventory. |
 | Consider locks | Respective owner reviews `lockIdentityConfiguration()` or `lockConfiguration()` only after final validation and understanding the lost repair options. |
 
-Names use `<prefix><jobId>.<jobsRootName>`, with `agijob` as the default prefix. Check the actual configured root rather than copying an example domain. Existing snapshotted labels remain historical unless explicitly migrated/imported. Optional hook failure must not be treated as a reversed or missing USDC settlement; reconcile the core transaction separately.
+Names use `<prefix><jobId>.<jobsRootName>`. Fresh tooling sets `job-` under a root derived from chain ID and full manager address; [review the namespace policy](../ENS/DEPLOYMENT_NAMESPACES.md). Replacement preserves the existing root and prefix, while historical labels must be read/imported exactly. Check the actual configured root rather than copying an example domain. Optional hook failure must not be treated as a reversed or missing USDC settlement; reconcile the core transaction separately.
 
 For an identity incident, contain the affected activity and follow [incident response](../OPERATIONS/INCIDENT_RESPONSE.md). **Never lock a suspected bad configuration as an emergency mitigation.**
 
