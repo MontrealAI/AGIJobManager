@@ -1,6 +1,6 @@
 {
   "name": "agijobmanager",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "USDC job escrow, bonded review and buyer recovery with fixed linked libraries",
   "scripts": {

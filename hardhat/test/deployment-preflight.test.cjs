@@ -104,7 +104,7 @@ test('runtime comparison checks immutable USDC and library self-address', () => 
   assert.equal(requireArtifactMatch({ artifact: library, buildInfo, address: B, code: `0x73${B.slice(2)}3014` }), 23);
 });
 
-function deploymentHarness({ dryRun = false, failConfirmation = false, failConfirmationAt = 2, failManagerRuntimeRead = false, failVerification = false, noSigner = false, deployerAddress = '', dryRunValue, verifierEnabled = true, verificationError, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', receiptOverride = {}, finalOwner = A, initialNftRequired = true } = {}) {
+function deploymentHarness({ dryRun = false, failConfirmation = false, failConfirmationAt = 2, failManagerRuntimeRead = false, failVerification = false, noSigner = false, deployerAddress = '', dryRunValue, verifierEnabled = true, verificationError, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', receiptOverride = {}, finalOwner = A, initialNftRequired = false } = {}) {
   const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'agi-deployment-preflight-'));
   const scriptsDir = path.join(folder, 'scripts');
   fs.mkdirSync(scriptsDir);
@@ -764,14 +764,14 @@ test('missing explorer API credentials fail before production deployment', () =>
 });
 
 
-test('successful deployment records all eight libraries, required NFT default and paused intake', async () => {
+test('successful deployment records all eight libraries, disabled NFT default and paused intake', async () => {
   const harness = deploymentHarness();
   try {
     await harness.main();
     const receipt = harness.receipt();
     assert.equal(harness.broadcasts(), 9);
     assert.equal(Object.keys(receipt.libraries).length, 8);
-    assert.equal(receipt.agentNftRequiredAtDeployment, true);
+    assert.equal(receipt.agentNftRequiredAtDeployment, false);
     assert.equal(receipt.intakePaused, true);
     assert.equal(receipt.ownershipTransfer.accepted, true);
     assert.equal(receipt.verification.NftEligibility.status, 'verified');
@@ -780,9 +780,9 @@ test('successful deployment records all eight libraries, required NFT default an
 });
 
 test('an unexpected initial NFT policy blocks deployment completion before explorer verification', async () => {
-  const harness = deploymentHarness({ initialNftRequired: false });
+  const harness = deploymentHarness({ initialNftRequired: true });
   try {
-    await assert.rejects(harness.main(), /did not start with the required NFT policy/);
+    await assert.rejects(harness.main(), /did not start with NFT eligibility disabled/);
     assert.equal(harness.broadcasts(), 9);
     assert.equal(harness.receipt().status, 'failed');
     assert.equal(harness.receipt().verification.AGIJobManager, undefined);

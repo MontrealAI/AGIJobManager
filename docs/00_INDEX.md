@@ -1,6 +1,6 @@
 # AGIJobManager Documentation Index
 
-**[Start here](START_HERE.md)** for the v1.0.2 USDC user journey and canonical operator paths.
+**[Start here](START_HERE.md)** for the v1.0.3 USDC user journey and canonical operator paths.
 
 Audience tags: **Operator / Owner**, **Integrator**, **Developer**, **Auditor**.
 

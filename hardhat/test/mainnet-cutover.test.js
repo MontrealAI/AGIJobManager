@@ -143,6 +143,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     managerAddress = await manager.getAddress();
     assert(ethers.dataLength(await ethers.provider.getCode(managerAddress)) <= 24576);
     assert.equal(await manager.paused(), true);
+    assert.equal(await manager.agentNftRequired(), false);
     wrapper = new ethers.Contract(baseline.pages.nameWrapper, WRAPPER_ABI, rootOwner);
     registry = new ethers.Contract(baseline.pages.ens, REGISTRY_ABI, ethers.provider);
     resolver = new ethers.Contract(baseline.pages.publicResolver, RESOLVER_ABI, ethers.provider);
@@ -158,7 +159,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
       childResolver: { address: baseline.pages.publicResolver, runtimeCodeHash: ethers.keccak256(await ethers.provider.getCode(baseline.pages.publicResolver)) },
       roots: [], admissionRoutes: ['wrapped owner', 'token approval', 'operator approval', 'resolver addr'],
       explicitExceptions: ['owner-managed allowlist', 'address Merkle membership'],
-      nftEligibility: 'Both posting-time modes, collection mutation guards and settlement qualified with MockERC721; actual production collection selection, holdings and upgrade authority require operator review', localChildNamesOnly: true, fixtureNames: [] };
+      nftEligibility: 'Fresh construction starts disabled; explicit owner opt-in, both posting-time modes, collection mutation guards and settlement qualified with MockERC721; actual production collection selection, holdings and upgrade authority require operator review', localChildNamesOnly: true, fixtureNames: [] };
     for (const name of MEMBERSHIP_ROOTS) {
       const node = ethers.namehash(name), data = await memberWrapper.getData(BigInt(node));
       assert.equal(await registry.owner(node), baseline.pages.nameWrapper);
@@ -191,6 +192,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     await nft.waitForDeployment();
     await send(nft.mint(agent.address));
     await send(manager.addAGIType(await nft.getAddress(), 1));
+    await send(manager.setAgentNftRequired(true)); // Explicitly qualify owner-enabled admission too.
     await send(manager.addAdditionalAgent(agent.address));
     await send(manager.addAdditionalValidator(validator.address));
     await send(manager.addModerator(moderator.address));
@@ -224,6 +226,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     await send(manager.connect(owner).acceptOwnership());
     assert.equal(await manager.pendingOwner(), ethers.ZeroAddress);
     assert.equal(await manager.paused(), true);
+    assert.equal(await manager.agentNftRequired(), true); // Owner-enabled policy survives handoff and pause changes.
     await send(pages.transferOwnership(owner.address));
     assert.equal(await pages.owner(), owner.address);
     for (const operation of [() => manager.unpauseIntake(), () => manager.setEnsJobPages(PIN.legacyPages),
@@ -534,6 +537,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     assert.deepEqual(await reserves(), before);
     await send(manager.connect(owner).setSettlementPaused(false));
     assert.equal(await manager.paused(), true);
+    assert.equal(await manager.agentNftRequired(), true); // Owner-enabled policy survives handoff and pause changes.
     await send(manager.finalizeJob(id));
     assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
   });

@@ -318,8 +318,8 @@ async function main() {
     verifyDelayMs,
     constructorArgs,
     membership: describeMembershipConfig(constructorArgs),
-    nftPolicyAtDeployment: { agentNftRequired: true, agiTypes: [],
-      nextStep: 'Accepted owner registers reviewed ERC-721 collections or calls setAgentNftRequired(false) for future jobs; READINESS_NFT_CONFIG must match before activation.' },
+    nftPolicyAtDeployment: { agentNftRequired: false, agiTypes: [],
+      nextStep: 'NFT admission starts disabled with an empty registry. To opt in, the accepted owner registers reviewed ERC-721 collections and calls setAgentNftRequired(true) for future jobs; READINESS_NFT_CONFIG must match before activation.' },
     libraries: LIBRARIES,
     compiler: COMPILER_SETTINGS,
     runtimeBytes,
@@ -382,7 +382,7 @@ async function main() {
     const manager = await ethers.getContractAt('AGIJobManager', managerDeployment.address, deployer);
     if (!(await manager.paused())) throw new Error('New manager did not start with intake paused. Do not activate this deployment.');
     const initialNftRequired = await manager.agentNftRequired({ blockTag: managerDeployment.blockNumber });
-    if (initialNftRequired !== true) throw new Error('New manager did not start with the required NFT policy. Do not activate this deployment.');
+    if (initialNftRequired !== false) throw new Error('New manager did not start with NFT eligibility disabled. Do not activate this deployment.');
     journal.agentNftRequiredAtDeployment = initialNftRequired;
     journal.intakePaused = true;
     checkpoint();

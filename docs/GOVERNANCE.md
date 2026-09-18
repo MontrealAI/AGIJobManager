@@ -1,4 +1,4 @@
-# Minimal governance model — v1.0.2
+# Minimal governance model — v1.0.3
 
 This document defines the **“configure once, then operate with minimal governance”** posture for AGIJobManager deployments.
 

@@ -1,4 +1,4 @@
-# Contracts and Permissions — v1.0.2
+# Contracts and Permissions — v1.0.3
 
 ## Contract map
 
@@ -43,7 +43,7 @@ The manager uses native USDC for escrow, rewards and bonds. Successful settlemen
 | Agent bond params | `500 / 1e6 / 88888888e6` | `setAgentBondParams` | bps ≤ 10000; min/max consistency; supports full disable via 0/0/0 |
 | `validatorSlashBps` | `8000` | `setValidatorSlashBps` | empty reserves; bps ≤10000 |
 | Merkle roots | deploy config | `updateMerkleRoots` | owner only |
-| Agent NFT requirement | true | `setAgentNftRequired`, `jobAgentNftRequired` | Future-posting default; existing job policy cannot change |
+| Agent NFT requirement | false | `setAgentNftRequired`, `jobAgentNftRequired` | Future-posting default; existing job policy cannot change |
 | AGI type table | empty | `addAGIType`, `disableAGIType` | Zero reserves to change; ERC-721 support, at most 32 entries, score 1–100; no payout bonus |
 
 Notes:

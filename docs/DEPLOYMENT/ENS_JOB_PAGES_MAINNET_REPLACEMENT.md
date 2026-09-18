@@ -1,6 +1,6 @@
 # ENSJobPages Mainnet Replacement Runbook
 
-This runbook configures a fresh `ENSJobPages` or replaces it for the **same, verified USDC manager**. Use `ENS_DEPLOYMENT_MODE=fresh` (default) for a manager with no helper/jobs, or `ENS_DEPLOYMENT_MODE=replacement` to preserve the active helper’s namespace. See the [v1.0.2 naming policy](../ENS_DEPLOYMENT_NAMESPACES.md). It does not migrate the legacy mainnet manager to USDC. For that transition, use the [USDC cutover qualification and preservation plan](../qualification/USDC_CUTOVER.md): deploy a separate helper and namespace, and preserve the legacy manager's ENS wiring and original-asset exits.
+This runbook configures a fresh `ENSJobPages` or replaces it for the **same, verified USDC manager**. Use `ENS_DEPLOYMENT_MODE=fresh` (default) for a manager with no helper/jobs, or `ENS_DEPLOYMENT_MODE=replacement` to preserve the active helper’s namespace. See the [v1.0.3 naming policy](../ENS_DEPLOYMENT_NAMESPACES.md). It does not migrate the legacy mainnet manager to USDC. For that transition, use the [USDC cutover qualification and preservation plan](../qualification/USDC_CUTOVER.md): deploy a separate helper and namespace, and preserve the legacy manager's ENS wiring and original-asset exits.
 
 ## In one minute
 

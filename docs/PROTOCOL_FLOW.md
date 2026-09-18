@@ -1,4 +1,4 @@
-# Protocol flow and accounting — v1.0.2
+# Protocol flow and accounting — v1.0.3
 
 Read [contract behavior](contract-behavior.md) for transitions and [USDC distribution](USDC_PAYOUT_SPLIT.md) for exact shares.
 

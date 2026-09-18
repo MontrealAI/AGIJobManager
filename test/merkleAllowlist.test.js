@@ -57,6 +57,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
       { from: owner },
     );
 
+    await manager.setAgentNftRequired(true, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setVoteQuorum(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });

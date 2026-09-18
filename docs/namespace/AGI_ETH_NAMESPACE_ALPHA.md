@@ -1,4 +1,4 @@
-# AGI.eth member namespaces — v1.0.2
+# AGI.eth member namespaces — v1.0.3
 
 AGIJobManager uses role-specific ENS names for ordinary AGI Agent and AGI Validator membership. It accepts the configured primary and alpha roots for each role. Names identify eligible wallets; they do not establish the truth of off-chain work or the independence of two validators.
 

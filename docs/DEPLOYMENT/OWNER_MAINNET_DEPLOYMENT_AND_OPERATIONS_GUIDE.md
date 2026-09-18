@@ -1,4 +1,4 @@
-# Owner Mainnet Deployment & Operations Guide — v1.0.2
+# Owner Mainnet Deployment & Operations Guide — v1.0.3
 
 Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
 
@@ -32,7 +32,7 @@ A successful job pays validators first, then 30% and 10% of its original cost to
 
 ## 3) Prepare the deployment
 
-Use Node 22.23.2 and the immutable v1.0.2 source and checksums. From the repository root:
+Use Node 22.23.2 and the immutable v1.0.3 source and checksums. From the repository root:
 
 ```bash
 npm ci
@@ -176,7 +176,7 @@ For an identity incident, contain the affected activity and follow [incident res
 
 Dispute, cancellation and expiry are alternative lifecycle paths. A moderator's code 1 resolves for the agent, code 2 for the employer, and code 0 leaves the dispute open. A completed flag can also represent an employer refund. See the [full scenario walkthrough](../QUINTESSENTIAL_USE_CASE.md) for exact checkpoints.
 
-For ordinary onboarding, AGI Agents need membership under `agent.agi.eth` or `alpha.agent.agi.eth`, and AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Verify the connected wallet’s supported wrapper authority or resolver address. Additional lists and Merkle proofs remain explicit owner-reviewed membership exceptions, not default proof of an ENS name. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on (the default). Canonical Merkle leaves use `keccak256(abi.encodePacked(claimantAddress))`; from the repository root:
+For ordinary onboarding, AGI Agents need membership under `agent.agi.eth` or `alpha.agent.agi.eth`, and AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Verify the connected wallet’s supported wrapper authority or resolver address. Additional lists and Merkle proofs remain explicit owner-reviewed membership exceptions, not default proof of an ENS name. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on. Fresh v1.0.3 managers start with that requirement disabled; owners can enable it for future jobs. Canonical Merkle leaves use `keccak256(abi.encodePacked(claimantAddress))`; from the repository root:
 
 ```bash
 node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proofs.json

@@ -1,6 +1,6 @@
 # GitHub Pages Autopublish
 
-The UI can be deployed automatically to `gh-pages` using `GITHUB_TOKEN` via `.github/workflows/pages.yml`. This publishes browser files, not Ethereum contracts. For reproducible current USDC operations, start with the [immutable v1.0.2 release](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.2) and verify checksums; no live manager is configured by default.
+The UI can be deployed automatically to `gh-pages` using `GITHUB_TOKEN` via `.github/workflows/pages.yml`. This publishes browser files, not Ethereum contracts. For reproducible current USDC operations, start with the [immutable v1.0.3 release](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.3) and verify checksums; no live manager is configured by default.
 
 ## Trigger conditions
 

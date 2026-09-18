@@ -1,8 +1,8 @@
 # AGIJobManager Documentation Hub
 
-> **v1.0.2: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
+> **v1.0.3: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
-Guides for buyers, agents, reviewers, operators and developers. **These are current repository docs:** [published v1.0.2 downloads and the newer console differ](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+Guides for buyers, agents, reviewers, operators and developers. **These are current repository docs:** [published v1.0.3 downloads and the newer console differ](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
 
 - **Become an agent:** [free identity, eligibility, work and payment](roles/AGENT.md).
 - **Enable free agent identities:** [owner configuration walkthrough](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route).

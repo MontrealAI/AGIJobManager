@@ -21,6 +21,7 @@ test('setup creates private configuration and preserves all existing contents on
   try {
     const created = setup(directory);
     assert.equal(created.length, 3);
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(directory, 'reviewed-nft-policy.json'), 'utf8')), { agentNftRequired: false, agiTypes: [] });
     for (const { file, status } of created) {
       assert.equal(status, 'created');
       if (process.platform !== 'win32') assert.equal(fs.statSync(path.join(directory, file)).mode & 0o777, 0o600);

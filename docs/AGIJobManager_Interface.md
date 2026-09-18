@@ -1,4 +1,4 @@
-# AGIJobManager interface — v1.0.2
+# AGIJobManager interface — v1.0.3
 
 The complete callable interface is maintained from source in [REFERENCE/CONTRACT_INTERFACE.md](REFERENCE/CONTRACT_INTERFACE.md); the ABI-generated [Interface.md](Interface.md) includes constructor fields, outputs, events and custom errors. Use these generated references rather than copied signatures from older releases.
 
@@ -7,7 +7,7 @@ The complete callable interface is maintained from source in [REFERENCE/CONTRACT
 - Native Circle USDC with six decimals is immutable at deployment.
 - The sixth constructor argument is `address[2] settlementWallets`, in 30% then 10% order. `wallet30()` and `wallet10()` expose the current recipients. Their percentages are fixed; changing addresses requires paused intake and zero job escrow/agent/validator/dispute bond reserves.
 - `createJob` fixes the validator budget for that job. `getJobCore(...).agentPayoutPct` is the base 60% minus that budget; NFT eligibility scores do not set payment shares. See [payout rules](USDC_PAYOUT_SPLIT.md).
-- `agentNftRequired()` is the default for future postings; `setAgentNftRequired(bool)` is owner-only; `jobAgentNftRequired(jobId)` reads the immutable posting-time choice. NFT collection mutations require zero live job escrow and bonds. See [NFT policy](NFT_POLICY.md).
+- `agentNftRequired()` starts `false` on fresh v1.0.3 managers and is the default for future postings; `setAgentNftRequired(bool)` is owner-only; `jobAgentNftRequired(jobId)` reads the immutable posting-time choice. NFT collection mutations require zero live job escrow and bonds. See [NFT policy](NFT_POLICY.md).
 - `transferOwnership` proposes a handover; `pendingOwner` identifies the proposed recipient; only that recipient can call `acceptOwnership`. Renunciation is disabled.
 - `resolveDisputeWithCode(jobId,code,reason)` uses 0 for no action, 1 for agent win and 2 for employer win. The old string-based dispute method and reward-pool contribution method are absent.
 

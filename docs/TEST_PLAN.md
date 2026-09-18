@@ -1,4 +1,4 @@
-# Test plan — v1.0.2
+# Test plan — v1.0.3
 
 This plan describes required coverage and how to reproduce it. Successful runs, exact test counts, compiler identity and runtime sizes are recorded in the final release's validation evidence for its frozen source commit.
 
