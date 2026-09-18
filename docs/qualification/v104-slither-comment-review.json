@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "scope": "Internal comparison of complete Slither 0.11.6 reports after a comment-only manager edit. No findings suppressed, severity changes, detector changes or rationale changes.",
+  "previousSource": "78401f82dda2f26cc17c631d91dd1b53e2477ee3",
+  "analyzedSourceBeforeEvidenceUpdate": "5b1f783eda7d9e7dbf0ad0ea33bfe9e15a6af699",
+  "sourceSha256": "4c4e0b1ac12895e1d1242c7154c5dabd92a594c3757de8b58a8a53914fc12e00",
+  "executableSourceIdentical": true,
+  "managerLineOffset": -73,
+  "artifactSha256": {
+    "v103": "14b1a88783f0c60b6ed370346ce605f0350abcf576673232637291126dfa1496",
+    "v104": "51100fa9791ce7d70cb7fd3a3a73609da0d2eca70fbd8b5889db87773df71406"
+  },
+  "reports": {
+    "slither-extended.json": {
+      "previousCount": 9,
+      "currentCount": 9,
+      "descriptionsEqualAfterExactLineShift": true,
+      "locationSensitiveIds": [
+        {
+          "previousId": "60ff4f6f70df7c70638a3c4ed6bad808c181d24ee0f4a2f195461d7574d2ef1b",
+          "currentId": "758fe7673278c7271d1e316c373a6c16d69ada7e92950b1ac4ca1aa460581d9f",
+          "check": "reentrancy-no-eth",
+          "impact": "Medium",
+          "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#734-772):"
+        },
+        {
+          "previousId": "cf24efa0a8ed618f363226e9a93f5de1ce0134c568a71453d4869181cf6a698c",
+          "currentId": "e15f44dee99c7aa68f3c27db3eca3f81d883ab42e1adec080b620f3a4e3cb8af",
+          "check": "mapping-deletion",
+          "impact": "Medium",
+          "location": "AGIJobManager._cancelJobAndRefund(uint256,Job) (contracts/AGIJobManager.sol#518-524) deletes Job (contracts/utils/JobState.sol#4-39) which contains a mapping:"
+        }
+      ]
+    },
+    "slither-reentrancy.json": {
+      "previousCount": 29,
+      "currentCount": 29,
+      "descriptionsEqualAfterExactLineShift": true,
+      "locationSensitiveIds": [
+        {
+          "previousId": "09e71a017684187559d1bddfcd0669c7bb3640e3d897832a4a71b1fdbf9ccb95",
+          "currentId": "c9e6c503bcfcbac0b7e51e72e830aa8273d2d51d1c71843a1abf7ad28ed113e3",
+          "check": "reentrancy-benign",
+          "impact": "Low",
+          "location": "Reentrancy in AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#860-887):"
+        },
+        {
+          "previousId": "60ff4f6f70df7c70638a3c4ed6bad808c181d24ee0f4a2f195461d7574d2ef1b",
+          "currentId": "758fe7673278c7271d1e316c373a6c16d69ada7e92950b1ac4ca1aa460581d9f",
+          "check": "reentrancy-no-eth",
+          "impact": "Medium",
+          "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#734-772):"
+        },
+        {
+          "previousId": "80108143ec77e88786c48d54232f78b9acb781f6db791b7309bc2101cb8985bc",
+          "currentId": "90fcee66ab6e643c9ddcabb9ef8715a52d9a1c53f286257b62cc400269d80811",
+          "check": "reentrancy-benign",
+          "impact": "Low",
+          "location": "Reentrancy in AGIJobManager.createJob(string,uint256,uint256,string) (contracts/AGIJobManager.sol#702-732):"
+        }
+      ]
+    },
+    "slither-all.json": {
+      "previousCount": 115,
+      "currentCount": 115,
+      "descriptionsEqualAfterExactLineShift": true,
+      "locationSensitiveIds": [
+        {
+          "previousId": "09e71a017684187559d1bddfcd0669c7bb3640e3d897832a4a71b1fdbf9ccb95",
+          "currentId": "c9e6c503bcfcbac0b7e51e72e830aa8273d2d51d1c71843a1abf7ad28ed113e3",
+          "check": "reentrancy-benign",
+          "impact": "Low",
+          "location": "Reentrancy in AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#860-887):"
+        },
+        {
+          "previousId": "0b7a317b8ecec68840ba72668f9f5c3baebe8acba0bd4237338da0a6566cb863",
+          "currentId": "e05c567772198eab05c2bb9566d04ec48b35c15d51d1b19f854303214254b6f6",
+          "check": "assembly",
+          "impact": "Informational",
+          "location": "AGIJobManager._callEnsJobPagesHook(uint8,uint256) (contracts/AGIJobManager.sol#1294-1308) uses assembly"
+        },
+        {
+          "previousId": "11cf7c4716a811cfcfb48aca83e58e4beba3e03eef11103d6c8ad74a594b5f4f",
+          "currentId": "600b8b11d4fa51c2045d6b29e0c35ab345279596e2fe427203c252ca24cdc5db",
+          "check": "low-level-calls",
+          "impact": "Informational",
+          "location": "Low level call in AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1360-1373):"
+        },
+        {
+          "previousId": "2ca21c5dfd0466df9a7f4bb46e7129829d81e991430c78dbadc2d81296e45869",
+          "currentId": "82265b133e51b3e9d8e5cc5b0d10181297cf321541aca833f47dedd11462d829",
+          "check": "timestamp",
+          "impact": "Low",
+          "location": "AGIJobManager.refundUnresolvedDispute(uint256) (contracts/AGIJobManager.sol#1238-1247) uses timestamp for comparisons"
+        },
+        {
+          "previousId": "4c4fd3145b701115ae35a06532c7a75a6999c84da02fce51fc88558bdcba6423",
+          "currentId": "87fb4a9668074c62330acf6fa9a22d434bc6b3fb17724d9e831e2504c9ee406f",
+          "check": "low-level-calls",
+          "impact": "Informational",
+          "location": "Low level call in AGIJobManager.rescueETH(uint256) (contracts/AGIJobManager.sol#1344-1347):"
+        },
+        {
+          "previousId": "60ff4f6f70df7c70638a3c4ed6bad808c181d24ee0f4a2f195461d7574d2ef1b",
+          "currentId": "758fe7673278c7271d1e316c373a6c16d69ada7e92950b1ac4ca1aa460581d9f",
+          "check": "reentrancy-no-eth",
+          "impact": "Medium",
+          "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#734-772):"
+        },
+        {
+          "previousId": "80108143ec77e88786c48d54232f78b9acb781f6db791b7309bc2101cb8985bc",
+          "currentId": "90fcee66ab6e643c9ddcabb9ef8715a52d9a1c53f286257b62cc400269d80811",
+          "check": "reentrancy-benign",
+          "impact": "Low",
+          "location": "Reentrancy in AGIJobManager.createJob(string,uint256,uint256,string) (contracts/AGIJobManager.sol#702-732):"
+        },
+        {
+          "previousId": "89665aaf77c945afecd166430c45c306e558212d9ff763cf9b2f7921003d3fb0",
+          "currentId": "91d986099bd4fec0835b32167aa57119bf97bd1683ba34ec941dbe3c85031258",
+          "check": "assembly",
+          "impact": "Informational",
+          "location": "AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1360-1373) uses assembly"
+        },
+        {
+          "previousId": "95c9e26c889c7ca2d502942da7dac4aac728e90686d5ff9422c9abfebb5c1087",
+          "currentId": "9bb5e4497092878f50182bbe2680cfa1dc4bc372938a0160319048bf60ff9c7a",
+          "check": "timestamp",
+          "impact": "Low",
+          "location": "AGIJobManager.finalizeJob(uint256) (contracts/AGIJobManager.sol#1210-1225) uses timestamp for comparisons"
+        },
+        {
+          "previousId": "9b19dbfcf8757c85cd83ff6f08470a07b2e4fb4bca76139353a215eca72405cd",
+          "currentId": "6e00b529820c08198c9c24e1c6d6fc7de8ec8bb4557528e0e8308f69b0ddd134",
+          "check": "timestamp",
+          "impact": "Low",
+          "location": "AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#860-887) uses timestamp for comparisons"
+        },
+        {
+          "previousId": "9d65819a53739a2c905a422a94d845350dd4be7b8ae233916d4bf5c86ecf5731",
+          "currentId": "4146e55f43d96d11c2b7198310819ae473ec07a6f7ecc0e647c6b5e30e223085",
+          "check": "timestamp",
+          "impact": "Low",
+          "location": "AGIJobManager.expireJob(uint256) (contracts/AGIJobManager.sol#1182-1198) uses timestamp for comparisons"
+        },
+        {
+          "previousId": "b0bb2d5b7b6f52e3637ecfbcb2228cb6a36e3b9b8d9118227c7bd4dfcf19daff",
+          "currentId": "90c96fc675a173020d6cf70a41274c31334a5122548170d23bd75b4f35c1069a",
+          "check": "timestamp",
+          "impact": "Low",
+          "location": "AGIJobManager._settlementDeadline(Job) (contracts/AGIJobManager.sol#632-638) uses timestamp for comparisons"
+        },
+        {
+          "previousId": "baa19c005721f3d911cd28330dae744e07129f8f3771b1f1687b9168368d469a",
+          "currentId": "32838106d78eaa71516ee65e1bf11efc92f3fc719ac0ff41aa628a5bcb848137",
+          "check": "too-many-digits",
+          "impact": "Informational",
+          "location": "AGIJobManager.slitherConstructorVariables() (contracts/AGIJobManager.sol#220-1410) uses literals with too many digits:"
+        },
+        {
+          "previousId": "be154c7379c7d95e5dfe7ff88ccf2bb0420b1b39af9b2a9dd13a586f70dff903",
+          "currentId": "f7897028e032eb1b242aef8986377e1cff592102025aaded8e6b0055f64bcf5e",
+          "check": "timestamp",
+          "impact": "Low",
+          "location": "AGIJobManager.requestJobCompletion(uint256,string) (contracts/AGIJobManager.sol#774-795) uses timestamp for comparisons"
+        },
+        {
+          "previousId": "cf24efa0a8ed618f363226e9a93f5de1ce0134c568a71453d4869181cf6a698c",
+          "currentId": "e15f44dee99c7aa68f3c27db3eca3f81d883ab42e1adec080b620f3a4e3cb8af",
+          "check": "mapping-deletion",
+          "impact": "Medium",
+          "location": "AGIJobManager._cancelJobAndRefund(uint256,Job) (contracts/AGIJobManager.sol#518-524) deletes Job (contracts/utils/JobState.sol#4-39) which contains a mapping:"
+        },
+        {
+          "previousId": "dd236751c11ba2082c7f2b2b23372f8c048d045e4af8dbd15ce45bb322cb7bad",
+          "currentId": "259de6b7c4567956fe7c681864ceed4ff534b7cefadb5dbc65cb510033eeb110",
+          "check": "timestamp",
+          "impact": "Low",
+          "location": "AGIJobManager.resolveStaleDispute(uint256,bool) (contracts/AGIJobManager.sol#920-934) uses timestamp for comparisons"
+        }
+      ]
+    }
+  }
+}

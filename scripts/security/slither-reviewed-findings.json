@@ -44,11 +44,11 @@
         "evidence": "contracts/utils/JobSettlement.sol:_validators,complete,refund; test/buyerProtection.v095.test.js; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol; forge-test/invariant/AGIJobManagerLifecycleInvariants.t.sol"
       },
       {
-        "id": "60ff4f6f70df7c70638a3c4ed6bad808c181d24ee0f4a2f195461d7574d2ef1b",
+        "id": "758fe7673278c7271d1e316c373a6c16d69ada7e92950b1ac4ca1aa460581d9f",
         "check": "reentrancy-no-eth",
         "impact": "Medium",
         "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#807-845):",
+        "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#734-772):",
         "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
@@ -98,11 +98,11 @@
         "evidence": "contracts/ens/ENSJobPages.sol; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "cf24efa0a8ed618f363226e9a93f5de1ce0134c568a71453d4869181cf6a698c",
+        "id": "e15f44dee99c7aa68f3c27db3eca3f81d883ab42e1adec080b620f3a4e3cb8af",
         "check": "mapping-deletion",
         "impact": "Medium",
         "confidence": "High",
-        "location": "AGIJobManager._cancelJobAndRefund(uint256,Job) (contracts/AGIJobManager.sol#591-597) deletes Job (contracts/utils/JobState.sol#4-39) which contains a mapping:",
+        "location": "AGIJobManager._cancelJobAndRefund(uint256,Job) (contracts/AGIJobManager.sol#518-524) deletes Job (contracts/utils/JobState.sol#4-39) which contains a mapping:",
         "rationale": "Deletion is limited to unassigned jobs. A vote requires assignment and submission, so every vote/credential/controller mapping is empty on this path. Monotonically allocated job IDs are never reused; cancellation entry points hold nonReentrant.",
         "evidence": "contracts/AGIJobManager.sol:createJob,cancelJob,delistJob; contracts/utils/JobState.sol; test/delistJob.reentrancy.test.js; test/securityRegression.test.js"
       },
@@ -118,11 +118,11 @@
     ],
     "slither-reentrancy.json": [
       {
-        "id": "09e71a017684187559d1bddfcd0669c7bb3640e3d897832a4a71b1fdbf9ccb95",
+        "id": "c9e6c503bcfcbac0b7e51e72e830aa8273d2d51d1c71843a1abf7ad28ed113e3",
         "check": "reentrancy-benign",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#933-960):",
+        "location": "Reentrancy in AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#860-887):",
         "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
@@ -244,11 +244,11 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
-        "id": "60ff4f6f70df7c70638a3c4ed6bad808c181d24ee0f4a2f195461d7574d2ef1b",
+        "id": "758fe7673278c7271d1e316c373a6c16d69ada7e92950b1ac4ca1aa460581d9f",
         "check": "reentrancy-no-eth",
         "impact": "Medium",
         "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#807-845):",
+        "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#734-772):",
         "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
@@ -271,11 +271,11 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "80108143ec77e88786c48d54232f78b9acb781f6db791b7309bc2101cb8985bc",
+        "id": "90fcee66ab6e643c9ddcabb9ef8715a52d9a1c53f286257b62cc400269d80811",
         "check": "reentrancy-benign",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager.createJob(string,uint256,uint256,string) (contracts/AGIJobManager.sol#775-805):",
+        "location": "Reentrancy in AGIJobManager.createJob(string,uint256,uint256,string) (contracts/AGIJobManager.sol#702-732):",
         "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
@@ -394,25 +394,25 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.requestJobCompletion(uint256,string)._jobCompletionURI (contracts/AGIJobManager.sol#847) is not in mixedCase",
+        "location": "Parameter AGIJobManager.requestJobCompletion(uint256,string)._jobCompletionURI (contracts/AGIJobManager.sol#774) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.requestJobCompletion(uint256,string)._jobCompletionURI intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "09e71a017684187559d1bddfcd0669c7bb3640e3d897832a4a71b1fdbf9ccb95",
+        "id": "c9e6c503bcfcbac0b7e51e72e830aa8273d2d51d1c71843a1abf7ad28ed113e3",
         "check": "reentrancy-benign",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#933-960):",
+        "location": "Reentrancy in AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#860-887):",
         "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
       {
-        "id": "0b7a317b8ecec68840ba72668f9f5c3baebe8acba0bd4237338da0a6566cb863",
+        "id": "e05c567772198eab05c2bb9566d04ec48b35c15d51d1b19f854303214254b6f6",
         "check": "assembly",
         "impact": "Informational",
         "confidence": "High",
-        "location": "AGIJobManager._callEnsJobPagesHook(uint8,uint256) (contracts/AGIJobManager.sol#1367-1381) uses assembly",
+        "location": "AGIJobManager._callEnsJobPagesHook(uint8,uint256) (contracts/AGIJobManager.sol#1294-1308) uses assembly",
         "rationale": "Assembly sends an exact 68-byte selector/hook/job payload with ENS_HOOK_GAS_LIMIT and zero value, requesting no returndata. The optional hook is best effort and its success flag is recorded; it cannot consume unbounded copied returndata or reenter guarded money-moving paths.",
         "evidence": "contracts/AGIJobManager.sol:_callEnsJobPagesHook; forge-test/unit/AGIJobManagerSecurityVerification.t.sol:test_ENSSelectorAndCalldataCompatibility; test/ensHooks.integration.test.js"
       },
@@ -430,16 +430,16 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.setVoteQuorum(uint256)._quorum (contracts/AGIJobManager.sol#1093) is not in mixedCase",
+        "location": "Parameter AGIJobManager.setVoteQuorum(uint256)._quorum (contracts/AGIJobManager.sol#1020) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setVoteQuorum(uint256)._quorum intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "11cf7c4716a811cfcfb48aca83e58e4beba3e03eef11103d6c8ad74a594b5f4f",
+        "id": "600b8b11d4fa51c2045d6b29e0c35ab345279596e2fe427203c252ca24cdc5db",
         "check": "low-level-calls",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Low level call in AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1433-1446):",
+        "location": "Low level call in AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1360-1373):",
         "rationale": "Assembly only reads a complete 32-byte return word after its exact length is checked; only bool true is accepted. The owner-only nonReentrant rescue forbids both USDC and the manager itself, preserving reserves and the self-call NFT boundary.",
         "evidence": "contracts/AGIJobManager.sol:rescueToken; test/mainnetRescueAndMint.test.js; test/v080.usdc.adversarial.test.js"
       },
@@ -466,7 +466,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.updateMerkleRoots(bytes32,bytes32)._validatorMerkleRoot (contracts/AGIJobManager.sol#1064) is not in mixedCase",
+        "location": "Parameter AGIJobManager.updateMerkleRoots(bytes32,bytes32)._validatorMerkleRoot (contracts/AGIJobManager.sol#991) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.updateMerkleRoots(bytes32,bytes32)._validatorMerkleRoot intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -493,7 +493,7 @@
         "check": "missing-inheritance",
         "impact": "Informational",
         "confidence": "High",
-        "location": "AGIJobManager (contracts/AGIJobManager.sol#293-1473) should inherit from IAGIJobManagerView (contracts/ens/ENSJobPages.sol#12-30)",
+        "location": "AGIJobManager (contracts/AGIJobManager.sol#220-1410) should inherit from IAGIJobManagerView (contracts/ens/ENSJobPages.sol#12-30)",
         "rationale": "IAGIJobManagerView is the deliberately narrow structural view interface consumed by optional ENSJobPages. The manager exposes the matching getJobCore/getJobSpecURI/getJobCompletionURI selectors and return types without inheriting its optional metadata consumer. Solidity ABI compatibility and integration calls are tested; inheritance is not an authorization control.",
         "evidence": "contracts/ens/ENSJobPages.sol:IAGIJobManagerView; contracts/AGIJobManager.sol; test/ensHooks.integration.test.js"
       },
@@ -529,7 +529,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.setValidationRewardPercentage(uint256)._percentage (contracts/AGIJobManager.sol#1240) is not in mixedCase",
+        "location": "Parameter AGIJobManager.setValidationRewardPercentage(uint256)._percentage (contracts/AGIJobManager.sol#1168) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setValidationRewardPercentage(uint256)._percentage intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -547,7 +547,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.setEnsJobPages(address)._ensJobPages (contracts/AGIJobManager.sol#1042) is not in mixedCase",
+        "location": "Parameter AGIJobManager.setEnsJobPages(address)._ensJobPages (contracts/AGIJobManager.sol#969) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setEnsJobPages(address)._ensJobPages intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -556,7 +556,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.cancelJob(uint256)._jobId (contracts/AGIJobManager.sol#1247) is not in mixedCase",
+        "location": "Parameter AGIJobManager.cancelJob(uint256)._jobId (contracts/AGIJobManager.sol#1175) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.cancelJob(uint256)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -565,7 +565,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.removeModerator(address)._moderator (contracts/AGIJobManager.sol#1027) is not in mixedCase",
+        "location": "Parameter AGIJobManager.removeModerator(address)._moderator (contracts/AGIJobManager.sol#954) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.removeModerator(address)._moderator intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -579,11 +579,11 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
-        "id": "2ca21c5dfd0466df9a7f4bb46e7129829d81e991430c78dbadc2d81296e45869",
+        "id": "82265b133e51b3e9d8e5cc5b0d10181297cf321541aca833f47dedd11462d829",
         "check": "timestamp",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "AGIJobManager.refundUnresolvedDispute(uint256) (contracts/AGIJobManager.sol#1311-1320) uses timestamp for comparisons",
+        "location": "AGIJobManager.refundUnresolvedDispute(uint256) (contracts/AGIJobManager.sol#1238-1247) uses timestamp for comparisons",
         "rationale": "This comparison implements the specified lifecycle deadline, using cumulative settlement-pause snapshots. It is not a randomness or price oracle. Review cannot end before the full review or any longer challenge; inclusive dispute/vote boundaries and strict settlement/timeout boundaries are intentional. Consensus timestamp granularity remains an operating limitation.",
         "evidence": "contracts/AGIJobManager.sol:getJobDeadlines,_deadline,_settlementDeadline; contracts/utils/JobValidation.sol; test/buyerProtection.v095.test.js; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol"
       },
@@ -673,7 +673,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._details (contracts/AGIJobManager.sol#775) is not in mixedCase",
+        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._details (contracts/AGIJobManager.sol#702) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._details intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -682,7 +682,7 @@
         "check": "unindexed-event-address",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Event AGIJobManager.ReputationUpdated(address,uint256) (contracts/AGIJobManager.sol#404) has address parameters but no indexed parameters",
+        "location": "Event AGIJobManager.ReputationUpdated(address,uint256) (contracts/AGIJobManager.sol#331) has address parameters but no indexed parameters",
         "rationale": "This existing event ABI stores its address in log data. Receipt consumers can decode it correctly; lack of an indexed topic affects filtering efficiency, not authorization or settlement correctness. Changing indexing would alter the published event encoding and existing consumer expectations. New owner limit events are indexed, while existing compatible event encodings are retained.",
         "evidence": "contracts/AGIJobManager.sol:events; docs/REFERENCE/CONTRACT_INTERFACE.md; test/securityRegression.test.js"
       },
@@ -691,16 +691,16 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.updateEnsRegistry(address)._newEnsRegistry (contracts/AGIJobManager.sol#1030) is not in mixedCase",
+        "location": "Parameter AGIJobManager.updateEnsRegistry(address)._newEnsRegistry (contracts/AGIJobManager.sol#957) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.updateEnsRegistry(address)._newEnsRegistry intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "4c4fd3145b701115ae35a06532c7a75a6999c84da02fce51fc88558bdcba6423",
+        "id": "87fb4a9668074c62330acf6fa9a22d434bc6b3fb17724d9e831e2504c9ee406f",
         "check": "low-level-calls",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Low level call in AGIJobManager.rescueETH(uint256) (contracts/AGIJobManager.sol#1417-1420):",
+        "location": "Low level call in AGIJobManager.rescueETH(uint256) (contracts/AGIJobManager.sol#1344-1347):",
         "rationale": "Only the owner can rescue accidental native ETH, and nonReentrant prevents nested guarded operations. ETH is not the escrow currency; the send targets the current owner and its success is checked. USDC reserves remain under separate withdrawal guards.",
         "evidence": "contracts/AGIJobManager.sol:rescueETH; test/mainnetRescueAndMint.test.js; docs/OWNER_CONTROLS.md"
       },
@@ -709,7 +709,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.applyForJob(uint256,string,bytes32[])._jobId (contracts/AGIJobManager.sol#807) is not in mixedCase",
+        "location": "Parameter AGIJobManager.applyForJob(uint256,string,bytes32[])._jobId (contracts/AGIJobManager.sol#734) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.applyForJob(uint256,string,bytes32[])._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -736,7 +736,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.blacklistAgent(address,bool)._agent (contracts/AGIJobManager.sol#1009) is not in mixedCase",
+        "location": "Parameter AGIJobManager.blacklistAgent(address,bool)._agent (contracts/AGIJobManager.sol#936) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.blacklistAgent(address,bool)._agent intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -763,7 +763,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.setBaseIpfsUrl(string)._url (contracts/AGIJobManager.sol#1072) is not in mixedCase",
+        "location": "Parameter AGIJobManager.setBaseIpfsUrl(string)._url (contracts/AGIJobManager.sol#999) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setBaseIpfsUrl(string)._url intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -772,16 +772,16 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.setRequiredValidatorDisapprovals(uint256)._disapprovals (contracts/AGIJobManager.sol#1083) is not in mixedCase",
+        "location": "Parameter AGIJobManager.setRequiredValidatorDisapprovals(uint256)._disapprovals (contracts/AGIJobManager.sol#1010) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setRequiredValidatorDisapprovals(uint256)._disapprovals intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "60ff4f6f70df7c70638a3c4ed6bad808c181d24ee0f4a2f195461d7574d2ef1b",
+        "id": "758fe7673278c7271d1e316c373a6c16d69ada7e92950b1ac4ca1aa460581d9f",
         "check": "reentrancy-no-eth",
         "impact": "Medium",
         "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#807-845):",
+        "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#734-772):",
         "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
@@ -799,7 +799,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.setCompletionReviewPeriod(uint256)._period (contracts/AGIJobManager.sol#1117) is not in mixedCase",
+        "location": "Parameter AGIJobManager.setCompletionReviewPeriod(uint256)._period (contracts/AGIJobManager.sol#1044) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setCompletionReviewPeriod(uint256)._period intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -835,7 +835,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.resolveDisputeWithCode(uint256,uint8,string)._jobId (contracts/AGIJobManager.sol#964) is not in mixedCase",
+        "location": "Parameter AGIJobManager.resolveDisputeWithCode(uint256,uint8,string)._jobId (contracts/AGIJobManager.sol#891) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.resolveDisputeWithCode(uint256,uint8,string)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -853,7 +853,7 @@
         "check": "unindexed-event-address",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Event AGIJobManager.NameWrapperUpdated(address) (contracts/AGIJobManager.sol#415) has address parameters but no indexed parameters",
+        "location": "Event AGIJobManager.NameWrapperUpdated(address) (contracts/AGIJobManager.sol#342) has address parameters but no indexed parameters",
         "rationale": "This existing event ABI stores its address in log data. Receipt consumers can decode it correctly; lack of an indexed topic affects filtering efficiency, not authorization or settlement correctness. Changing indexing would alter the published event encoding and existing consumer expectations. New owner limit events are indexed, while existing compatible event encodings are retained.",
         "evidence": "contracts/AGIJobManager.sol:events; docs/REFERENCE/CONTRACT_INTERFACE.md; test/securityRegression.test.js"
       },
@@ -862,16 +862,16 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.disputeJob(uint256)._jobId (contracts/AGIJobManager.sol#933) is not in mixedCase",
+        "location": "Parameter AGIJobManager.disputeJob(uint256)._jobId (contracts/AGIJobManager.sol#860) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.disputeJob(uint256)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "80108143ec77e88786c48d54232f78b9acb781f6db791b7309bc2101cb8985bc",
+        "id": "90fcee66ab6e643c9ddcabb9ef8715a52d9a1c53f286257b62cc400269d80811",
         "check": "reentrancy-benign",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager.createJob(string,uint256,uint256,string) (contracts/AGIJobManager.sol#775-805):",
+        "location": "Reentrancy in AGIJobManager.createJob(string,uint256,uint256,string) (contracts/AGIJobManager.sol#702-732):",
         "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
@@ -889,7 +889,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.requestJobCompletion(uint256,string)._jobId (contracts/AGIJobManager.sol#847) is not in mixedCase",
+        "location": "Parameter AGIJobManager.requestJobCompletion(uint256,string)._jobId (contracts/AGIJobManager.sol#774) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.requestJobCompletion(uint256,string)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -912,11 +912,11 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
-        "id": "89665aaf77c945afecd166430c45c306e558212d9ff763cf9b2f7921003d3fb0",
+        "id": "91d986099bd4fec0835b32167aa57119bf97bd1683ba34ec941dbe3c85031258",
         "check": "assembly",
         "impact": "Informational",
         "confidence": "High",
-        "location": "AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1433-1446) uses assembly",
+        "location": "AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1360-1373) uses assembly",
         "rationale": "Assembly only reads a complete 32-byte return word after its exact length is checked; only bool true is accepted. The owner-only nonReentrant rescue forbids both USDC and the manager itself, preserving reserves and the self-call NFT boundary.",
         "evidence": "contracts/AGIJobManager.sol:rescueToken; test/mainnetRescueAndMint.test.js; test/v080.usdc.adversarial.test.js"
       },
@@ -925,7 +925,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.blacklistAgent(address,bool)._status (contracts/AGIJobManager.sol#1009) is not in mixedCase",
+        "location": "Parameter AGIJobManager.blacklistAgent(address,bool)._status (contracts/AGIJobManager.sol#936) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.blacklistAgent(address,bool)._status intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -939,11 +939,11 @@
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "95c9e26c889c7ca2d502942da7dac4aac728e90686d5ff9422c9abfebb5c1087",
+        "id": "9bb5e4497092878f50182bbe2680cfa1dc4bc372938a0160319048bf60ff9c7a",
         "check": "timestamp",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "AGIJobManager.finalizeJob(uint256) (contracts/AGIJobManager.sol#1283-1298) uses timestamp for comparisons",
+        "location": "AGIJobManager.finalizeJob(uint256) (contracts/AGIJobManager.sol#1210-1225) uses timestamp for comparisons",
         "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
         "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
@@ -952,7 +952,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._duration (contracts/AGIJobManager.sol#775) is not in mixedCase",
+        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._duration (contracts/AGIJobManager.sol#702) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._duration intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -966,20 +966,20 @@
         "evidence": "contracts/utils/JobSettlement.sol:_pay; contracts/AGIJobManager.sol:executeUSDCTransfer; test/buyerProtection.v095.test.js; hardhat/test/mainnet-fork.test.js"
       },
       {
-        "id": "9b19dbfcf8757c85cd83ff6f08470a07b2e4fb4bca76139353a215eca72405cd",
+        "id": "6e00b529820c08198c9c24e1c6d6fc7de8ec8bb4557528e0e8308f69b0ddd134",
         "check": "timestamp",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#933-960) uses timestamp for comparisons",
+        "location": "AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#860-887) uses timestamp for comparisons",
         "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
         "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
       {
-        "id": "9d65819a53739a2c905a422a94d845350dd4be7b8ae233916d4bf5c86ecf5731",
+        "id": "4146e55f43d96d11c2b7198310819ae473ec07a6f7ecc0e647c6b5e30e223085",
         "check": "timestamp",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "AGIJobManager.expireJob(uint256) (contracts/AGIJobManager.sol#1255-1271) uses timestamp for comparisons",
+        "location": "AGIJobManager.expireJob(uint256) (contracts/AGIJobManager.sol#1182-1198) uses timestamp for comparisons",
         "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
         "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
@@ -988,7 +988,7 @@
         "check": "cyclomatic-complexity",
         "impact": "Informational",
         "confidence": "High",
-        "location": "AGIJobManager.constructor(address,string,address[2],bytes32[4],bytes32[2],address[2]) (contracts/AGIJobManager.sol#475-505) has a high cyclomatic complexity (12).",
+        "location": "AGIJobManager.constructor(address,string,address[2],bytes32[4],bytes32[2],address[2]) (contracts/AGIJobManager.sol#402-432) has a high cyclomatic complexity (12).",
         "rationale": "The constructor performs independent chain/token/recipient/address/root validation before initialization and paused launch. Reducing its checks to satisfy a complexity threshold would weaken commissioning. The checked branch count is small and constructor execution is one-time; deployment rejection tests cover invalid inputs.",
         "evidence": "contracts/AGIJobManager.sol:constructor; hardhat/test/deployment-preflight.test.cjs; forge-test/unit/AGIJobManagerSecurityVerification.t.sol"
       },
@@ -997,7 +997,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.validateJob(uint256,string,bytes32[])._jobId (contracts/AGIJobManager.sol#870) is not in mixedCase",
+        "location": "Parameter AGIJobManager.validateJob(uint256,string,bytes32[])._jobId (contracts/AGIJobManager.sol#797) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.validateJob(uint256,string,bytes32[])._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1006,7 +1006,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.setJobDurationLimit(uint256)._limit (contracts/AGIJobManager.sol#1105) is not in mixedCase",
+        "location": "Parameter AGIJobManager.setJobDurationLimit(uint256)._limit (contracts/AGIJobManager.sol#1032) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setJobDurationLimit(uint256)._limit intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1015,7 +1015,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._payout (contracts/AGIJobManager.sol#775) is not in mixedCase",
+        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._payout (contracts/AGIJobManager.sol#702) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._payout intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1042,7 +1042,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.setDisputeReviewPeriod(uint256)._period (contracts/AGIJobManager.sol#1124) is not in mixedCase",
+        "location": "Parameter AGIJobManager.setDisputeReviewPeriod(uint256)._period (contracts/AGIJobManager.sol#1051) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setDisputeReviewPeriod(uint256)._period intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1051,7 +1051,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.blacklistValidator(address,bool)._validator (contracts/AGIJobManager.sol#1013) is not in mixedCase",
+        "location": "Parameter AGIJobManager.blacklistValidator(address,bool)._validator (contracts/AGIJobManager.sol#940) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.blacklistValidator(address,bool)._validator intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1065,11 +1065,11 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "b0bb2d5b7b6f52e3637ecfbcb2228cb6a36e3b9b8d9118227c7bd4dfcf19daff",
+        "id": "90c96fc675a173020d6cf70a41274c31334a5122548170d23bd75b4f35c1069a",
         "check": "timestamp",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "AGIJobManager._settlementDeadline(Job) (contracts/AGIJobManager.sol#705-711) uses timestamp for comparisons",
+        "location": "AGIJobManager._settlementDeadline(Job) (contracts/AGIJobManager.sol#632-638) uses timestamp for comparisons",
         "rationale": "This comparison implements the specified lifecycle deadline, using cumulative settlement-pause snapshots. It is not a randomness or price oracle. Review cannot end before the full review or any longer challenge; inclusive dispute/vote boundaries and strict settlement/timeout boundaries are intentional. Consensus timestamp granularity remains an operating limitation.",
         "evidence": "contracts/AGIJobManager.sol:getJobDeadlines,_deadline,_settlementDeadline; contracts/utils/JobValidation.sol; test/buyerProtection.v095.test.js; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol"
       },
@@ -1078,7 +1078,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._alphaAgentRootNode (contracts/AGIJobManager.sol#1055) is not in mixedCase",
+        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._alphaAgentRootNode (contracts/AGIJobManager.sol#982) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._alphaAgentRootNode intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1087,7 +1087,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._jobSpecURI (contracts/AGIJobManager.sol#775) is not in mixedCase",
+        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._jobSpecURI (contracts/AGIJobManager.sol#702) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._jobSpecURI intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1096,7 +1096,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.addModerator(address)._moderator (contracts/AGIJobManager.sol#1024) is not in mixedCase",
+        "location": "Parameter AGIJobManager.addModerator(address)._moderator (contracts/AGIJobManager.sol#951) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.addModerator(address)._moderator intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1105,25 +1105,25 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.resolveStaleDispute(uint256,bool)._jobId (contracts/AGIJobManager.sol#993) is not in mixedCase",
+        "location": "Parameter AGIJobManager.resolveStaleDispute(uint256,bool)._jobId (contracts/AGIJobManager.sol#920) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.resolveStaleDispute(uint256,bool)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "baa19c005721f3d911cd28330dae744e07129f8f3771b1f1687b9168368d469a",
+        "id": "32838106d78eaa71516ee65e1bf11efc92f3fc719ac0ff41aa628a5bcb848137",
         "check": "too-many-digits",
         "impact": "Informational",
         "confidence": "Medium",
-        "location": "AGIJobManager.slitherConstructorVariables() (contracts/AGIJobManager.sol#293-1473) uses literals with too many digits:",
+        "location": "AGIJobManager.slitherConstructorVariables() (contracts/AGIJobManager.sol#220-1410) uses literals with too many digits:",
         "rationale": "The default duration limit is exactly 10000000 seconds (less than 365 days), retained for economic/deployment compatibility. Numeric digit count does not alter its meaning; the setter bounds future values and timing tests cover the maximum supported duration.",
         "evidence": "contracts/AGIJobManager.sol:jobDurationLimit,setJobDurationLimit; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
       {
-        "id": "be154c7379c7d95e5dfe7ff88ccf2bb0420b1b39af9b2a9dd13a586f70dff903",
+        "id": "f7897028e032eb1b242aef8986377e1cff592102025aaded8e6b0055f64bcf5e",
         "check": "timestamp",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "AGIJobManager.requestJobCompletion(uint256,string) (contracts/AGIJobManager.sol#847-868) uses timestamp for comparisons",
+        "location": "AGIJobManager.requestJobCompletion(uint256,string) (contracts/AGIJobManager.sol#774-795) uses timestamp for comparisons",
         "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
         "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
@@ -1168,7 +1168,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.disapproveJob(uint256,string,bytes32[])._jobId (contracts/AGIJobManager.sol#878) is not in mixedCase",
+        "location": "Parameter AGIJobManager.disapproveJob(uint256,string,bytes32[])._jobId (contracts/AGIJobManager.sol#805) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.disapproveJob(uint256,string,bytes32[])._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1200,11 +1200,11 @@
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "cf24efa0a8ed618f363226e9a93f5de1ce0134c568a71453d4869181cf6a698c",
+        "id": "e15f44dee99c7aa68f3c27db3eca3f81d883ab42e1adec080b620f3a4e3cb8af",
         "check": "mapping-deletion",
         "impact": "Medium",
         "confidence": "High",
-        "location": "AGIJobManager._cancelJobAndRefund(uint256,Job) (contracts/AGIJobManager.sol#591-597) deletes Job (contracts/utils/JobState.sol#4-39) which contains a mapping:",
+        "location": "AGIJobManager._cancelJobAndRefund(uint256,Job) (contracts/AGIJobManager.sol#518-524) deletes Job (contracts/utils/JobState.sol#4-39) which contains a mapping:",
         "rationale": "Deletion is limited to unassigned jobs. A vote requires assignment and submission, so every vote/credential/controller mapping is empty on this path. Monotonically allocated job IDs are never reused; cancellation entry points hold nonReentrant.",
         "evidence": "contracts/AGIJobManager.sol:createJob,cancelJob,delistJob; contracts/utils/JobState.sol; test/delistJob.reentrancy.test.js; test/securityRegression.test.js"
       },
@@ -1213,7 +1213,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.setRequiredValidatorApprovals(uint256)._approvals (contracts/AGIJobManager.sol#1076) is not in mixedCase",
+        "location": "Parameter AGIJobManager.setRequiredValidatorApprovals(uint256)._approvals (contracts/AGIJobManager.sol#1003) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setRequiredValidatorApprovals(uint256)._approvals intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1231,7 +1231,7 @@
         "check": "unindexed-event-address",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Event AGIJobManager.EnsRegistryUpdated(address) (contracts/AGIJobManager.sol#414) has address parameters but no indexed parameters",
+        "location": "Event AGIJobManager.EnsRegistryUpdated(address) (contracts/AGIJobManager.sol#341) has address parameters but no indexed parameters",
         "rationale": "This existing event ABI stores its address in log data. Receipt consumers can decode it correctly; lack of an indexed topic affects filtering efficiency, not authorization or settlement correctness. Changing indexing would alter the published event encoding and existing consumer expectations. New owner limit events are indexed, while existing compatible event encodings are retained.",
         "evidence": "contracts/AGIJobManager.sol:events; docs/REFERENCE/CONTRACT_INTERFACE.md; test/securityRegression.test.js"
       },
@@ -1258,7 +1258,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._agentRootNode (contracts/AGIJobManager.sol#1053) is not in mixedCase",
+        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._agentRootNode (contracts/AGIJobManager.sol#980) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._agentRootNode intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1276,7 +1276,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.setMaxJobPayout(uint256)._maxPayout (contracts/AGIJobManager.sol#1100) is not in mixedCase",
+        "location": "Parameter AGIJobManager.setMaxJobPayout(uint256)._maxPayout (contracts/AGIJobManager.sol#1027) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setMaxJobPayout(uint256)._maxPayout intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1285,7 +1285,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._clubRootNode (contracts/AGIJobManager.sol#1052) is not in mixedCase",
+        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._clubRootNode (contracts/AGIJobManager.sol#979) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._clubRootNode intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1299,11 +1299,11 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "dd236751c11ba2082c7f2b2b23372f8c048d045e4af8dbd15ce45bb322cb7bad",
+        "id": "259de6b7c4567956fe7c681864ceed4ff534b7cefadb5dbc65cb510033eeb110",
         "check": "timestamp",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "AGIJobManager.resolveStaleDispute(uint256,bool) (contracts/AGIJobManager.sol#993-1007) uses timestamp for comparisons",
+        "location": "AGIJobManager.resolveStaleDispute(uint256,bool) (contracts/AGIJobManager.sol#920-934) uses timestamp for comparisons",
         "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
         "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
@@ -1321,7 +1321,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.expireJob(uint256)._jobId (contracts/AGIJobManager.sol#1254) is not in mixedCase",
+        "location": "Parameter AGIJobManager.expireJob(uint256)._jobId (contracts/AGIJobManager.sol#1182) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.expireJob(uint256)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1348,7 +1348,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.blacklistValidator(address,bool)._status (contracts/AGIJobManager.sol#1013) is not in mixedCase",
+        "location": "Parameter AGIJobManager.blacklistValidator(address,bool)._status (contracts/AGIJobManager.sol#940) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.blacklistValidator(address,bool)._status intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1357,7 +1357,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._alphaClubRootNode (contracts/AGIJobManager.sol#1054) is not in mixedCase",
+        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._alphaClubRootNode (contracts/AGIJobManager.sol#981) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._alphaClubRootNode intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1375,7 +1375,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.updateMerkleRoots(bytes32,bytes32)._agentMerkleRoot (contracts/AGIJobManager.sol#1064) is not in mixedCase",
+        "location": "Parameter AGIJobManager.updateMerkleRoots(bytes32,bytes32)._agentMerkleRoot (contracts/AGIJobManager.sol#991) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.updateMerkleRoots(bytes32,bytes32)._agentMerkleRoot intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1384,7 +1384,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.setPremiumReputationThreshold(uint256)._threshold (contracts/AGIJobManager.sol#1090) is not in mixedCase",
+        "location": "Parameter AGIJobManager.setPremiumReputationThreshold(uint256)._threshold (contracts/AGIJobManager.sol#1017) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setPremiumReputationThreshold(uint256)._threshold intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1393,7 +1393,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.delistJob(uint256)._jobId (contracts/AGIJobManager.sol#1018) is not in mixedCase",
+        "location": "Parameter AGIJobManager.delistJob(uint256)._jobId (contracts/AGIJobManager.sol#945) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.delistJob(uint256)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
@@ -1411,7 +1411,7 @@
         "check": "naming-convention",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Parameter AGIJobManager.updateNameWrapper(address)._newNameWrapper (contracts/AGIJobManager.sol#1036) is not in mixedCase",
+        "location": "Parameter AGIJobManager.updateNameWrapper(address)._newNameWrapper (contracts/AGIJobManager.sol#963) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.updateNameWrapper(address)._newNameWrapper intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       }

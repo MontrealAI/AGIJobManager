@@ -15,7 +15,7 @@ This is an internal software and documentation review, not a legal opinion, exte
 
 Only the manager's opening source comment changes. Everything following that comment is byte-for-byte identical to v1.0.3. All other Solidity files are unchanged. The qualified compiler produces the same ABI, creation bytecode and deployed runtime. Storage, links, powers, pauses, payouts, reserves and disabled NFT default remain unchanged. Original deployment source and agreements are not rewritten.
 
-The static-analysis review updates only the manager comment fingerprint and root package-lock version fingerprint. Finding identities, dispositions, detector settings and compiler/dependency patches remain preserved; exact-source CI must reproduce the reviewed finding set.
+The static-analysis review updates the manager comment fingerprint, root package-lock version fingerprint and location-sensitive finding identifiers. The shorter opening comment shifts manager source locations by exactly 73 lines. Full prior/current analyzer reports match after that exact line shift: all detector names, severities, confidence levels and full finding descriptions are preserved. The 9/29/115 report counts are unchanged (reports overlap); 2/3/16 identifiers respectively require the location update. Every review rationale and evidence reference is retained. See the [machine-readable comparison](v104-slither-comment-review.json), including artifact digests and ID mappings. Exact-source CI must reproduce the updated finding set; no gate, detector or compiler setting is weakened.
 
 ## Verification scope
 
