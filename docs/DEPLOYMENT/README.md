@@ -1,8 +1,8 @@
 # Deployment Documentation Index
 
-> v1.0.5 uses immutable six-decimal USDC and retains the v0.9.6 ABI and deployed runtime bytecode. A verified v0.9.6 manager remains compatible; first deployments and moves from incompatible older versions require a fresh manager. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v1.0.5/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
+> v1.1.0 uses immutable six-decimal USDC and retains the v0.9.6 ABI and deployed runtime bytecode. A verified v0.9.6 manager remains compatible; first deployments and moves from incompatible older versions require a fresh manager. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v1.1.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
 
-Current maintenance changes and frozen downloads are distinguished in [release scope](../V1_RELEASE_SCOPE.md#published-download-versus-current-source). Use the guide belonging to your pinned source.
+v1.1.0 deployment improvements and earlier editions are described in [release scope](../V1_RELEASE_SCOPE.md#published-download-versus-current-source). Use the guide belonging to your pinned source.
 
 ## Start here by deployment task
 - Fresh deployment (official path): [../../hardhat/README.md](../../hardhat/README.md)
@@ -28,7 +28,7 @@ Current maintenance changes and frozen downloads are distinguished in [release s
 - [Truffle Mainnet Deploy](./TRUFFLE_MAINNET_DEPLOY.md)
 - [Truffle Production Deploy](./TRUFFLE_PRODUCTION_DEPLOY.md)
 
-> These guides preserve historical references; their old deployment commands are retired. Use the Hardhat guide above for v1.0.5 and later.
+> These guides preserve historical references; their old deployment commands are retired. Use the Hardhat guide above for v1.1.0 and later.
 
 ## UI boundary during deployment operations
 
