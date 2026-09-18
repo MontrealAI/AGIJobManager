@@ -1,4 +1,4 @@
-# AGIJobManager v1.0.0 — User Guide
+# AGIJobManager v1.0.2 — User Guide
 
 AGIJobManager holds a job's USDC cost in escrow. The first eligible agent whose application succeeds is assigned immediately. The agent submits work, validators review it, and a separate finalization transaction settles the job when its timing and voting conditions allow. Moderators handle disputes.
 

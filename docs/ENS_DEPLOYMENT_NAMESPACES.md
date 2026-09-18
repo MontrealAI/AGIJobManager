@@ -1,4 +1,4 @@
-# ENS job names — v1.0.1
+# ENS job names — v1.0.2
 
 Every new USDC manager gets a distinct namespace automatically. Users see **AGI Job #0**; its full ENS name also identifies the deployment.
 
@@ -57,4 +57,4 @@ Historical labels observed in the supplied ENS screenshot include `0`, `job-0`, 
 
 Deployment preflight regressions cover distinct managers (including identical address beginnings/endings), distinct chains, normalized case, occupied names, rejected overrides, existing jobs, same-manager replacement, foreign helper rejection and failed prefix transactions/readback. A local EVM regression creates job zero under two deployment roots while preserving the owners, resolvers and metadata of all five historical label forms.
 
-The earlier mainnet-fork fixture under `usdc-v095.alpha.jobs.agi.eth` is retained as historical qualification evidence; it is not the v1.0.1 fresh-deployment naming default. Production contract source, ABI and settlement rules are unchanged. No live ENS transaction is performed by software publication.
+The earlier mainnet-fork fixture under `usdc-v095.alpha.jobs.agi.eth` is retained as historical qualification evidence; it is not the v1.0.2 fresh-deployment naming default. Production contract source, ABI and settlement rules are unchanged. No live ENS transaction is performed by software publication.

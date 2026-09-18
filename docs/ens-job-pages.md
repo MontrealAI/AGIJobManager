@@ -1,6 +1,6 @@
 # ENS job-page naming and records
 
-This document describes the configurable naming scheme and public record layout for ENS job pages. Fresh USDC deployments require a dedicated namespace and helper. Preserve the legacy `alpha.jobs.agi.eth` root and its existing manager/helper/jobs. v1.0.1 fresh deployment tooling derives a root from the chain and full manager address and sets prefix `job-`; replacement mode preserves the active helper’s root and prefix. Read the [current naming policy](ENS_DEPLOYMENT_NAMESPACES.md). The historical examples below use the fork-rehearsed proposal `usdc-v095.alpha.jobs.agi.eth`, which is not a live deployment; see the [cutover qualification](qualification/USDC_CUTOVER.md).
+This document describes the configurable naming scheme and public record layout for ENS job pages. Fresh USDC deployments require a dedicated namespace and helper. Preserve the legacy `alpha.jobs.agi.eth` root and its existing manager/helper/jobs. v1.0.2 fresh deployment tooling derives a root from the chain and full manager address and sets prefix `job-`; replacement mode preserves the active helper’s root and prefix. Read the [current naming policy](ENS_DEPLOYMENT_NAMESPACES.md). The historical examples below use the fork-rehearsed proposal `usdc-v095.alpha.jobs.agi.eth`, which is not a live deployment; see the [cutover qualification](qualification/USDC_CUTOVER.md).
 
 ## Configured naming convention
 

@@ -1,8 +1,8 @@
-# Launch checklist — v1.0.1
+# Launch checklist — v1.0.2
 
 Use this checklist for the actual instance before opening paid intake. The release contains tested software; it supplies no production manager, owner, payment recipients, reviewer service or independent audit. Every item below starts unconfirmed. Record the evidence beside each completed item in your deployment record.
 
-v1.0.1 retains the v0.9.6 manager ABI and executable bytecode. A verified v0.9.6 manager can use this console without redeployment. First deployments and moves from incompatible older versions require the current manager and eight libraries; existing jobs stay on their original contracts.
+v1.0.2 retains the v0.9.6 manager ABI and executable bytecode. A verified v0.9.6 manager can use this console without redeployment. First deployments and moves from incompatible older versions require the current manager and eight libraries; existing jobs stay on their original contracts.
 
 ## 1. Decide who controls and operates the instance
 
@@ -26,7 +26,7 @@ v1.0.1 retains the v0.9.6 manager ABI and executable bytecode. A verified v0.9.6
 - [ ] Record observed buyer, agent, reviewer and operator sessions using [the acceptance protocol](V1_ACCEPTANCE.md). Do not substitute internal browser automation for user-study evidence.
 - [ ] Complete the Sepolia journey with the intended signing arrangement: post, apply, submit, vote, accept/finalize, cancel/expire, dispute and refund. Rehearse ownership acceptance and pause recovery. Historical fork impersonation does not prove control of real signers.
 - [ ] Preserve the existing-manager job and ENS inventory. No new deployment imports its jobs, token approvals, escrow or payment claims.
-- [ ] With reviewed addresses and current mainnet reads, run `DRY_RUN=1 npm run deploy:mainnet` from `hardhat/`. Use `DEPLOYER_ADDRESS` for a keyless plan. Recheck USDC availability, code, linked artifacts, recipients and the gas plan. The dry run sends no transactions.
+- [ ] With reviewed addresses and current mainnet reads, run `DRY_RUN=1 npm run deploy:mainnet` from `hardhat/`. Use `DEPLOYER_ADDRESS` for a keyless plan. Recheck USDC availability, code, linked artifacts and recipients; budget gas separately because the manager dry run is not a total cost estimate. The dry run sends no transactions.
 
 Use the [Hardhat guide](../hardhat/README.md) for the complete setup and separately authorized broadcast procedure. The release and this checklist do not authorize a public-chain transaction.
 

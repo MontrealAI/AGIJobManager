@@ -14,10 +14,11 @@ The 1.0 label identifies this software edition. It does not certify a deployed b
 
 ## Published download versus current source
 
-The v1.0.1 edition packages the ENS deployment naming safeguards together with the reviewed console and documentation updates made after v1.0.0. The original v1.0.0 assets remain unchanged.
+The v1.0.2 edition adds operator setup, offline configuration validation, consistent environment loading and refreshed deployment documentation. The v1.0.1 naming policy and all prior published assets remain unchanged.
 
 | Edition | Contents |
 | --- | --- |
+| [v1.0.2](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.2) | Non-overwriting private configuration setup, offline profile validation, explicit Hardhat environment, complete configuration reference and refreshed operator guides |
 | [v1.0.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.1) | Automatic fresh ENS namespace and `job-` prefix, same-manager preservation, wallet/deployment/completion context fixes, mobile corrections, combined free name + identity NFT onboarding, and the historical Genesis simulation |
 | [v1.0.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.0) | Original frozen 1.0 software at `790facbcb0a9e9c2fea52a038b7c80fc2ba12795` |
 

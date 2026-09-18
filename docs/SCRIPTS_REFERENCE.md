@@ -1,6 +1,6 @@
 # Scripts and Automation Reference
 
-> v1.0.0: Operator scripts use ethers 6 and the compiled Hardhat artifacts. The post-deploy configuration script only writes to disposable local chains. Use [Hardhat](https://github.com/MontrealAI/AGIJobManager/blob/v1.0.0/hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v1.0.0/docs/OWNER_CONTROLS.md) for live configuration.
+> v1.0.2: Operator scripts use ethers 6 and the compiled Hardhat artifacts. The post-deploy configuration script only writes to disposable local chains. Use [Hardhat](https://github.com/MontrealAI/AGIJobManager/blob/v1.0.2/hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v1.0.2/docs/OWNER_CONTROLS.md) for live configuration.
 
 This catalog documents operator and maintainer scripts across deployment, operations, security, docs, and UI maintenance.
 
@@ -10,6 +10,13 @@ For participant cost planning, run `npm run economics:check -- --example` or pas
 
 | Script / Command | Domain | Purpose | Typical user | Notes |
 | --- | --- | --- | --- | --- |
+| `npm --prefix hardhat run setup` | Deployment setup | Creates missing private configuration from examples | Operator | Offline; existing files and symlinks preserved; review required |
+| `npm --prefix hardhat run check:config:mainnet` / `check:config:sepolia` | Deployment input | Validates the reviewed profile before RPC use | Operator | Offline; no signer; shares deployment validation |
+| `DRY_RUN=1 npm --prefix hardhat run deploy:mainnet` | Deployment planning | Checks live chain/token and qualified artifacts | Operator | Zero transactions; requires reviewed RPC and deployer address |
+| `npm --prefix hardhat run deploy:sepolia` / `deploy:mainnet` | Deployment | Deploys eight libraries and manager when `DRY_RUN=0` | Deployer | Public transactions; explicit mainnet phrase; journals preserved |
+| `npm --prefix hardhat run deploy:ens-job-pages:mainnet` | ENS | Plans or deploys the optional helper | Deployer | `DRY_RUN` selects read-only/send; dedicated-root setup and manager wiring remain manual |
+| `npm --prefix hardhat run reverify:mainnet` / `reverify:sepolia` | Recovery | Reconciles and verifies all nine recorded deployments | Operator | No blockchain writes; explorer requests; manager journals only |
+| `npm --prefix hardhat run check:readiness` / `check:readiness:sepolia` | Pre-activation | Checks accepted owner, exact code, policy and reserves | Operator | No signing; requires original/recovered receipt and reviewed NFT policy |
 | `npm run docs:gen` | Documentation | Regenerates deterministic docs under `docs/REFERENCE` and `docs/REPO_MAP.md` | Maintainer | Must run before committing source-driven doc changes |
 | `npm run docs:check` | Documentation | Validates docs structure, freshness, links, Mermaid, required sections | Maintainer / CI | Fails if generated docs drift |
 | `npm run check:no-binaries` | Policy | Blocks newly added binary assets or NUL-byte files | Maintainer / CI | Enforces text-only docs policy |
@@ -24,7 +31,7 @@ For participant cost planning, run `npm run economics:check -- --example` or pas
 | `node scripts/etherscan/prepare_inputs.js --action ...` | Operator UX | Generates Etherscan-safe input payloads | Owner/operator | Reduces manual ABI argument mistakes |
 | `node scripts/merkle/export_merkle_proofs.js --input ... --output ...` | Eligibility | Generates Merkle roots/proofs for allowlists | Ops + integrator | Keep source list auditable |
 | `npm run ui:abi` | UI | Exports contract ABI consumed by UI | UI maintainer | Pair with `npm run ui:abi:check` in PRs |
-| `npm run slither` | Security | Runs static-analysis lane via local wrapper | Security reviewer | Optional hardening lane |
+| `npm run slither` | Security | Runs static-analysis lane via local wrapper | Security reviewer | Mandatory source qualification lane |
 
 
 ## Migrating operator commands from v0.9.0

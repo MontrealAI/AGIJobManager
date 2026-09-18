@@ -1,4 +1,4 @@
-# Configuration Reference — v1.0.0
+# Configuration Reference — v1.0.2
 
 The deployed manager has no implementation upgrade switch. Its native USDC address and fixed successful-job 30%/10% shares cannot change. Owner controls maintain selected operating parameters; they do not permit withdrawal of reserved escrow or bonds. See [owner controls](OWNER_CONTROLS.md) for transaction procedures.
 

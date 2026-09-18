@@ -1,6 +1,6 @@
 # ENSJobPages Mainnet Replacement Runbook
 
-This runbook configures a fresh `ENSJobPages` or replaces it for the **same, verified USDC manager**. Use `ENS_DEPLOYMENT_MODE=fresh` (default) for a manager with no helper/jobs, or `ENS_DEPLOYMENT_MODE=replacement` to preserve the active helper’s namespace. See the [v1.0.1 naming policy](../ENS_DEPLOYMENT_NAMESPACES.md). It does not migrate the legacy mainnet manager to USDC. For that transition, use the [USDC cutover qualification and preservation plan](../qualification/USDC_CUTOVER.md): deploy a separate helper and namespace, and preserve the legacy manager's ENS wiring and original-asset exits.
+This runbook configures a fresh `ENSJobPages` or replaces it for the **same, verified USDC manager**. Use `ENS_DEPLOYMENT_MODE=fresh` (default) for a manager with no helper/jobs, or `ENS_DEPLOYMENT_MODE=replacement` to preserve the active helper’s namespace. See the [v1.0.2 naming policy](../ENS_DEPLOYMENT_NAMESPACES.md). It does not migrate the legacy mainnet manager to USDC. For that transition, use the [USDC cutover qualification and preservation plan](../qualification/USDC_CUTOVER.md): deploy a separate helper and namespace, and preserve the legacy manager's ENS wiring and original-asset exits.
 
 ## In one minute
 
@@ -90,12 +90,13 @@ Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labe
 
 ## 6) Exact deployment flow (mainnet)
 
-Start in the repository root. Install both locked workspaces so the pinned compiler and its compatibility patches are available. Preserve an existing reviewed `hardhat/.env`; copy `.env.example` only when creating the initial configuration.
+Start in the repository root. Install both locked workspaces so the pinned compiler and its compatibility patches are available. Use the non-overwriting setup command, then review `hardhat/.env` as described in the [configuration reference](../DEPLOYMENT_CONFIGURATION.md).
 
 ```bash
 npm ci
+npm --prefix hardhat ci
+npm --prefix hardhat run setup
 cd hardhat
-npm ci
 npm run compile
 
 export JOB_MANAGER='<verified-new-USDC-manager-address>'
@@ -106,7 +107,7 @@ export NEW_OWNER='<reviewed-final-helper-owner-address>'
 
 DRY_RUN=1 npm run deploy:ens-job-pages:mainnet
 
-DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT VERIFY=1 LOCK_CONFIG=0 npm run deploy:ens-job-pages:mainnet
+DRY_RUN=0 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT VERIFY=1 LOCK_CONFIG=0 npm run deploy:ens-job-pages:mainnet
 ```
 
 Required settings (via `.env` or the shell): `JOB_MANAGER` and the explicit final helper owner (`NEW_OWNER` or `FINAL_OWNER`). Namespace inputs are optional assertions of the derived or preserved plan. The example uses `NEW_OWNER`; an observed historical owner address is not proof of current signing access or the intended owner. Verify actual parent authority and root availability before any root transaction. A dry run does not reserve the name.

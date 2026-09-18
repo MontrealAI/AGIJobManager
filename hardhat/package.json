@@ -1,7 +1,7 @@
 {
   "name": "agijobmanager-hardhat",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Official Hardhat deployment + verification workflow for AGIJobManager",
   "scripts": {
     "clean": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs clean",
@@ -18,7 +18,10 @@
     "postinstall": "node ../scripts/security/patch-openzeppelin-compiler.cjs",
     "reverify:mainnet": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/reverify-deployment.js --network mainnet",
     "reverify:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/reverify-deployment.js --network sepolia",
-    "check:readiness:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/check-readiness.js --network sepolia"
+    "check:readiness:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/check-readiness.js --network sepolia",
+    "setup": "node scripts/setup.cjs",
+    "check:config:mainnet": "node scripts/check-config.cjs mainnet",
+    "check:config:sepolia": "node scripts/check-config.cjs sepolia"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "4.1.0",

@@ -1,4 +1,4 @@
-# Happy path walkthrough — v1.0.0
+# Happy path walkthrough — v1.0.2
 
 A job moves from USDC funding through assignment and evidence review to an explicit settlement transaction. The moderator participates only if a dispute opens.
 

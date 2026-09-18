@@ -9,7 +9,7 @@ const requiredFiles = [
   'docs/README.md','docs/OVERVIEW.md','docs/REPO_MAP.md','docs/QUICKSTART.md','docs/QUINTESSENTIAL_USE_CASE.md','docs/ARCHITECTURE.md',
   'docs/CONTRACTS/AGIJobManager.md','docs/CONTRACTS/INTEGRATIONS.md','docs/OPERATIONS/RUNBOOK.md','docs/OPERATIONS/INCIDENT_RESPONSE.md',
   'docs/OPERATIONS/MONITORING.md','docs/SECURITY_MODEL.md','docs/TESTING.md','docs/TROUBLESHOOTING.md','docs/GLOSSARY.md',
-  'docs/DEPLOYMENT_OPERATIONS.md','docs/SCRIPTS_REFERENCE.md',
+  'docs/DEPLOYMENT_OPERATIONS.md','docs/DEPLOYMENT_CONFIGURATION.md','docs/SCRIPTS_REFERENCE.md',
   'docs/REFERENCE/VERSIONS.md','docs/REFERENCE/CONTRACT_INTERFACE.md','docs/REFERENCE/EVENTS_AND_ERRORS.md',
   'docs/assets/palette.svg','docs/assets/architecture-wireframe.svg'
 ];
@@ -19,6 +19,21 @@ const ok = (msg) => console.log(`✅ ${msg}`);
 
 for (const file of requiredFiles) {
   if (!fs.existsSync(path.join(root, file))) fail(`Missing required file: ${file}`);
+}
+
+const deploymentReference = fs.readFileSync(path.join(root, 'docs/DEPLOYMENT_CONFIGURATION.md'), 'utf8');
+const deploymentExample = fs.readFileSync(path.join(root, 'hardhat/.env.example'), 'utf8');
+const documentedVariables = new Set([...deploymentExample.matchAll(/^([A-Z][A-Z0-9_]*)=/gm)].map(match => match[1]));
+for (const name of documentedVariables) {
+  if (!deploymentReference.includes('`' + name + '`')) fail(`Deployment environment setting lacks documentation: ${name}`);
+}
+for (const entry of fs.readdirSync(path.join(root, 'hardhat/scripts'))) {
+  if (!entry.endsWith('.cjs')) continue;
+  const source = fs.readFileSync(path.join(root, 'hardhat/scripts', entry), 'utf8');
+  for (const match of source.matchAll(/process\.env\.([A-Z][A-Z0-9_]*)|\benv\(['"]([A-Z][A-Z0-9_]*)['"]/g)) {
+    const name = match[1] || match[2];
+    if (!documentedVariables.has(name)) fail(`Deployment script setting missing from .env.example: ${name}`);
+  }
 }
 
 const mermaidChecks = [

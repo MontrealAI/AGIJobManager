@@ -1,4 +1,4 @@
-# ENS participant identity — v1.0.0
+# ENS participant identity — v1.0.2
 
 AGI Agents normally require membership under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. The wallet submitting the application or vote must satisfy the configured role's ownership, approval or resolver-address check. The legacy owner-managed additional lists and Merkle proofs remain explicit exceptions to ENS membership.
 

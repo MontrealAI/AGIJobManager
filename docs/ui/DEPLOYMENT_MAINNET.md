@@ -2,9 +2,9 @@
 
 ## Official release
 
-AGIJobManager v1.0.1. Status: **deployment-required**.
+AGIJobManager v1.0.2. Status: **deployment-required**.
 
-Software release only; no live USDC manager is recorded here. v1.0.1 retains the v0.9.6 manager ABI and executable bytecode and uses eight fixed linked libraries. A verified v0.9.6 or v0.9.7 instance can use this console; older incompatible managers require a fresh deployment to gain these features. Preserve existing jobs on their original manager and namespace. Verify accepted ownership, both recipients, ENS wiring and READINESS_NFT_CONFIG before opening intake. A fresh manager requires NFTs but has no registered collections: register reviewed collections or explicitly disable the requirement. Initial activation requires zero escrow, bonds and pending claims. Later recipient and NFT collection changes require zero live escrow and bonds; old claims retain their beneficiary.
+Software release only; no live USDC manager is recorded here. v1.0.2 retains the v0.9.6 manager ABI and executable bytecode and uses eight fixed linked libraries. A verified v0.9.6 or v0.9.7 instance can use this console; older incompatible managers require a fresh deployment to gain these features. Preserve existing jobs on their original manager and namespace. Verify accepted ownership, both recipients, ENS wiring and READINESS_NFT_CONFIG before opening intake. A fresh manager requires NFTs but has no registered collections: register reviewed collections or explicitly disable the requirement. Initial activation requires zero escrow, bonds and pending claims. Later recipient and NFT collection changes require zero live escrow and bonds; old claims retain their beneficiary.
 
 - Chain ID: 1
 - Manager: Not recorded
@@ -18,7 +18,7 @@ Software release only; no live USDC manager is recorded here. v1.0.1 retains the
 
 ## Constructor arguments
 
-Follow the [Hardhat deployment guide](../../hardhat/README.md), [readiness guide](../MAINNET_READINESS.md) and [deployment runbook](../DEPLOY_RUNBOOK.md). Supply the two settlement wallets and accepted owner explicitly. All monetary arguments use six-decimal base units. Preserve original-asset jobs on their existing manager; legacy deployment snapshots are not USDC configurations. v1.0.1 retains the v0.9.6 ABI and executable bytecode, including eight fixed linked libraries. A verified v0.9.6 manager remains compatible with this console. v0.9.5 and older managers lack the getJobBonds getter and must keep their original interfaces for existing jobs. First deployments and moves from incompatible older versions require a fresh manager.
+Follow the [Hardhat deployment guide](../../hardhat/README.md), [readiness guide](../MAINNET_READINESS.md) and [deployment runbook](../DEPLOY_RUNBOOK.md). Supply the two settlement wallets and accepted owner explicitly. All monetary arguments use six-decimal base units. Preserve original-asset jobs on their existing manager; legacy deployment snapshots are not USDC configurations. v1.0.2 retains the v0.9.6 ABI and executable bytecode, including eight fixed linked libraries. A verified v0.9.6 manager remains compatible with this console. v0.9.5 and older managers lack the getJobBonds getter and must keep their original interfaces for existing jobs. First deployments and moves from incompatible older versions require a fresh manager.
 
 AGI Agents use agent.agi.eth or alpha.agent.agi.eth subnames; AGI Club validators use club.agi.eth or alpha.club.agi.eth. The contract preserves owner-managed allowlist and Merkle exceptions, and agents need a configured NFT eligibility credential only when their job requires it. NFTs are required by default; owner changes affect future jobs only. Readiness requires READINESS_NFT_CONFIG with the chosen mode and complete collection registry. Optional job-page ENS wiring is separate from member identity. Review the four membership root nodes and any exceptions in the deployment plan.
 

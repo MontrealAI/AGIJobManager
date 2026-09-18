@@ -1,4 +1,4 @@
-# Owner/Operator Guide — v1.0.0
+# Owner/Operator Guide — v1.0.2
 
 Use the [owner controls](../OWNER_CONTROLS.md) for the full operation and restriction matrix. The [USDC console](../../ui/agijobmanager-usdc.html) exposes guarded owner actions and ownership acceptance.
 

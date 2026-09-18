@@ -1,4 +1,4 @@
-# AGI.eth member namespace quickstart — v1.0.0
+# AGI.eth member namespace quickstart — v1.0.2
 
 Use the verified manager on the intended chain. Ordinary participation requires the role's ENS membership; the contract retains owner-managed additional-list and Merkle exceptions. Optional ENS job pages are a separate metadata integration.
 

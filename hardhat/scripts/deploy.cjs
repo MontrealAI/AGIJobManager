@@ -159,6 +159,18 @@ function resolveFinalOwner(profile) {
   return finalOwner;
 }
 
+function resolveReviewedProfile(networkName, profile) {
+  const chainId = { mainnet: 1, sepolia: 11155111 }[networkName];
+  requireDeploymentNetwork(networkName, chainId);
+  const constructorArgs = resolveConstructor(networkName, profile);
+  require('../../scripts/lib/usdc').requireCanonicalUSDC(chainId, constructorArgs.usdcTokenAddress);
+  const finalOwner = resolveFinalOwner(profile);
+  if ([constructorArgs.usdcTokenAddress, ...constructorArgs.ensConfig].some(address => address.toLowerCase() === finalOwner.toLowerCase())) {
+    throw new Error('finalOwner cannot be the USDC token or a configured ENS dependency. Choose a reviewed wallet or governance contract able to accept ownership and operate the manager.');
+  }
+  return { constructorArgs, finalOwner };
+}
+
 async function deployContract(name, args = [], options = {}, confirmations = DEFAULT_CONFIRMATIONS, onBroadcast = () => {}) {
   const factory = await ethers.getContractFactory(name, options);
   const from = await factory.runner.getAddress();
@@ -273,11 +285,7 @@ async function main() {
 
   const { config, configPath } = await loadDeployConfig();
   const profile = config[network.name];
-  const constructorArgs = resolveConstructor(network.name, profile);
-  const resolvedFinalOwner = resolveFinalOwner(profile);
-  if ([constructorArgs.usdcTokenAddress, ...constructorArgs.ensConfig].some(address => address.toLowerCase() === resolvedFinalOwner.toLowerCase())) {
-    throw new Error('finalOwner cannot be the USDC token or a configured ENS dependency. Choose a reviewed wallet or governance contract able to accept ownership and operate the manager.');
-  }
+  const { constructorArgs, finalOwner: resolvedFinalOwner } = resolveReviewedProfile(network.name, profile);
   const block = await ethers.provider.getBlock('latest');
   if (!block) throw new Error('Unable to resolve the preflight block.');
   const tokenCode = await requireCode(ethers.provider, constructorArgs.usdcTokenAddress, 'USDC', block.number);
@@ -512,4 +520,4 @@ if (require.main === module) main().catch((error) => {
   process.exit(1);
 });
 
-module.exports = { resolveConstructor, parsePositiveInt, qualifiedBuild, COMPILER_SETTINGS, FQNS, LIBRARIES, stableObject, verifyWithRetry, main };
+module.exports = { loadDeployConfig, resolveConstructor, resolveFinalOwner, resolveReviewedProfile, parsePositiveInt, qualifiedBuild, COMPILER_SETTINGS, FQNS, LIBRARIES, stableObject, verifyWithRetry, main };
