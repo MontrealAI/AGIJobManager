@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "assumptionSource": "Hypothetical lifecycle example. Replace all weights, costs, values and limits with qualified evidence.",
+  "horizonDays": 180,
+  "terms": {
+    "jobCostUSDC": "1000",
+    "agentBondUSDC": "50",
+    "reviewerBondUSDC": "150",
+    "rewardPercentage": 8,
+    "slashBps": 8000
+  },
+  "participants": [
+    {
+      "id": "employer",
+      "role": "employer",
+      "minimumExpectedNetUSDC": "100",
+      "maximumScenarioLossUSDC": "1100"
+    },
+    {
+      "id": "agent",
+      "role": "agent",
+      "minimumExpectedNetUSDC": "100",
+      "maximumScenarioLossUSDC": "100"
+    },
+    {
+      "id": "reviewer1",
+      "role": "reviewer",
+      "minimumExpectedNetUSDC": "10",
+      "maximumScenarioLossUSDC": "160"
+    },
+    {
+      "id": "reviewer2",
+      "role": "reviewer",
+      "minimumExpectedNetUSDC": "10",
+      "maximumScenarioLossUSDC": "160"
+    },
+    {
+      "id": "reviewer3",
+      "role": "reviewer",
+      "minimumExpectedNetUSDC": "10",
+      "maximumScenarioLossUSDC": "160"
+    }
+  ],
+  "cases": [
+    {
+      "id": "success",
+      "outcome": "agentWin",
+      "weightPpm": 940000,
+      "rationale": "Hypothetical teaching scenario; not a measured probability.",
+      "ballots": {
+        "reviewer1": "approve",
+        "reviewer2": "approve",
+        "reviewer3": "approve"
+      },
+      "otherApprovals": 0,
+      "otherRejections": 0,
+      "disputeInitiator": "none",
+      "disputeBondUSDC": "0",
+      "employerValueUSDC": "2000",
+      "costsUSDC": {
+        "employer": "10",
+        "agent": "20",
+        "reviewer1": "4",
+        "reviewer2": "4",
+        "reviewer3": "4"
+      }
+    },
+    {
+      "id": "buyer-win",
+      "outcome": "buyerWin",
+      "weightPpm": 20000,
+      "rationale": "Hypothetical teaching scenario; not a measured probability.",
+      "ballots": {
+        "reviewer1": "approve",
+        "reviewer2": "approve",
+        "reviewer3": "approve"
+      },
+      "otherApprovals": 0,
+      "otherRejections": 0,
+      "disputeInitiator": "none",
+      "disputeBondUSDC": "0",
+      "employerValueUSDC": "0",
+      "costsUSDC": {
+        "employer": "10",
+        "agent": "20",
+        "reviewer1": "4",
+        "reviewer2": "4",
+        "reviewer3": "4"
+      }
+    },
+    {
+      "id": "acceptance",
+      "outcome": "buyerAcceptance",
+      "weightPpm": 0,
+      "rationale": "Hypothetical teaching scenario; not a measured probability.",
+      "ballots": {
+        "reviewer1": "approve",
+        "reviewer2": "approve",
+        "reviewer3": "approve"
+      },
+      "otherApprovals": 0,
+      "otherRejections": 0,
+      "disputeInitiator": "none",
+      "disputeBondUSDC": "0",
+      "employerValueUSDC": "2000",
+      "costsUSDC": {
+        "employer": "10",
+        "agent": "20",
+        "reviewer1": "4",
+        "reviewer2": "4",
+        "reviewer3": "4"
+      }
+    },
+    {
+      "id": "neutral",
+      "outcome": "neutralTimeout",
+      "weightPpm": 10000,
+      "rationale": "Hypothetical teaching scenario; not a measured probability.",
+      "ballots": {
+        "reviewer1": "approve",
+        "reviewer2": "approve",
+        "reviewer3": "approve"
+      },
+      "otherApprovals": 0,
+      "otherRejections": 0,
+      "disputeInitiator": "none",
+      "disputeBondUSDC": "0",
+      "employerValueUSDC": "0",
+      "costsUSDC": {
+        "employer": "10",
+        "agent": "20",
+        "reviewer1": "4",
+        "reviewer2": "4",
+        "reviewer3": "4"
+      }
+    },
+    {
+      "id": "no-delivery",
+      "outcome": "noSubmission",
+      "weightPpm": 10000,
+      "rationale": "Hypothetical teaching scenario; not a measured probability.",
+      "ballots": {
+        "reviewer1": "absent",
+        "reviewer2": "absent",
+        "reviewer3": "absent"
+      },
+      "otherApprovals": 0,
+      "otherRejections": 0,
+      "disputeInitiator": "none",
+      "disputeBondUSDC": "0",
+      "employerValueUSDC": "0",
+      "costsUSDC": {
+        "employer": "10",
+        "agent": "20",
+        "reviewer1": "4",
+        "reviewer2": "4",
+        "reviewer3": "4"
+      }
+    },
+    {
+      "id": "cancel",
+      "outcome": "cancelled",
+      "weightPpm": 10000,
+      "rationale": "Hypothetical teaching scenario; not a measured probability.",
+      "ballots": {
+        "reviewer1": "absent",
+        "reviewer2": "absent",
+        "reviewer3": "absent"
+      },
+      "otherApprovals": 0,
+      "otherRejections": 0,
+      "disputeInitiator": "none",
+      "disputeBondUSDC": "0",
+      "employerValueUSDC": "0",
+      "costsUSDC": {
+        "employer": "10",
+        "agent": "20",
+        "reviewer1": "4",
+        "reviewer2": "4",
+        "reviewer3": "4"
+      }
+    },
+    {
+      "id": "unpaid",
+      "outcome": "paymentUnavailable",
+      "weightPpm": 10000,
+      "rationale": "Hypothetical teaching scenario; not a measured probability.",
+      "ballots": {
+        "reviewer1": "approve",
+        "reviewer2": "approve",
+        "reviewer3": "approve"
+      },
+      "otherApprovals": 0,
+      "otherRejections": 0,
+      "disputeInitiator": "none",
+      "disputeBondUSDC": "0",
+      "employerValueUSDC": "0",
+      "costsUSDC": {
+        "employer": "10",
+        "agent": "20",
+        "reviewer1": "4",
+        "reviewer2": "4",
+        "reviewer3": "4"
+      }
+    },
+    {
+      "id": "dilution",
+      "outcome": "agentWin",
+      "weightPpm": 0,
+      "rationale": "Hypothetical teaching scenario; not a measured probability.",
+      "ballots": {
+        "reviewer1": "approve",
+        "reviewer2": "approve",
+        "reviewer3": "approve"
+      },
+      "otherApprovals": 47,
+      "otherRejections": 0,
+      "disputeInitiator": "none",
+      "disputeBondUSDC": "0",
+      "employerValueUSDC": "2000",
+      "costsUSDC": {
+        "employer": "10",
+        "agent": "20",
+        "reviewer1": "4",
+        "reviewer2": "4",
+        "reviewer3": "4"
+      }
+    },
+    {
+      "id": "no-review",
+      "outcome": "neutralTimeout",
+      "weightPpm": 0,
+      "rationale": "Hypothetical teaching scenario; not a measured probability.",
+      "ballots": {
+        "reviewer1": "absent",
+        "reviewer2": "absent",
+        "reviewer3": "absent"
+      },
+      "otherApprovals": 0,
+      "otherRejections": 0,
+      "disputeInitiator": "none",
+      "disputeBondUSDC": "0",
+      "employerValueUSDC": "0",
+      "costsUSDC": {
+        "employer": "10",
+        "agent": "20",
+        "reviewer1": "4",
+        "reviewer2": "4",
+        "reviewer3": "4"
+      }
+    }
+  ]
+}
