@@ -10,9 +10,11 @@ AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery. Th
 - Deployment, verification, initial-readiness and recovery tools; current operator and participant instructions; an offline economics assessment using explicit cost assumptions.
 - A frozen source tag, reproducible archive, content manifest, asset checksums and exact-source qualification evidence.
 
-The 1.1 label identifies this software edition. It does not certify a deployed business, supply reviewers or moderators, promise future editions, or prove that honest participation is always profitable.
+The 1.2 label identifies this software edition. It does not certify a deployed business, supply reviewers or moderators, promise future editions, or prove that honest participation is always profitable.
 
 ## Published download versus current source
+
+**New in v1.2.0:** a bounded, read-only [settlement-status tool and recovery guide](OPERATIONS/SETTLEMENT_RECOVERY.md) distinguish closed jobs from paid obligations, reconcile all five reserve categories, report pause-adjusted deadlines and compare optional independent RPC observations. Public contract regression tests cover these observations and failure handling. Contract sources, ABI, linked libraries, payout rules, legal notices and dependency resolutions are preserved. Private agent/node/fleet applications are not distributed.
 
 **New in v1.1.0:** manager and optional ENS helper scripts default to read-only when `DRY_RUN` is missing or empty. Broadcasts require an explicit false value (documented as `DRY_RUN=0`) plus the existing signer, verification and mainnet confirmation gates. The offline check reports the selected mode. Operator guides are corrected for the disabled NFT default, five initial reserve counters and deployment-specific ENS names. This release includes the deployment maintenance previously available on main. It preserves every Solidity source file, the v1.0.5 protocol/legal notices, ABI, creation/runtime bytecode, dependency resolutions and prior release assets. Use the v1.1.0 archive, guide and exact-source evidence together. Software publication performs no on-chain action.
 
@@ -20,6 +22,7 @@ The v1.0.5 edition strengthens privacy rules and user responsibilities, adds fre
 
 | Edition | Contents |
 | --- | --- |
+| [v1.2.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.2.0) | Read-only settlement visibility, recovery guidance and public regression coverage; contract behavior and privacy safeguards retained |
 | [v1.1.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.1.0) | Read-only manager/helper defaults, explicit broadcast mode, corrected operator guidance and regenerated versioned artifacts; v1.0.5 privacy safeguards and contract source retained |
 | [v1.0.5](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.5) | Public-content rules, lawful user responsibility, private incident handling, explicit draft storage and reviewed credential-safe uploads; contract bytecode unchanged |
 | [v1.0.4](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.4) | MIT-compatible publisher and independent-owner notices, deployment-specific terms template, legal/privacy guidance, synchronized source notices and fresh console acknowledgement |
@@ -32,10 +35,10 @@ Use the selected edition's assets and `SHA256SUMS.txt`. Its manifest identifies 
 
 ## Compatibility
 
-| Existing manager | Use of the 1.1 console |
+| Existing manager | Use of the 1.2 console |
 | --- | --- |
 | Verified v0.9.6 or v0.9.7 manager | Compatible ABI and deployed runtime; construction defaults differ. Keep original receipts, on-chain settings and existing job policies |
-| New manager deployed from 1.1 | Verify the manager and all eight fixed library links, accept ownership and complete the launch checks before intake |
+| New manager deployed from 1.2 | Verify the manager and all eight fixed library links, accept ownership and complete the launch checks before intake |
 | v0.9.5 or older manager | Keep its compatible interface for existing jobs; it lacks the exact-bond getter used by current voting |
 | Original-asset legacy manager | Preserve its original jobs, token, allowances and ENS namespace; the USDC release does not migrate them |
 
