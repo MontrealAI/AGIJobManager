@@ -1,0 +1,9 @@
+# v1.3.0 economic-screening qualification scope
+
+The public four-outcome settlement calculator already exposes exact transfers, bond losses and separate participant costs. It did not combine those outcomes or enforce per-participant expected-margin and modeled-loss comparisons. Version 1.3.0 adds an offline, conditional screen using that existing calculator and an explicitly hypothetical example.
+
+The focused regression suite checks hand-calculated weighted results, returned principal, one-party margin failure, zero-weight stress losses, sub-micro-USDC negative expectations, outcome-dependent costs, employer value, dissenting/absent reviewers, neutral refunds, party dispute collateral, strict input rejection, input preservation, large integer amounts and actual CLI exit/output behavior. The existing local-contract differential tests remain the evidence for the reused settlement arithmetic; new screening tests do not replace them.
+
+The calculation is deliberately scoped to submitted work with a fixed vote split. It does not estimate probabilities or enforce a complete lifecycle admission policy. In particular it cannot establish profitability, independence, provider entitlement, liquidity, live demand, measured labor savings or fleet production capacity. See the [operator guide](../OPERATIONS/ECONOMIC_SCREENING.md) for input meaning and limitations.
+
+All Solidity sources, payout rules, linked libraries, protocol/legal notices and prior releases are preserved. Package versions and current distribution pointers identify this edition; dependency resolutions remain unchanged. No private Agent, Node or fleet implementation, configuration or private validation artifact is part of this release. No deployment or public-chain transaction is performed. Final executed checks and exact-source CI are recorded in the release's `VALIDATION.md`.

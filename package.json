@@ -1,6 +1,6 @@
 {
   "name": "agijobmanager",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "private": true,
   "description": "USDC job escrow, bonded review and buyer recovery with fixed linked libraries",
   "scripts": {
@@ -33,7 +33,8 @@
     "economics:check": "node scripts/economics/assess.cjs",
     "simulate:genesis": "npm --prefix hardhat run compile && node scripts/simulate-genesis-job.mjs",
     "docs:terms": "node scripts/docs/sync-protocol-terms.mjs",
-    "settlement:status": "node scripts/ops/settlement-status.mjs"
+    "settlement:status": "node scripts/ops/settlement-status.mjs",
+    "economics:screen": "node scripts/economics/screen.cjs"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"

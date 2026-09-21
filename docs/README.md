@@ -1,9 +1,10 @@
 # AGIJobManager Documentation Hub
 
-> **v1.2.1: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
+> **v1.3.0: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
-Guides for buyers, agents, reviewers, operators and developers. **Use the docs matching your release:** [v1.2.1 scope and earlier editions](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+Guides for buyers, agents, reviewers, operators and developers. **Use the docs matching your release:** [v1.3.0 scope and earlier editions](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
 
+- **Check participant economics:** [conditional margin and loss screening](OPERATIONS/ECONOMIC_SCREENING.md).
 - **Become an agent:** [free identity, eligibility, work and payment](roles/AGENT.md).
 - **Enable free agent identities:** [owner configuration walkthrough](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route).
 - **Understand missing or poor work:** [buyer protection](BUYER_PROTECTION.md) and [job specification template](BUYER_JOB_TEMPLATE.md).
@@ -43,7 +44,7 @@ If you only read one thing right now:
 
 ## Legal notices and independent operators
 
-Use the [legal and operator protection center](LEGAL/README.md) for publisher protections, MIT licensing, source/console notices, privacy, jurisdiction scoping and a deployment-specific owner template. Technical readiness does not establish legal clearance. Existing guides describing v1.0.3 behavior remain applicable to v1.2.1 unless identified as historical.
+Use the [legal and operator protection center](LEGAL/README.md) for publisher protections, MIT licensing, source/console notices, privacy, jurisdiction scoping and a deployment-specific owner template. Technical readiness does not establish legal clearance. Existing guides describing v1.0.3 behavior remain applicable to v1.3.0 unless identified as historical.
 
 ## Standalone HTML UI safety routing
 

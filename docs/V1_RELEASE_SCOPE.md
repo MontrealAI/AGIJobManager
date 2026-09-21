@@ -1,8 +1,8 @@
-# AGIJobManager 1.1 — release scope
+# AGIJobManager 1.3 — release scope
 
 AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery. The console helps participants understand and submit contract actions. Agents perform work outside the contract; reviewers and moderators assess the evidence.
 
-## Included in 1.1
+## Included in 1.3
 
 - A versioned, single-file console with separate buyer, agent and reviewer guidance. Buying work does not require an agent credential. Wallet connection, terms acceptance and manager verification remain separate checks.
 - USDC escrow, recorded collateral, the established successful-job split, full buyer escrow refunds on buyer wins, no-vote dispute escalation, explicit buyer acceptance, pause-aware deadlines and reserved failed payments.
@@ -10,9 +10,11 @@ AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery. Th
 - Deployment, verification, initial-readiness and recovery tools; current operator and participant instructions; an offline economics assessment using explicit cost assumptions.
 - A frozen source tag, reproducible archive, content manifest, asset checksums and exact-source qualification evidence.
 
-The 1.2 label identifies this software edition. It does not certify a deployed business, supply reviewers or moderators, promise future editions, or prove that honest participation is always profitable.
+The 1.3 label identifies this software edition. It does not certify a deployed business, supply reviewers or moderators, promise future editions, or prove that honest participation is always profitable.
 
 ## Published download versus current source
+
+**New in v1.3.0:** [offline economic screening](OPERATIONS/ECONOMIC_SCREENING.md) adds exact weighted participant margins, outcome-specific costs/value and modeled loss limits. This conditional calculation is not a complete admission system, profitability guarantee or private application update. [Qualification scope](qualification/V130_ECONOMIC_SCREENING.md).
 
 **New in v1.2.1:** the read-only status tool binds all state reads to one canonical block hash, verifies the expected token address and rejects stale or implausibly future RPC heads by default. Ethereum chain 1 requires native Circle USDC; other chains require an explicit expected token. See [review evidence](qualification/V121_REVIEW.md) and the [updated command guide](OPERATIONS/SETTLEMENT_RECOVERY.md). Contract and payment behavior are unchanged.
 
@@ -24,6 +26,7 @@ The v1.0.5 edition strengthens privacy rules and user responsibilities, adds fre
 
 | Edition | Contents |
 | --- | --- |
+| [v1.3.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.3.0) | Conditional economic screening with exact weighted margins and modeled loss limits; previous settlement, contract and privacy safeguards retained |
 | [v1.2.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.2.1) | Canonical block-hash snapshots, expected-token checks, RPC freshness limits and adversarial transport coverage |
 | [v1.2.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.2.0) | Read-only settlement visibility, recovery guidance and public regression coverage; contract behavior and privacy safeguards retained |
 | [v1.1.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.1.0) | Read-only manager/helper defaults, explicit broadcast mode, corrected operator guidance and regenerated versioned artifacts; v1.0.5 privacy safeguards and contract source retained |

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "scope": "submitted-work-fixed-votes",
+  "assumptionSource": "Hypothetical teaching example only. Amounts, weights and risk limits are invented, not live quotes or measured reliability. Bond amounts are explicit inputs, not automatic quotes.",
+  "terms": {
+    "jobCostUSDC": "1000",
+    "agentBondUSDC": "50",
+    "reviewerBondUSDC": "150",
+    "disputeBondUSDC": "0",
+    "disputeInitiator": "none",
+    "rewardPercentage": 8,
+    "slashBps": 8000,
+    "approvals": 3,
+    "rejections": 0
+  },
+  "policy": {
+    "employer": {
+      "minimumExpectedNetUSDC": "100",
+      "maximumScenarioLossUSDC": "1100"
+    },
+    "agent": {
+      "minimumExpectedNetUSDC": "100",
+      "maximumScenarioLossUSDC": "100"
+    },
+    "eachApprovingReviewer": {
+      "minimumExpectedNetUSDC": "10",
+      "maximumScenarioLossUSDC": "130"
+    },
+    "eachRejectingReviewer": {
+      "minimumExpectedNetUSDC": "10",
+      "maximumScenarioLossUSDC": "130"
+    }
+  },
+  "outcomes": {
+    "agentWin": {
+      "weightPpm": 970000,
+      "rationale": "Invented 97 percent conditional outcome weight, not observed success.",
+      "employerValueUSDC": "2000",
+      "employerCostUSDC": "10",
+      "agentCostUSDC": "20",
+      "eachReviewerCostUSDC": "4"
+    },
+    "buyerWin": {
+      "weightPpm": 20000,
+      "rationale": "Invented 2 percent failure weight; artifact assumed unusable.",
+      "employerValueUSDC": "0",
+      "employerCostUSDC": "10",
+      "agentCostUSDC": "20",
+      "eachReviewerCostUSDC": "4"
+    },
+    "buyerAcceptance": {
+      "weightPpm": 0,
+      "rationale": "Zero weight in this illustration; still included in loss stress checks.",
+      "employerValueUSDC": "2000",
+      "employerCostUSDC": "10",
+      "agentCostUSDC": "20",
+      "eachReviewerCostUSDC": "4"
+    },
+    "neutralTimeout": {
+      "weightPpm": 10000,
+      "rationale": "Invented 1 percent neutral-refund weight; own work remains uncompensated.",
+      "employerValueUSDC": "0",
+      "employerCostUSDC": "10",
+      "agentCostUSDC": "20",
+      "eachReviewerCostUSDC": "4"
+    }
+  }
+}
