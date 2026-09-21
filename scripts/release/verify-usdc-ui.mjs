@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 
-// Verify the frozen v1.2.1 console without wallet access or transactions.
+// Verify the frozen v1.3.0 console without wallet access or transactions.
 const root = path.resolve(process.argv[2] || '.');
 const filename = 'ui/agijobmanager-usdc.html';
 const html = fs.readFileSync(path.join(root, filename), 'utf8');
