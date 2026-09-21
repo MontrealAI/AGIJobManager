@@ -1,0 +1,85 @@
+'use strict';
+// Signature-verified input qualification. Transaction runners must supply verified
+// observations and an atomic, durable portfolio reservation at their own boundary.
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const { lifecycle, shape, text, uint, money, requireThat: ok } = require('./lifecycle.cjs');
+const { formatUSDC } = require('../lib/usdc.js');
+function canonical(x) {
+  if (x === null || typeof x !== 'object') return JSON.stringify(x);
+  if (Array.isArray(x)) return '[' + x.map(canonical).join(',') + ']';
+  return '{' + Object.keys(x).sort().map(k => JSON.stringify(k) + ':' + canonical(x[k])).join(',') + '}';
+}
+const digest = x => crypto.createHash('sha256').update(canonical(x)).digest('hex');
+const address = x => typeof x === 'string' && /^0x[0-9a-f]{40}$/.test(x) && !/^0x0{40}$/.test(x);
+const hash = x => typeof x === 'string' && /^[0-9a-f]{64}$/.test(x);
+const amount = (x, name) => { ok(typeof x === 'string' && /^(0|[1-9][0-9]{0,77})$/.test(x), name); return BigInt(x); };
+function validatePolicy(p) {
+  shape(p, ['schemaVersion','epoch','chainId','manager','wallet','role','trustedKeys','classes','maxPacketAgeSeconds','maxEvidenceAgeSeconds','minimumSamples','minimumHorizonDays','limits','maxOpenExposureUSDC','maxEpochCostUSDC','maxOpenJobs','maxGasWeiPerJob'], 'policy');
+  ok(p.schemaVersion === 1, 'POLICY_VERSION'); text(p.epoch, 'epoch');
+  uint(p.chainId, 1, Number.MAX_SAFE_INTEGER, 'chainId'); ok(address(p.manager) && address(p.wallet), 'POLICY_ADDRESS');
+  ok(['agent','reviewer'].includes(p.role), 'POLICY_ROLE');
+  ok(p.trustedKeys && !Array.isArray(p.trustedKeys) && Object.keys(p.trustedKeys).length > 0 && Object.keys(p.trustedKeys).length <= 8, 'POLICY_KEYS');
+  for (const [id, pem] of Object.entries(p.trustedKeys)) { text(id, 'key ID'); ok(typeof pem === 'string' && pem.length < 4096 && crypto.createPublicKey(pem).asymmetricKeyType === 'ed25519', 'ED25519_REQUIRED'); }
+  ok(Array.isArray(p.classes) && p.classes.length > 0 && p.classes.length <= 100, 'POLICY_CLASSES'); p.classes.forEach(x => text(x, 'class'));
+  uint(p.maxPacketAgeSeconds, 1, 3600, 'packet age'); uint(p.maxEvidenceAgeSeconds, 1, 2592000, 'evidence age'); uint(p.minimumSamples, 1, 1000000000, 'samples'); uint(p.minimumHorizonDays, 1, 3650, 'horizon');
+  shape(p.limits, ['employer','agent','reviewer'], 'limits');
+  for (const l of Object.values(p.limits)) { shape(l, ['minimumExpectedNetUSDC','maximumScenarioLossUSDC'], 'limit'); money(l.minimumExpectedNetUSDC, 'minimum'); money(l.maximumScenarioLossUSDC, 'loss'); }
+  money(p.maxOpenExposureUSDC, 'exposure'); money(p.maxEpochCostUSDC, 'cost'); uint(p.maxOpenJobs, 1, 100, 'open jobs'); ok(amount(p.maxGasWeiPerJob, 'gas') > 0n, 'POSITIVE_GAS_BUDGET_REQUIRED');
+  return p;
+}
+function checkAdmission({ policy, envelope, observed, portfolio, now = Math.floor(Date.now()/1000) }) {
+  validatePolicy(policy); uint(now, 1, Number.MAX_SAFE_INTEGER, 'clock');
+  shape(envelope, ['keyId','payload','signature'], 'envelope');
+  ok(Object.hasOwn(policy.trustedKeys, envelope.keyId), 'UNTRUSTED_ISSUER');
+  ok(typeof envelope.signature === 'string' && /^[A-Za-z0-9+/]{86}==$/.test(envelope.signature), 'INVALID_SIGNATURE_ENCODING');
+  const key = crypto.createPublicKey(policy.trustedKeys[envelope.keyId]);
+  ok(crypto.verify(null, Buffer.from(canonical(envelope.payload)), key, Buffer.from(envelope.signature,'base64')), 'INVALID_SIGNATURE');
+  const p = envelope.payload;
+  shape(p, ['schemaVersion','policyDigest','jobId','participantId','jobClass','issuedAt','expiresAt','specURI','specSha256','evidence','identities','lifecycle','gasBudgetWei','ethPriceCeilingUSDC'], 'payload');
+  ok(p.schemaVersion === 1 && p.policyDigest === digest(policy), 'POLICY_BINDING');
+  ok(typeof p.jobId === 'string' && /^[1-9][0-9]{0,77}$/.test(p.jobId), 'JOB_ID'); text(p.participantId, 'participant');
+  ok(policy.classes.includes(p.jobClass), 'UNQUALIFIED_CLASS'); text(p.specURI, 'spec URI'); ok(hash(p.specSha256), 'SPEC_HASH');
+  uint(p.issuedAt, 1, now, 'issuedAt'); uint(p.expiresAt, now + 1, Number.MAX_SAFE_INTEGER, 'expiresAt');
+  ok(now - p.issuedAt <= policy.maxPacketAgeSeconds && p.expiresAt - p.issuedAt <= policy.maxPacketAgeSeconds, 'STALE_PACKET');
+  shape(p.evidence, ['reportSha256','measuredAt','sampleCount','qualification','costsIncludeFailuresAndOverhead'], 'evidence');
+  ok(hash(p.evidence.reportSha256) && p.evidence.qualification === 'qualified' && p.evidence.costsIncludeFailuresAndOverhead === true, 'EVIDENCE_ATTESTATION_REQUIRED');
+  uint(p.evidence.measuredAt, 1, now, 'measurement time'); uint(p.evidence.sampleCount, policy.minimumSamples, 1000000000, 'sample count');
+  ok(now - p.evidence.measuredAt <= policy.maxEvidenceAgeSeconds, 'STALE_EVIDENCE');
+  shape(observed, ['chainId','manager','wallet','jobId','specURI','specSha256','terms','observedAt'], 'observed');
+  ok(observed.chainId === policy.chainId && observed.manager === policy.manager && observed.wallet === policy.wallet && observed.jobId === p.jobId && observed.specURI === p.specURI && observed.specSha256 === p.specSha256, 'OBSERVATION_BINDING');
+  uint(observed.observedAt, now - 120, now, 'observation time');
+  ok(canonical(observed.terms) === canonical(p.lifecycle.terms), 'ECONOMIC_TERMS_CHANGED');
+  const input = JSON.parse(JSON.stringify(p.lifecycle));
+  ok(input.horizonDays >= policy.minimumHorizonDays, 'HORIZON_TOO_SHORT');
+  ok(Array.isArray(input.participants), 'PARTICIPANTS_REQUIRED');
+  shape(p.identities, input.participants.map(x=>x.id), 'identities');
+  const wallets = new Set(), controllers = new Set();
+  for (const actor of input.participants) {
+    const identity = p.identities[actor.id]; shape(identity, ['wallet','controllerId'], 'identity');
+    ok(address(identity.wallet) && !wallets.has(identity.wallet) && hash(identity.controllerId) && !controllers.has(identity.controllerId), 'INDEPENDENT_PARTICIPANTS_REQUIRED');
+    wallets.add(identity.wallet); controllers.add(identity.controllerId);
+    ok(Object.hasOwn(policy.limits, actor.role), 'INVALID_ROLE');
+    Object.assign(actor, policy.limits[actor.role]);
+  }
+  const me = input.participants.find(x=>x.id === p.participantId);
+  ok(me && me.role === policy.role && p.identities[me.id].wallet === policy.wallet, 'PARTICIPANT_SCOPE');
+  const result = lifecycle(input); ok(result.decision === 'WITHIN_SUPPLIED_LIMITS', 'ECONOMIC_LIMITS: ' + result.failures.join(' '));
+  const self = result.participants[me.id], exposure = money(self.conservativeExposureUSDC, 'exposure'), cost = money(self.maximumCostUSDC, 'cost');
+  const gas = amount(p.gasBudgetWei, 'gas budget'); ok(gas > 0n && gas <= amount(policy.maxGasWeiPerJob, 'policy gas budget'), 'GAS_BUDGET_LIMIT');
+  const ethPrice = money(p.ethPriceCeilingUSDC, 'ETH price ceiling'); ok(ethPrice > 0n, 'ETH_PRICE_CEILING_REQUIRED');
+  const gasUSDC = (gas * ethPrice + 10n**18n - 1n)/(10n**18n);
+  ok(input.cases.every(x=>money(x.costsUSDC[me.id], 'case cost') >= gasUSDC), 'GAS_NOT_INCLUDED_IN_COSTS');
+  shape(portfolio, ['openExposureUSDC','epochCostUSDC','openJobs'], 'portfolio');
+  uint(portfolio.openJobs, 0, 100, 'open jobs');
+  ok(portfolio.openJobs + 1 <= policy.maxOpenJobs, 'OPEN_JOB_LIMIT');
+  ok(money(portfolio.openExposureUSDC, 'open exposure') + exposure <= money(policy.maxOpenExposureUSDC,'exposure cap'), 'AGGREGATE_EXPOSURE_LIMIT');
+  ok(money(portfolio.epochCostUSDC,'epoch cost') + cost <= money(policy.maxEpochCostUSDC,'cost cap'), 'EPOCH_COST_LIMIT');
+  return { schemaVersion:1, decision:'QUALIFIED_UNDER_ATTESTED_INPUTS', packetDigest:digest(envelope), policyDigest:digest(policy), jobId:p.jobId, participantId:p.participantId, reserveExposureUSDC:formatUSDC(exposure), reserveCostUSDC:formatUSDC(cost), gasBudgetWei:gas.toString(), expiresAt:p.expiresAt, economics:result, authorization:'NONE — a runner must independently verify observations, reserve atomically and enforce signing limits.' };
+}
+if (require.main === module) {
+  try { const args=process.argv.slice(2); if(args.length===1 && args[0]==='--help') { console.log('Usage: economics:admission -- input.json\nInput: {policy,envelope,observed,portfolio}. Offline verification; no signer or reservation.'); }
+    else { ok(args.length===1,'Use --help or one input JSON file.'); const s=fs.statSync(args[0]);ok(s.isFile()&&s.size<=1048576,'Input must be a regular JSON file <=1 MiB.');const x=JSON.parse(fs.readFileSync(args[0],'utf8'));shape(x,['policy','envelope','observed','portfolio'],'input');console.log(JSON.stringify(checkAdmission(x),null,2)); }
+  } catch(e) { console.error(String(e.message).replace(/[\u0000-\u001f\u007f-\u009f]/gu,' '));process.exitCode=1; }
+}
+module.exports={canonical,digest,validatePolicy,checkAdmission};
