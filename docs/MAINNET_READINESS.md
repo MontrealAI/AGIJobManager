@@ -1,8 +1,8 @@
-# v1.9.1 mainnet qualification
+# v1.10.0 mainnet qualification
 
 Current automated work uses [operator-budget admission without retainers](OPERATIONS/NO_RETAINERS.md), with schema 6 participant and schema 7 employer policies. Existing credits, refunds and journals remain recoverable. See [general computer work and actual adapter coverage](OPERATIONS/GENERAL_COMPUTER_WORK.md).
 
-v1.9.1 is a software release for verified v0.9.6-compatible managers and new Ethereum deployments. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
+v1.10.0 is a software release for verified v0.9.6-compatible managers and new Ethereum deployments. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 
 The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction first included in v0.9.2 and retained in v1.1.0, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.
 
