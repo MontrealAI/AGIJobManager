@@ -1,0 +1,9 @@
+{
+  "release": "1.10.0",
+  "alignmentScannedGuides": 198,
+  "currentGuides": 182,
+  "checkedDeploymentCommands": 18,
+  "passed": true,
+  "sourceWorkflow": 35763269188,
+  "scope": "Generated README, companion versions, release scope, current npm commands, executable commands, local files and heading links, UI metadata, native workforce qualification and V3 confidential/project guides."
+}

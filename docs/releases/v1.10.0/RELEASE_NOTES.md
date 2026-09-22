@@ -1,0 +1,16 @@
+# AGIJobManager v1.10.0 — Native workforce and confidential projects
+
+AGI Jobs covers lawful work a person or team can perform with a keyboard, mouse and screen. This release adds contracts and private runtime components for dedicated Mac work and independently reviewed projects.
+
+- **Dedicated Mac execution.** Private Agent and Node use authenticated OpenClaw native computer transport, exact model/provider/build/application pins, fresh screen observations and fail-closed input handling. Wallet and operator signing secrets remain in a separate account.
+- **Confidential work.** `computer-work/v3` defines public/confidential/restricted data, opaque staged inputs, recipient policy, authority and long-running bounds. Private packets, outputs and checkpoints are encrypted; signed receipts and hash-only commitments bind results to their grants and runtime. Public publication rejects scoped private bytes.
+- **Durable execution.** Checkpoints, bounded leases, heartbeats and capped resumption retain original cost, calls, actions and deadlines. Uncertain input is never blindly replayed. Operator-signed monotonic revocation is checked throughout execution.
+- **Project coordination.** A durable DAG admits dependencies within a parent budget, passes verified output bytes to integration stages, verifies independent Node receipts and assembles the reviewed result. It supports one configured Agent/Node pair and produces repair work orders for rejected stages.
+- **Operational qualification.** Production admission requires independently signed exact-source/runtime, commissioning, held-out validation, actual costs/settlements, supervision and security-review evidence. Missing evidence fails closed. The private package includes evidence collection, bounded pilot workflows and a broad, explicitly unexecuted commissioning matrix.
+- **Current instructions and no retainers.** The main README, generated guides, command inventories and offline private entry pages are aligned. New work retains operator-budget economics; legacy claims and recovery are preserved.
+
+Private downloads: Fleet 1.8.0, Agent 1.14.0 and Node 2.15.0, including Employer, Moderator, Evidence and Recovery services. Private source and operator records are not published in this public repository.
+
+Validation: 722 public contract/tool cases; all five exact-source workflows; 113 deployment preflight cases; 34 historical USDC/ENS fork cases; UI, security and documentation checks. Private suites passed 555 unit tests and local-chain integrations, plus 111 offline guide pages and 473 local links. New native/project tests use mock gateway, desktop and model fixtures. See `VALIDATION.md`.
+
+All Solidity, payout rules and dependency resolutions are unchanged. Actual M1/M2 commissioning, live models, signed-in customer work, measured useful settlements and independent security review were not performed. Native input authority covers the dedicated OS account: fine-grained credential brokering and local-only model execution remain unsupported and are rejected. Remote file transport and operator-owned authority publication require setup. Automatic new-authority repair/reassignment and private public-chain posting/completion/voting are not implemented. This release does not establish universal capability, production profitability or full autonomous-workforce completion.

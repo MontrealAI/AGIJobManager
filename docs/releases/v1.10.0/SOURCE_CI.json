@@ -1,0 +1,132 @@
+{
+  "sourceCommit": "faf7ef50a8ffcb7891b7078ea511504eeea5b3a1",
+  "sourceTree": "ef1e1c53854a2d67fef27dbdc5bbd6bc5e946d09",
+  "checkoutCommit": "faf7ef50a8ffcb7891b7078ea511504eeea5b3a1",
+  "policy": "All five required workflows and eight source jobs succeeded. Actual checkout markers were checked for every job; publication repeats these checks.",
+  "runs": [
+    {
+      "id": 35763269188,
+      "workflow": "docs.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35763269188"
+    },
+    {
+      "id": 35763269209,
+      "workflow": "mainnet-fork.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35763269209"
+    },
+    {
+      "id": 35763269341,
+      "workflow": "security-verification.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35763269341"
+    },
+    {
+      "id": 35763269308,
+      "workflow": "ci.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35763269308"
+    },
+    {
+      "id": 35763269130,
+      "workflow": "ui.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35763269130"
+    }
+  ],
+  "verifiedJobs": [
+    {
+      "job": "docs",
+      "id": 106866350390,
+      "run": 35763269188,
+      "checkout": "faf7ef50a8ffcb7891b7078ea511504eeea5b3a1",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T17:51:15.1069876Z Release alignment passed: v1.10.0, 198 active guides, 18 deployment commands.",
+        "2026-09-22T17:51:15.1864605Z Current guide audit passed: 182 guides; release labels, policy instructions and npm commands.",
+        "2026-09-22T17:51:15.2338061Z Local file and heading links passed for 182 current guides."
+      ]
+    },
+    {
+      "job": "mainnet-usdc",
+      "id": 106866350361,
+      "run": 35763269209,
+      "checkout": "faf7ef50a8ffcb7891b7078ea511504eeea5b3a1",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T17:52:12.2390113Z   11 passing (3s)",
+        "2026-09-22T17:52:12.2403511Z 11 passing (11 mocha)",
+        "2026-09-22T17:52:27.8976643Z   23 passing (14s)",
+        "2026-09-22T17:52:27.8987598Z 23 passing (23 mocha)"
+      ]
+    },
+    {
+      "job": "security-verification",
+      "id": 106866351121,
+      "run": 35763269341,
+      "checkout": "faf7ef50a8ffcb7891b7078ea511504eeea5b3a1",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T17:51:12.7629774Z # pass 8",
+        "2026-09-22T17:51:47.0322539Z # pass 113",
+        "2026-09-22T17:51:48.8935676Z   11 passing (911ms)",
+        "2026-09-22T17:51:48.8942762Z 11 passing (11 mocha)",
+        "2026-09-22T17:52:14.1915641Z Ran 5 test suites in 651.08ms (1.51s CPU time): 32 tests passed, 0 failed, 0 skipped (32 total tests)",
+        "2026-09-22T17:52:17.4699361Z Ran 2 test suites in 3.17s (3.87s CPU time): 5 tests passed, 0 failed, 0 skipped (5 total tests)",
+        "2026-09-22T17:52:24.9482802Z Ran 11 tests in 0.022s"
+      ]
+    },
+    {
+      "job": "build (2)",
+      "id": 106866350786,
+      "run": 35763269308,
+      "checkout": "faf7ef50a8ffcb7891b7078ea511504eeea5b3a1",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T17:52:26.8169833Z   184 passing (7s)"
+      ]
+    },
+    {
+      "job": "build (3)",
+      "id": 106866350997,
+      "run": 35763269308,
+      "checkout": "faf7ef50a8ffcb7891b7078ea511504eeea5b3a1",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T17:52:30.4868953Z   158 passing (9s)"
+      ]
+    },
+    {
+      "job": "build (0)",
+      "id": 106866351042,
+      "run": 35763269308,
+      "checkout": "faf7ef50a8ffcb7891b7078ea511504eeea5b3a1",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T17:53:49.1132009Z   227 passing (4s)",
+        "2026-09-22T17:53:54.7908243Z # pass 2"
+      ]
+    },
+    {
+      "job": "build (1)",
+      "id": 106866351067,
+      "run": 35763269308,
+      "checkout": "faf7ef50a8ffcb7891b7078ea511504eeea5b3a1",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T17:52:20.6172312Z   153 passing (4s)"
+      ]
+    },
+    {
+      "job": "ui",
+      "id": 106866351429,
+      "run": 35763269130,
+      "checkout": "faf7ef50a8ffcb7891b7078ea511504eeea5b3a1",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T17:54:08.0879890Z   9 passed (5.4s)",
+        "2026-09-22T17:54:43.6928958Z   4 passed (6.6s)",
+        "2026-09-22T17:55:13.6898131Z   2 passed (1.7s)",
+        "2026-09-22T17:56:22.0919488Z Runtime bundle markers verified (bytes=208178, embeddedSources=56).",
+        "2026-09-22T17:56:23.2289661Z Runtime bundle markers verified (bytes=208178, embeddedSources=56)."
+      ]
+    }
+  ]
+}
+
