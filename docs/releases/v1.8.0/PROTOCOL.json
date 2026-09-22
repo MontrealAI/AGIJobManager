@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "uniqueOffers": 10000,
+  "offersPerCohort": 5000,
+  "seed": 18020260922,
+  "horizonDaysPerCohort": 180,
+  "selection": "Without replacement, stratified by the six frozen price levels; original input flags, attempt counts, cost/value profile and admission eligibility retained. Original actor IDs are mapped into one 2560-actor logical pool per cohort. Arrivals spread over 76 days. This changes load/identity geography versus the million-offer study; comparisons are within this experiment only.",
+  "domain": "General computer-mediated work. No profession eligibility list. Illustrative labels are not measured task execution.",
+  "baseline": "matched_unprotected",
+  "candidates": [
+    "matched_protected",
+    "headroom_unprotected"
+  ],
+  "selectionRule": "On calibration only, maximize useful settlements among policies with at least baseline useful settlements, no higher peak combined liabilities and no higher total participant losses across all engagements. Otherwise retain baseline. Evaluate only the selected policy and baseline on disjoint evaluation offers.",
+  "productionPromotion": "NONE; simulated policy evidence cannot grant runtime, wallet, or production authority.",
+  "modelCapabilities": "Frozen synthetic quality, costs and durations; no invented GPT-6 or M1 performance uplift.",
+  "cohortHashes": {
+    "calibration": "da8a5f6bf71dcd7b244f85393605272f9cd2016ea4f91d3754a768b2cfb85358",
+    "evaluation": "68fa2f04d12ab3cddc154622430c1528a65052b96813cc365a6f2ac5eac15ae3"
+  }
+}

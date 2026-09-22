@@ -1,0 +1,4 @@
+{
+  "kind": "additional diagnostic",
+  "detail": "The evaluation command also executed the unselected issuer-headroom policy. This was outside the frozen evaluation plan. It is retained and reported as an unplanned diagnostic, excluded from selection and improvement claims. Selection remained baseline; evaluation results were not used to retune it."
+}

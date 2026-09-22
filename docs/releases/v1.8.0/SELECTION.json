@@ -1,0 +1,41 @@
+{
+  "protocolSHA256": "f644e3803eccb233a4357c00502af35dc3973b5f001e06246601691bb9e30d74",
+  "selected": "matched_unprotected",
+  "baseline": "matched_unprotected",
+  "checks": {
+    "matched_unprotected": {
+      "useful": true,
+      "capital": true,
+      "lossUSDC": true
+    },
+    "matched_protected": {
+      "useful": false,
+      "capital": false,
+      "lossUSDC": false
+    },
+    "headroom_unprotected": {
+      "useful": true,
+      "capital": false,
+      "lossUSDC": true
+    }
+  },
+  "tieBreak": "Fewer total loss USDC, then lower peak combined liabilities, then lexical ID. No evaluation outcomes accessed.",
+  "calibration": {
+    "matched_unprotected": {
+      "useful": 1728,
+      "totalRoleLossesUSDC": 23736.637519,
+      "peakCombinedLiabilitiesUSDC": 1213005.209336
+    },
+    "matched_protected": {
+      "useful": 1372,
+      "totalRoleLossesUSDC": 60861.59409,
+      "peakCombinedLiabilitiesUSDC": 1433684.596003
+    },
+    "headroom_unprotected": {
+      "useful": 1728,
+      "totalRoleLossesUSDC": 23722.179315,
+      "peakCombinedLiabilitiesUSDC": 1241829.833336
+    }
+  },
+  "productionPromotion": "NONE"
+}

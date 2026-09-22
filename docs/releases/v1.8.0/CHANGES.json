@@ -1,0 +1,222 @@
+{
+  "sourceCommit": "295f2267b17092fa6924ebc1a91d8ffd0e0ab032",
+  "previousTag": "v1.7.0",
+  "changes": [
+    {
+      "status": "M",
+      "path": ".github/workflows/current-state-release.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/ui.yml"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "config/usdc-deployment.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_READINESS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/NFT_POLICY.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/OPERATIONS/GENERAL_COMPUTER_WORK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OPERATIONS/REVIEW_PROTECTION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/VERSIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/RELEASE_GUIDE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REPO_MAP.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/START_HERE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/V1_RELEASE_SCOPE.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qualification/V180_10000_REPORT.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qualification/V180_10000_RESULTS.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/qualification/mainnet-cutover.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.7.0/CHANGES.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.7.0/GUIDE_CHECKS.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.7.0/PREVIOUS_RELEASE.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.7.0/QUALIFICATION_BENCHMARK.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.7.0/RELEASE_NOTES.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.7.0/SOURCE_CI.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.7.0/START_HERE.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.7.0/VALIDATION.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.7.0/release.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/DEPLOYMENT_MAINNET.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/GITHUB_PAGES.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/STANDALONE_HTML_UIS.md"
+    },
+    {
+      "status": "A",
+      "path": "examples/computer-runtime.json"
+    },
+    {
+      "status": "A",
+      "path": "examples/computer-work-v2.json"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/README.md"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package.json"
+    },
+    {
+      "status": "M",
+      "path": "package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "M",
+      "path": "scripts/economics/admission.cjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/economics/capability-report.cjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/economics/computer-work.cjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/economics/qualification-fixture.cjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/package-release.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/publish-release.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/test-release-gates.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/verify-usdc-ui.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/security/slither-reviewed-findings.json"
+    },
+    {
+      "status": "A",
+      "path": "test/computerWork.test.js"
+    },
+    {
+      "status": "M",
+      "path": "ui/README.md"
+    },
+    {
+      "status": "M",
+      "path": "ui/agijobmanager-usdc.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/dist-ipfs/agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/package.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/generated/deployments.ts"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "release": "1.8.0",
+  "activeGuides": 192,
+  "checkedDeploymentCommands": 18,
+  "passed": true,
+  "sourceWorkflow": 35729481951,
+  "scope": "Source-bound CI verified release identities, generated documentation and current deployment command references."
+}

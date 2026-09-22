@@ -1,0 +1,140 @@
+{
+  "sourceCommit": "295f2267b17092fa6924ebc1a91d8ffd0e0ab032",
+  "sourceTree": "1c7eedfcde58124d156c5299be7b5f38a12a8d3f",
+  "checkoutCommit": "295f2267b17092fa6924ebc1a91d8ffd0e0ab032",
+  "policy": "All five required workflows and eight source jobs succeeded. Actual checkout markers were independently checked for every job; publication repeats these checks.",
+  "runs": [
+    {
+      "id": 35729481935,
+      "workflow": "ci.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35729481935"
+    },
+    {
+      "id": 35729481970,
+      "workflow": "ui.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35729481970"
+    },
+    {
+      "id": 35729481951,
+      "workflow": "docs.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35729481951"
+    },
+    {
+      "id": 35729481994,
+      "workflow": "security-verification.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35729481994"
+    },
+    {
+      "id": 35729481915,
+      "workflow": "mainnet-fork.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35729481915"
+    }
+  ],
+  "verifiedJobs": [
+    {
+      "job": "mainnet-usdc",
+      "id": 106751208120,
+      "run": 35729481915,
+      "checkout": "295f2267b17092fa6924ebc1a91d8ffd0e0ab032",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T12:50:26.3776589Z   11 passing (7s)",
+        "2026-09-22T12:50:26.3788141Z 11 passing (11 mocha)",
+        "2026-09-22T12:51:10.8177792Z   23 passing (42s)",
+        "2026-09-22T12:51:10.8192245Z 23 passing (23 mocha)"
+      ]
+    },
+    {
+      "job": "security-verification",
+      "id": 106751201438,
+      "run": 35729481994,
+      "checkout": "295f2267b17092fa6924ebc1a91d8ffd0e0ab032",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T12:50:26.3011391Z   11 passing (2s)",
+        "2026-09-22T12:50:26.3023362Z 11 passing (11 mocha)",
+        "2026-09-22T12:51:07.8352370Z Ran 9 tests for forge-test/unit/AGIJobManagerV091Security.t.sol:AGIJobManagerV091SecurityTest",
+        "2026-09-22T12:51:08.1742481Z Ran 6 tests for forge-test/unit/AGIJobManagerSecurityVerification.t.sol:AGIJobManagerSecurityVerificationTest",
+        "2026-09-22T12:51:08.8996739Z Ran 4 tests for forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol:AGIJobManagerTimingFuzz",
+        "2026-09-22T12:51:08.9003561Z Ran 5 tests for forge-test/fuzz/AGIJobManagerBoundaryFuzz.t.sol:AGIJobManagerBoundaryFuzz",
+        "2026-09-22T12:51:08.9012148Z Ran 8 tests for forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol:AGIJobManagerSettlementFuzz",
+        "2026-09-22T12:51:08.9023100Z Ran 5 test suites in 1.21s (3.78s CPU time): 32 tests passed, 0 failed, 0 skipped (32 total tests)",
+        "2026-09-22T12:51:10.6139876Z Ran 3 tests for forge-test/invariant/AGIJobManagerInvariants.t.sol:AGIJobManagerInvariants",
+        "2026-09-22T12:51:16.7525635Z Ran 2 tests for forge-test/invariant/AGIJobManagerLifecycleInvariants.t.sol:AGIJobManagerLifecycleInvariants",
+        "2026-09-22T12:51:16.7549754Z Ran 2 test suites in 7.68s (9.22s CPU time): 5 tests passed, 0 failed, 0 skipped (5 total tests)",
+        "2026-09-22T12:51:27.0153714Z Ran 11 tests in 0.042s",
+        "2026-09-22T12:52:01.0876878Z Extended static-analysis review verified (163 report entries; source hashes unchanged)"
+      ]
+    },
+    {
+      "job": "docs",
+      "id": 106751200547,
+      "run": 35729481951,
+      "checkout": "295f2267b17092fa6924ebc1a91d8ffd0e0ab032",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T12:49:16.0260628Z Release alignment passed: v1.8.0, 192 active guides, 18 deployment commands.",
+        "2026-09-22T12:49:16.3857947Z ✅ Documentation checks passed"
+      ]
+    },
+    {
+      "job": "build (1)",
+      "id": 106751237339,
+      "run": 35729481935,
+      "checkout": "295f2267b17092fa6924ebc1a91d8ffd0e0ab032",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T12:50:35.0631306Z   156 passing (3s)"
+      ]
+    },
+    {
+      "job": "build (3)",
+      "id": 106751237789,
+      "run": 35729481935,
+      "checkout": "295f2267b17092fa6924ebc1a91d8ffd0e0ab032",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T12:50:05.6303845Z     ✔ runs every embedded bond self-test using six-decimal USDC and renders both agent cases as passing",
+        "2026-09-22T12:50:06.7696550Z   174 passing (4s)"
+      ]
+    },
+    {
+      "job": "build (0)",
+      "id": 106751237825,
+      "run": 35729481935,
+      "checkout": "295f2267b17092fa6924ebc1a91d8ffd0e0ab032",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T12:52:06.4240440Z   180 passing (10s)"
+      ]
+    },
+    {
+      "job": "build (2)",
+      "id": 106751237931,
+      "run": 35729481935,
+      "checkout": "295f2267b17092fa6924ebc1a91d8ffd0e0ab032",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T12:50:09.1261869Z   163 passing (3s)"
+      ]
+    },
+    {
+      "job": "ui",
+      "id": 106751201100,
+      "run": 35729481970,
+      "checkout": "295f2267b17092fa6924ebc1a91d8ffd0e0ab032",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T12:50:57.2317032Z  Test Files  20 passed (20)",
+        "2026-09-22T12:50:57.2318281Z       Tests  178 passed (178)",
+        "2026-09-22T12:50:58.7057763Z  Test Files  1 passed (1)",
+        "2026-09-22T12:50:58.7058855Z       Tests  6 passed (6)",
+        "2026-09-22T12:52:10.1165385Z   9 passed (5.6s)",
+        "2026-09-22T12:52:45.6855077Z   4 passed (6.7s)",
+        "2026-09-22T12:53:16.4234104Z   2 passed (1.6s)",
+        "2026-09-22T12:54:25.0766394Z docs-check passed",
+        "2026-09-22T12:55:57.0957946Z Deterministic build passed from clean state (sha256: bc267011b1abd9eb85d68787ffc7a0a1a8f2fac10a6fe9c987583a8f71a76e2c)."
+      ]
+    }
+  ]
+}
