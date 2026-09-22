@@ -65,6 +65,16 @@ describe('Release deployment under Ethereum code-size limits', function () {
     assert.equal(await manager.settlementPaused(), false);
   });
 
+  it('deploys the review companion within limits and verifies both real immutable addresses', async function () {
+    const managerAddress=await manager.getAddress(),tokenAddress=await token.getAddress();
+    const review=await deployWithinLimits('AGIReviewEscrow',[managerAddress]);
+    const address=await review.getAddress(),code=await ethers.provider.getCode(address);
+    const artifact=await artifacts.readArtifact('AGIReviewEscrow'),info=await artifacts.getBuildInfo('AGIReviewEscrow');
+    requireArtifactMatch({artifact,buildInfo:info,address,managerAddress,tokenAddress,code});
+    assert.equal(await review.manager(),managerAddress);assert.equal(await review.usdcToken(),tokenAddress);
+    assert.throws(()=>requireArtifactMatch({artifact,buildInfo:info,address,managerAddress:tokenAddress,tokenAddress,code}),/differs/);
+  });
+
   it('keeps admission closed across deployment and two-step handoff until the accepted owner activates', async function () {
     const managerAddress = await manager.getAddress();
     await (await token.mint(employer.address, 100000000n)).wait();

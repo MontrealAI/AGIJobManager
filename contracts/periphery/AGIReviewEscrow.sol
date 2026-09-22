@@ -93,7 +93,9 @@ contract AGIReviewEscrow is ReentrancyGuard {
         if (reviewer == address(0) || reviewer == address(this) || reviewer == address(manager) ||
             reviewer == address(usdcToken) || completionHash == bytes32(0) || fee == 0) revert InvalidAssignment();
         // Elapsed-time limits, not a randomness source.
+        // Consensus time bounds an explicit appointment deadline; never used for randomness or price.
         // solhint-disable-next-line not-rely-on-time
+        // forge-lint: disable-next-line(block-timestamp)
         if (startBy <= block.timestamp || startBy > block.timestamp + 30 days) revert InvalidAssignment();
         if (_reviewable(jobId, completionHash, reviewer) != msg.sender) revert Unauthorized();
         id = assignmentId(jobId, reviewer);
@@ -111,7 +113,9 @@ contract AGIReviewEscrow is ReentrancyGuard {
         Assignment storage a = assignments[id];
         if (a.state != 1) revert AssignmentNotFunded();
         if (msg.sender != a.reviewer) revert Unauthorized();
+        // Consensus time bounds an explicit appointment deadline; never used for randomness or price.
         // solhint-disable-next-line not-rely-on-time
+        // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp >= a.startBy) revert AssignmentExpired();
         if (_reviewable(a.jobId, a.completionHash, a.reviewer) != a.employer) revert InvalidAssignment();
         a.state = 2;
@@ -123,7 +127,9 @@ contract AGIReviewEscrow is ReentrancyGuard {
     function refundReview(bytes32 id) external nonReentrant {
         Assignment storage a = assignments[id];
         if (a.state != 1) revert AssignmentNotFunded();
+        // Consensus time bounds an explicit appointment deadline; never used for randomness or price.
         // solhint-disable-next-line not-rely-on-time
+        // forge-lint: disable-next-line(block-timestamp)
         if (msg.sender != a.employer && block.timestamp < a.startBy) revert Unauthorized();
         a.state = 3;
         credits[a.employer] += a.fee;

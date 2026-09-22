@@ -31,7 +31,7 @@
     "scripts/security/slither-extended.config.json": "3b273bb8476e06ac03dba09f3d6bc68390ef344883ef3c7f59fbdd0b6317ca01",
     "scripts/security/slither-reentrancy.config.json": "7c6e5346fe75f6fd15d5877a834042925f0486352caff80d930f9c877e5c2bba",
     "slither.config.json": "3b273bb8476e06ac03dba09f3d6bc68390ef344883ef3c7f59fbdd0b6317ca01",
-    "contracts/periphery/AGIReviewEscrow.sol": "0a872868c86665a2202abe4cd95c640eb4cda85b1d3e6441f415eba7ccedcf10"
+    "contracts/periphery/AGIReviewEscrow.sol": "18724f4f0a631d05b2b528f77813216ddc5e9eb3dd334c4a7731a314fbdc714e"
   },
   "reports": {
     "slither-extended.json": [
