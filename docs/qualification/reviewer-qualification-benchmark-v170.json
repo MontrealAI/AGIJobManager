@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-22T04:43:44.540Z",
+  "runtime": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+  "runs": [
+    {
+      "mode": "paced",
+      "submitted": 200,
+      "accepted": 200,
+      "rejected": 0,
+      "elapsedMs": 1747.5386320000002,
+      "acceptedPerSecond": 114.44668308769037,
+      "rejectionReasons": {},
+      "metrics": {
+        "submitted": 200,
+        "completed": 200,
+        "rejected": 0,
+        "timedOut": 0,
+        "failed": 0,
+        "peakRunning": 3,
+        "peakQueued": 1,
+        "running": 0,
+        "queued": 0,
+        "retainedLatencySamples": 200,
+        "latencyMs": {
+          "p50": 10,
+          "p95": 50,
+          "p99": 109
+        },
+        "limits": {
+          "maxConcurrent": 4,
+          "maxQueued": 32,
+          "reservedRecovery": 1,
+          "maxQueueMs": 10000,
+          "maxTaskMs": 30000
+        }
+      }
+    },
+    {
+      "mode": "burst",
+      "submitted": 200,
+      "accepted": 34,
+      "rejected": 166,
+      "elapsedMs": 301.6833429999997,
+      "acceptedPerSecond": 112.7009521370891,
+      "rejectionReasons": {
+        "QUALIFICATION_QUEUE_FULL": 166
+      },
+      "metrics": {
+        "submitted": 200,
+        "completed": 34,
+        "rejected": 166,
+        "timedOut": 0,
+        "failed": 0,
+        "peakRunning": 3,
+        "peakQueued": 31,
+        "running": 0,
+        "queued": 0,
+        "retainedLatencySamples": 34,
+        "latencyMs": {
+          "p50": 117,
+          "p95": 280,
+          "p99": 301
+        },
+        "limits": {
+          "maxConcurrent": 4,
+          "maxQueued": 32,
+          "reservedRecovery": 1,
+          "maxQueueMs": 10000,
+          "maxTaskMs": 30000
+        }
+      }
+    }
+  ],
+  "scope": "Local full signed-envelope/calibrated-report verification. Synthetic fixture; no network RPC, production signing issuer, provider costs, Macs, distributed reservations or million-offer workload. Event-loop concurrency is not CPU parallelism. Burst rejection is backpressure, not completed work."
+}

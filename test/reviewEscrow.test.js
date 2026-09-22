@@ -16,8 +16,8 @@ contract('Funded review retainers', accounts => {
   let token, manager, escrow, id, expiry;
   const delivery='ipfs://exact-delivery';
   const deliveryHash=web3.utils.keccak256(delivery);
-  beforeEach(async()=>{
-    token=await Token.new();const ens=await ENS.new(),wrapper=await Wrapper.new();
+  beforeEach(async function(){
+    token=await (this.currentTest.title.includes('reentrant token')?artifacts.require('ReentrantReviewToken'):Token).new();const ens=await ENS.new(),wrapper=await Wrapper.new();
     const tree=new MerkleTree([Buffer.from(web3.utils.soliditySha3({type:'address',value:agent}).slice(2),'hex')],keccak256,{sortPairs:true});
     manager=await deployActive(Manager,...buildInitConfig(token.address,'ipfs://base',ens.address,wrapper.address,rootNode('club'),rootNode('agent'),rootNode('club'),rootNode('agent'),'0x'+'00'.repeat(32),tree.getHexRoot()),{from:owner});
     await token.mint(employer,cash(10000));await token.approve(manager.address,cash(1000),{from:employer});
@@ -43,4 +43,20 @@ contract('Funded review retainers', accounts => {
   it('rolls back assignment and liability when funding fails',async()=>{await token.setFailTransferFroms(true);await expectRevert.unspecified(fund());assert.equal(String((await escrow.assignments(id)).state),'0');assert.equal(String(await escrow.totalLiability()),'0');});
   it('keeps independent assignments fully backed through mixed payment and refund',async()=>{await fund();await escrow.fundReview(0,reviewer2,deliveryHash,cash(12),expiry,{from:employer});await escrow.activateReview(id,{from:reviewer});await escrow.refundReview(await escrow.assignmentId(0,reviewer2),{from:employer});assert.equal(String(await escrow.totalLiability()),String(cash(22)));await escrow.withdrawCredit(reviewer);await escrow.withdrawCredit(employer);assert.equal(String(await token.balanceOf(escrow.address)),'0');});
   it('domain-separates assignments by deployed escrow',async()=>{const other=await Escrow.new(manager.address);assert.notEqual(id,await other.assignmentId(0,reviewer));});
+  it('blocks a reentrant token from collecting old credit during new funding',async()=>{
+    await fund();await escrow.activateReview(id,{from:reviewer});
+    const {Interface}=require('ethers');const iface=new Interface(['function withdrawCredit(address)']);
+    await token.configure(escrow.address,iface.encodeFunctionData('withdrawCredit',[reviewer]));
+    await escrow.fundReview(0,reviewer2,deliveryHash,cash(12),expiry,{from:employer});
+    assert.equal(await token.attempted(),true);assert.equal(await token.succeeded(),false);
+    assert.equal(String(await escrow.credits(reviewer)),String(cash(10)));assert.equal(String(await escrow.totalLiability()),String(cash(22)));assert.equal(String(await token.balanceOf(escrow.address)),String(cash(22)));
+    await token.probe();assert.equal(await token.succeeded(),true);assert.equal(String(await escrow.credits(reviewer)),'0');assert.equal(String(await escrow.totalLiability()),String(cash(12)));
+  });
+  it('blocks a reentrant token from refunding another expired assignment during payment',async()=>{
+    await fund();await escrow.activateReview(id,{from:reviewer});await escrow.fundReview(0,reviewer2,deliveryHash,cash(12),expiry,{from:employer});const other=await escrow.assignmentId(0,reviewer2);await time.increase(601);
+    const {Interface}=require('ethers');const iface=new Interface(['function refundReview(bytes32)']);await token.configure(escrow.address,iface.encodeFunctionData('refundReview',[other]));
+    await escrow.withdrawCredit(reviewer);assert.equal(await token.attempted(),true);assert.equal(await token.succeeded(),false);
+    assert.equal(String((await escrow.assignments(other)).state),'1');assert.equal(String(await escrow.credits(employer)),'0');assert.equal(String(await escrow.totalLiability()),String(cash(12)));assert.equal(String(await token.balanceOf(escrow.address)),String(cash(12)));
+    await token.probe();assert.equal(await token.succeeded(),true);assert.equal(String((await escrow.assignments(other)).state),'3');assert.equal(String(await escrow.credits(employer)),String(cash(12)));
+  });
 });

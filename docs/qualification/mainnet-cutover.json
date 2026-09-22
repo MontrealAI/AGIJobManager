@@ -46,6 +46,7 @@
     "contracts/test/MockUSDCControls.sol": "0329914204c103f12f8ba64aa23433e6331dd4731960cc3ced1291b9eaf6d906",
     "contracts/test/OwnerRotationReceiver.sol": "cebb0a358464f893b25e38759a302f4bbdadb9ff5d0f6568db6970e632a93c72",
     "contracts/test/ReenteringEmployer.sol": "622235ed7e365db9e6c4d82106b9bd1c132f0c2eda9abad2f3e4d5a98d0e2919",
+    "contracts/test/ReentrantReviewToken.sol": "939d4655a66ebba33be325aeca43f441072a3d1158061c9f8913711a1166c962",
     "contracts/test/ReputationHarness.sol": "ff279b44b02c1944366d6ae8b75f10ee26d2083df316b331935b21966eb2049a",
     "contracts/test/RescueMocks.sol": "0f9277f7e599ca1ab36137dbcb45c9faf77bce6384e662c6b8a8e80c0050f083",
     "contracts/test/RevertingBalanceOfERC20.sol": "e0832f3fb4336c5740766a7a7cde94728c11e2e2c3c51626255d9bfd7192995c",
