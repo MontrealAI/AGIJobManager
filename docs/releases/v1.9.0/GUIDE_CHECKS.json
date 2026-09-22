@@ -1,0 +1,8 @@
+{
+  "release": "1.9.0",
+  "activeGuides": 194,
+  "checkedDeploymentCommands": 16,
+  "passed": true,
+  "sourceWorkflow": 35740983249,
+  "scope": "Source-bound CI verified release identities, generated documentation and deployment command references; generated UI deployment metadata is aligned."
+}
