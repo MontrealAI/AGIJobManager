@@ -1,15 +1,15 @@
-name: USDC Release v1.6.1
+name: USDC Release v1.7.0
 
 on:
   pull_request:
     paths:
-      - 'docs/releases/v1.6.1/**'
+      - 'docs/releases/v1.7.0/**'
       - 'scripts/release/**'
       - '.github/workflows/current-state-release.yml'
   push:
     branches: [main]
     paths:
-      - 'docs/releases/v1.6.1/release.json'
+      - 'docs/releases/v1.7.0/release.json'
       - 'scripts/release/**'
       - '.github/workflows/current-state-release.yml'
 
@@ -18,7 +18,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: current-state-release-v1.6.1
+  group: current-state-release-v1.7.0
   cancel-in-progress: false
 
 jobs:
@@ -37,7 +37,7 @@ jobs:
         run: python3 scripts/release/test-release-gates.py
       - name: Verify frozen USDC console
         run: |
-          qualified_source="$(python3 -c 'import json; print(json.load(open("docs/releases/v1.6.1/release.json"))["sourceCommit"])')"
+          qualified_source="$(python3 -c 'import json; print(json.load(open("docs/releases/v1.7.0/release.json"))["sourceCommit"])')"
           git worktree add --detach /tmp/usdc-release-source "$qualified_source"
           node scripts/release/verify-usdc-ui.mjs /tmp/usdc-release-source
       - name: Verify recorded successful source CI
@@ -48,7 +48,7 @@ jobs:
         run: |
           python3 scripts/release/package-release.py
           python3 scripts/release/package-release.py --out /tmp/usdc-release-rebuild
-          diff -r build/release/v1.6.1 /tmp/usdc-release-rebuild
+          diff -r build/release/v1.7.0 /tmp/usdc-release-rebuild
 
   publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

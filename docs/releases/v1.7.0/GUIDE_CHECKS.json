@@ -1,0 +1,8 @@
+{
+  "release": "1.7.0",
+  "activeGuides": 191,
+  "checkedDeploymentCommands": 18,
+  "passed": true,
+  "sourceWorkflow": 35689727938,
+  "scope": "Current identities, active guide versions/downloads, deployment command entrypoints and generated guide freshness checked by exact-source documentation CI."
+}

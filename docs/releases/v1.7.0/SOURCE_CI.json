@@ -1,0 +1,122 @@
+{
+  "sourceCommit": "9b758293a7fdcf731299bf28264d601b4fa4e51f",
+  "sourceTree": "4fde441da2b68abf2a5f19ac391ce6b221d15718",
+  "checkoutCommit": "9b758293a7fdcf731299bf28264d601b4fa4e51f",
+  "policy": "All five workflows and eight required jobs succeeded for the frozen source. Publication re-verifies actual checkout markers and complete required job sets.",
+  "runs": [
+    {
+      "id": 35689727938,
+      "workflow": "docs.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35689727938"
+    },
+    {
+      "id": 35689727951,
+      "workflow": "ui.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35689727951"
+    },
+    {
+      "id": 35689727926,
+      "workflow": "mainnet-fork.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35689727926"
+    },
+    {
+      "id": 35689727923,
+      "workflow": "security-verification.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35689727923"
+    },
+    {
+      "id": 35689727948,
+      "workflow": "ci.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35689727948"
+    }
+  ],
+  "verifiedJobs": [
+    {
+      "job": "docs",
+      "id": 106623935812,
+      "workflow": "docs.yml",
+      "checkout": "9b758293a7fdcf731299bf28264d601b4fa4e51f",
+      "totals": [
+        "2026-09-22T05:11:34.6236403Z Release alignment passed: v1.7.0, 191 active guides, 18 deployment commands."
+      ]
+    },
+    {
+      "job": "mainnet-usdc",
+      "id": 106623938854,
+      "workflow": "mainnet-fork.yml",
+      "checkout": "9b758293a7fdcf731299bf28264d601b4fa4e51f",
+      "totals": [
+        "2026-09-22T05:12:23.9263220Z   11 passing (5s)",
+        "2026-09-22T05:12:23.9272745Z 11 passing (11 mocha)",
+        "2026-09-22T05:12:55.4088761Z   23 passing (30s)",
+        "2026-09-22T05:12:55.4097689Z 23 passing (23 mocha)"
+      ]
+    },
+    {
+      "job": "security-verification",
+      "id": 106623935988,
+      "workflow": "security-verification.yml",
+      "checkout": "9b758293a7fdcf731299bf28264d601b4fa4e51f",
+      "totals": [
+        "2026-09-22T05:12:28.1872169Z   11 passing (1s)",
+        "2026-09-22T05:12:28.1881674Z 11 passing (11 mocha)",
+        "2026-09-22T05:13:02.2685956Z Suite result: ok. 6 passed; 0 failed; 0 skipped; finished in 7.52ms (6.13ms CPU time)",
+        "2026-09-22T05:13:02.3756403Z Suite result: ok. 9 passed; 0 failed; 0 skipped; finished in 99.37ms (98.57ms CPU time)",
+        "2026-09-22T05:13:02.9238687Z Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 654.13ms (653.12ms CPU time)",
+        "2026-09-22T05:13:03.1667343Z Suite result: ok. 8 passed; 0 failed; 0 skipped; finished in 909.28ms (2.12s CPU time)",
+        "2026-09-22T05:13:03.1671396Z Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 909.35ms (516.91ms CPU time)",
+        "2026-09-22T05:13:04.2497750Z Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 942.05ms (2.57s CPU time)",
+        "2026-09-22T05:13:08.3289003Z Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 5.02s (5.03s CPU time)"
+      ]
+    },
+    {
+      "job": "build (0)",
+      "id": 106623935028,
+      "workflow": "ci.yml",
+      "checkout": "9b758293a7fdcf731299bf28264d601b4fa4e51f",
+      "totals": [
+        "2026-09-22T05:13:07.8893060Z   19 passed (1.1m)",
+        "2026-09-22T05:14:10.4782927Z   168 passing (4s)",
+        "2026-09-22T05:14:23.7215130Z   1 passed (5.4s)"
+      ]
+    },
+    {
+      "job": "build (2)",
+      "id": 106623935175,
+      "workflow": "ci.yml",
+      "checkout": "9b758293a7fdcf731299bf28264d601b4fa4e51f",
+      "totals": [
+        "2026-09-22T05:12:45.8047980Z   175 passing (7s)"
+      ]
+    },
+    {
+      "job": "build (1)",
+      "id": 106623935218,
+      "workflow": "ci.yml",
+      "checkout": "9b758293a7fdcf731299bf28264d601b4fa4e51f",
+      "totals": [
+        "2026-09-22T05:12:37.7028245Z   159 passing (3s)"
+      ]
+    },
+    {
+      "job": "build (3)",
+      "id": 106623935230,
+      "workflow": "ci.yml",
+      "checkout": "9b758293a7fdcf731299bf28264d601b4fa4e51f",
+      "totals": [
+        "2026-09-22T05:12:47.6533387Z   160 passing (10s)"
+      ]
+    },
+    {
+      "job": "ui",
+      "id": 106623935148,
+      "workflow": "ui.yml",
+      "checkout": "9b758293a7fdcf731299bf28264d601b4fa4e51f",
+      "totals": [
+        "2026-09-22T05:14:22.7575006Z   9 passed (5.5s)",
+        "2026-09-22T05:14:57.4444430Z   4 passed (6.6s)",
+        "2026-09-22T05:15:26.6886576Z   2 passed (1.7s)"
+      ]
+    }
+  ]
+}
