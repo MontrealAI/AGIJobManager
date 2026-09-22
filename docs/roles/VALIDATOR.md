@@ -1,4 +1,6 @@
-# Validator Guide — v1.0.3
+# Validator Guide
+
+> Current guide for this source checkout. See [release identity and deployment commands](../RELEASE_GUIDE.md).
 
 Validators review submitted work and vote once per job. Rewards and bonds use native USDC; signing transactions requires ETH for gas.
 

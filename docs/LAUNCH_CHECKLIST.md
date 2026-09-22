@@ -1,8 +1,10 @@
-# Launch checklist — v1.1.0
+# Launch checklist
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 Use this checklist for the actual instance before opening paid intake. The release contains tested software; it supplies no production manager, owner, payment recipients, reviewer service or independent audit. Every item below starts unconfirmed. Record the evidence beside each completed item in your deployment record.
 
-v1.1.0 preserves v1.0.3 ABI, creation/runtime bytecode and disabled NFT default; it adds read-only deployment defaults and clearer operator guidance, retaining v1.0.5 notices and console safeguards. Verified v0.9.6-compatible managers can use the console without redeployment. Existing settings, jobs and agreements do not change. First deployments and moves from incompatible older versions require the current manager and eight libraries.
+The current release preserves the v1.0.3 contract build and disabled NFT default, read-only deployment defaults, v1.0.5 notices and subsequent console/admission safeguards. Verified v0.9.6-compatible managers can use the console without redeployment. Existing settings, jobs and agreements do not change. First deployments and moves from incompatible older versions require the current manager and eight libraries.
 
 ## 1. Decide who controls and operates the instance
 
@@ -19,7 +21,7 @@ v1.1.0 preserves v1.0.3 ABI, creation/runtime bytecode and disabled NFT default;
 | Economics and limits | Agreed job scope, review effort and gas budget, shared reviewer reward, agent net earnings, bonds, timers and initial exposure limit |
 | Optional ENS job pages | Enable or omit; if enabled, verified parent authority, deployment-specific jobs root and helper owner; [fresh/replacement naming policy](ENS_DEPLOYMENT_NAMESPACES.md) |
 
-**NFT admission starts disabled:** a fresh v1.1.0 manager has no registered collections and does not require an eligibility NFT. Keep the reviewed readiness policy `false`/empty to retain that state. To opt in before posting jobs, register reviewed collections and call `setAgentNftRequired(true)`. Every job retains the policy recorded when posted. Optional NFTs do not waive ENS/exception authorization or bonds. See [NFT setup](NFT_POLICY.md), including the [free alpha-agent identity route](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route) and its expiry limitations.
+**NFT admission starts disabled:** a fresh manager has no registered collections and does not require an eligibility NFT. Keep the reviewed readiness policy `false`/empty to retain that state. To opt in before posting jobs, register reviewed collections and call `setAgentNftRequired(true)`. Every job retains the policy recorded when posted. Optional NFTs do not waive ENS/exception authorization or bonds. See [NFT setup](NFT_POLICY.md), including the [free alpha-agent identity route](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route) and its expiry limitations.
 
 ## 2. Collect evidence before mainnet deployment
 
@@ -61,3 +63,10 @@ The default successful-job split is 8% shared reviewer budget, 30% and 10% walle
 | Withdraw surplus | Protect the sum of all five counters. Owner authority, paused intake and enabled settlement are also required |
 
 Settlement pauses stop lifecycle clocks, extend their calendar deadlines and block claim retries. Intake-only pauses leave those clocks and settlement available. Use the [incident runbook](OPERATIONS/INCIDENT_RESPONSE.md) to recover settlement before reopening intake.
+
+## Autonomous funding and private commissioning
+
+- [ ] Qualify employer offers before approval/funding under [the pre-funding policy](OPERATIONS/PREFUNDING.md); retain fresh Agent/reviewer checks after creation. Manual console posting does not enforce that policy.
+- [ ] Record measured employer value, actual provider and reviewer costs, independent issuer/participants, disjoint capacity allocation and capital/gas limits.
+- [ ] Rehearse expiry, cancellation, ambiguous broadcasts and unpaid-claim reconciliation using the actual private wallet journals.
+- [ ] Qualify the actual Mac/runtime/provider installation, incidents and sustained useful throughput. A Hardhat readiness report does not establish these outcomes.

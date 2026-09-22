@@ -1,4 +1,6 @@
-# parameter safety — v1.0.3
+# parameter safety
+
+> Current guide for this source checkout. See [release identity and deployment commands](../RELEASE_GUIDE.md).
 
 The authoritative current settlement rules are in [USDC payout distribution](../USDC_PAYOUT_SPLIT.md). Successful jobs pay validators (8% default), then 30% and 10% of the original USDC job cost to two configured wallets, then the remaining amount to the agent. The validator reward percentage is fixed at posting; collateral is fixed at the first vote; NFT eligibility scores do not set payout shares. No successful-job cost remains in treasury.
 

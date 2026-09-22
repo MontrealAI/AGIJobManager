@@ -1,4 +1,6 @@
-# Employer Guide — v1.0.3
+# Employer Guide
+
+> Current guide for this source checkout. See [release identity and deployment commands](../RELEASE_GUIDE.md).
 
 An employer posts a job and escrows its total cost in native USDC. The first eligible agent whose application succeeds takes the job; there is no later agent-selection step. You can explicitly accept the submitted work when it is satisfactory.
 

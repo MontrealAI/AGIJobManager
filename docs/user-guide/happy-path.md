@@ -1,4 +1,6 @@
-# Happy path walkthrough — v1.0.3
+# Happy path walkthrough
+
+> Current guide for this source checkout. See [release identity and deployment commands](../RELEASE_GUIDE.md).
 
 A job moves from USDC funding through assignment and evidence review to an explicit settlement transaction. The moderator participates only if a dispute opens.
 

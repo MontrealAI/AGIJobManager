@@ -1,4 +1,6 @@
-# FAQ — v1.0.3 (USDC console and Etherscan)
+# FAQ (USDC console and Etherscan)
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 ## How would the first Genesis artwork job work now?
 

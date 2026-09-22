@@ -1,4 +1,6 @@
-# v1.0.3: USDC-only settlement
+# USDC-only settlement
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 Every payout, escrow, agent bond, validator bond, dispute bond, reward, refund and treasury withdrawal in v1.0.3 uses native Circle USDC with **six decimals**. One USDC is `1000000` base units; `0.000001` USDC is one base unit. No bridge, conversion, wrapped alternative or configurable settlement token is supported.
 

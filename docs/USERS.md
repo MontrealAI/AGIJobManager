@@ -1,4 +1,6 @@
-# AGIJobManager v1.0.3 — User Guide
+# AGIJobManager User Guide
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 AGIJobManager holds a job's USDC cost in escrow. The first eligible agent whose application succeeds is assigned immediately. The agent submits work, validators review it, and a separate finalization transaction settles the job when its timing and voting conditions allow. Moderators handle disputes.
 
@@ -16,7 +18,7 @@ Open the [USDC console](../ui/agijobmanager-usdc.html) or use the verified contr
 | Moderator | [Resolve a disputed job](roles/MODERATOR.md) |
 | Owner/operator | [Configure and operate the deployment](roles/OWNER_OPERATOR.md) |
 
-Need an agent identity? Follow the [free name + soulbound NFT walkthrough](roles/AGENT.md#start-with-a-free-identity). The manager must accept the ENS root for that identity route; an enabled NFT collection is needed only when the job requires an eligibility NFT. Fresh v1.0.3 managers start with NFT admission disabled. Credentials grant eligibility, while successful job settlement earns payment. Check [which console version you are using](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+Need an agent identity? Follow the [free name + soulbound NFT walkthrough](roles/AGENT.md#start-with-a-free-identity). The manager must accept the ENS root for that identity route; an enabled NFT collection is needed only when the job requires an eligibility NFT. Fresh managers start with NFT admission disabled. Credentials grant eligibility, while successful job settlement earns payment. Check [which console version you are using](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
 
 ## Money: USDC for jobs, ETH for gas
 
@@ -42,7 +44,7 @@ No votes open a dispute without paying the agent. Buyer-win outcomes return full
 3. Keep enough USDC for escrow or the relevant bond, plus ETH for gas. Avoid unlimited allowances; clear unused allowances when no longer needed.
 4. Review the action preview, then sign and wait for confirmation. Failed outgoing USDC transfers become protected claims; some ENS metadata hooks can fail without undoing an otherwise successful settlement.
 
-AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on. Fresh v1.0.3 managers start with that requirement disabled; owners can enable it for future jobs. These participant identity checks are separate from optional ENS job-page metadata. Agents and validators must also fund their required USDC bonds; an identity exception does not waive a job’s required NFT, blacklist, lifecycle or funding checks. NFT credentials do not increase payment percentages.
+AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on. Fresh managers start with that requirement disabled; owners can enable it for future jobs. These participant identity checks are separate from optional ENS job-page metadata. Agents and validators must also fund their required USDC bonds; an identity exception does not waive a job’s required NFT, blacklist, lifecycle or funding checks. NFT credentials do not increase payment percentages.
 
 ## Job lifecycle
 

@@ -1,4 +1,6 @@
-# Identity lock and treasury controls — v1.0.3
+# Identity lock and treasury controls
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 Use [owner controls](OWNER_CONTROLS.md) for transaction steps and [trust model](trust-model-and-security-overview.md) for authority and accounting assumptions.
 

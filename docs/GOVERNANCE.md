@@ -1,4 +1,6 @@
-# Minimal governance model — v1.0.3
+# Minimal governance model
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 This document defines the **“configure once, then operate with minimal governance”** posture for AGIJobManager deployments.
 

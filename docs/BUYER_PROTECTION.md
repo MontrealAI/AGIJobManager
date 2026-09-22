@@ -1,4 +1,6 @@
-# Buyer protection — v1.0.3
+# Buyer protection
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 **Your job cost stays in escrow until an authorized outcome. No votes do not mean approval.** The contract enforces the outcomes below; people still have to assess whether the work meets the agreed requirements.
 

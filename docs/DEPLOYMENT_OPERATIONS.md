@@ -1,6 +1,8 @@
-# Deployment and Release Operations — v1.1.0
+# Deployment and Release Operations
 
-Use [Hardhat](../hardhat/README.md) for Ethereum mainnet and Sepolia deployments. Truffle migrations are retired. Supported read-only operational commands use ethers; the legacy owner-configuration helper permits writes only on a disposable local chain. Publishing v1.1.0 does not deploy or upgrade any live contract.
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
+
+Use [Hardhat](../hardhat/README.md) for Ethereum mainnet and Sepolia deployments. Truffle migrations are retired. Supported read-only operational commands use ethers; the legacy owner-configuration helper permits writes only on a disposable local chain. Publishing software does not deploy or upgrade any live contract.
 
 The manager is non-upgradeable and starts intake paused in its constructor. It uses native Circle USDC, fixed 30% and 10% successful-job wallet shares, and a posting-time validator reward percentage. Supply and independently review both recipient wallets and the intended final owner before planning a public deployment.
 
@@ -57,7 +59,7 @@ Run an explicit dry run with no production private key present:
 DRY_RUN=1 npm run deploy:mainnet
 ```
 
-The documented boolean form is `DRY_RUN=1`; malformed boolean flag values fail rather than being interpreted as permission to broadcast. Review the resulting plan and current issuer restrictions. The example leaves owner and recipients empty; its membership roots do not prove control of any names. Missing/empty `DRY_RUN` is read-only in v1.1.0; older releases require extra care, so retain the explicit planning flag.
+The documented boolean form is `DRY_RUN=1`; malformed boolean flag values fail rather than being interpreted as permission to broadcast. Review the resulting plan and current issuer restrictions. The example leaves owner and recipients empty; its membership roots do not prove control of any names. Missing/empty `DRY_RUN` is read-only in the current tooling; older releases require extra care, so retain the explicit planning flag.
 
 ### 3. Rehearse before an authorized broadcast
 
@@ -79,7 +81,7 @@ A pending ownership proposal leaves authority with the deployer. If the recovery
 
 While intake remains paused, configure moderators, enabled NFT types, participant authorization, limits, bonds and review policy through the accepted owner. Check every setting against the [owner controls](OWNER_CONTROLS.md). Record successful transaction receipts and actual getter values; some role setters have no role-specific event.
 
-Keep the original deployment receipt as evidence. If deliberately reviewed identity settings differ from the initial constructor values, the v1.1.0 readiness workflow can use a separate `READINESS_CONFIG` file for expected ENS/wrapper, namespace and Merkle values. It changes checker expectations only and sends no transactions. Follow the exact schema in the [Hardhat guide](../hardhat/README.md); do not rewrite historical constructor data to make a check pass.
+Keep the original deployment receipt as evidence. If deliberately reviewed identity settings differ from the initial constructor values, the current readiness workflow can use a separate `READINESS_CONFIG` file for expected ENS/wrapper, namespace and Merkle values. It changes checker expectations only and sends no transactions. Follow the exact schema in the [Hardhat guide](../hardhat/README.md); do not rewrite historical constructor data to make a check pass.
 
 Prepare the [reviewed NFT policy JSON](NFT_POLICY.md) for `READINESS_NFT_CONFIG`: an explicit boolean and every collection/score, including disabled entries. Fresh managers default to `agentNftRequired: false` with an empty registry, which is valid for readiness. A deliberately enabled required policy with no enabled collection fails readiness. Existing deployments and posted jobs retain their own policies.
 

@@ -1,4 +1,6 @@
-# Identity lock and operating controls — v1.0.3
+# Identity lock and operating controls
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 `lockIdentityConfiguration()` permanently disables selected identity wiring setters. It does not freeze all governance, force ENS-only membership, pause activity or repair a bad configuration. USDC is immutable independently of the lock.
 

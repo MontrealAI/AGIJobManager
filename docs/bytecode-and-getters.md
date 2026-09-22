@@ -1,4 +1,6 @@
-# bytecode and getters — v1.0.3
+# bytecode and getters
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 `getJobBonds(jobId)`, introduced in v0.9.6, returns outstanding `agentAmount`, per-reviewer `validatorAmount`, `validatorFixed`, and `disputeAmount`. A fixed zero bond differs from an unset bond. Settlement clears these fields; use transaction history for past deposits. v1.0.3 retains the v0.9.6 ABI and deployed runtime bytecode. The getter is absent from v0.9.5 and older managers. See [compatibility and verification](qualification/OPERATIONS_V097.md).
 

@@ -1,4 +1,6 @@
-# AGIJobManager Contract Reference — v1.0.3
+# AGIJobManager Contract Reference
+
+> Current guide for this source checkout. See [release identity and deployment commands](../RELEASE_GUIDE.md).
 
 ## Purpose
 Document operational and audit-critical behavior of `AGIJobManager`.

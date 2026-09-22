@@ -1,4 +1,6 @@
-# Testing v1.0.3
+# Testing
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 ## Current strategy
 

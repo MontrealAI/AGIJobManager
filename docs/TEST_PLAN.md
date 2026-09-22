@@ -1,4 +1,6 @@
-# Test plan — v1.0.3
+# Test plan
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 This plan describes required coverage and how to reproduce it. Successful runs, exact test counts, compiler identity and runtime sizes are recorded in the final release's validation evidence for its frozen source commit.
 

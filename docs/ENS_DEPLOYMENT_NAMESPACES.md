@@ -1,4 +1,6 @@
-# ENS job names — v1.0.3
+# ENS job names
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 Every new USDC manager gets a distinct namespace automatically. Users see **AGI Job #0**; its full ENS name also identifies the deployment.
 

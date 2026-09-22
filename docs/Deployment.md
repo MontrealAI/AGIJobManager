@@ -1,4 +1,6 @@
-# Deployment guide — v1.0.3
+# Deployment guide
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 The supported Ethereum mainnet and Sepolia workflow uses **Hardhat 3 and ethers 6**. Truffle and Ganache are removed; their historical migration and signing commands are retired.
 
@@ -36,4 +38,4 @@ The [local USDC walkthrough](QUINTESSENTIAL_USE_CASE.md) uses only disposable in
 
 For public networks, copy `hardhat/deploy.config.example.cjs` to `hardhat/deploy.config.cjs`, supply both real settlement recipients and the intended owner, and follow the Hardhat guide's explicit dry-run and broadcast gates. The manager starts paused. Preserve its deployment receipt, complete source verification and two-step ownership acceptance, and pass read-only readiness before opening intake.
 
-Code is non-upgradeable. This release does not deploy, activate or modify an existing contract. Existing instances require a deliberate migration to receive the new code protections.
+Code is non-upgradeable. This release does not deploy, activate or modify an existing contract. This documentation patch preserves contract code; compatible existing instances do not need redeployment for these changes. Incompatible older instances require a deliberate migration, with original obligations preserved.

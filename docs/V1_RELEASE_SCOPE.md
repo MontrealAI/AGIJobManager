@@ -1,54 +1,50 @@
-# AGIJobManager 1.3 — release scope
+# AGIJobManager release scope
 
-AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery. The console helps participants understand and submit contract actions. Agents perform work outside the contract; reviewers and moderators assess the evidence.
+**Current edition: v1.6.1.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
 
-## Included in 1.3
+## Included in this edition
 
-- A versioned, single-file console with separate buyer, agent and reviewer guidance. Buying work does not require an agent credential. Wallet connection, terms acceptance and manager verification remain separate checks.
-- USDC escrow, recorded collateral, the established successful-job split, full buyer escrow refunds on buyer wins, no-vote dispute escalation, explicit buyer acceptance, pause-aware deadlines and reserved failed payments.
-- Owner and moderator tools with distinct permissions, simulation before submission and protection against stale account/network/manager confirmations.
-- Deployment, verification, initial-readiness and recovery tools; current operator and participant instructions; an offline economics assessment using explicit cost assumptions.
-- A frozen source tag, reproducible archive, content manifest, asset checksums and exact-source qualification evidence.
+- Public source and a versioned USDC console with participant, owner and recovery guidance.
+- The preserved contract build, eight library links, USDC accounting, buyer protections and reserved payment claims.
+- Hardhat setup, explicit read-only plans, guarded deployment, source verification, transaction journals, recovery and instance-readiness checks.
+- Lifecycle economics, signed action-bound qualification, pre-funding offer/capacity checks and canonical state/closure observations.
+- Reproducible release assets, source qualification, per-file manifests and asset checksums.
 
-The 1.3 label identifies this software edition. It does not certify a deployed business, supply reviewers or moderators, promise future editions, or prove that honest participation is always profitable.
+The public archive contains no private Fleet/Agent/Node application, production wallet, live deployment, issuer service or production signing authority. Private packages have separate versions, guides and commissioning evidence. A manual console transaction does not enforce off-chain economic qualification.
 
 ## Published download versus current source
 
-**New in v1.6.0:** [Pre-funding qualification](OPERATIONS/PREFUNDING.md), canonical posting observations and terminal receipt proofs. The manual console does not enforce this off-chain policy. [Qualification scope](qualification/V160_PREFUNDING.md).
+**v1.6.1 synchronizes active documentation, release metadata and deployment entrypoints.** It corrects the previously stale deployment-registry version, old download links, incomplete edition history and conflicting current-guide headings. A generated release/command guide and CI checks keep package/lock/registry versions, active headings, downloads and executable command names aligned. Deployment implementation, Solidity, payouts and dependency resolutions are unchanged.
 
-**New in v1.2.1:** the read-only status tool binds all state reads to one canonical block hash, verifies the expected token address and rejects stale or implausibly future RPC heads by default. Ethereum chain 1 requires native Circle USDC; other chains require an explicit expected token. See [review evidence](qualification/V121_REVIEW.md) and the [updated command guide](OPERATIONS/SETTLEMENT_RECOVERY.md). Contract and payment behavior are unchanged.
+Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md`, `SOURCE_CI.json` and `RELEASE_MANIFEST.json` identify the qualified source and publication evidence. Main may contain later work; never combine its scripts with an older release's instructions or attestations. Current guides apply to their checkout. Historical releases, dated qualification records and legal notices retain their original versions.
 
-**New in v1.2.0:** a bounded, read-only [settlement-status tool and recovery guide](OPERATIONS/SETTLEMENT_RECOVERY.md) distinguish closed jobs from paid obligations, reconcile all five reserve categories, report pause-adjusted deadlines and compare optional independent RPC observations. Public contract regression tests cover these observations and failure handling. Contract sources, ABI, linked libraries, payout rules, legal notices and dependency resolutions are preserved. Private agent/node/fleet applications are not distributed.
-
-**New in v1.1.0:** manager and optional ENS helper scripts default to read-only when `DRY_RUN` is missing or empty. Broadcasts require an explicit false value (documented as `DRY_RUN=0`) plus the existing signer, verification and mainnet confirmation gates. The offline check reports the selected mode. Operator guides are corrected for the disabled NFT default, five initial reserve counters and deployment-specific ENS names. This release includes the deployment maintenance previously available on main. It preserves every Solidity source file, the v1.0.5 protocol/legal notices, ABI, creation/runtime bytecode, dependency resolutions and prior release assets. Use the v1.1.0 archive, guide and exact-source evidence together. Software publication performs no on-chain action.
-
-The v1.0.5 edition strengthens privacy rules and user responsibilities, adds fresh public-content reviews, and reduces saved browser content and credential exposure. It retains the v1.0.4 publisher/operator boundaries and fresh acknowledgement safeguards. It preserves v1.0.3 contract behavior and the v1.0.1 ENS naming policy. Existing instances, jobs, agreements and prior published assets do not change.
-
-| Edition | Contents |
+| Edition | Change introduced |
 | --- | --- |
-| [v1.6.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.6.0) | Lifecycle stress modeling, signed qualification verification and canonical economic observations; contract, settlement and privacy safeguards retained |
-| [v1.2.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.2.1) | Canonical block-hash snapshots, expected-token checks, RPC freshness limits and adversarial transport coverage |
-| [v1.2.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.2.0) | Read-only settlement visibility, recovery guidance and public regression coverage; contract behavior and privacy safeguards retained |
-| [v1.1.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.1.0) | Read-only manager/helper defaults, explicit broadcast mode, corrected operator guidance and regenerated versioned artifacts; v1.0.5 privacy safeguards and contract source retained |
-| [v1.0.5](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.5) | Public-content rules, lawful user responsibility, private incident handling, explicit draft storage and reviewed credential-safe uploads; contract bytecode unchanged |
-| [v1.0.4](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.4) | MIT-compatible publisher and independent-owner notices, deployment-specific terms template, legal/privacy guidance, synchronized source notices and fresh console acknowledgement |
-| [v1.0.3](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.3) | Disabled NFT-admission default on fresh construction, owner opt-in, aligned deployment/readiness setup and regression coverage |
-| [v1.0.2](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.2) | Non-overwriting private configuration setup, offline profile validation, explicit Hardhat environment, complete configuration reference and refreshed operator guides |
-| [v1.0.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.1) | Automatic fresh ENS namespace and `job-` prefix, same-manager preservation, wallet/deployment/completion context fixes, mobile corrections, combined free name + identity NFT onboarding, and the historical Genesis simulation |
-| [v1.0.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.0) | Original frozen 1.0 software at `790facbcb0a9e9c2fea52a038b7c80fc2ba12795` |
-
-Use the selected edition's assets and `SHA256SUMS.txt`. Its manifest identifies the frozen source and qualification evidence. v1.0.3 changes the manager constructor default; its ABI, deployed runtime, library code and payout rules are preserved. The [new ENS naming policy](ENS_DEPLOYMENT_NAMESPACES.md) applies to fresh deployments through the supported tooling; a console update keeps existing jobs and namespaces on their original manager. Software publication does not establish a live manager or readiness for paid intake.
+| [v1.6.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.6.1) | Documentation/release alignment, current command map, corrected download routes and automated drift checks |
+| [v1.6.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.6.0) | Schema 3 employer pre-funding qualification, capacity/value evidence, canonical posting observations and closure receipts; browser persistence repair |
+| [v1.5.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.5.0) | Schema 2 exact action/vote/delivery binding, fixed reviewer ballots, bounded preparation policy and valid job-zero handling |
+| [v1.4.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.4.0) | Lifecycle stresses, signed qualification envelopes, role-specific margins and separate capital/cost/job/gas limits |
+| [v1.3.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.3.0) | Participant margin and loss screening against explicit scenario assumptions |
+| [v1.2.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.2.1) | Canonical settlement snapshots, expected-token validation and RPC freshness checks |
+| [v1.2.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.2.0) | Read-only settlement visibility, reserve reconciliation and recovery guidance |
+| [v1.1.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.1.0) | Read-only deployment defaults and corrected operator guidance |
+| [v1.0.5](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.5) | Privacy rules, explicit draft storage and public-content safeguards |
+| [v1.0.4](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.4) | Publisher/operator notices and legal/privacy guidance |
+| [v1.0.3](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.3) | NFT admission disabled on fresh construction; owner opt-in preserved |
+| [v1.0.2](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.2) | Non-overwriting private setup, offline profile checks and configuration reference |
+| [v1.0.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.1) | Fresh ENS job namespaces and participant-console improvements |
+| [v1.0.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.0) | Frozen 1.0 source at `790facbcb0a9e9c2fea52a038b7c80fc2ba12795` |
 
 ## Compatibility
 
-| Existing manager | Use of the 1.2 console |
+| Existing manager | Use with the current console |
 | --- | --- |
-| Verified v0.9.6 or v0.9.7 manager | Compatible ABI and deployed runtime; construction defaults differ. Keep original receipts, on-chain settings and existing job policies |
-| New manager deployed from 1.2 | Verify the manager and all eight fixed library links, accept ownership and complete the launch checks before intake |
+| Verified v0.9.6 or v0.9.7 manager | Compatible ABI/runtime; construction defaults differ. Preserve original receipts, settings and job policies |
+| Verified manager from the preserved v1.0.3 contract build or subsequent compatible release | No redeployment needed for this documentation patch; verify the actual instance and all eight links |
 | v0.9.5 or older manager | Keep its compatible interface for existing jobs; it lacks the exact-bond getter used by current voting |
-| Original-asset legacy manager | Preserve its original jobs, token, allowances and ENS namespace; the USDC release does not migrate them |
+| Original-asset legacy manager | Preserve original jobs, token, allowances and ENS namespace; the USDC release does not migrate them |
 
-The current console retains the v0.9.6 configuration/draft namespace but never restores acknowledgement from saved state. Stored addresses and drafts remain subject to live context checks; saved settings are not deployment verification or legal acceptance. No upgrade transaction or escrow migration is part of publication. The MIT license is unchanged; new notices are not retroactive agreements or extra software-use conditions.
+The current console retains its historical saved-context namespace and rechecks wallet, chain and manager. Saved data is not deployment verification or legal acceptance. Publishing a new software edition neither upgrades bytecode nor imports escrow. The MIT license and earlier agreements are unchanged.
 
 ## What the contract cannot establish
 
@@ -69,6 +65,6 @@ Start with [the participant guide](START_HERE.md), run the [observed acceptance 
 
 The qualification approach follows layered testing, access-control review and operational precautions described in [Ethereum's smart-contract security guidance](https://ethereum.org/developers/docs/smart-contracts/security/). Native USDC addresses must be checked against [Circle's current registry](https://developers.circle.com/stablecoins/usdc-contract-addresses).
 
-## v1.6.0 admission primitives
+## Current admission primitives
 
-The public tools cover explicit lifecycle stress cases, operator-owned economic limits, signed evidence attestations, and current canonical two-RPC terms. They do not implement an autonomous signing service or certify market inputs. See [qualified admission](OPERATIONS/QUALIFIED_ADMISSION.md) and [qualification limits](qualification/V150_BOUND_ADMISSION.md).
+The public tools cover explicit lifecycle stress cases, operator-owned economic limits, signed evidence attestations, and current canonical two-RPC terms. They do not implement an autonomous signing service or certify market inputs. See [qualified admission](OPERATIONS/QUALIFIED_ADMISSION.md) and [pre-funding and closure scope](qualification/V160_PREFUNDING.md).

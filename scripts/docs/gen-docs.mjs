@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const scripts = [
+  'scripts/docs/release-alignment.mjs',
   'scripts/docs/generate-versions.mjs',
   'scripts/docs/generate-contract-interface.mjs',
   'scripts/docs/generate-repo-map.mjs',
@@ -11,5 +12,5 @@ const scripts = [
 ];
 
 for (const script of scripts) {
-  execFileSync('node', [script], { cwd: root, stdio: 'inherit' });
+  execFileSync('node', [script, ...(script.endsWith('release-alignment.mjs') ? ['--write'] : [])], { cwd: root, stdio: 'inherit' });
 }
