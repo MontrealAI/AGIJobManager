@@ -1,7 +1,7 @@
 # Repository Map (Generated)
 
-- Generated at (deterministic source fingerprint): `696cf8fbd3cc`.
-- Source snapshot fingerprint: `696cf8fbd3cc`.
+- Generated at (deterministic source fingerprint): `0932ee3f9930`.
+- Source snapshot fingerprint: `0932ee3f9930`.
 
 ## Curated high-signal map
 
@@ -32,6 +32,7 @@
 | `contracts/` | Project-scoped directory discovered at repository root |
 | `docs/` | Project-scoped directory discovered at repository root |
 | `examples/` | Project-scoped directory discovered at repository root |
+| `experiments/` | Project-scoped directory discovered at repository root |
 | `forge-test/` | Project-scoped directory discovered at repository root |
 | `hardhat/` | Project-scoped directory discovered at repository root |
 | `integrations/` | Project-scoped directory discovered at repository root |

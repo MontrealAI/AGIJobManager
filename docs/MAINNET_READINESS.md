@@ -1,4 +1,4 @@
-# v1.10.0 mainnet qualification
+# v1.11.0 mainnet qualification
 
 Current automated work uses [operator-budget admission without retainers](OPERATIONS/NO_RETAINERS.md), with schema 6 participant and schema 7 employer policies. Existing credits, refunds and journals remain recoverable. See [general computer work and actual adapter coverage](OPERATIONS/GENERAL_COMPUTER_WORK.md).
 

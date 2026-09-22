@@ -1,0 +1,38 @@
+{
+  "schema": "agi-capacity-plan/v1",
+  "measurementKind": "synthetic",
+  "terms": {
+    "maxActiveJobsPerAgent": 3,
+    "requiredApprovals": 3,
+    "requiredDisapprovals": 3,
+    "voteQuorum": 3,
+    "reviewSeconds": 604800,
+    "challengeSeconds": 86400
+  },
+  "agents": [
+    {
+      "id": "agent-mac",
+      "activeJobs": 0
+    }
+  ],
+  "reviewers": [
+    {
+      "id": "node-mac",
+      "controller": "node-operator",
+      "credential": "node-key",
+      "failureDomain": "model-provider-A"
+    }
+  ],
+  "human": {
+    "availableSecondsPerDay": 7200,
+    "queuedSeconds": 0
+  },
+  "job": {
+    "remainingSeconds": 172800,
+    "agentSeconds": 600,
+    "reviewSeconds": 600,
+    "humanSeconds": 60,
+    "queueSeconds": 0,
+    "reserveSeconds": 60
+  }
+}

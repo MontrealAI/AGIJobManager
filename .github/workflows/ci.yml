@@ -52,6 +52,10 @@ jobs:
         if: matrix.shard == 0
         run: npm run test:ui:usdc
 
+      - name: Simulation accounting regression checks
+        if: matrix.shard == 0
+        run: npm run test:simulation
+
       - name: Lint
         run: npm run lint
 

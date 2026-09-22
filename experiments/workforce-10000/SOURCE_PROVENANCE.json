@@ -1,0 +1,24 @@
+{
+  "release": "v1.10.0",
+  "sourceCommit": "faf7ef50a8ffcb7891b7078ea511504eeea5b3a1",
+  "publicationCommit": "257308d9c01cef6c6fc5a35792f9a9cd3d510dce",
+  "privateEditions": {
+    "fleet": "1.8.0",
+    "agent": "1.14.0",
+    "node": "2.15.0"
+  },
+  "sha256": {
+    "scripts/economics/assess.cjs": "44c5632923baf8ce5a56cf5eeeb64fe9ea4c2ec72d86b37f41d6cc0a726f703d",
+    "scripts/economics/workforce.cjs": "859a9cab045f950df25fa6f9c28a4e6c800619c70e9ecaadb00d9a6dbe451979",
+    "scripts/economics/computer-work.cjs": "67472d13f65b391feeae1b1dd1e430c3b1b0ac066931a91602be723d22a23ff4",
+    "scripts/economics/capability-report.cjs": "709ba263e080699914558b8f65c376a8fefe00e0fc1b2eac9f9bf8d2f6ae2a8c",
+    "scripts/economics/execution-window.cjs": "4ed2141e9940c9ee42a5ceec3483f2ab7cc68206fb1d99a75f04a494dd5fcee0",
+    "scripts/lib/usdc.js": "698c919a88facd700e23c42c8415d6994dc1714f387056e4665bb1bcdb4d3f5a",
+    "contracts/AGIJobManager.sol": "e9be32b61afb55818d4108f295c5b80d9e2f5649e4697b9a199f8c000d8285c4",
+    "contracts/utils/JobSettlement.sol": "0e38c450b7461f36d30ec0aa06488135cf690dec0c8822b837f6f1b273a7cd93",
+    "contracts/utils/JobValidation.sol": "0f085da143a6ecbd3f7d941945a86dd54ad4bd27834457041f75bcab782a615d",
+    "contracts/utils/BondMath.sol": "f082b47230121bd98c9a2c4c5c0957734461f2fbf612b2386e249fa4b4b3fa30",
+    "LICENSE": "4827c1af7eacb8f5941bd6867e74293d5f0c3a1360a567f65cfcf264c6c04a25",
+    "SPEC_TEMPLATE.json": "58b0ddf49fa69cebd83e3e1ad220d0783abe45dae7e361a128174d94516e2751"
+  }
+}

@@ -1,0 +1,222 @@
+[
+  {
+    "admitted": 1068,
+    "human_hours": 95.79933333333334,
+    "modeled_system_surplus_USDC": 131250.650611,
+    "node_cash_net_USDC": 1810.180831,
+    "paid_bad": 5,
+    "parameter": "human_hours",
+    "resource_cost_USDC": 21759.824063,
+    "useful_settled": 773,
+    "value": 1
+  },
+  {
+    "admitted": 1988,
+    "human_hours": 189.22466666666665,
+    "modeled_system_surplus_USDC": 273236.647357,
+    "node_cash_net_USDC": 5129.268022,
+    "paid_bad": 13,
+    "parameter": "human_hours",
+    "resource_cost_USDC": 36967.024409,
+    "useful_settled": 1437,
+    "value": 2
+  },
+  {
+    "admitted": 3710,
+    "human_hours": 372.866,
+    "modeled_system_surplus_USDC": 520502.657076,
+    "node_cash_net_USDC": 10779.702845,
+    "paid_bad": 23,
+    "parameter": "human_hours",
+    "resource_cost_USDC": 66099.265143,
+    "useful_settled": 2650,
+    "value": 4
+  },
+  {
+    "admitted": 5856,
+    "human_hours": 591.9906666666667,
+    "modeled_system_surplus_USDC": 832568.566093,
+    "node_cash_net_USDC": 18607.386361,
+    "paid_bad": 34,
+    "parameter": "human_hours",
+    "resource_cost_USDC": 100122.917878,
+    "useful_settled": 4229,
+    "value": 8
+  },
+  {
+    "admitted": 2067,
+    "human_hours": 191.42999999999998,
+    "modeled_system_surplus_USDC": 250825.724565,
+    "node_cash_net_USDC": 5631.456231,
+    "paid_bad": 13,
+    "parameter": "gas_multiplier",
+    "resource_cost_USDC": 32608.141701,
+    "useful_settled": 1513,
+    "value": 0.25
+  },
+  {
+    "admitted": 1988,
+    "human_hours": 189.22466666666665,
+    "modeled_system_surplus_USDC": 273236.647357,
+    "node_cash_net_USDC": 5129.268022,
+    "paid_bad": 13,
+    "parameter": "gas_multiplier",
+    "resource_cost_USDC": 36967.024409,
+    "useful_settled": 1437,
+    "value": 1
+  },
+  {
+    "admitted": 1085,
+    "human_hours": 166.99266666666665,
+    "modeled_system_surplus_USDC": 314586.185814,
+    "node_cash_net_USDC": 2159.593857,
+    "paid_bad": 12,
+    "parameter": "gas_multiplier",
+    "resource_cost_USDC": 48348.286597,
+    "useful_settled": 694,
+    "value": 5
+  },
+  {
+    "admitted": 218,
+    "human_hours": 44.96666666666667,
+    "modeled_system_surplus_USDC": 90006.518231,
+    "node_cash_net_USDC": -1318.084887,
+    "paid_bad": 3,
+    "parameter": "gas_multiplier",
+    "resource_cost_USDC": 20959.849456,
+    "useful_settled": 109,
+    "value": 12.5
+  },
+  {
+    "admitted": 1966,
+    "human_hours": 190.69466666666668,
+    "modeled_system_surplus_USDC": 255634.310195,
+    "node_cash_net_USDC": 6418.995314,
+    "paid_bad": 13,
+    "parameter": "compute_multiplier",
+    "resource_cost_USDC": 32016.57542,
+    "useful_settled": 1429,
+    "value": 0.5
+  },
+  {
+    "admitted": 1988,
+    "human_hours": 189.22466666666665,
+    "modeled_system_surplus_USDC": 273236.647357,
+    "node_cash_net_USDC": 5129.268022,
+    "paid_bad": 13,
+    "parameter": "compute_multiplier",
+    "resource_cost_USDC": 36967.024409,
+    "useful_settled": 1437,
+    "value": 1
+  },
+  {
+    "admitted": 2410,
+    "human_hours": 184.90466666666669,
+    "modeled_system_surplus_USDC": 303280.331669,
+    "node_cash_net_USDC": 4232.47936,
+    "paid_bad": 16,
+    "parameter": "compute_multiplier",
+    "resource_cost_USDC": 42154.414921,
+    "useful_settled": 1708,
+    "value": 2
+  },
+  {
+    "admitted": 1761,
+    "human_hours": 70.334,
+    "modeled_system_surplus_USDC": 158784.225308,
+    "node_cash_net_USDC": 2458.167199,
+    "paid_bad": 8,
+    "parameter": "compute_multiplier",
+    "resource_cost_USDC": 20659.086898,
+    "useful_settled": 1246,
+    "value": 4
+  },
+  {
+    "admitted": 2008,
+    "human_hours": 189.506,
+    "modeled_system_surplus_USDC": 276609.771155,
+    "node_cash_net_USDC": 5062.734332,
+    "paid_bad": 10,
+    "parameter": "common_error",
+    "resource_cost_USDC": 36971.01816,
+    "useful_settled": 1463,
+    "value": 0
+  },
+  {
+    "admitted": 1988,
+    "human_hours": 189.22466666666665,
+    "modeled_system_surplus_USDC": 273236.647357,
+    "node_cash_net_USDC": 5129.268022,
+    "paid_bad": 13,
+    "parameter": "common_error",
+    "resource_cost_USDC": 36967.024409,
+    "useful_settled": 1437,
+    "value": 0.025
+  },
+  {
+    "admitted": 1988,
+    "human_hours": 190.53066666666666,
+    "modeled_system_surplus_USDC": 271248.911021,
+    "node_cash_net_USDC": 4500.354453,
+    "paid_bad": 19,
+    "parameter": "common_error",
+    "resource_cost_USDC": 37090.841901,
+    "useful_settled": 1438,
+    "value": 0.1
+  },
+  {
+    "admitted": 2002,
+    "human_hours": 190.44866666666667,
+    "modeled_system_surplus_USDC": 274344.580167,
+    "node_cash_net_USDC": 4019.668557,
+    "paid_bad": 30,
+    "parameter": "common_error",
+    "resource_cost_USDC": 37061.317353,
+    "useful_settled": 1449,
+    "value": 0.2
+  },
+  {
+    "admitted": 1061,
+    "human_hours": 111.09266666666666,
+    "modeled_system_surplus_USDC": 146216.254923,
+    "node_cash_net_USDC": 1735.217412,
+    "paid_bad": 6,
+    "parameter": "active_cap",
+    "resource_cost_USDC": 24279.810546,
+    "useful_settled": 768,
+    "value": 3
+  },
+  {
+    "admitted": 1852,
+    "human_hours": 185.79733333333334,
+    "modeled_system_surplus_USDC": 257547.106706,
+    "node_cash_net_USDC": 4365.863918,
+    "paid_bad": 13,
+    "parameter": "active_cap",
+    "resource_cost_USDC": 36586.330002,
+    "useful_settled": 1320,
+    "value": 10
+  },
+  {
+    "admitted": 1988,
+    "human_hours": 189.22466666666665,
+    "modeled_system_surplus_USDC": 273236.647357,
+    "node_cash_net_USDC": 5129.268022,
+    "paid_bad": 13,
+    "parameter": "active_cap",
+    "resource_cost_USDC": 36967.024409,
+    "useful_settled": 1437,
+    "value": 20
+  },
+  {
+    "admitted": 1988,
+    "human_hours": 189.22466666666665,
+    "modeled_system_surplus_USDC": 273236.647357,
+    "node_cash_net_USDC": 5129.268022,
+    "paid_bad": 13,
+    "parameter": "active_cap",
+    "resource_cost_USDC": 36967.024409,
+    "useful_settled": 1437,
+    "value": 40
+  }
+]

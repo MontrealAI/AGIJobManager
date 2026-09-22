@@ -38,15 +38,18 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 | `npm run postinstall` | `node scripts/security/patch-openzeppelin-compiler.cjs` |
 | `npm run settlement:status` | `node scripts/ops/settlement-status.mjs` |
 | `npm run simulate:genesis` | `npm --prefix hardhat run compile && node scripts/simulate-genesis-job.mjs` |
+| `npm run simulate:workforce` | `python3 experiments/workforce-10000/simulate.py --replicates 20 --out build/workforce-10000` |
 | `npm run size` | `node scripts/check-bytecode-size.js` |
 | `npm run slither` | `./scripts/security/run-slither.sh` |
 | `npm run slither:extended` | `bash scripts/security/run-slither-extended.sh` |
 | `npm run test` | `npm run build && node scripts/test-contract-shard.js 0 1` |
 | `npm run test:shard` | `node scripts/test-contract-shard.js` |
+| `npm run test:simulation` | `python3 experiments/workforce-10000/test_simulation.py` |
 | `npm run test:ui` | `node scripts/ui/run_ui_smoke_test.js` |
 | `npm run test:ui:usdc` | `node scripts/ui/run_usdc_console_test.js` |
 | `npm run ui:abi` | `node scripts/ui/export_abi.js` |
 | `npm run ui:abi:check` | `node scripts/ui/check_ui_abi.js` |
+| `npm run workforce:plan` | `node scripts/economics/capacity-plan.cjs` |
 | `npm run workforce:qualify` | `node scripts/economics/workforce.cjs` |
 
 ## hardhat workspace

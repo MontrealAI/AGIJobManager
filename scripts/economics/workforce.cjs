@@ -3,6 +3,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const { canonical, digest } = require("./computer-work.cjs");
 const { capabilityReport } = require("./capability-report.cjs");
+const { validateOperatingLimits, checkOperatingOutcomes } = require("./workforce-outcomes.cjs");
 const hash = (x) => typeof x === "string" && /^[a-f0-9]{64}$/.test(x);
 const need = (v, c) => {
   if (!v) throw Error("WORKFORCE_" + c);
@@ -40,9 +41,10 @@ function validatePolicy(p) {
     "controllers",
     "limits",
     "expiresAt",
+    ...(p?.schema === "agi-workforce-policy/v2" ? ["operatingLimits"] : []),
   ]);
   need(
-    p.schema === "agi-workforce-policy/v1" &&
+    ["agi-workforce-policy/v1", "agi-workforce-policy/v2"].includes(p.schema) &&
       hash(p.sourceSha256) &&
       hash(p.securityScopeSha256),
     "POLICY",
@@ -107,6 +109,7 @@ function validatePolicy(p) {
       /^(0|[1-9][0-9]{0,11})(\.[0-9]{1,6})?$/.test(l.minimumNetUSDC),
     "CASH",
   );
+  if(p.schema === "agi-workforce-policy/v2") validateOperatingLimits(p.operatingLimits);
   return p;
 }
 function signAttestation(body, privateKey) {
@@ -357,6 +360,11 @@ function qualifyWorkforce(
       ),
       "CASH_SETTLEMENTS_REQUIRED",
     );
+    if(policy.schema === "agi-workforce-policy/v2") {
+      need(v.plan.cases.every(c=>policy.allowedSpecSha256.includes(c.specSha256)), "COHORT_JOB_SCOPE");
+      need(policy.allowedSpecSha256.every(h=>["agent","reviewer"].every(role=>v.plan.cases.some(c=>c.partition==="evaluation"&&c.role===role&&c.specSha256===h))), "UNTESTED_JOB_SCOPE");
+      r.operating=checkOperatingOutcomes(policy.operatingLimits,v.plan,v.ledger,r);
+    }
     return r;
   });
   run("security", () => {
