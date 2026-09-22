@@ -1,8 +1,8 @@
 # AGIJobManager Documentation Hub
 
-> **v1.5.0: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
+> **v1.6.0: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
-Guides for buyers, agents, reviewers, operators and developers. **Use the docs matching your release:** [v1.5.0 scope and earlier editions](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+Guides for buyers, agents, reviewers, operators and developers. **Use the docs matching your release:** [v1.6.0 scope and earlier editions](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
 
 - **Check participant economics:** [conditional margin and loss screening](OPERATIONS/ECONOMIC_SCREENING.md).
 - **Become an agent:** [free identity, eligibility, work and payment](roles/AGENT.md).
@@ -44,7 +44,7 @@ If you only read one thing right now:
 
 ## Legal notices and independent operators
 
-Use the [legal and operator protection center](LEGAL/README.md) for publisher protections, MIT licensing, source/console notices, privacy, jurisdiction scoping and a deployment-specific owner template. Technical readiness does not establish legal clearance. Existing guides describing v1.0.3 behavior remain applicable to v1.5.0 unless identified as historical.
+Use the [legal and operator protection center](LEGAL/README.md) for publisher protections, MIT licensing, source/console notices, privacy, jurisdiction scoping and a deployment-specific owner template. Technical readiness does not establish legal clearance. Existing guides describing v1.0.3 behavior remain applicable to v1.6.0 unless identified as historical.
 
 ## Standalone HTML UI safety routing
 
@@ -177,4 +177,4 @@ If another document conflicts with these in an operational detail, follow the ca
 - Script-first actions: contract deployment and source verification workflow.
 - Dedicated-root setup and the new manager pointer switch require the respective authorized owners. Same-manager page migration is a separate procedure, not a fresh-USDC step.
 
-**v1.5.0:** [Lifecycle economics and qualified admission](OPERATIONS/QUALIFIED_ADMISSION.md) adds signed, scoped, expiring qualification verification and read-only canonical economic snapshots. The contract and payout rules are unchanged.
+**v1.6.0:** [Lifecycle economics and qualified admission](OPERATIONS/QUALIFIED_ADMISSION.md) adds signed, scoped, expiring qualification verification and read-only canonical economic snapshots. The contract and payout rules are unchanged.

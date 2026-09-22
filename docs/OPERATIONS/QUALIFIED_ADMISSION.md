@@ -78,3 +78,7 @@ Version 1 is retained for existing offline clients. New action-sensitive signing
 6. Run bounded reconciliation independently of new admission and issuer availability. After settlement, release capital only using sufficiently confirmed canonical observations and paid claims. Do not infer payment from a terminal job flag. Preserve epoch spending rather than resetting it when a job closes.
 
 The public tools neither run these steps autonomously nor guarantee profit, throughput, full autonomy, permanent fund recovery or avoidance of loss. No Solidity, deployed bytecode, ABI, linked library or payout rule changes in v1.5.0.
+
+## Employer funding (schema 3)
+
+v1.6.0 adds a separate employer/offer scope before a job exists. See [pre-funding qualification](PREFUNDING.md) for exact additional fields, canonical observations, capacity reservations and cancellation proof boundaries. Schema 2 remains the action-bound Agent/reviewer interface.
