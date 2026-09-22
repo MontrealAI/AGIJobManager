@@ -1,4 +1,6 @@
-# v1.7.0 mainnet qualification
+# v1.8.0 mainnet qualification
+
+The current release adds [general computer work and an explicit review-payment choice](OPERATIONS/GENERAL_COMPUTER_WORK.md). Schema 4/5 retainer policies keep their existing behavior; schema 6/7 can explicitly select bounded operator-budget review. Existing escrow assignments and claims must still be recovered.
 
 v1.6.1 is a software release for verified v0.9.6-compatible managers and new Ethereum deployments. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 

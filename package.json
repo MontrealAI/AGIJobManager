@@ -1,6 +1,6 @@
 {
   "name": "agijobmanager",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "private": true,
   "description": "USDC job escrow, bonded review and buyer recovery with fixed linked libraries",
   "scripts": {
@@ -39,7 +39,9 @@
     "economics:admission": "node scripts/economics/admission.cjs",
     "economics:funding": "node scripts/economics/admission.cjs",
     "economics:calibrate": "node scripts/economics/calibration.cjs",
-    "economics:benchmark": "node scripts/economics/benchmark-qualification.mjs"
+    "economics:benchmark": "node scripts/economics/benchmark-qualification.mjs",
+    "computer:check": "node scripts/economics/computer-work.cjs",
+    "computer:report": "node scripts/economics/capability-report.cjs"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"

@@ -1,6 +1,8 @@
 # Review protection and calibrated admission
 
-AGIJobManager 1.7.0 adds an optional, separately deployed `AGIReviewEscrow`. Existing manager contracts, job escrow and payout percentages are unchanged. This release is a commissioning candidate. Passing software checks does not establish production profitability, independent audit, or physical fleet capacity.
+The current release adds [general computer work and an explicit review-payment choice](GENERAL_COMPUTER_WORK.md). Schema 4/5 retainer policies keep their existing behavior; schema 6/7 can explicitly select bounded operator-budget review. Existing escrow assignments and claims must still be recovered.
+
+AGIJobManager 1.8.0 adds an optional, separately deployed `AGIReviewEscrow`. Existing manager contracts, job escrow and payout percentages are unchanged. This release is a commissioning candidate. Passing software checks does not establish production profitability, independent audit, or physical fleet capacity.
 
 ## What an AGI Job is
 

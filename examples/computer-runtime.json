@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "model": "openai/gpt-6-astra",
+  "openclawVersion": "2026.9.5",
+  "policySha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "imageSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "capabilities": [
+    "browser",
+    "desktop",
+    "files",
+    "code",
+    "documents",
+    "independent-review"
+  ],
+  "scope": "isolated-public",
+  "resources": [
+    "public-web",
+    "job-workspace"
+  ],
+  "maxTaskSeconds": 600
+}

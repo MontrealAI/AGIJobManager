@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v1.7.0</title>
+  <title>AGIJobManager · USDC v1.8.0</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -962,7 +962,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v1.7.0 · Compatible with verified v0.9.6/v0.9.7 and v1.0.x/v1.1.0/v1.2.x managers. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">v1.8.0 · Compatible with verified v0.9.6/v0.9.7 and v1.0.x/v1.1.0/v1.2.x managers. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1131,7 +1131,7 @@
             <div class="legendRow"><span>Wallet two · 10%</span><b id="legendWallet10Pct">10%</b></div>
           </div>
         </div>
-        <div class="tiny" style="margin-top:10px">NFT requirement for new jobs: <b id="agentNftRequiredState">Unknown — connect to read</b>. Fresh v1.7.0 deployments start disabled. Existing jobs keep their own setting.</div>
+        <div class="tiny" style="margin-top:10px">NFT requirement for new jobs: <b id="agentNftRequiredState">Unknown — connect to read</b>. Fresh v1.8.0 deployments start disabled. Existing jobs keep their own setting.</div>
         <div class="tiny" style="margin-top:10px">The validator rate is fixed when the job is posted. The two wallets receive 30% and 10% of the original job cost; the agent receives the remainder. NFTs affect eligibility only. Each job keeps the NFT requirement recorded when it was posted.</div>
       </div>
 
@@ -1182,7 +1182,7 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v1.7.0</h2>
+      <h2>USDC deployment · v1.8.0</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
       <p class="helper">Enter the verified Ethereum mainnet address of a compatible v0.9.6, v0.9.7, v1.0.x, v1.1.0 or v1.2.x USDC manager. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
@@ -1426,7 +1426,7 @@
     </div>
 
     <div class="card" id="createJobSection">
-      <p class="helper"><b>Automated employer intake:</b> qualify economics and reserve capacity before funding through the qualified Employer runner. This manual console does not verify economic qualification or capacity leases. <a href="https://github.com/MontrealAI/AGIJobManager/blob/v1.7.0/docs/OPERATIONS/PREFUNDING.md" target="_blank" rel="noopener noreferrer">Read the pre-funding guide</a>.</p>
+      <p class="helper"><b>Automated employer intake:</b> qualify economics and reserve capacity before funding through the qualified Employer runner. This manual console does not verify economic qualification or capacity leases. <a href="https://github.com/MontrealAI/AGIJobManager/blob/v1.8.0/docs/OPERATIONS/PREFUNDING.md" target="_blank" rel="noopener noreferrer">Read the pre-funding guide</a>.</p>
       <h2 style="margin:0 0 12px">2) Create a Job (Employer)</h2>
       <div class="warnBox" id="publicContentNotice" style="margin-bottom:12px"><b>Public content only — no added personal information or secrets.</b><br>Check text, links, files, images and agent outputs before sharing. Do not include names, contact details, identity documents, private work, passwords or access links. Keep protected work in a separate authorized workspace. Wallet/ENS activity is already public; a hash or encryption does not guarantee anonymity. <a href="https://github.com/MontrealAI/AGIJobManager/blob/v1.0.5/docs/LEGAL/USER_DATA_RULES.md" target="_blank" rel="noopener noreferrer">User data responsibilities</a>.</div>
       <div class="helper" style="margin-bottom:12px">This flow keeps job creation local-first and single-page. You can compose a structured job spec, generate standards-friendly JSON metadata, optionally pin it to IPFS directly from the browser, preview the ENS job page details that the contract stack is designed to create, and then submit the final on-chain createJob transaction using the resulting URI.</div>
@@ -2260,9 +2260,9 @@ accrued rights. Invalid provisions do not expand a disclaimer beyond lawful limi
 The MIT License and separate valid agreements remain distinct; this source notice is
 not a universal entire-agreement clause or additional restriction on software use.</div></details></div>
       <div class="hintBox" style="margin-top:12px">
-        <b>How job escrow refunds work in v1.7.0</b>
+        <b>How job escrow refunds work in v1.8.0</b>
         <p>The source terms above are reproduced verbatim. The current contract provides escrow refunds when its cancellation, non-delivery expiry, buyer-win or neutral arbitration-timeout conditions are met. A refund requires a successful transaction; elapsed time alone does not send money. Final settlement has no built-in chargeback. Gas and outside losses are not reimbursed.</p>
-        <p>The v1.0.5 protocol notice is retained unchanged in this v1.7.0 edition. Here, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
+        <p>The v1.0.5 protocol notice is retained unchanged in this v1.8.0 edition. Here, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
       </div>
     </div>
 

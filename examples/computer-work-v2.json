@@ -1,0 +1,74 @@
+{
+  "schema": "agi-node-job/v1",
+  "profile": "computer-work/v2",
+  "title": "Reconcile application exports and deliver a reproducible result",
+  "prompt": "Use the supplied public records to reconcile totals, investigate differences and produce the declared evidence. Select suitable computer tools and independently test the result. This example is a template, not a profession restriction.",
+  "dataPolicy": "public",
+  "inputs": [],
+  "outputs": [
+    {
+      "name": "result.json",
+      "mediaType": "application/json",
+      "maxBytes": 100000,
+      "requirement": "An inspectable result and the method used to establish it."
+    }
+  ],
+  "criteria": [
+    {
+      "id": "result",
+      "requirement": "The result satisfies the requested reconciliation.",
+      "verification": "Recompute from the original inputs and inspect any unexplained differences.",
+      "evidence": [
+        "result.json"
+      ]
+    }
+  ],
+  "environment": {
+    "runtimeSha256": {
+      "agent": "692176c94c56404ead1f3052880ba31501460eae278637e5639a9a1353a33643",
+      "reviewer": "692176c94c56404ead1f3052880ba31501460eae278637e5639a9a1353a33643"
+    },
+    "capabilities": {
+      "agent": [
+        "files",
+        "code"
+      ],
+      "reviewer": [
+        "files",
+        "code",
+        "independent-review"
+      ]
+    }
+  },
+  "authority": {
+    "agent": {
+      "scope": "isolated-public",
+      "resources": [
+        "job-workspace"
+      ]
+    },
+    "reviewer": {
+      "scope": "isolated-public",
+      "resources": [
+        "job-workspace"
+      ]
+    }
+  },
+  "budget": {
+    "maxAgentSeconds": 600,
+    "maxReviewSeconds": 600,
+    "maxAgentCostUSDC": "5",
+    "maxReviewCostUSDC": "3"
+  },
+  "deadline": 2000000000,
+  "settlement": {
+    "chainId": 31337,
+    "manager": "0x1111111111111111111111111111111111111111",
+    "recovery": "Use the manager cancellation, dispute and expiry paths; preserve claims and reservation journals."
+  },
+  "coordination": {
+    "parentSpecSha256": null,
+    "dependencies": [],
+    "delegation": "none"
+  }
+}

@@ -1,10 +1,12 @@
 # Hardhat deployment guide
 
+The current release adds [general computer work and an explicit review-payment choice](../docs/OPERATIONS/GENERAL_COMPUTER_WORK.md). Schema 4/5 retainer policies keep their existing behavior; schema 6/7 can explicitly select bounded operator-budget review. Existing escrow assignments and claims must still be recovered.
+
 **Optional reviewer companion:** [deployment, recovery and commissioning](../docs/OPERATIONS/REVIEW_PROTECTION.md).
 
 **Deployment entrypoint:** [release identity and checked commands](../docs/RELEASE_GUIDE.md).
 
-**v1.7.0 deployment tooling:** these instructions match this checkout. Manager and helper commands default to read-only when `DRY_RUN` is missing or empty. Published v1.0.5 downloads are unchanged; always use explicit `DRY_RUN=1` for plans on older tags. Record the reviewed commit with `git rev-parse HEAD` and use its matching scripts, documentation and CI results. See [release scope](../docs/V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+**v1.8.0 deployment tooling:** these instructions match this checkout. Manager and helper commands default to read-only when `DRY_RUN` is missing or empty. Published v1.0.5 downloads are unchanged; always use explicit `DRY_RUN=1` for plans on older tags. Record the reviewed commit with `git rev-parse HEAD` and use its matching scripts, documentation and CI results. See [release scope](../docs/V1_RELEASE_SCOPE.md#published-download-versus-current-source).
 
 ## Deployment at a glance
 
@@ -16,13 +18,13 @@
 | 4. Deploy | Explicitly select broadcast mode after reviewing the mainnet plan | Eight libraries and manager deployed, verified, intake paused |
 | 5. Take control | Accept ownership, configure while paused, run readiness | Recorded technical checks; owner reviews launch gates before opening intake |
 
-v1.7.0 preserves v1.0.3 construction, ABI, bytecode, eight library links and payout rules. Fresh managers start with NFT admission disabled and an empty collection registry. Existing settings and job policies stay unchanged. Start with the [launch checklist](../docs/LAUNCH_CHECKLIST.md), then use this guide in order. The [configuration reference](../docs/DEPLOYMENT_CONFIGURATION.md) lists every supported deployment setting and recovery command.
+v1.8.0 preserves v1.0.3 construction, ABI, bytecode, eight library links and payout rules. Fresh managers start with NFT admission disabled and an empty collection registry. Existing settings and job policies stay unchanged. Start with the [launch checklist](../docs/LAUNCH_CHECKLIST.md), then use this guide in order. The [configuration reference](../docs/DEPLOYMENT_CONFIGURATION.md) lists every supported deployment setting and recovery command.
 
 Before paid intake, prepare the [operator notice](../docs/LEGAL/OPERATOR_NOTICE_TEMPLATE.md), identify the actual operator and both fee beneficiaries, and review requirements for the planned activities and territories. The [legal center](../docs/LEGAL/README.md) distinguishes MIT software publication from operating a deployment. Setup, deployment and readiness checks do not verify legal compliance, consent, licensing or regulatory exemption; no central identity collection or new transaction is required by these notices.
 
 Before paid intake, adopt the [user-data rules](../docs/LEGAL/USER_DATA_RULES.md) through a valid process and configure the actual [privacy notice](../docs/LEGAL/PRIVACY.md), private contact, retention and provider arrangements. Keep personal information and secrets out of public job content and deployment records. This does not transfer statutory responsibilities.
 
-This is the supported public-network deployment path. The root contract regression suites also use Hardhat 3; Truffle/Ganache dependencies are removed. Moving from the original-asset legacy manager requires a fresh USDC deployment with two real recipient wallets; this release does not deploy a contract or populate those addresses. v1.7.0 preserves the eight-library architecture, including `JobSettlement` and `JobValidation`. A verified v0.9.6 manager remains compatible; older incompatible managers require a fresh deployment to gain the current features. All eight fixed links, including transitive library links, are verified. Existing jobs stay on their original managers and use those versions’ interfaces. A new console cannot upgrade old bytecode.
+This is the supported public-network deployment path. The root contract regression suites also use Hardhat 3; Truffle/Ganache dependencies are removed. Moving from the original-asset legacy manager requires a fresh USDC deployment with two real recipient wallets; this release does not deploy a contract or populate those addresses. v1.8.0 preserves the eight-library architecture, including `JobSettlement` and `JobValidation`. A verified v0.9.6 manager remains compatible; older incompatible managers require a fresh deployment to gain the current features. All eight fixed links, including transitive library links, are verified. Existing jobs stay on their original managers and use those versions’ interfaces. A new console cannot upgrade old bytecode.
 
 The manager starts with intake paused in its constructor. Successful jobs pay validators in USDC first, then 30% and 10% of the original job cost to the two wallets, then the agent remainder. The default validator budget is 8%. See [payout rules](../docs/USDC_PAYOUT_SPLIT.md), [owner controls](../docs/OWNER_CONTROLS.md) and [mainnet qualification](../docs/MAINNET_READINESS.md).
 
@@ -58,11 +60,11 @@ npm run check:config:mainnet
 
 Run only the profile you have completed. This shares the deployment script's constructor/owner/native-USDC validation, checks confirmation settings and prints public configuration. It requires no RPC, key, compilation or explorer credentials. A pass validates local input only; it does not verify control of addresses, on-chain code or readiness. A custom `.cjs` configuration is executable code: review it before loading it with either command.
 
-The generated NFT policy matches fresh v1.7.0 construction: `agentNftRequired: false` and an empty registry. Review it alongside the actual instance before readiness. For owner opt-in, register reviewed collections and enable the requirement as described in the [NFT walkthrough](../docs/NFT_POLICY.md); update the policy file to match. Setup preserves an existing reviewed file, including a previously required policy.
+The generated NFT policy matches fresh v1.8.0 construction: `agentNftRequired: false` and an empty registry. Review it alongside the actual instance before readiness. For owner opt-in, register reviewed collections and enable the requirement as described in the [NFT walkthrough](../docs/NFT_POLICY.md); update the policy file to match. Setup preserves an existing reviewed file, including a previously required policy.
 
 ## Participant membership and optional job pages
 
-AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on. Fresh v1.7.0 managers start with that requirement disabled; owners can enable it for future jobs. These participant identity checks are separate from optional ENS job-page metadata.
+AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on. Fresh v1.8.0 managers start with that requirement disabled; owners can enable it for future jobs. These participant identity checks are separate from optional ENS job-page metadata.
 
 Verify all four identity getters against the intended names:
 
@@ -100,7 +102,7 @@ A dry run validates configuration, chain, token state and compiled artifacts wit
 DRY_RUN=1 npm run deploy:mainnet
 ```
 
-Boolean settings (`DRY_RUN`, and the optional ENS script's `VERIFY`/`LOCK_CONFIG`) accept explicit `1`/`0`, `true`/`false`, `yes`/`no` or `on`/`off`. Unknown text is rejected before any transaction. Missing or empty `DRY_RUN` is read-only in v1.7.0; the published v1.0.5 scripts retain their earlier behavior. `DRY_RUN=true` is also read-only. Keep the mainnet broadcast confirmation phrase unset during rehearsals.
+Boolean settings (`DRY_RUN`, and the optional ENS script's `VERIFY`/`LOCK_CONFIG`) accept explicit `1`/`0`, `true`/`false`, `yes`/`no` or `on`/`off`. Unknown text is rejected before any transaction. Missing or empty `DRY_RUN` is read-only in v1.8.0; the published v1.0.5 scripts retain their earlier behavior. `DRY_RUN=true` is also read-only. Keep the mainnet broadcast confirmation phrase unset during rehearsals.
 
 Review its plan, explicit owner source, membership-root mapping and exception policy before an authorized deployment. For an authorized Sepolia broadcast, use `DRY_RUN=0 npm run deploy:sepolia` with the Sepolia profile, funded testnet deployer and explorer key. Mainnet requires at least three confirmations (`CONFIRMATIONS=3` by default). For actual mainnet deployment, set `DRY_RUN=0` explicitly and set `DEPLOY_CONFIRM_MAINNET` to `I_UNDERSTAND_MAINNET_DEPLOYMENT` in the operator's local environment, then run:
 

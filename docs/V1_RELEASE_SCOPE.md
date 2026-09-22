@@ -20,7 +20,7 @@ Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md`, `
 
 | Edition | Change introduced |
 | --- | --- |
-| [v1.6.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.7.0) | Documentation/release alignment, current command map, corrected download routes and automated drift checks |
+| [v1.6.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.8.0) | Documentation/release alignment, current command map, corrected download routes and automated drift checks |
 | [v1.6.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.6.0) | Schema 3 employer pre-funding qualification, capacity/value evidence, canonical posting observations and closure receipts; browser persistence repair |
 | [v1.5.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.5.0) | Schema 2 exact action/vote/delivery binding, fixed reviewer ballots, bounded preparation policy and valid job-zero handling |
 | [v1.4.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.4.0) | Lifecycle stresses, signed qualification envelopes, role-specific margins and separate capital/cost/job/gas limits |

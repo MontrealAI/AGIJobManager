@@ -1,4 +1,6 @@
-# Start here — AGIJobManager v1.7.0
+# Start here — AGIJobManager v1.8.0
+
+The current release adds [general computer work and an explicit review-payment choice](OPERATIONS/GENERAL_COMPUTER_WORK.md). Schema 4/5 retainer policies keep their existing behavior; schema 6/7 can explicitly select bounded operator-budget review. Existing escrow assignments and claims must still be recovered.
 
 **Deployment entrypoint:** [release identity and checked commands](RELEASE_GUIDE.md).
 
@@ -24,7 +26,7 @@ AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent
 | Respond to a problem | [Incident response](OPERATIONS/INCIDENT_RESPONSE.md) | Manager address, chain, transaction hashes and current pause/reserve state |
 | Evaluate the release | [Mainnet readiness](MAINNET_READINESS.md) and [testing](TESTING.md) | Source, release manifest, checksums and the linked CI evidence |
 
-Download the [v1.6.1 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.7.0/AGIJobManager-v1.7.0-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.7.0/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console. Public submissions must contain no added personal information, confidential material or secrets; read the [user-data rules](LEGAL/USER_DATA_RULES.md). Draft saving is explicit and unencrypted. Review each public-content confirmation before an upload or submission.
+Download the [v1.6.1 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.8.0/AGIJobManager-v1.8.0-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.8.0/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console. Public submissions must contain no added personal information, confidential material or secrets; read the [user-data rules](LEGAL/USER_DATA_RULES.md). Draft saving is explicit and unencrypted. Review each public-content confirmation before an upload or submission.
 
 For a practical cost comparison, operators can run `npm run economics:check -- --example`, then replace its hypothetical assumptions with their own scenario. See [economics](game-theory.md).
 
