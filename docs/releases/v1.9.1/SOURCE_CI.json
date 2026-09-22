@@ -1,0 +1,230 @@
+{
+  "sourceCommit": "f32b600d3a09d75850a0e506810b51aa2bb79003",
+  "sourceTree": "b5333cde3fcdd697ab4a2214a9e77d905f9966de",
+  "checkoutCommit": "f32b600d3a09d75850a0e506810b51aa2bb79003",
+  "policy": "All five required workflows and eight source jobs succeeded. Actual checkout markers were checked for every job; publication repeats these checks.",
+  "runs": [
+    {
+      "id": 35746420845,
+      "workflow": "docs.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35746420845"
+    },
+    {
+      "id": 35746420834,
+      "workflow": "mainnet-fork.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35746420834"
+    },
+    {
+      "id": 35746420750,
+      "workflow": "security-verification.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35746420750"
+    },
+    {
+      "id": 35746420974,
+      "workflow": "ci.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35746420974"
+    },
+    {
+      "id": 35746420976,
+      "workflow": "ui.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35746420976"
+    }
+  ],
+  "verifiedJobs": [
+    {
+      "job": "ui",
+      "id": 106809115315,
+      "run": 35746420976,
+      "checkout": "f32b600d3a09d75850a0e506810b51aa2bb79003",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T15:20:15.0164953Z  ✓ tests/hashRouterRuntime.test.ts (16 tests) 350ms",
+        "2026-09-22T15:20:17.9034690Z  ✓ tests/walletRuntime.test.ts (2 tests) 480ms",
+        "2026-09-22T15:20:19.8844426Z  ✓ tests/linkSanitizer.test.ts (3 tests) 15ms",
+        "2026-09-22T15:20:21.6275133Z  Test Files  20 passed (20)",
+        "2026-09-22T15:20:21.6275990Z       Tests  178 passed (178)",
+        "2026-09-22T15:20:21.6277418Z    Duration  9.18s (transform 579ms, setup 0ms, import 1.91s, tests 5.92s, environment 15.69s)",
+        "2026-09-22T15:20:22.7833614Z  Test Files  1 passed (1)",
+        "2026-09-22T15:20:22.7834206Z       Tests  6 passed (6)",
+        "2026-09-22T15:20:22.7835685Z    Duration  792ms (transform 52ms, setup 0ms, import 104ms, tests 25ms, environment 527ms)",
+        "2026-09-22T15:21:26.3130243Z Running 9 tests using 2 workers",
+        "2026-09-22T15:21:30.9527579Z   9 passed (5.1s)",
+        "2026-09-22T15:21:55.3020161Z Running 4 tests using 1 worker",
+        "2026-09-22T15:22:00.7410750Z   4 passed (6.0s)",
+        "2026-09-22T15:22:23.6932802Z Running 2 tests using 1 worker",
+        "2026-09-22T15:22:24.6290117Z   2 passed (1.4s)",
+        "2026-09-22T15:23:19.5654702Z Runtime bundle markers verified (bytes=207328, embeddedSources=56).",
+        "2026-09-22T15:23:20.7321240Z Runtime bundle markers verified (bytes=207328, embeddedSources=56)."
+      ]
+    },
+    {
+      "job": "docs",
+      "id": 106809114923,
+      "run": 35746420845,
+      "checkout": "f32b600d3a09d75850a0e506810b51aa2bb79003",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T15:18:56.1223367Z Release alignment passed: v1.9.1, 196 active guides, 18 deployment commands.",
+        "2026-09-22T15:18:56.2185451Z Current guide audit passed: 180 guides; release labels, policy instructions and npm commands.",
+        "2026-09-22T15:18:56.2801811Z Local file and heading links passed for 180 current guides."
+      ]
+    },
+    {
+      "job": "mainnet-usdc",
+      "id": 106809114810,
+      "run": 35746420834,
+      "checkout": "f32b600d3a09d75850a0e506810b51aa2bb79003",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T15:19:41.2738157Z     Mainnet-sized deployment: 24359 runtime bytes; intake paused until owner activation",
+        "2026-09-22T15:19:42.7071150Z   11 passing (3s)",
+        "2026-09-22T15:19:42.7081296Z 11 passing (11 mocha)",
+        "2026-09-22T15:19:55.1478668Z     ✔ conserves one-micro-USDC rounding when the buyer explicitly accepts unreviewed work (49ms)",
+        "2026-09-22T15:19:55.7931535Z     ✔ keeps unreviewed work unpaid and returns all parties their own funds if arbitration times out (52ms)",
+        "2026-09-22T15:19:56.4135590Z   23 passing (12s)",
+        "2026-09-22T15:19:56.4143838Z 23 passing (23 mocha)"
+      ]
+    },
+    {
+      "job": "security-verification",
+      "id": 106809112983,
+      "run": 35746420750,
+      "checkout": "f32b600d3a09d75850a0e506810b51aa2bb79003",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T15:19:55.4337442Z     JobValidation: runtime=1699, initcode=1731, gasUsed=420407, gasLimit=504489",
+        "2026-09-22T15:19:55.5043383Z     AGIJobManager: runtime=24359, initcode=27551, gasUsed=5973040, gasLimit=7167648",
+        "2026-09-22T15:19:55.5125357Z     ✔ deploys the fully linked release and matches runtime, immutable token and every library",
+        "2026-09-22T15:19:55.5796263Z     AGIJobManager: runtime=24359, initcode=27551, gasUsed=5973040, gasLimit=7167648",
+        "2026-09-22T15:19:55.5846085Z     AGIReviewEscrow: runtime=3575, initcode=4178, gasUsed=861174, gasLimit=1033409",
+        "2026-09-22T15:19:55.6963499Z     AGIJobManager: runtime=24359, initcode=27551, gasUsed=5973040, gasLimit=7167648",
+        "2026-09-22T15:19:55.7983235Z     AGIJobManager: runtime=24359, initcode=27551, gasUsed=5973040, gasLimit=7167648",
+        "2026-09-22T15:19:55.8657854Z     AGIJobManager: runtime=24359, initcode=27551, gasUsed=5973040, gasLimit=7167648",
+        "2026-09-22T15:19:55.9299483Z     AGIJobManager: runtime=24359, initcode=27551, gasUsed=5973040, gasLimit=7167648",
+        "2026-09-22T15:19:55.9958891Z     AGIJobManager: runtime=24359, initcode=28031, gasUsed=6337470, gasLimit=7604964",
+        "2026-09-22T15:19:56.0614561Z     AGIJobManager: runtime=24359, initcode=27551, gasUsed=5973040, gasLimit=7167648",
+        "2026-09-22T15:19:56.2659179Z     ENSJobPages: runtime=15344, initcode=16837, gasUsed=3738048, gasLimit=4485658",
+        "2026-09-22T15:19:56.2724751Z     ✔ deploys and wires optional ENS pages with bounded constructor data, runtime and transaction gas (211ms)",
+        "2026-09-22T15:19:56.3362861Z     AGIJobManager: runtime=24359, initcode=27551, gasUsed=5973040, gasLimit=7167648",
+        "2026-09-22T15:19:56.3432779Z     AGIJobPages: runtime=4212, initcode=5682, gasUsed=1187297, gasLimit=1424757",
+        "2026-09-22T15:19:56.4135802Z     AGIJobManager: runtime=24359, initcode=27551, gasUsed=5973040, gasLimit=7167648",
+        "2026-09-22T15:19:56.4869545Z     AGIJobManager: runtime=24359, initcode=27551, gasUsed=5973040, gasLimit=7167648",
+        "2026-09-22T15:19:56.5511380Z     AGIJobManager: runtime=24359, initcode=27551, gasUsed=5973040, gasLimit=7167648",
+        "2026-09-22T15:19:56.5580501Z   11 passing (2s)",
+        "2026-09-22T15:19:56.5593029Z 11 passing (11 mocha)",
+        "2026-09-22T15:20:36.1125548Z Ran 6 tests for forge-test/unit/AGIJobManagerSecurityVerification.t.sol:AGIJobManagerSecurityVerificationTest",
+        "2026-09-22T15:20:36.1134763Z Suite result: ok. 6 passed; 0 failed; 0 skipped; finished in 6.07ms (4.33ms CPU time)",
+        "2026-09-22T15:20:36.4645359Z Ran 5 tests for forge-test/fuzz/AGIJobManagerBoundaryFuzz.t.sol:AGIJobManagerBoundaryFuzz",
+        "2026-09-22T15:20:36.4774911Z Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 361.43ms (689.00ms CPU time)",
+        "2026-09-22T15:20:36.5955361Z Ran 9 tests for forge-test/unit/AGIJobManagerV091Security.t.sol:AGIJobManagerV091SecurityTest",
+        "2026-09-22T15:20:36.6164892Z Suite result: ok. 9 passed; 0 failed; 0 skipped; finished in 131.44ms (130.20ms CPU time)",
+        "2026-09-22T15:20:37.3055497Z Ran 4 tests for forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol:AGIJobManagerTimingFuzz",
+        "2026-09-22T15:20:37.3060589Z Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 1.20s (784.95ms CPU time)",
+        "2026-09-22T15:20:37.3061418Z Ran 8 tests for forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol:AGIJobManagerSettlementFuzz",
+        "2026-09-22T15:20:37.3071172Z Suite result: ok. 8 passed; 0 failed; 0 skipped; finished in 1.21s (2.77s CPU time)",
+        "2026-09-22T15:20:37.3071871Z Ran 5 test suites in 1.21s (2.91s CPU time): 32 tests passed, 0 failed, 0 skipped (32 total tests)",
+        "2026-09-22T15:20:39.0027963Z Ran 3 tests for forge-test/invariant/AGIJobManagerInvariants.t.sol:AGIJobManagerInvariants",
+        "2026-09-22T15:20:39.0123181Z Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 1.53s (3.86s CPU time)",
+        "2026-09-22T15:20:44.2079672Z Ran 2 tests for forge-test/invariant/AGIJobManagerLifecycleInvariants.t.sol:AGIJobManagerLifecycleInvariants",
+        "2026-09-22T15:20:44.2114654Z Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 6.74s (6.75s CPU time)",
+        "2026-09-22T15:20:44.2116583Z Ran 2 test suites in 6.74s (8.27s CPU time): 5 tests passed, 0 failed, 0 skipped (5 total tests)",
+        "2026-09-22T15:20:53.9268373Z Ran 11 tests in 0.042s",
+        "2026-09-22T15:21:25.9570085Z slither-extended.json: 12 findings match the individually reviewed baseline",
+        "2026-09-22T15:21:25.9571169Z slither-reentrancy.json: 29 findings match the individually reviewed baseline",
+        "2026-09-22T15:21:25.9572094Z slither-all.json: 122 findings match the individually reviewed baseline"
+      ]
+    },
+    {
+      "job": "build (2)",
+      "id": 106809114850,
+      "run": 35746420974,
+      "checkout": "f32b600d3a09d75850a0e506810b51aa2bb79003",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T15:19:55.6676898Z AGIJobManager runtime bytecode size: 24359 bytes",
+        "2026-09-22T15:20:01.8405883Z     ✔ rejects wrong runtime, manager or non-native asset",
+        "2026-09-22T15:20:04.6045303Z     ✔ does not show an unreviewed submission as approved for payment",
+        "2026-09-22T15:20:05.3594932Z     ✔ sends exactly the fresh reviewed JSON and endpoint even when fields change during review",
+        "2026-09-22T15:20:05.4862851Z   159 passing (9s)"
+      ]
+    },
+    {
+      "job": "build (0)",
+      "id": 106809115023,
+      "run": 35746420974,
+      "checkout": "f32b600d3a09d75850a0e506810b51aa2bb79003",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T15:19:34.7041964Z \u001b[1A\u001b[2K[8/19] ui-tests/usdc-console.spec.js:250:3 › Published USDC console in a real browser › checks real Web3 decoding and guides a buyer without requiring ENS",
+        "2026-09-22T15:20:23.4852307Z \u001b[1A\u001b[2K  19 passed (1.2m)",
+        "2026-09-22T15:21:18.6760568Z AGIJobManager runtime bytecode size: 24359 bytes",
+        "2026-09-22T15:21:21.5385331Z     ✔ keeps deployed bytecode within the EIP-170 runtime size limit",
+        "2026-09-22T15:21:21.5412162Z     ✔ binds distinct worker and verifier runtime identities and capabilities",
+        "2026-09-22T15:21:21.5434889Z     ✔ does not turn scoped-data requests into public-runtime authority",
+        "2026-09-22T15:21:24.1642107Z     ✔ keeps all role guides locked without a wallet, even with stale successful flags",
+        "2026-09-22T15:21:24.1732889Z     ✔ guides an existing eligible agent to jobs without requiring an alpha credential",
+        "2026-09-22T15:21:24.1742789Z     ✔ guides an unverified agent to credential verification before optional identity exploration",
+        "2026-09-22T15:21:24.1763302Z     ✔ guides a verified reviewer to evidence and mentions independence and economic exposure",
+        "2026-09-22T15:21:24.1819000Z   166 passing (5s)",
+        "2026-09-22T15:21:26.4742772Z PASS 100 USDC: 7 approvals after full review",
+        "2026-09-22T15:21:26.5671714Z PASS 100 USDC: 3 approvals after full review",
+        "2026-09-22T15:21:26.6277943Z PASS 100 USDC: Buyer accepts before votes",
+        "2026-09-22T15:21:26.6674158Z PASS 100 USDC: Agent never submits; buyer expires job",
+        "2026-09-22T15:21:26.7465364Z PASS 100 USDC: Three disapprovals; moderator upholds buyer",
+        "2026-09-22T15:21:26.7984606Z PASS 100 USDC: Buyer disputes before votes and wins",
+        "2026-09-22T15:21:26.8588820Z PASS 100 USDC: Buyer disputes good work; moderator upholds agent",
+        "2026-09-22T15:21:26.9111280Z PASS 100 USDC: No votes or arbitration; neutral refund",
+        "2026-09-22T15:21:27.0416598Z PASS 100 USDC: Agent USDC blocked; same beneficiary later claims",
+        "2026-09-22T15:21:27.1735929Z PASS 100 USDC: Optional ENS hook fails; payout and NFT succeed",
+        "2026-09-22T15:21:27.2306553Z PASS 100 USDC: Mock credentials lost after assignment; earned payment survives",
+        "2026-09-22T15:21:27.2510758Z PASS 100 USDC: Buyer cancels before assignment",
+        "2026-09-22T15:21:27.3728386Z PASS 88888 USDC: 7 approvals after full review",
+        "2026-09-22T15:21:27.4642851Z PASS 88888 USDC: 3 approvals after full review",
+        "2026-09-22T15:21:27.5182003Z PASS 88888 USDC: Buyer accepts before votes",
+        "2026-09-22T15:21:27.5595825Z PASS 88888 USDC: Agent never submits; buyer expires job",
+        "2026-09-22T15:21:27.6396184Z PASS 88888 USDC: Three disapprovals; moderator upholds buyer",
+        "2026-09-22T15:21:27.6897545Z PASS 88888 USDC: Buyer disputes before votes and wins",
+        "2026-09-22T15:21:27.7489903Z PASS 88888 USDC: Buyer disputes good work; moderator upholds agent",
+        "2026-09-22T15:21:27.7975453Z PASS 88888 USDC: No votes or arbitration; neutral refund",
+        "2026-09-22T15:21:27.9281068Z PASS 88888 USDC: Agent USDC blocked; same beneficiary later claims",
+        "2026-09-22T15:21:28.0599708Z PASS 88888 USDC: Optional ENS hook fails; payout and NFT succeed",
+        "2026-09-22T15:21:28.1168714Z PASS 88888 USDC: Mock credentials lost after assignment; earned payment survives",
+        "2026-09-22T15:21:28.1389351Z PASS 88888 USDC: Buyer cancels before assignment",
+        "2026-09-22T15:21:29.4151556Z PASS changed snapshot blocks the reviewed action",
+        "2026-09-22T15:21:29.4151954Z PASS missing snapshot field blocks the reviewed action",
+        "2026-09-22T15:21:29.6157866Z # tests 2",
+        "2026-09-22T15:21:29.6159236Z # pass 2",
+        "2026-09-22T15:21:37.1282564Z \u001b[1A\u001b[2K  1 passed (5.7s)"
+      ]
+    },
+    {
+      "job": "build (1)",
+      "id": 106809115057,
+      "run": 35746420974,
+      "checkout": "f32b600d3a09d75850a0e506810b51aa2bb79003",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T15:19:53.5719759Z AGIJobManager runtime bytecode size: 24359 bytes",
+        "2026-09-22T15:19:56.9923719Z     ✔ allows anyone to escalate unreviewed work without paying the agent",
+        "2026-09-22T15:19:57.3547326Z     ✔ forces dispute on tie under quorum and escalates unreviewed submissions",
+        "2026-09-22T15:19:59.3044963Z     ✔ blocks reviewed job posting when the owner changes the default before submission",
+        "2026-09-22T15:20:00.9798565Z   180 passing (6s)"
+      ]
+    },
+    {
+      "job": "build (3)",
+      "id": 106809115091,
+      "run": 35746420974,
+      "checkout": "f32b600d3a09d75850a0e506810b51aa2bb79003",
+      "conclusion": "success",
+      "totals": [
+        "2026-09-22T15:19:32.9550357Z AGIJobManager runtime bytecode size: 24359 bytes",
+        "2026-09-22T15:19:33.0577515Z     \"test/runtime.assertions.test.js\",",
+        "2026-09-22T15:19:34.9827957Z     ✔ ships linked runtime bytecode without unresolved library placeholders",
+        "2026-09-22T15:19:35.9999081Z   Contract test runtime assertion canaries",
+        "2026-09-22T15:19:36.0875610Z     ✔ submits the originally reviewed job and URI after an unchanged metadata inspection",
+        "2026-09-22T15:19:36.3158740Z   183 passing (3s)"
+      ]
+    }
+  ]
+}
