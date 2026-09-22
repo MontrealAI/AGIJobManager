@@ -16,24 +16,19 @@ The example runtime contains placeholder image/policy hashes. Replace them with 
 
 There is no profession or filename-extension allowlist in v2. Each native artifact declares its media type and byte limit. Safe relative paths, exact file counts, hashes, total size, canonical base64 and criterion/evidence coverage remain mandatory. Limits are 64 files, 32 MiB per file and 64 MiB of raw files per input/output set. The encoded bundle is bounded at 90 MiB. Transport integrity is not semantic correctness; independent review remains necessary.
 
-The private runtime uses code, browser and desktop tools in disposable environments. It checks the configured runtime before spending, applies the smaller of the task time budget and remaining deadline, and preserves failed-attempt accounting. A Node receives immutable source inputs and actual delivered files in a fresh workspace. It must address every acceptance criterion, cite actual files and abstain on uncertainty. A textual checklist can still be wrong; commissioning must check it against independent outcomes.
+The private runtime uses code, browser and desktop tools in disposable environments. It checks the configured runtime before spending, requires the full declared work time plus a completion reserve to fit before starting, then applies a bounded attempt timeout, and preserves failed-attempt accounting. A Node receives immutable source inputs and actual delivered files in a fresh workspace. It must address every acceptance criterion, cite actual files and abstain on uncertainty. A textual checklist can still be wrong; commissioning must check it against independent outcomes.
 
 The bundled adapter handles public data in an isolated workstation. It does not enable personal signed-in Mac applications, credentials, purchases, messages or private uploads. The schema can describe dedicated-account authority, but that requires a separately implemented and commissioned adapter; the bundled public adapter rejects it. Application availability is a runtime capability, not inferred from an artifact extension. A native project is admissible only when both production and verification environments can handle it.
 
 Large/team projects can reference parent jobs and dependencies. Each delegated job needs its own authority, economic admission and settlement. These references do not automatically spawn work or implement atomic parent/child settlement. The present private task runner caps one processing attempt at ten minutes; long projects require independently admitted stages. This is an implementation limit, not a boundary on the protocol's work domain.
 
-## Review payment is an explicit economic choice
+## New work uses operator budgets
 
-Existing schema 4/5 policies retain funded-retainer behavior. New participant/funding policies 6/7 require `reviewPayment`:
+Current operating entrypoints require schema 6 participant policies or schema 7 employer policies with `reviewPayment: operator-budget`. No retainer income, fee, activation or confirmation delay is admitted for new work. The Node explicitly accepts bounded unpaid-review risk and reserves its complete permitted processing allowance before spending. The employer funds the job without a review-escrow policy dependency.
 
-| Policy | Lifecycle model | Cost and risk |
-| --- | --- | --- |
-| `retainer` | Schema 2 | Employer funds additional named-reviewer fees; activation/collection and confirmation delays apply. Activated fees survive closure. Employer bears paid nonperformance risk. |
-| `operator-budget` | Schema 1 | No retainer revenue is forecast. The reviewer explicitly accepts bounded unpaid-work risk. Employer does not fund the companion escrow. |
+Use `checkNewWork` and the [current qualification reference](QUALIFIED_ADMISSION.md) at an operating boundary. `checkAdmission` still reads historical schema formats for offline analysis. It is not the new-work boundary. Existing paid obligations, credits, refund rights, policies and journals remain available for reconciliation and recovery; they are not rewritten into a new payment mode.
 
-Both modes retain signed calibration, observed-evidence requirements on private mainnet, participant economics, independent controllers, collateral, gas and capacity limits. A signature cannot make an optimistic assumption true. Include unrewarded processing, no-shows, failures and abandoned votes in the calibration cases. Do not silently translate an existing policy into the other mode. Existing claims, assignments and journals remain authoritative.
-
-No Solidity changes are introduced by this release. The optional companion remains available for cases where its measured benefit justifies its employer cost and latency. The public manual console does not enforce these off-chain admission policies.
+Signed calibration, observed evidence on private mainnet, independent controllers, collateral, gas and capacity limits remain required. Include failed and unpaid work in costs. The public manual console and permissionless contract do not enforce the private admission policy.
 
 ## Measure improvements before promotion
 

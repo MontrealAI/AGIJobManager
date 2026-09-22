@@ -114,6 +114,6 @@ The offline check and live deployment share profile validation. Offline success 
 
 Read [the deployment troubleshooting guide](TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md) for namespace authority and best-effort hook failures. Keep live intake paused until the actual instance's required checks pass.
 
-## Optional review escrow
+## Existing review escrow
 
-Use [the review protection guide](OPERATIONS/REVIEW_PROTECTION.md) for the separately deployed companion. `JOB_MANAGER_CODE_HASH` pins the existing manager's runtime Keccak-256. `VERIFY_RPC_URL` must be an independently operated witness endpoint and is required for broadcasting or verification recovery. `MAX_REVIEW_DEPLOY_ETH` caps estimated deployment gas at the chosen fee rate, default 0.05 ETH. `REVIEW_ESCROW_ADDRESS` selects source-verification recovery against the original saved review-escrow journal. The normal network RPC, signer, `JOB_MANAGER`, `DRY_RUN`, `CONFIRMATIONS`, explorer and mainnet-confirmation settings still apply. Keep endpoint credentials private.
+Use [existing review-escrow recovery](OPERATIONS/REVIEW_PROTECTION.md). New companion deployments are disabled. `REVIEW_ESCROW_ADDRESS` is mandatory and must match the original journal. `JOB_MANAGER_CODE_HASH` pins the manager runtime. `VERIFY_RPC_URL` supplies an independent witness for actual verification recovery; `DRY_RUN=1` produces a read-only recovery plan. `DRY_RUN=0` verifies the original receipt, runtime, immutable manager/token and explorer source without sending a blockchain transaction. Network RPC, `JOB_MANAGER`, `CONFIRMATIONS` and explorer settings apply. A deployer signer, `MAX_REVIEW_DEPLOY_ETH` and deployment-confirmation phrase are not used by this recovery command. Keep endpoint credentials private.

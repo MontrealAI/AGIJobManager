@@ -139,7 +139,7 @@ function checkNewWork(input) {
   return checkAdmission(input);
 }
 if (require.main === module) {
-  try { const args=process.argv.slice(2); if(args.length===1 && args[0]==='--help') { console.log('Usage: economics:admission -- input.json\nInput: {policy,envelope,observed,portfolio}. Offline verification; no signer or reservation.'); }
+  try { const args=process.argv.slice(2); if(args.length===1 && args[0]==='--help') { console.log('Usage: economics:admission -- input.json\nInput: {policy,envelope,observed,portfolio,evidenceReport}. New work requires schema 6 (agent/reviewer) or 7 (employer), reviewPayment=operator-budget. evidenceReport is the exact UTF-8 calibration-report text. Offline verification; no signer or reservation.'); }
     else { ok(args.length===1,'Use --help or one input JSON file.'); const s=fs.statSync(args[0]);ok(s.isFile()&&s.size<=1048576,'Input must be a regular JSON file <=1 MiB.');const x=JSON.parse(fs.readFileSync(args[0],'utf8'));shape(x,[...([4,5,6,7].includes(x.policy?.schemaVersion)?['evidenceReport']:[]),'policy','envelope','observed','portfolio'],'input');console.log(JSON.stringify(checkNewWork(x),null,2)); }
   } catch(e) { console.error(String(e.message).replace(/[\u0000-\u001f\u007f-\u009f]/gu,' '));process.exitCode=1; }
 }

@@ -22,7 +22,7 @@
     "contracts/utils/TransferUtils.sol": "797242b5d1ac32547e065a0989d8f407a3f5a22618e98681a332d3e85197ce36",
     "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
     "foundry.toml": "fb098664cd6a2b8cba0b038924a4d1e3273096741d4b194c84308d670ad9098a",
-    "package-lock.json": "89f21d17fb884cf77dc8692b44faec3386dc6aef6d120ec950beac9cb8943693",
+    "package-lock.json": "9485a4fa5a1edb4eb343fc5baa1d6d8946c502434af8b4aab31be3e6d4bcb2a5",
     "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
     "scripts/security/patch-openzeppelin-compiler.cjs": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116",
     "scripts/security/run-slither-extended.sh": "ae23abf938d410c88ff340ec828f3bb30441fd6a22aaa0be34499f4fb72c38cb",

@@ -1,0 +1,7 @@
+{
+  "public": "1.9.1",
+  "fleet": "1.7.1",
+  "agent": "1.13.1",
+  "node": "2.14.1",
+  "scope": "Separate private downloads; actual Mac commissioning required."
+}

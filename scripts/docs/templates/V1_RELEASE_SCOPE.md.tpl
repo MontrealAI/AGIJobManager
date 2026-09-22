@@ -1,6 +1,6 @@
 # AGIJobManager release scope
 
-**Current edition: v1.9.1.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
+**Current edition: {{TAG}}.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
 
 ## Included in this edition
 
@@ -14,13 +14,13 @@ The public archive contains no private Fleet/Agent/Node application, production 
 
 ## Published download versus current source
 
-**v1.9.1 repairs current documentation and closes the fresh review-escrow deployment path.** The README, companion edition map and full npm command inventory are generated from checked package metadata. Current guides describe schema 6/7 operator-budget admission, all five CLI input fields, exact report bytes, actual adapter coverage and existing-obligation recovery. Tests reject stale labels, obsolete commands and incomplete admission examples. Existing manager Solidity, payouts, dependency resolutions and historical evidence are preserved.
+**{{TAG}} repairs current documentation and closes the fresh review-escrow deployment path.** The README, companion edition map and full npm command inventory are generated from checked package metadata. Current guides describe schema 6/7 operator-budget admission, all five CLI input fields, exact report bytes, actual adapter coverage and existing-obligation recovery. Tests reject stale labels, obsolete commands and incomplete admission examples. Existing manager Solidity, payouts, dependency resolutions and historical evidence are preserved.
 
 Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md`, `SOURCE_CI.json` and `RELEASE_MANIFEST.json` identify the qualified source and publication evidence. Main may contain later work; never combine its scripts with an older release's instructions or attestations. Current guides apply to their checkout. Historical releases, dated qualification records and legal notices retain their original versions.
 
 | Edition | Change introduced |
 | --- | --- |
-| [v1.9.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.9.1) | Current documentation and script audit, generated entry guides, complete admission example and recovery-only escrow tooling |
+| [{{TAG}}](https://github.com/MontrealAI/AGIJobManager/releases/tag/{{TAG}}) | Current documentation and script audit, generated entry guides, complete admission example and recovery-only escrow tooling |
 | [v1.9.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.9.0) | Explicit no-retainer intake, feasible execution windows and role-specific model binding |
 | [v1.8.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.8.0) | General computer-work specification and explicit operator-budget review mode |
 | [v1.7.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.7.0) | Historical calibrated admission and review-escrow protection |
