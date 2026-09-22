@@ -1,5 +1,7 @@
 # General computer work
 
+**Current operating policy:** new work uses [operator-budget admission without retainers](NO_RETAINERS.md). Retainer sections below describe historical analysis and existing-obligation recovery, not new funding.
+
 AGI Jobs covers lawful work that a person or team can perform with a keyboard and mouse while watching a screen. An Agent performs computer work; a Node independently performs the computer work needed to verify it. Templates describe examples, not an eligibility catalogue.
 
 ## The executable job specification

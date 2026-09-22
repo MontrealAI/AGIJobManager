@@ -134,9 +134,13 @@ function checkAdmission({ policy, envelope, observed, portfolio, evidenceReport,
   ok(money(portfolio.epochCostUSDC,'epoch cost') + cost <= money(policy.maxEpochCostUSDC,'cost cap'), 'EPOCH_COST_LIMIT');
   return { schemaVersion:p.schemaVersion, ...(calibration ? {calibration} : {}), ...(p.schemaVersion >= 2 ? {commitment:JSON.parse(JSON.stringify(p.commitment))} : {}), ...([2,4,6].includes(p.schemaVersion) ? {maxPreparationAttempts:policy.maxPreparationAttempts} : {}), ...(funding ? {capacity:JSON.parse(JSON.stringify(p.capacity))} : {}), decision:'QUALIFIED_UNDER_ATTESTED_INPUTS', packetDigest:digest(envelope), policyDigest:digest(policy), [idKey]:p[idKey], participantId:p.participantId, reserveExposureUSDC:formatUSDC(exposure), reserveCostUSDC:formatUSDC(cost), gasBudgetWei:gas.toString(), expiresAt:p.expiresAt, economics:result, authorization:'NONE — a runner must independently verify observations, reserve atomically and enforce signing limits.' };
 }
+function checkNewWork(input) {
+  ok([6,7].includes(input?.policy?.schemaVersion) && input.policy.reviewPayment === 'operator-budget', 'NEW_WORK_REQUIRES_OPERATOR_BUDGET');
+  return checkAdmission(input);
+}
 if (require.main === module) {
   try { const args=process.argv.slice(2); if(args.length===1 && args[0]==='--help') { console.log('Usage: economics:admission -- input.json\nInput: {policy,envelope,observed,portfolio}. Offline verification; no signer or reservation.'); }
-    else { ok(args.length===1,'Use --help or one input JSON file.'); const s=fs.statSync(args[0]);ok(s.isFile()&&s.size<=1048576,'Input must be a regular JSON file <=1 MiB.');const x=JSON.parse(fs.readFileSync(args[0],'utf8'));shape(x,[...([4,5,6,7].includes(x.policy?.schemaVersion)?['evidenceReport']:[]),'policy','envelope','observed','portfolio'],'input');console.log(JSON.stringify(checkAdmission(x),null,2)); }
+    else { ok(args.length===1,'Use --help or one input JSON file.'); const s=fs.statSync(args[0]);ok(s.isFile()&&s.size<=1048576,'Input must be a regular JSON file <=1 MiB.');const x=JSON.parse(fs.readFileSync(args[0],'utf8'));shape(x,[...([4,5,6,7].includes(x.policy?.schemaVersion)?['evidenceReport']:[]),'policy','envelope','observed','portfolio'],'input');console.log(JSON.stringify(checkNewWork(x),null,2)); }
   } catch(e) { console.error(String(e.message).replace(/[\u0000-\u001f\u007f-\u009f]/gu,' '));process.exitCode=1; }
 }
-module.exports={canonical,digest,validatePolicy,checkAdmission};
+module.exports={canonical,digest,validatePolicy,checkAdmission,checkNewWork};
