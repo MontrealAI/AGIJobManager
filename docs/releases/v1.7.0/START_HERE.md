@@ -4,7 +4,7 @@ This release adds funded reviewer capacity and evidence-calibrated economic admi
 
 1. Verify the complete ZIP against `SHA256SUMS.txt`. `RELEASE_MANIFEST.json` binds every payload to the frozen source.
 2. Read [what changed](RELEASE_NOTES.md) and [validation and limits](VALIDATION.md).
-3. Start with [review protection and calibration](source/docs/OPERATIONS/REVIEW_PROTECTION.md), then [the generated deployment command guide](source/docs/RELEASE_GUIDE.md). Use the public Node.js 22.23.2 toolchain and lockfiles.
+3. Start with [review protection and calibration](https://github.com/MontrealAI/AGIJobManager/blob/9b758293a7fdcf731299bf28264d601b4fa4e51f/docs/OPERATIONS/REVIEW_PROTECTION.md) (offline: `source/docs/OPERATIONS/REVIEW_PROTECTION.md`), then [the generated deployment command guide](https://github.com/MontrealAI/AGIJobManager/blob/9b758293a7fdcf731299bf28264d601b4fa4e51f/docs/RELEASE_GUIDE.md) (offline: `source/docs/RELEASE_GUIDE.md`). Use the public Node.js 22.23.2 toolchain and lockfiles.
 4. For an existing compatible manager, deploy and independently review the companion separately; do not replace the manager just for this feature. Begin with the dry run, inspect configuration/fees, retain the deployment journal and verify runtime, immutables, independent RPC and explorer evidence. A failed command may have broadcast; recover from its journal.
 5. Integrate employer pre-funding qualification and fresh worker checks. Manual console use and permissionless contracts do not enforce the off-chain policy. Private applications are distributed separately.
 
