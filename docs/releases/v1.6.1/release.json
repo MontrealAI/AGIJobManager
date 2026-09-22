@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v1.6.1",
+  "name": "v1.6.1 \u2014 Aligned deployment and operator guides",
+  "releaseDate": "2026-09-22",
+  "sourceCommit": "9207667cdb6da72a87577f8e85f06fdedaa0c95b",
+  "sourceTree": "6ea5ecb9c07fb3fd08ec16314001219b0ea18c3d",
+  "previousTag": "v1.6.0",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Documentation and metadata patch: synchronized package/registry identity, current guide headings and downloads, complete version history and a generated Hardhat command map checked by documentation CI. Explicit paused-readiness, activation and canary sequence. Contract, deployment and admission implementation, dependency resolutions, legal records and historical releases preserved. No production deployment or transaction.",
+  "unchangedPaths": [
+    "contracts",
+    "docs/LEGAL",
+    "hardhat/deployments",
+    "migrations/snapshots",
+    "docs/releases/v0.4.0",
+    "docs/releases/v0.5.0",
+    "docs/releases/v0.6.0",
+    "docs/releases/v0.7.0",
+    "docs/releases/v0.8.0",
+    "docs/releases/v0.9.0",
+    "docs/releases/v0.9.1",
+    "docs/releases/v0.9.2",
+    "docs/releases/v0.9.3",
+    "docs/releases/v0.9.4",
+    "docs/releases/v0.9.5",
+    "docs/releases/v0.9.6",
+    "docs/releases/v0.9.7",
+    "docs/releases/v1.0.0",
+    "docs/releases/v1.0.1",
+    "docs/releases/v1.0.2",
+    "docs/releases/v1.0.3",
+    "docs/releases/v1.0.4",
+    "docs/releases/v1.0.5",
+    "LICENSE",
+    "docs/releases/v1.1.0",
+    "docs/releases/v1.2.0",
+    "docs/releases/v1.2.1",
+    "docs/releases/v1.3.0",
+    "docs/releases/v1.4.0",
+    "docs/releases/v1.5.0",
+    "docs/releases/v1.6.0",
+    "hardhat/scripts",
+    "scripts/economics"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "bc9af708b84f183adc5a146ad32247c3fafe45cf2d52e706106d440eaadca1ec",
+    "PREVIOUS_RELEASE.json": "181fb44e108a3a49dcc638fd1bb1a8cb58839ce72e5757571a53944039561436",
+    "SOURCE_CI.json": "202998e3ebe734267a012ed5415a562a56ec9ce86dab22e07eb6abe6e9b8ac6b",
+    "GUIDE_CHECKS.json": "d4c80414b36ec042c7fe6d0b9ba35d776147ea28da92f6bd809385f13f632e09"
+  },
+  "requiredSourceRuns": {
+    "ci": {
+      "workflow": "ci.yml",
+      "requiredJobs": [
+        "build (0)",
+        "build (1)",
+        "build (2)",
+        "build (3)"
+      ],
+      "id": 35677329166
+    },
+    "security": {
+      "workflow": "security-verification.yml",
+      "requiredJobs": [
+        "security-verification"
+      ],
+      "id": 35677329233
+    },
+    "ui": {
+      "workflow": "ui.yml",
+      "requiredJobs": [
+        "ui"
+      ],
+      "id": 35677329106
+    },
+    "fork": {
+      "workflow": "mainnet-fork.yml",
+      "requiredJobs": [
+        "mainnet-usdc"
+      ],
+      "id": 35677329099
+    },
+    "docs": {
+      "workflow": "docs.yml",
+      "requiredJobs": [
+        "docs"
+      ],
+      "id": 35677329182
+    }
+  },
+  "preservationCommit": "260e540983745d146e010500f1818a0458cbad7d"
+}
