@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const {fixture}=require('./workforceQualification.test.js');
+const {fixture}=require('./helpers/workforce-fixture.cjs');
 const {qualifyWorkforce,validatePolicy}=require('../scripts/economics/workforce.cjs');
 const {digest}=require('../scripts/economics/computer-work.cjs');
 const {capacityPlan,projectWindow}=require('../scripts/economics/capacity-plan.cjs');
