@@ -22,7 +22,7 @@ The existing public wallet workflow handles public data in an isolated workstati
 
 The private native workflow does not automatically post encrypted jobs, submit completion URIs or sign public-chain Node votes. A future private settlement bridge must preserve data access, independent review and existing economic/signing gates. The current public publisher rejects scoped content before any public request. Use [private setup](PRIVATE_FLEET.md) and [operational qualification](WORKFORCE_QUALIFICATION.md) for actual coverage.
 
-Large/team projects can reference parent jobs and dependencies. Each delegated job needs its own authority, economic admission and settlement. These references do not automatically spawn work or implement atomic parent/child settlement. The present private task runner caps one processing attempt at ten minutes; long projects require independently admitted stages. This is an implementation limit, not a boundary on the protocol's work domain.
+V3 adds confidential/restricted data, explicit permissions, encrypted checkpoints and bounded multi-day native execution. The separate private DAG coordinator schedules Agent/Node stages, binds independently accepted source bytes and assembles the final reviewed artifact. Each child retains its own exact authority, reservation and settlement reference; automatic private-chain posting/voting and atomic project settlement remain outside this coordinator. Read [confidential project work](CONFIDENTIAL_PROJECT_WORK.md).
 
 ## New work uses operator budgets
 

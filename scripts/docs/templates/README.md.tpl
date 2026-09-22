@@ -42,7 +42,7 @@ Use the [workforce qualification guide](docs/OPERATIONS/WORKFORCE_QUALIFICATION.
 4. Eligible independent Nodes inspect the actual result and vote within the review period. Missing or uncertain evidence must not become invented approval.
 5. The appropriate caller settles, disputes, expires or refunds the job under its actual state and deadlines. Failed outgoing transfers remain reserved for the original beneficiary to claim.
 
-Read [buyer protection](docs/BUYER_PROTECTION.md), the [participant guide](docs/USERS.md) and [protocol flow](docs/PROTOCOL_FLOW.md) for all outcomes. The v2 specification can describe team jobs; automatic dependency scheduling and atomic project settlement are not implemented.
+Read [buyer protection](docs/BUYER_PROTECTION.md), the [participant guide](docs/USERS.md) and [protocol flow](docs/PROTOCOL_FLOW.md) for all outcomes. The private project coordinator schedules separately admitted Agent/Node stages and binds independently accepted inputs. It does not implement atomic project settlement; see [confidential project work](docs/OPERATIONS/CONFIDENTIAL_PROJECT_WORK.md).
 
 ## Payments and identity
 
