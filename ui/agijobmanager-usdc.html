@@ -7390,7 +7390,7 @@ function normalizeIpfsToHttp(uri){
         clearTimeout(showSessionRestore._timer);
         showSessionRestore._timer = setTimeout(()=>{ note.style.display='none'; }, 5200);
       }
-      function persistAccessState(){
+      function persistAccessState({hintsOnly=false}={}){
         const state = {
           agentSub: String(byId('agentSub')?.value||'').trim(),
           clubSub: String(byId('clubSub')?.value||'').trim(),
@@ -7400,6 +7400,9 @@ function normalizeIpfsToHttp(uri){
           accountHint: String(byId('walletStatus')?.textContent || '').trim().toLowerCase(),
           chainHint: String(byId('chainStatus')?.textContent || '').trim()
         };
+        // A late wallet refresh must not overwrite newer saved input from
+        // another tab or a pending restore with stale DOM values.
+        if(hintsOnly){ delete state.agentSub; delete state.clubSub; delete state.mintAlphaLabel; }
         writeSession(state);
       }
       function restoreAccessState(){
@@ -7479,7 +7482,7 @@ function normalizeIpfsToHttp(uri){
             if(byId('clubOut')) byId('clubOut').textContent = 'Wallet session not detected. Reconnect and re-verify.';
             if(typeof resetRuntimeState === 'function') resetRuntimeState('wallet disconnected');
             if(typeof updateWriteGate === 'function') updateWriteGate();
-            persistAccessState();
+            persistAccessState({hintsOnly:true});
             return;
           }
           const saved = readSession();
@@ -7519,7 +7522,7 @@ function normalizeIpfsToHttp(uri){
             if(tac) tac.checked = false;
             invalidateVerification('Wallet or network changed. Re-verify agent/validator membership.');
           }
-          persistAccessState();
+          persistAccessState({hintsOnly:true});
         }catch{}
       }
       function updateViewportVars(){
