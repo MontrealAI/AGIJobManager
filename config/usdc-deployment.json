@@ -1,5 +1,5 @@
 {
-  "version": "1.4.0",
+  "version": "1.5.0",
   "status": "deployment-required",
   "chainId": 1,
   "explorerBaseUrl": "https://etherscan.io",
@@ -13,7 +13,7 @@
     "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
   },
   "addressSource": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
-  "note": "Software release only; no live USDC manager is recorded here. v1.4.0 adds lifecycle economics, signed qualification verification and canonical economic observations, and retains canonical settlement snapshots, explicit token identity and RPC freshness checks, retaining the v1.0.5 privacy notices, public-content review and browser data handling. It preserves v1.0.3 contract behavior, ABI, bytecode, disabled NFT default and eight fixed library links. Existing jobs and agreements stay with their original deployment. Verify accepted ownership, both recipients, ENS wiring and READINESS_NFT_CONFIG before intake. Initial activation requires zero escrow, bonds and claims. Later recipient/NFT collection changes require zero live escrow and bonds; old claims retain their beneficiary. Complete the deployment-specific operator notice and applicable legal review; technical checks do not certify legal status.",
+  "note": "Software release only; no live USDC manager is recorded here. v1.5.0 adds lifecycle economics, signed qualification verification and canonical economic observations, and retains canonical settlement snapshots, explicit token identity and RPC freshness checks, retaining the v1.0.5 privacy notices, public-content review and browser data handling. It preserves v1.0.3 contract behavior, ABI, bytecode, disabled NFT default and eight fixed library links. Existing jobs and agreements stay with their original deployment. Verify accepted ownership, both recipients, ENS wiring and READINESS_NFT_CONFIG before intake. Initial activation requires zero escrow, bonds and claims. Later recipient/NFT collection changes require zero live escrow and bonds; old claims retain their beneficiary. Complete the deployment-specific operator notice and applicable legal review; technical checks do not certify legal status.",
   "settlementWallets": {
     "wallet30": "",
     "wallet10": ""

@@ -32,3 +32,22 @@ describe('Lifecycle economics and qualified admission',()=>{
  it('rejects unknown fields, unsafe integer dates, and non-Ed25519 issuers',()=>{for(const change of [x=>x.policy.extra=true,x=>x.envelope.payload.extra=true,x=>x.envelope.payload.expiresAt=Number.MAX_SAFE_INTEGER+1,x=>x.policy.maxOpenJobs=1.1]){const x=fixture();change(x);x.resign();assert.throws(()=>checkAdmission(x));}});
  it('does not mutate a callers packet and compares canonical key order consistently',()=>{const x=fixture(),before=canonical(x.envelope);checkAdmission(x);assert.equal(canonical(x.envelope),before);assert.equal(digest({a:1,b:2}),digest({b:2,a:1}));});
 });
+
+function v2(role='agent') {
+ const x=fixture(),p=x.envelope.payload;x.policy.schemaVersion=2;x.policy.maxPreparationAttempts=4;p.schemaVersion=2;
+ p.commitment=role==='agent'?{action:'apply',decision:null,completionURI:null,deliverySha256:null}:{action:'vote',decision:'approve',completionURI:'ipfs://delivery',deliverySha256:digest('delivery')};
+ if(role==='reviewer'){x.policy.role=role;x.policy.wallet=addr(3);p.participantId='reviewer1';x.observed.wallet=addr(3);}
+ x.observed.commitment=clone(p.commitment);x.resign();return x;
+}
+describe('Action-bound admission v2',()=>{
+ it('accepts canonical job zero and rejects overflowing uint256 IDs',()=>{const x=v2();x.envelope.payload.jobId='0';x.observed.jobId='0';x.resign();assert.equal(checkAdmission(x).jobId,'0');x.envelope.payload.jobId=(2n**256n).toString();x.resign();assert.throws(()=>checkAdmission(x),/JOB_ID/);});
+ it('binds an agent application while preserving legacy offline verification',()=>{assert.equal(checkAdmission(fixture()).schemaVersion,1);const r=checkAdmission(v2());assert.equal(r.schemaVersion,2);assert.equal(r.maxPreparationAttempts,4);assert.equal(r.commitment.action,'apply');});
+ it('qualifies a reviewer for the exact delivered bytes and fixed approving ballot',()=>{const r=checkAdmission(v2('reviewer'));assert.equal(r.commitment.decision,'approve');assert.equal(r.reserveExposureUSDC,'154');});
+ it('rejects changing the intended vote after qualification',()=>{const x=v2('reviewer');x.observed.commitment.decision='reject';assert.throws(()=>checkAdmission(x),/COMMITMENT_CHANGED/);});
+ it('rejects changing completion URI or delivered bytes',()=>{for(const key of ['completionURI','deliverySha256']){const x=v2('reviewer');x.observed.commitment[key]+='changed';assert.throws(()=>checkAdmission(x),/COMMITMENT_CHANGED/);}});
+ it('rejects outcome-dependent reviewer ballots even in zero-weight cases',()=>{for(const id of ['success','dilution']){const x=v2('reviewer');x.envelope.payload.lifecycle.cases.find(c=>c.id===id).ballots.reviewer1='reject';x.resign();assert.throws(()=>checkAdmission(x),/FIXED_REVIEWER_BALLOT/);}});
+ it('rejects schema downgrade and missing commitments',()=>{for(const mutate of [x=>x.envelope.payload.schemaVersion=1,x=>delete x.envelope.payload.commitment,x=>delete x.observed.commitment]){const x=v2();mutate(x);x.resign();assert.throws(()=>checkAdmission(x));}});
+ it('rejects votes or delivery data in an agent application packet',()=>{for(const mutate of [c=>c.action='vote',c=>c.decision='approve',c=>c.deliverySha256=digest('bytes')]){const x=v2();mutate(x.envelope.payload.commitment);x.resign();assert.throws(()=>checkAdmission(x),/AGENT_COMMITMENT/);}});
+ it('requires bounded integer preparation attempts',()=>{for(const n of [0,101,1.5,'4',null]){const x=v2();x.policy.maxPreparationAttempts=n;x.resign();assert.throws(()=>checkAdmission(x));}});
+ it('does not let a caller mutate the authorized commitment through the result',()=>{const x=v2('reviewer'),r=checkAdmission(x);r.commitment.decision='reject';assert.equal(x.envelope.payload.commitment.decision,'approve');});
+});

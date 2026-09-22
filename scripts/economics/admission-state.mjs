@@ -7,6 +7,7 @@ export const ADMISSION_ABI = [
  'function getJobCore(uint256) view returns(address employer,address assignedAgent,uint256 payout,uint256 duration,uint256 assignedAt,bool completed,bool disputed,bool expired,uint8 agentPayoutPct)',
  'function getJobBonds(uint256) view returns(uint256 agentAmount,uint256 validatorAmount,bool validatorFixed,uint256 disputeAmount)',
  'function getJobSpecURI(uint256) view returns(string)',
+ 'function getJobCompletionURI(uint256) view returns(string)',
  ...['usdcToken'].map(n=>`function ${n}() view returns(address)`),
  ...['agentBondBps','agentBond','agentBondMax','jobDurationLimit','validatorBondBps','validatorBondMin','validatorBondMax','validatorSlashBps'].map(n=>`function ${n}() view returns(uint256)`),
  'function pendingUSDC(address) view returns(uint256)',
@@ -34,7 +35,7 @@ export async function readAdmissionState({primary, secondary, chainId, manager, 
   let agentBond=bonds.agentAmount, reviewerBond=bonds.validatorAmount;
   if(core.assignedAgent===ZeroAddress) {agentBond=core.payout*abps/10000n;if(agentBond<amin)agentBond=amin;if(limit)agentBond+=agentBond*core.duration/limit;if(amax&&agentBond>amax)agentBond=amax;if(agentBond>core.payout)agentBond=core.payout;}
   if(!bonds.validatorFixed) {reviewerBond=core.payout*vbps/10000n;if(reviewerBond<vmin)reviewerBond=vmin;if(reviewerBond>vmax)reviewerBond=vmax;if(reviewerBond>core.payout)reviewerBond=core.payout;}
-  const result={block:b,specURI,employer:core.employer.toLowerCase(),assignedAgent:core.assignedAgent.toLowerCase(),completed:core.completed,expired:core.expired,pendingUSDC:String(await call('pendingUSDC',[wallet])),terms:{jobCostUSDC:formatUSDC(core.payout),agentBondUSDC:formatUSDC(agentBond),reviewerBondUSDC:formatUSDC(reviewerBond),rewardPercentage:60-Number(core.agentPayoutPct),slashBps:Number(slash)}};
+  const result={block:b,specURI,completionURI:await call('getJobCompletionURI',[jobId]),employer:core.employer.toLowerCase(),assignedAgent:core.assignedAgent.toLowerCase(),completed:core.completed,expired:core.expired,pendingUSDC:String(await call('pendingUSDC',[wallet])),terms:{jobCostUSDC:formatUSDC(core.payout),agentBondUSDC:formatUSDC(agentBond),reviewerBondUSDC:formatUSDC(reviewerBond),rewardPercentage:60-Number(core.agentPayoutPct),slashBps:Number(slash)}};
   ensure((await provider.send('eth_getBlockByNumber',[tag,false]))?.hash===b.hash,'RPC_REORG');
   ensure(BigInt(await provider.send('eth_chainId',[]))===BigInt(chainId),'RPC_CHAIN_CHANGED');return result;
  }
