@@ -22,7 +22,7 @@
     "contracts/utils/TransferUtils.sol": "797242b5d1ac32547e065a0989d8f407a3f5a22618e98681a332d3e85197ce36",
     "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
     "foundry.toml": "fb098664cd6a2b8cba0b038924a4d1e3273096741d4b194c84308d670ad9098a",
-    "package-lock.json": "686b573fce0333c2f6a89d3ebc434894158a31a18b207fede5594573539cdb10",
+    "package-lock.json": "a73a75ed44058f4952aa25abe98e36ddabf4c2cc878bc9a0f23e2f0c8a73ab41",
     "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
     "scripts/security/patch-openzeppelin-compiler.cjs": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116",
     "scripts/security/run-slither-extended.sh": "ae23abf938d410c88ff340ec828f3bb30441fd6a22aaa0be34499f4fb72c38cb",
@@ -30,7 +30,8 @@
     "scripts/security/slither-all.config.json": "a0070c69b696f0401b15391074fd08f6ed31a2684dcda29f7a14b33a1f687159",
     "scripts/security/slither-extended.config.json": "3b273bb8476e06ac03dba09f3d6bc68390ef344883ef3c7f59fbdd0b6317ca01",
     "scripts/security/slither-reentrancy.config.json": "7c6e5346fe75f6fd15d5877a834042925f0486352caff80d930f9c877e5c2bba",
-    "slither.config.json": "3b273bb8476e06ac03dba09f3d6bc68390ef344883ef3c7f59fbdd0b6317ca01"
+    "slither.config.json": "3b273bb8476e06ac03dba09f3d6bc68390ef344883ef3c7f59fbdd0b6317ca01",
+    "contracts/periphery/AGIReviewEscrow.sol": "0a872868c86665a2202abe4cd95c640eb4cda85b1d3e6441f415eba7ccedcf10"
   },
   "reports": {
     "slither-extended.json": [

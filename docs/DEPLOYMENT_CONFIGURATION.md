@@ -113,3 +113,7 @@ The offline check and live deployment share profile validation. Offline success 
 | Readiness report already exists at the checked block | Preserve it, compare inputs and rerun after a new block; the checker never overwrites evidence |
 
 Read [the deployment troubleshooting guide](TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md) for namespace authority and best-effort hook failures. Keep live intake paused until the actual instance's required checks pass.
+
+## Optional review escrow
+
+Use [the review protection guide](OPERATIONS/REVIEW_PROTECTION.md) for the separately deployed companion. `JOB_MANAGER_CODE_HASH` pins the existing manager's runtime Keccak-256. `VERIFY_RPC_URL` must be an independently operated witness endpoint and is required for broadcasting or verification recovery. `MAX_REVIEW_DEPLOY_ETH` caps estimated deployment gas at the chosen fee rate, default 0.05 ETH. `REVIEW_ESCROW_ADDRESS` selects source-verification recovery against the original saved review-escrow journal. The normal network RPC, signer, `JOB_MANAGER`, `DRY_RUN`, `CONFIRMATIONS`, explorer and mainnet-confirmation settings still apply. Keep endpoint credentials private.

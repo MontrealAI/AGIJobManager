@@ -20,6 +20,8 @@ const commands=[
  ['Plan Sepolia deployment','deploy:sepolia','Explicit DRY_RUN=1; chain reads only'],
  ['Plan mainnet ENS helper','deploy:ens-job-pages:mainnet','Explicit DRY_RUN=1; chain reads only'],
  ['Plan Sepolia ENS helper','deploy:ens-job-pages:sepolia','Explicit DRY_RUN=1; chain reads only'],
+ ['Plan mainnet review escrow','deploy:review-escrow:mainnet','Explicit DRY_RUN=1; chain reads only'],
+ ['Plan Sepolia review escrow','deploy:review-escrow:sepolia','Explicit DRY_RUN=1; chain reads only'],
  ['Recover mainnet source verification','reverify:mainnet','Chain reads and explorer requests; no chain broadcasts'],
  ['Recover Sepolia source verification','reverify:sepolia','Chain reads and explorer requests; no chain broadcasts'],
  ['Check mainnet instance','check:readiness','Read-only; requires saved receipt and reviewed NFT policy'],
@@ -78,7 +80,7 @@ The manager starts paused. Preserve its transaction journal and exact compiler i
 | Economic admission | Signed assumptions and configured cost/capital/capacity limits | Observed employer value, actual costs and independent participants |
 | Private Fleet commissioning | Rehearsed execution on the operator's actual machines and services | Sustained useful throughput and ongoing recovery measurements |
 
-The contract, payout rules and deployment implementation are unchanged in this documentation patch. Existing compatible managers do not need redeployment for these documentation changes. Publishing software does not open intake, qualify private hardware or establish production throughput. Manual console posting does not enforce [pre-funding qualification](OPERATIONS/PREFUNDING.md).
+The existing manager and its payout rules are unchanged. The optional AGIReviewEscrow companion requires a separate verified deployment and commissioning; follow [review protection](OPERATIONS/REVIEW_PROTECTION.md). The companion deployment script also supports source-verification recovery against its original journal. Publishing software does not open intake, qualify private hardware or establish production throughput. Manual console posting does not enforce [pre-funding qualification](OPERATIONS/PREFUNDING.md).
 `;
 
 const errors=[];
