@@ -58,8 +58,9 @@ function validateComputerWork(s) {
 }
 function checkRuntime(s, runtime, role, now=Math.floor(Date.now()/1000)) {
   validateComputerWork(s); fail(['agent','reviewer'].includes(role),'ROLE');
-  keys(runtime,['schemaVersion','model','openclawVersion','policySha256','imageSha256','capabilities','scope','resources','maxTaskSeconds'],'RUNTIME');
-  fail(runtime.schemaVersion===1 && text(runtime.model,160) && text(runtime.openclawVersion,80) && hash(runtime.policySha256) && hash(runtime.imageSha256) && unique(runtime.capabilities) && unique(runtime.resources) && integer(runtime.maxTaskSeconds,1,604800),'RUNTIME');
+  const native = runtime?.schemaVersion === 2;
+  keys(runtime,native ? ['schemaVersion','adapter','model','openclawVersion','policySha256','installationSha256','capabilities','scope','resources','maxTaskSeconds'] : ['schemaVersion','model','openclawVersion','policySha256','imageSha256','capabilities','scope','resources','maxTaskSeconds'],'RUNTIME');
+  fail((native ? runtime.adapter === 'openclaw-native/v1' && runtime.scope === 'dedicated-account' && hash(runtime.installationSha256) : runtime.schemaVersion === 1 && hash(runtime.imageSha256)) && text(runtime.model,160) && text(runtime.openclawVersion,80) && hash(runtime.policySha256) && unique(runtime.capabilities) && unique(runtime.resources) && integer(runtime.maxTaskSeconds,1,604800),'RUNTIME');
   fail(digest(runtime)===s.environment.runtimeSha256[role],'RUNTIME_CHANGED');
   fail(integer(now,1,Number.MAX_SAFE_INTEGER) && now<s.deadline,'DEADLINE');
   fail(s.environment.capabilities[role].every(c=>runtime.capabilities.includes(c)),'CAPABILITY_UNAVAILABLE');

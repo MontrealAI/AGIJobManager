@@ -4,7 +4,7 @@
 
 **Current private intake uses calibrated schema 7 with `reviewPayment: operator-budget`.** Review the [complete admission input](QUALIFIED_ADMISSION.md#required-calibration-and-report-bytes) before signing a funding policy. Existing escrow obligations use the separate [recovery procedure](REVIEW_PROTECTION.md).
 
-v1.9.1 supplies an **operator-budget pre-funding qualification primitive**. Its purpose is to reject unsuitable work before employer escrow is deposited. It complements the existing Agent and reviewer checks. A passing calculation alone never authorizes a transaction.
+v1.10.0 supplies an **operator-budget pre-funding qualification primitive**. Its purpose is to reject unsuitable work before employer escrow is deposited. It complements the existing Agent and reviewer checks. A passing calculation alone never authorizes a transaction.
 
 The recommended sequence is: verify employer value and each participant's costs; reserve capital and capacity; recheck the exact offer against current chain terms; fund; obtain fresh job-specific Agent/reviewer packets; retain recovery and reconciliation throughout.
 

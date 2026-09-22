@@ -47,6 +47,7 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 | `npm run test:ui:usdc` | `node scripts/ui/run_usdc_console_test.js` |
 | `npm run ui:abi` | `node scripts/ui/export_abi.js` |
 | `npm run ui:abi:check` | `node scripts/ui/check_ui_abi.js` |
+| `npm run workforce:qualify` | `node scripts/economics/workforce.cjs` |
 
 ## hardhat workspace
 

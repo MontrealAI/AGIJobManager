@@ -2,7 +2,7 @@
 
 **Deployment entrypoint:** [release identity and checked commands](RELEASE_GUIDE.md).
 
-> **v1.9.1: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
+> **v1.10.0: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
 AGI Jobs covers work a person or team can do using a keyboard, mouse and screen. This hub routes employers, Agents, Nodes, operators and contributors to current procedures. Use [release scope and earlier editions](V1_RELEASE_SCOPE.md#published-download-versus-current-source) to distinguish current instructions from historical evidence.
 

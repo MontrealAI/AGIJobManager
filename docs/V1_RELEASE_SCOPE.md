@@ -1,6 +1,6 @@
 # AGIJobManager release scope
 
-**Current edition: v1.9.1.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
+**Current edition: v1.10.0.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
 
 ## Included in this edition
 
@@ -14,13 +14,14 @@ The public archive contains no private Fleet/Agent/Node application, production 
 
 ## Published download versus current source
 
-**v1.9.1 repairs current documentation and closes the fresh review-escrow deployment path.** The README, companion edition map and full npm command inventory are generated from checked package metadata. Current guides describe schema 6/7 operator-budget admission, all five CLI input fields, exact report bytes, actual adapter coverage and existing-obligation recovery. Tests reject stale labels, obsolete commands and incomplete admission examples. Existing manager Solidity, payouts, dependency resolutions and historical evidence are preserved.
+**v1.10.0 adds operational workforce qualification and a native runtime descriptor.** The public evidence gate requires signed commissioning, held-out independent validation, complete actual costs, useful cash settlements, measured intervention time and an external review of the exact source/scope. Private Fleet 1.8.0, Agent 1.14.0 and Node 2.15.0 add a dedicated-account native execution workflow, encrypted handoffs, exact job/delivery grants, durable recovery, reservations and a portable commissioning corpus. Public signing/payout behavior and dependency resolutions remain unchanged. These implementation changes do not establish actual Mac operation or independent assurance.
 
 Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md`, `SOURCE_CI.json` and `RELEASE_MANIFEST.json` identify the qualified source and publication evidence. Main may contain later work; never combine its scripts with an older release's instructions or attestations. Current guides apply to their checkout. Historical releases, dated qualification records and legal notices retain their original versions.
 
 | Edition | Change introduced |
 | --- | --- |
-| [v1.9.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.9.1) | Current documentation and script audit, generated entry guides, complete admission example and recovery-only escrow tooling |
+| [v1.10.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.10.0) | Operational qualification, native runtime identity and separately delivered private native-workforce tools |
+| [v1.9.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.9.1) | Current guides, complete admission inputs and recovery-only escrow tooling |
 | [v1.9.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.9.0) | Explicit no-retainer intake, feasible execution windows and role-specific model binding |
 | [v1.8.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.8.0) | General computer-work specification and explicit operator-budget review mode |
 | [v1.7.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.7.0) | Historical calibrated admission and review-escrow protection |
@@ -44,7 +45,7 @@ Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md`, `
 | Existing manager | Use with the current console |
 | --- | --- |
 | Verified v0.9.6 or v0.9.7 manager | Compatible ABI/runtime; construction defaults differ. Preserve original receipts, settings and job policies |
-| Verified manager from the preserved v1.0.3 contract build or subsequent compatible release | No redeployment needed for this documentation patch; verify the actual instance and all eight links |
+| Verified manager from the preserved v1.0.3 contract build or subsequent compatible release | No redeployment needed for this off-chain workforce release; verify the actual instance and all eight links |
 | v0.9.5 or older manager | Keep its compatible interface for existing jobs; it lacks the exact-bond getter used by current voting |
 | Original-asset legacy manager | Preserve original jobs, token, allowances and ENS namespace; the USDC release does not migrate them |
 
