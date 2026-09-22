@@ -17,7 +17,7 @@ The focused local anchor regression initially exposed a self-link checker defect
 
 ## Private companion evidence
 
-Fleet 1.7.1, Agent 1.13.1 and Node 2.14.1 passed 76, 165 and 174 unit tests respectively (415 total) on Node 24.19.0/Linux. Current offline checks cover 102 pages and 382 local links across the three standalone package boundaries, including source-digest freshness, working heading anchors, command inventories and executable Mac launchers. Private archives contain their current logs, provenance, validation and manifests.
+Fleet 1.7.1, Agent 1.13.1 and Node 2.14.1 passed 76, 165 and 174 unit tests respectively (415 total) on Node 24.19.0/Linux. Current offline checks cover 102 pages and 385 local links across the three standalone package boundaries, including source-digest freshness, working heading anchors, command inventories and executable Mac launchers. Private archives contain their current logs, provenance, validation and manifests.
 
 This patch changes documentation, version labels, guide tooling and the vendored admission CLI help. Private live-admission/signing logic, runtime image pins, dependency resolutions and contract artifacts remain unchanged. Prior hardware screenshots and economic simulations remain historical; they are not relabeled as fresh live results. Exact current private integration results are included in the private validation guides.
 
