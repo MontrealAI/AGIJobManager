@@ -1,5 +1,7 @@
 # Qualify an offer before funding it
 
+**Current private intake uses calibrated schema 5 with explicit reviewer retainers.** See [review protection and calibrated admission](REVIEW_PROTECTION.md). The schema 3 examples below document the earlier primitive and remain useful for historical verification.
+
 v1.6.1 supplies a **pre-funding qualification primitive**. Its purpose is to reject unsuitable work before employer escrow is deposited. It complements the existing Agent and reviewer checks. A passing calculation alone never authorizes a transaction.
 
 The recommended sequence is: verify employer value and each participant's costs; reserve capital and capacity; recheck the exact offer against current chain terms; fund; obtain fresh job-specific Agent/reviewer packets; retain recovery and reconciliation throughout.

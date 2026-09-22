@@ -14,8 +14,8 @@ function weighted(n) { const a = n < 0n ? -n : n, f = (a % (SCALE * SCALE)).toSt
 function max(...values) { return values.reduce((a, b) => a > b ? a : b, 0n); }
 
 function lifecycle(input) {
-  shape(input, ['schemaVersion', 'assumptionSource', 'horizonDays', 'terms', 'participants', 'cases'], 'Lifecycle');
-  requireThat(input.schemaVersion === 1, 'Unsupported lifecycle schema.');
+  shape(input, [...(input?.schemaVersion === 2 ? ['reviewRetainers'] : []), 'schemaVersion', 'assumptionSource', 'horizonDays', 'terms', 'participants', 'cases'], 'Lifecycle');
+  requireThat([1, 2].includes(input.schemaVersion), 'Unsupported lifecycle schema.');
   text(input.assumptionSource, 'assumptionSource');
   uint(input.horizonDays, 1, 3650, 'horizonDays');
   shape(input.terms, ['jobCostUSDC', 'agentBondUSDC', 'reviewerBondUSDC', 'rewardPercentage', 'slashBps'], 'terms');
@@ -35,13 +35,19 @@ function lifecycle(input) {
   const byRole = role => input.participants.filter(p => p.role === role);
   requireThat(byRole('employer').length === 1 && byRole('agent').length === 1, 'Exactly one employer and agent are required.');
   const employer = byRole('employer')[0].id, agent = byRole('agent')[0].id, reviewers = byRole('reviewer').map(p => p.id);
+  const retainers = {};
+  if (input.schemaVersion === 2) {
+    shape(input.reviewRetainers, reviewers, 'reviewRetainers');
+    for (const id of reviewers) retainers[id] = money(input.reviewRetainers[id], 'review retainer');
+    requireThat(reviewers.every(id => retainers[id] > 0n), 'Positive funded retainers required for every declared reviewer.');
+  }
   const totals = Object.fromEntries([...actors.keys()].map(id => [id, { weighted: 0n, worst: null, capital: 0n, costs: 0n, lossWeightPpm: 0 }]));
   requireThat(Array.isArray(input.cases) && input.cases.length >= 8 && input.cases.length <= 64, 'Use 8–64 explicit lifecycle cases.');
   const ids = new Set(), covered = new Set(), adverse = new Set(), absent = new Set();
   let weights = 0, diluted = false, zeroReview = false, unavailable = false;
   const cases = [];
   for (const row of input.cases) {
-    shape(row, ['id', 'outcome', 'weightPpm', 'rationale', 'ballots', 'otherApprovals', 'otherRejections', 'disputeInitiator', 'disputeBondUSDC', 'employerValueUSDC', 'costsUSDC'], 'case');
+    shape(row, [...(input.schemaVersion === 2 ? ['retainerStates'] : []), 'id', 'outcome', 'weightPpm', 'rationale', 'ballots', 'otherApprovals', 'otherRejections', 'disputeInitiator', 'disputeBondUSDC', 'employerValueUSDC', 'costsUSDC'], 'case');
     text(row.id, 'case.id'); text(row.rationale, 'case.rationale');
     requireThat(!ids.has(row.id), 'Duplicate case ID.'); ids.add(row.id);
     requireThat(OUTCOMES.includes(row.outcome), 'Unsupported lifecycle outcome.'); covered.add(row.outcome);
@@ -76,6 +82,18 @@ function lifecycle(input) {
       for (const id of reviewers) if (row.ballots[id] !== 'absent') receipt[id] = money(settlement[row.ballots[id] === 'approve' ? 'approvingReviewers' : 'rejectingReviewers'].eachReceiptUSDC, 'receipt');
     } else if (row.outcome === 'cancelled') receipt[employer] = price;
     else if (row.outcome === 'noSubmission') receipt[employer] = price + agentBond;
+    if (input.schemaVersion === 2) {
+      shape(row.retainerStates, reviewers, 'retainerStates');
+      for (const id of reviewers) {
+        const state = row.retainerStates[id];
+        requireThat(['unfunded', 'reserved', 'paid', 'unavailable', 'refunded'].includes(state), 'Invalid retainer state.');
+        if (['noSubmission', 'cancelled'].includes(row.outcome)) requireThat(state === 'unfunded', 'No review retainers before submission.');
+        if (row.outcome === 'paymentUnavailable') requireThat(state === 'unavailable', 'Include unavailable retainer payment stress.');
+        if (state !== 'unfunded') deposit[employer] += retainers[id];
+        if (state === 'paid') receipt[id] += retainers[id];
+        if (state === 'refunded') receipt[employer] += retainers[id];
+      }
+    }
     // paymentUnavailable is a cash-horizon stress: claims may still legally exist.
     const net = {};
     for (const id of actors.keys()) {
@@ -99,11 +117,12 @@ function lifecycle(input) {
     if (!lossWithinLimit) failures.push(`${id}: cash-horizon modeled loss exceeds limit.`);
     participants[id] = { role: p.role, expectedNetUSDC: weighted(r.weighted), worstModeledNetUSDC: formatUSDC(r.worst), maximumModeledLossUSDC: formatUSDC(loss), capitalCommittedUSDC: formatUSDC(r.capital), maximumCostUSDC: formatUSDC(r.costs), conservativeExposureUSDC: formatUSDC(r.capital + r.costs), assumedLossWeightPpm: r.lossWeightPpm, marginMet, lossWithinLimit };
   }
-  return { schemaVersion: 1, decision: failures.length ? 'OUTSIDE_SUPPLIED_LIMITS' : 'WITHIN_SUPPLIED_LIMITS', horizonDays: input.horizonDays, assumptionSource: input.assumptionSource, participants, cases, failures, authorization: 'NONE', limitations: [
+  return { schemaVersion: input.schemaVersion, decision: failures.length ? 'OUTSIDE_SUPPLIED_LIMITS' : 'WITHIN_SUPPLIED_LIMITS', horizonDays: input.horizonDays, assumptionSource: input.assumptionSource, participants, cases, failures, authorization: 'NONE', limitations: [
     'Weights, costs, artifact values and controls are assumptions. This calculation neither verifies evidence nor authorizes transactions.',
     'Cases are mutually exclusive assumed paths at the stated cash horizon. Payment unavailability treats committed receipts as unavailable; it does not extinguish claims or establish permanent loss.',
     'Worst loss includes zero-weight cases. Capital plus maximum cost is reserved separately from expected profit or loss.',
     'Only declared participants have economic limits checked. Other reviewers model dilution; their costs, independence and profitability are not established.',
+    'Review retainers are extra employer-funded payments. They buy named review capacity, not a guaranteed verdict or quality. Unavailable retainer claims are not counted as received cash.',
     'Coverage checks ensure explicit stress cases, not exhaustive real-world risk. Custody compromise, common control, unmodeled failures and misspecified probabilities can exceed modeled losses.',
   ] };
 }

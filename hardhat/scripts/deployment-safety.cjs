@@ -131,7 +131,7 @@ function resolveInputSource(buildInfo, userSource) {
     (buildInfo.input?.sources?.[`project/${userSource}`] ? `project/${userSource}` : userSource);
 }
 
-function requireArtifactMatch({ artifact, buildInfo, address, libraries = {}, tokenAddress, code }) {
+function requireArtifactMatch({ artifact, buildInfo, address, libraries = {}, tokenAddress, managerAddress, code }) {
   let expected = artifact.deployedBytecode.slice(2).toLowerCase();
   const replace = (start, length, value) => {
     const hex = value.replace(/^0x/, '').toLowerCase().padStart(length * 2, '0');
@@ -153,10 +153,22 @@ function requireArtifactMatch({ artifact, buildInfo, address, libraries = {}, to
   const immutableGroups = Object.values(immutableReferences);
   if (immutableGroups.length) {
     let value;
+    if (artifact.contractName === 'AGIReviewEscrow') {
+      if (immutableGroups.length !== 2 || !managerAddress || !tokenAddress) throw new Error('Review escrow requires both immutable address pins.');
+      const ast = buildInfo.output.sources[artifact.inputSourceName || artifact.sourceName]?.ast;
+      const contract = ast?.nodes?.find(n => n.nodeType === 'ContractDefinition' && n.name === 'AGIReviewEscrow');
+      for (const [id, positions] of Object.entries(immutableReferences)) {
+        const node = contract?.nodes?.find(n => String(n.id) === id && n.nodeType === 'VariableDeclaration' && n.mutability === 'immutable');
+        const pin = node?.name === 'manager' ? managerAddress : node?.name === 'usdcToken' ? tokenAddress : null;
+        if (!pin) throw new Error('Unrecognized review escrow immutable layout.');
+        positions.forEach(({start,length}) => replace(start,length,pin));
+      }
+    } else {
     if (artifact.contractName === 'AGIJobManager' && immutableGroups.length === 1 && tokenAddress) value = tokenAddress;
     else if (['TransferUtils', 'NftEligibility', 'JobSettlement', 'JobValidation'].includes(artifact.contractName) && immutableGroups.length === 1 && immutableReferences.library_deploy_address) value = address;
     else throw new Error('Unrecognized immutable layout; review deployment verifier before continuing.');
     immutableGroups.flat().forEach(({ start, length }) => replace(start, length, value));
+    }
   }
   if (artifact.contractName !== 'AGIJobManager' && expected.startsWith(`73${'00'.repeat(20)}3014`)) replace(1, 20, address);
   if (`0x${expected}` !== code.toLowerCase()) throw new Error(`${artifact.contractName} deployed runtime differs from the compiled release artifact.`);

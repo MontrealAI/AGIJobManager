@@ -200,4 +200,30 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
     for (const recipient of recipients()) await send(manager.claimUSDC(recipient));
     await assertSettled();
   });
+
+  async function protectedReview() {
+    await send(manager.connect(employer).createJob('ipfs://review',micro(100),3600,'additional authorized review capacity'));
+    await send(manager.connect(agent).applyForJob(0,'',[]));
+    await send(manager.connect(agent).requestJobCompletion(0,'ipfs://protected-delivery'));
+    const escrow=await (await ethers.getContractFactory('AGIReviewEscrow')).deploy(managerAddress);await escrow.waitForDeployment();
+    await send(token.connect(employer).approve(await escrow.getAddress(),micro(8)));
+    const startBy=(await ethers.provider.getBlock('latest')).timestamp+3600;
+    await send(escrow.connect(employer).fundReview(0,validator.address,ethers.keccak256(ethers.toUtf8Bytes('ipfs://protected-delivery')),micro(8),startBy));
+    return {escrow,id:await escrow.assignmentId(0,validator.address)};
+  }
+  it('pays an authorized reviewer before a vote and preserves the fee across buyer acceptance',async function(){
+    const before=await token.balanceOf(validator.address),{escrow,id}=await protectedReview();
+    await send(escrow.connect(validator).activateReview(id));await send(escrow.withdrawCredit(validator.address));
+    await send(manager.connect(employer).acceptJob(0));
+    assert.equal(await token.balanceOf(validator.address)-before,micro(8));assert.equal(await escrow.totalLiability(),0n);
+    assert.equal(await token.balanceOf(await escrow.getAddress()),0n);assert.equal((await manager.getJobCore(0)).completed,true);
+    await rejectTransaction(escrow.connect(employer).refundReview(id));
+  });
+  for(const restriction of ['pause','blacklist'])it(`retains the reviewer's native-USDC credit during ${restriction} and collects it after recovery`,async function(){
+    const {escrow,id}=await protectedReview();await send(escrow.connect(validator).activateReview(id));
+    if(restriction==='pause')await send(token.connect(pauser).pause());else await send(token.connect(blacklister).blacklist(validator.address));
+    await rejectTransaction(escrow.withdrawCredit(validator.address));assert.equal(await escrow.credits(validator.address),micro(8));assert.equal(await escrow.totalLiability(),micro(8));
+    if(restriction==='pause')await send(token.connect(pauser).unpause());else await send(token.connect(blacklister).unBlacklist(validator.address));
+    await send(escrow.withdrawCredit(validator.address));assert.equal(await escrow.credits(validator.address),0n);assert.equal(await escrow.totalLiability(),0n);
+  });
 });
