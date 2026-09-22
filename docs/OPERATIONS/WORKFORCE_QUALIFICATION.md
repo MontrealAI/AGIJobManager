@@ -1,5 +1,7 @@
 # Workforce operational qualification
 
+Current private native production requires policy V2 and its [operating limits](OPERATING_QUALIFICATION.md). V1 below remains the common field reference and historical assessment format.
+
 The native workforce must prove useful work, independent validation, recoverable operation and realized economics before production. `workforce:qualify` checks signed evidence for an exact source and two exact runtimes. Missing evidence produces explicit blocking reasons and exit status 2; malformed policy exits nonzero. It never grants wallet authority or manufactures commissioning results.
 
 ```sh

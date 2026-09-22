@@ -1,0 +1,5350 @@
+{
+  "capital_constrained": {
+    "active_jobs_peak": 71,
+    "admitted": 1932,
+    "agent_cash_net_USDC": 54441.865958,
+    "agent_entitlement_net_USDC": 54528.987463,
+    "agent_work_hours": 1453.262024019389,
+    "assumed_realized_value_USDC": 236889.209694,
+    "by_class": {
+      "business-operations": {
+        "admitted": 172,
+        "offered": 600,
+        "paid_bad": 1,
+        "useful": 128
+      },
+      "code": {
+        "admitted": 240,
+        "offered": 1100,
+        "paid_bad": 0,
+        "useful": 174
+      },
+      "crm-workflows": {
+        "admitted": 187,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 155
+      },
+      "data-entry": {
+        "admitted": 42,
+        "offered": 1400,
+        "paid_bad": 0,
+        "useful": 35
+      },
+      "documents": {
+        "admitted": 227,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 176
+      },
+      "multiple-applications": {
+        "admitted": 35,
+        "offered": 700,
+        "paid_bad": 0,
+        "useful": 15
+      },
+      "quality-assurance": {
+        "admitted": 273,
+        "offered": 900,
+        "paid_bad": 2,
+        "useful": 198
+      },
+      "research": {
+        "admitted": 266,
+        "offered": 1000,
+        "paid_bad": 1,
+        "useful": 180
+      },
+      "spreadsheets": {
+        "admitted": 205,
+        "offered": 1200,
+        "paid_bad": 1,
+        "useful": 166
+      },
+      "visual-editing": {
+        "admitted": 162,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 118
+      },
+      "websites": {
+        "admitted": 123,
+        "offered": 700,
+        "paid_bad": 1,
+        "useful": 91
+      }
+    },
+    "capital_cost_USDC": 190.435327,
+    "central_operator_cost_USDC": 14652.55,
+    "compute_cost_USDC": 6738.803874,
+    "conservation_microUSDC": 0,
+    "daily": [
+      {
+        "day": 1,
+        "useful_settled": 7
+      },
+      {
+        "day": 2,
+        "useful_settled": 6
+      },
+      {
+        "day": 3,
+        "useful_settled": 11
+      },
+      {
+        "day": 4,
+        "useful_settled": 6
+      },
+      {
+        "day": 5,
+        "useful_settled": 11
+      },
+      {
+        "day": 6,
+        "useful_settled": 13
+      },
+      {
+        "day": 7,
+        "useful_settled": 14
+      },
+      {
+        "day": 8,
+        "useful_settled": 11
+      },
+      {
+        "day": 9,
+        "useful_settled": 9
+      },
+      {
+        "day": 10,
+        "useful_settled": 12
+      },
+      {
+        "day": 11,
+        "useful_settled": 14
+      },
+      {
+        "day": 12,
+        "useful_settled": 12
+      },
+      {
+        "day": 13,
+        "useful_settled": 5
+      },
+      {
+        "day": 14,
+        "useful_settled": 16
+      },
+      {
+        "day": 15,
+        "useful_settled": 10
+      },
+      {
+        "day": 16,
+        "useful_settled": 9
+      },
+      {
+        "day": 17,
+        "useful_settled": 10
+      },
+      {
+        "day": 18,
+        "useful_settled": 17
+      },
+      {
+        "day": 19,
+        "useful_settled": 14
+      },
+      {
+        "day": 20,
+        "useful_settled": 18
+      },
+      {
+        "day": 21,
+        "useful_settled": 15
+      },
+      {
+        "day": 22,
+        "useful_settled": 17
+      },
+      {
+        "day": 23,
+        "useful_settled": 16
+      },
+      {
+        "day": 24,
+        "useful_settled": 19
+      },
+      {
+        "day": 25,
+        "useful_settled": 17
+      },
+      {
+        "day": 26,
+        "useful_settled": 15
+      },
+      {
+        "day": 27,
+        "useful_settled": 27
+      },
+      {
+        "day": 28,
+        "useful_settled": 26
+      },
+      {
+        "day": 29,
+        "useful_settled": 10
+      },
+      {
+        "day": 30,
+        "useful_settled": 13
+      },
+      {
+        "day": 31,
+        "useful_settled": 12
+      },
+      {
+        "day": 32,
+        "useful_settled": 11
+      },
+      {
+        "day": 33,
+        "useful_settled": 27
+      },
+      {
+        "day": 34,
+        "useful_settled": 11
+      },
+      {
+        "day": 35,
+        "useful_settled": 25
+      },
+      {
+        "day": 36,
+        "useful_settled": 18
+      },
+      {
+        "day": 37,
+        "useful_settled": 24
+      },
+      {
+        "day": 38,
+        "useful_settled": 14
+      },
+      {
+        "day": 39,
+        "useful_settled": 13
+      },
+      {
+        "day": 40,
+        "useful_settled": 19
+      },
+      {
+        "day": 41,
+        "useful_settled": 12
+      },
+      {
+        "day": 42,
+        "useful_settled": 19
+      },
+      {
+        "day": 43,
+        "useful_settled": 18
+      },
+      {
+        "day": 44,
+        "useful_settled": 12
+      },
+      {
+        "day": 45,
+        "useful_settled": 23
+      },
+      {
+        "day": 46,
+        "useful_settled": 16
+      },
+      {
+        "day": 47,
+        "useful_settled": 18
+      },
+      {
+        "day": 48,
+        "useful_settled": 13
+      },
+      {
+        "day": 49,
+        "useful_settled": 20
+      },
+      {
+        "day": 50,
+        "useful_settled": 21
+      },
+      {
+        "day": 51,
+        "useful_settled": 20
+      },
+      {
+        "day": 52,
+        "useful_settled": 20
+      },
+      {
+        "day": 53,
+        "useful_settled": 17
+      },
+      {
+        "day": 54,
+        "useful_settled": 12
+      },
+      {
+        "day": 55,
+        "useful_settled": 19
+      },
+      {
+        "day": 56,
+        "useful_settled": 9
+      },
+      {
+        "day": 57,
+        "useful_settled": 12
+      },
+      {
+        "day": 58,
+        "useful_settled": 11
+      },
+      {
+        "day": 59,
+        "useful_settled": 18
+      },
+      {
+        "day": 60,
+        "useful_settled": 15
+      },
+      {
+        "day": 61,
+        "useful_settled": 16
+      },
+      {
+        "day": 62,
+        "useful_settled": 13
+      },
+      {
+        "day": 63,
+        "useful_settled": 22
+      },
+      {
+        "day": 64,
+        "useful_settled": 13
+      },
+      {
+        "day": 65,
+        "useful_settled": 15
+      },
+      {
+        "day": 66,
+        "useful_settled": 22
+      },
+      {
+        "day": 67,
+        "useful_settled": 16
+      },
+      {
+        "day": 68,
+        "useful_settled": 16
+      },
+      {
+        "day": 69,
+        "useful_settled": 12
+      },
+      {
+        "day": 70,
+        "useful_settled": 13
+      },
+      {
+        "day": 71,
+        "useful_settled": 16
+      },
+      {
+        "day": 72,
+        "useful_settled": 16
+      },
+      {
+        "day": 73,
+        "useful_settled": 18
+      },
+      {
+        "day": 74,
+        "useful_settled": 28
+      },
+      {
+        "day": 75,
+        "useful_settled": 17
+      },
+      {
+        "day": 76,
+        "useful_settled": 17
+      },
+      {
+        "day": 77,
+        "useful_settled": 14
+      },
+      {
+        "day": 78,
+        "useful_settled": 20
+      },
+      {
+        "day": 79,
+        "useful_settled": 15
+      },
+      {
+        "day": 80,
+        "useful_settled": 18
+      },
+      {
+        "day": 81,
+        "useful_settled": 17
+      },
+      {
+        "day": 82,
+        "useful_settled": 23
+      },
+      {
+        "day": 83,
+        "useful_settled": 9
+      },
+      {
+        "day": 84,
+        "useful_settled": 22
+      },
+      {
+        "day": 85,
+        "useful_settled": 21
+      },
+      {
+        "day": 86,
+        "useful_settled": 15
+      },
+      {
+        "day": 87,
+        "useful_settled": 26
+      },
+      {
+        "day": 88,
+        "useful_settled": 16
+      },
+      {
+        "day": 89,
+        "useful_settled": 15
+      },
+      {
+        "day": 90,
+        "useful_settled": 20
+      },
+      {
+        "day": 91,
+        "useful_settled": 16
+      }
+    ],
+    "deposited_USDC": 251732.141257,
+    "disputes": 340,
+    "employer_net_value_USDC": 112185.519363,
+    "external_harm_USDC": 109.723866,
+    "failure_reasons": {
+      "authority_revoked": 15,
+      "compute_reservation_exhausted": 8,
+      "insufficient_execution_window": 1,
+      "intermediate_review_failed": 9,
+      "runtime_identity_changed": 26,
+      "uncertain_external_action": 14,
+      "watchdog": 131
+    },
+    "false_acceptance_invalid": 0.023715415019762844,
+    "false_rejected_good": 10,
+    "final_deliveries": 1703,
+    "fixed_cost_USDC": 6900.0,
+    "gas_cost_USDC": 5052.0,
+    "human_cost_USDC": 12364.95,
+    "human_hours": 164.86599999999999,
+    "human_minutes_per_useful": 6.888551532033426,
+    "interruptions": 118,
+    "invalid_deliveries": 253,
+    "ledger_entries": 47472,
+    "ledger_final_hash": "5d34ab4e2afbfdfa868d5e3c22fc2e11592db48724650428d5788961d4d45da5",
+    "locked_peak_USDC": 6839.314406,
+    "modeled_system_surplus_USDC": 205533.296627,
+    "node_cash_net_USDC": 3498.038343,
+    "node_entitlement_net_USDC": 3554.938721,
+    "offered": 10000,
+    "outcomes": {
+      "agentWin": 1442,
+      "buyerWin": 250,
+      "cancelled": 25,
+      "neutralTimeout": 11,
+      "noSubmission": 204
+    },
+    "paid_USDC": 251531.304737,
+    "paid_bad": 6,
+    "paid_job_volume_USDC": 125267.094241,
+    "pending_claims_USDC": 200.83652,
+    "reject_reasons": {
+      "forecast_deadline_or_human_queue": 585,
+      "modeled_economics": 2554,
+      "unsupported_authority_or_provider": 987,
+      "working_capital": 3942
+    },
+    "rejected": 8068,
+    "resource_cost_USDC": 31246.189201,
+    "review_hours": 1083.6583336931096,
+    "settlement_days_p50": 1.936008165265145,
+    "settlement_days_p95": 4.268969211562501,
+    "simulation_event_count": 25506,
+    "terminal": 1932,
+    "uncertain_actions_stopped": 14,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 124828.198761,
+    "useful_rate_admitted": 0.7432712215320911,
+    "useful_rate_all_offers": 0.1436,
+    "useful_settled": 1436,
+    "useful_settled_by_day90": 1400,
+    "wallet10_gross_USDC": 12526.708775,
+    "wallet30_gross_USDC": 37580.127632
+  },
+  "compound_stress": {
+    "active_jobs_peak": 18,
+    "admitted": 305,
+    "agent_cash_net_USDC": 12708.737785,
+    "agent_entitlement_net_USDC": 13057.091389,
+    "agent_work_hours": 535.9910978461144,
+    "assumed_realized_value_USDC": 82439.101701,
+    "by_class": {
+      "business-operations": {
+        "admitted": 0,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "code": {
+        "admitted": 23,
+        "offered": 1100,
+        "paid_bad": 0,
+        "useful": 14
+      },
+      "crm-workflows": {
+        "admitted": 0,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "data-entry": {
+        "admitted": 0,
+        "offered": 1400,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "documents": {
+        "admitted": 0,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "multiple-applications": {
+        "admitted": 105,
+        "offered": 700,
+        "paid_bad": 0,
+        "useful": 40
+      },
+      "quality-assurance": {
+        "admitted": 4,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 3
+      },
+      "research": {
+        "admitted": 0,
+        "offered": 1000,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "spreadsheets": {
+        "admitted": 0,
+        "offered": 1200,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "visual-editing": {
+        "admitted": 1,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 1
+      },
+      "websites": {
+        "admitted": 172,
+        "offered": 700,
+        "paid_bad": 3,
+        "useful": 104
+      }
+    },
+    "capital_cost_USDC": 154.230903,
+    "central_operator_cost_USDC": 5128.55,
+    "compute_cost_USDC": 4940.335768,
+    "conservation_microUSDC": 0,
+    "daily": [
+      {
+        "day": 2,
+        "useful_settled": 2
+      },
+      {
+        "day": 3,
+        "useful_settled": 1
+      },
+      {
+        "day": 4,
+        "useful_settled": 1
+      },
+      {
+        "day": 5,
+        "useful_settled": 2
+      },
+      {
+        "day": 7,
+        "useful_settled": 1
+      },
+      {
+        "day": 8,
+        "useful_settled": 2
+      },
+      {
+        "day": 9,
+        "useful_settled": 2
+      },
+      {
+        "day": 10,
+        "useful_settled": 1
+      },
+      {
+        "day": 11,
+        "useful_settled": 3
+      },
+      {
+        "day": 12,
+        "useful_settled": 2
+      },
+      {
+        "day": 13,
+        "useful_settled": 4
+      },
+      {
+        "day": 14,
+        "useful_settled": 1
+      },
+      {
+        "day": 15,
+        "useful_settled": 3
+      },
+      {
+        "day": 16,
+        "useful_settled": 3
+      },
+      {
+        "day": 17,
+        "useful_settled": 3
+      },
+      {
+        "day": 18,
+        "useful_settled": 2
+      },
+      {
+        "day": 19,
+        "useful_settled": 3
+      },
+      {
+        "day": 20,
+        "useful_settled": 4
+      },
+      {
+        "day": 22,
+        "useful_settled": 2
+      },
+      {
+        "day": 23,
+        "useful_settled": 2
+      },
+      {
+        "day": 24,
+        "useful_settled": 2
+      },
+      {
+        "day": 25,
+        "useful_settled": 3
+      },
+      {
+        "day": 26,
+        "useful_settled": 1
+      },
+      {
+        "day": 27,
+        "useful_settled": 4
+      },
+      {
+        "day": 28,
+        "useful_settled": 2
+      },
+      {
+        "day": 29,
+        "useful_settled": 1
+      },
+      {
+        "day": 30,
+        "useful_settled": 1
+      },
+      {
+        "day": 32,
+        "useful_settled": 2
+      },
+      {
+        "day": 33,
+        "useful_settled": 2
+      },
+      {
+        "day": 35,
+        "useful_settled": 1
+      },
+      {
+        "day": 37,
+        "useful_settled": 1
+      },
+      {
+        "day": 39,
+        "useful_settled": 1
+      },
+      {
+        "day": 40,
+        "useful_settled": 2
+      },
+      {
+        "day": 41,
+        "useful_settled": 2
+      },
+      {
+        "day": 43,
+        "useful_settled": 4
+      },
+      {
+        "day": 44,
+        "useful_settled": 2
+      },
+      {
+        "day": 45,
+        "useful_settled": 3
+      },
+      {
+        "day": 46,
+        "useful_settled": 1
+      },
+      {
+        "day": 47,
+        "useful_settled": 1
+      },
+      {
+        "day": 48,
+        "useful_settled": 3
+      },
+      {
+        "day": 49,
+        "useful_settled": 5
+      },
+      {
+        "day": 50,
+        "useful_settled": 1
+      },
+      {
+        "day": 51,
+        "useful_settled": 1
+      },
+      {
+        "day": 52,
+        "useful_settled": 3
+      },
+      {
+        "day": 53,
+        "useful_settled": 4
+      },
+      {
+        "day": 54,
+        "useful_settled": 2
+      },
+      {
+        "day": 55,
+        "useful_settled": 3
+      },
+      {
+        "day": 56,
+        "useful_settled": 1
+      },
+      {
+        "day": 57,
+        "useful_settled": 2
+      },
+      {
+        "day": 58,
+        "useful_settled": 2
+      },
+      {
+        "day": 59,
+        "useful_settled": 1
+      },
+      {
+        "day": 61,
+        "useful_settled": 1
+      },
+      {
+        "day": 62,
+        "useful_settled": 2
+      },
+      {
+        "day": 64,
+        "useful_settled": 4
+      },
+      {
+        "day": 65,
+        "useful_settled": 1
+      },
+      {
+        "day": 66,
+        "useful_settled": 2
+      },
+      {
+        "day": 67,
+        "useful_settled": 2
+      },
+      {
+        "day": 69,
+        "useful_settled": 2
+      },
+      {
+        "day": 71,
+        "useful_settled": 3
+      },
+      {
+        "day": 72,
+        "useful_settled": 2
+      },
+      {
+        "day": 74,
+        "useful_settled": 3
+      },
+      {
+        "day": 75,
+        "useful_settled": 2
+      },
+      {
+        "day": 77,
+        "useful_settled": 4
+      },
+      {
+        "day": 78,
+        "useful_settled": 4
+      },
+      {
+        "day": 79,
+        "useful_settled": 2
+      },
+      {
+        "day": 80,
+        "useful_settled": 1
+      },
+      {
+        "day": 81,
+        "useful_settled": 3
+      },
+      {
+        "day": 82,
+        "useful_settled": 2
+      },
+      {
+        "day": 83,
+        "useful_settled": 1
+      },
+      {
+        "day": 84,
+        "useful_settled": 2
+      },
+      {
+        "day": 85,
+        "useful_settled": 2
+      },
+      {
+        "day": 86,
+        "useful_settled": 2
+      },
+      {
+        "day": 87,
+        "useful_settled": 1
+      },
+      {
+        "day": 88,
+        "useful_settled": 2
+      },
+      {
+        "day": 89,
+        "useful_settled": 2
+      },
+      {
+        "day": 90,
+        "useful_settled": 2
+      }
+    ],
+    "deposited_USDC": 122002.973982,
+    "disputes": 65,
+    "employer_net_value_USDC": 39910.625539,
+    "external_harm_USDC": 91.173222,
+    "failure_reasons": {
+      "authority_revoked": 2,
+      "compute_reservation_exhausted": 2,
+      "intermediate_review_failed": 34,
+      "queued_or_execution_deadline": 1,
+      "runtime_identity_changed": 5,
+      "uncertain_external_action": 10,
+      "watchdog": 21
+    },
+    "false_acceptance_invalid": 0.047619047619047616,
+    "false_rejected_good": 1,
+    "final_deliveries": 227,
+    "fixed_cost_USDC": 6900.0,
+    "gas_cost_USDC": 4194.0,
+    "human_cost_USDC": 2860.55,
+    "human_hours": 38.14066666666667,
+    "human_minutes_per_useful": 14.126172839506173,
+    "interruptions": 85,
+    "invalid_deliveries": 63,
+    "ledger_entries": 16291,
+    "ledger_final_hash": "fdc683be75de071d2ea2636cf686f33124066c682286e96d34bf210e4e881425",
+    "locked_peak_USDC": 8501.316136,
+    "modeled_system_surplus_USDC": 63298.811808,
+    "node_cash_net_USDC": -2481.68889,
+    "node_entitlement_net_USDC": -1712.898367,
+    "offered": 10000,
+    "outcomes": {
+      "agentWin": 165,
+      "buyerWin": 53,
+      "cancelled": 3,
+      "neutralTimeout": 9,
+      "noSubmission": 75
+    },
+    "paid_USDC": 119535.678823,
+    "paid_bad": 3,
+    "paid_job_volume_USDC": 43316.935726,
+    "pending_claims_USDC": 2467.295159,
+    "reject_reasons": {
+      "forecast_deadline_or_human_queue": 1,
+      "modeled_economics": 8707,
+      "unsupported_authority_or_provider": 987
+    },
+    "rejected": 9695,
+    "resource_cost_USDC": 19049.116671,
+    "review_hours": 394.59641540714034,
+    "settlement_days_p50": 1.7722777563512155,
+    "settlement_days_p95": 15.695409166388892,
+    "simulation_event_count": 13009,
+    "terminal": 305,
+    "uncertain_actions_stopped": 10,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 42952.242831,
+    "useful_rate_admitted": 0.5311475409836065,
+    "useful_rate_all_offers": 0.0162,
+    "useful_settled": 162,
+    "useful_settled_by_day90": 160,
+    "wallet10_gross_USDC": 4331.693501,
+    "wallet30_gross_USDC": 12995.080649
+  },
+  "correlated_validation": {
+    "active_jobs_peak": 169,
+    "admitted": 5812,
+    "agent_cash_net_USDC": 222483.979434,
+    "agent_entitlement_net_USDC": 223465.714395,
+    "agent_work_hours": 7191.851470163595,
+    "assumed_realized_value_USDC": 928174.124463,
+    "by_class": {
+      "business-operations": {
+        "admitted": 434,
+        "offered": 600,
+        "paid_bad": 6,
+        "useful": 321
+      },
+      "code": {
+        "admitted": 830,
+        "offered": 1100,
+        "paid_bad": 13,
+        "useful": 597
+      },
+      "crm-workflows": {
+        "admitted": 483,
+        "offered": 900,
+        "paid_bad": 7,
+        "useful": 390
+      },
+      "data-entry": {
+        "admitted": 87,
+        "offered": 1400,
+        "paid_bad": 1,
+        "useful": 72
+      },
+      "documents": {
+        "admitted": 529,
+        "offered": 900,
+        "paid_bad": 6,
+        "useful": 410
+      },
+      "multiple-applications": {
+        "admitted": 430,
+        "offered": 700,
+        "paid_bad": 7,
+        "useful": 210
+      },
+      "quality-assurance": {
+        "admitted": 703,
+        "offered": 900,
+        "paid_bad": 6,
+        "useful": 538
+      },
+      "research": {
+        "admitted": 725,
+        "offered": 1000,
+        "paid_bad": 13,
+        "useful": 484
+      },
+      "spreadsheets": {
+        "admitted": 573,
+        "offered": 1200,
+        "paid_bad": 6,
+        "useful": 452
+      },
+      "visual-editing": {
+        "admitted": 472,
+        "offered": 600,
+        "paid_bad": 12,
+        "useful": 323
+      },
+      "websites": {
+        "admitted": 546,
+        "offered": 700,
+        "paid_bad": 9,
+        "useful": 396
+      }
+    },
+    "capital_cost_USDC": 722.525025,
+    "central_operator_cost_USDC": 47800.1,
+    "compute_cost_USDC": 33096.052781,
+    "conservation_microUSDC": 0,
+    "daily": [
+      {
+        "day": 1,
+        "useful_settled": 28
+      },
+      {
+        "day": 2,
+        "useful_settled": 51
+      },
+      {
+        "day": 3,
+        "useful_settled": 40
+      },
+      {
+        "day": 4,
+        "useful_settled": 40
+      },
+      {
+        "day": 5,
+        "useful_settled": 57
+      },
+      {
+        "day": 6,
+        "useful_settled": 37
+      },
+      {
+        "day": 7,
+        "useful_settled": 49
+      },
+      {
+        "day": 8,
+        "useful_settled": 43
+      },
+      {
+        "day": 9,
+        "useful_settled": 40
+      },
+      {
+        "day": 10,
+        "useful_settled": 43
+      },
+      {
+        "day": 11,
+        "useful_settled": 51
+      },
+      {
+        "day": 12,
+        "useful_settled": 43
+      },
+      {
+        "day": 13,
+        "useful_settled": 48
+      },
+      {
+        "day": 14,
+        "useful_settled": 58
+      },
+      {
+        "day": 15,
+        "useful_settled": 51
+      },
+      {
+        "day": 16,
+        "useful_settled": 47
+      },
+      {
+        "day": 17,
+        "useful_settled": 54
+      },
+      {
+        "day": 18,
+        "useful_settled": 49
+      },
+      {
+        "day": 19,
+        "useful_settled": 55
+      },
+      {
+        "day": 20,
+        "useful_settled": 45
+      },
+      {
+        "day": 21,
+        "useful_settled": 43
+      },
+      {
+        "day": 22,
+        "useful_settled": 31
+      },
+      {
+        "day": 23,
+        "useful_settled": 44
+      },
+      {
+        "day": 24,
+        "useful_settled": 57
+      },
+      {
+        "day": 25,
+        "useful_settled": 42
+      },
+      {
+        "day": 26,
+        "useful_settled": 56
+      },
+      {
+        "day": 27,
+        "useful_settled": 40
+      },
+      {
+        "day": 28,
+        "useful_settled": 40
+      },
+      {
+        "day": 29,
+        "useful_settled": 36
+      },
+      {
+        "day": 30,
+        "useful_settled": 45
+      },
+      {
+        "day": 31,
+        "useful_settled": 49
+      },
+      {
+        "day": 32,
+        "useful_settled": 42
+      },
+      {
+        "day": 33,
+        "useful_settled": 44
+      },
+      {
+        "day": 34,
+        "useful_settled": 41
+      },
+      {
+        "day": 35,
+        "useful_settled": 46
+      },
+      {
+        "day": 36,
+        "useful_settled": 46
+      },
+      {
+        "day": 37,
+        "useful_settled": 39
+      },
+      {
+        "day": 38,
+        "useful_settled": 56
+      },
+      {
+        "day": 39,
+        "useful_settled": 51
+      },
+      {
+        "day": 40,
+        "useful_settled": 43
+      },
+      {
+        "day": 41,
+        "useful_settled": 52
+      },
+      {
+        "day": 42,
+        "useful_settled": 46
+      },
+      {
+        "day": 43,
+        "useful_settled": 43
+      },
+      {
+        "day": 44,
+        "useful_settled": 61
+      },
+      {
+        "day": 45,
+        "useful_settled": 40
+      },
+      {
+        "day": 46,
+        "useful_settled": 52
+      },
+      {
+        "day": 47,
+        "useful_settled": 36
+      },
+      {
+        "day": 48,
+        "useful_settled": 55
+      },
+      {
+        "day": 49,
+        "useful_settled": 49
+      },
+      {
+        "day": 50,
+        "useful_settled": 50
+      },
+      {
+        "day": 51,
+        "useful_settled": 54
+      },
+      {
+        "day": 52,
+        "useful_settled": 53
+      },
+      {
+        "day": 53,
+        "useful_settled": 53
+      },
+      {
+        "day": 54,
+        "useful_settled": 50
+      },
+      {
+        "day": 55,
+        "useful_settled": 34
+      },
+      {
+        "day": 56,
+        "useful_settled": 47
+      },
+      {
+        "day": 57,
+        "useful_settled": 47
+      },
+      {
+        "day": 58,
+        "useful_settled": 46
+      },
+      {
+        "day": 59,
+        "useful_settled": 42
+      },
+      {
+        "day": 60,
+        "useful_settled": 43
+      },
+      {
+        "day": 61,
+        "useful_settled": 58
+      },
+      {
+        "day": 62,
+        "useful_settled": 38
+      },
+      {
+        "day": 63,
+        "useful_settled": 41
+      },
+      {
+        "day": 64,
+        "useful_settled": 43
+      },
+      {
+        "day": 65,
+        "useful_settled": 46
+      },
+      {
+        "day": 66,
+        "useful_settled": 44
+      },
+      {
+        "day": 67,
+        "useful_settled": 51
+      },
+      {
+        "day": 68,
+        "useful_settled": 47
+      },
+      {
+        "day": 69,
+        "useful_settled": 41
+      },
+      {
+        "day": 70,
+        "useful_settled": 40
+      },
+      {
+        "day": 71,
+        "useful_settled": 46
+      },
+      {
+        "day": 72,
+        "useful_settled": 46
+      },
+      {
+        "day": 73,
+        "useful_settled": 55
+      },
+      {
+        "day": 74,
+        "useful_settled": 52
+      },
+      {
+        "day": 75,
+        "useful_settled": 36
+      },
+      {
+        "day": 76,
+        "useful_settled": 54
+      },
+      {
+        "day": 77,
+        "useful_settled": 51
+      },
+      {
+        "day": 78,
+        "useful_settled": 46
+      },
+      {
+        "day": 79,
+        "useful_settled": 38
+      },
+      {
+        "day": 80,
+        "useful_settled": 55
+      },
+      {
+        "day": 81,
+        "useful_settled": 41
+      },
+      {
+        "day": 82,
+        "useful_settled": 42
+      },
+      {
+        "day": 83,
+        "useful_settled": 43
+      },
+      {
+        "day": 84,
+        "useful_settled": 49
+      },
+      {
+        "day": 85,
+        "useful_settled": 62
+      },
+      {
+        "day": 86,
+        "useful_settled": 45
+      },
+      {
+        "day": 87,
+        "useful_settled": 55
+      },
+      {
+        "day": 88,
+        "useful_settled": 61
+      },
+      {
+        "day": 89,
+        "useful_settled": 32
+      },
+      {
+        "day": 90,
+        "useful_settled": 43
+      },
+      {
+        "day": 91,
+        "useful_settled": 16
+      },
+      {
+        "day": 95,
+        "useful_settled": 1
+      },
+      {
+        "day": 96,
+        "useful_settled": 1
+      },
+      {
+        "day": 104,
+        "useful_settled": 1
+      }
+    ],
+    "deposited_USDC": 1041711.683825,
+    "disputes": 1052,
+    "employer_net_value_USDC": 436529.373368,
+    "external_harm_USDC": 2823.88988,
+    "failure_reasons": {
+      "authority_revoked": 37,
+      "compute_reservation_exhausted": 20,
+      "insufficient_execution_window": 2,
+      "intermediate_review_failed": 107,
+      "runtime_identity_changed": 88,
+      "uncertain_external_action": 44,
+      "watchdog": 359
+    },
+    "false_acceptance_invalid": 0.10424242424242425,
+    "false_rejected_good": 39,
+    "final_deliveries": 5079,
+    "fixed_cost_USDC": 6900.0,
+    "gas_cost_USDC": 15177.6,
+    "human_cost_USDC": 43928.5,
+    "human_hours": 585.7133333333334,
+    "human_minutes_per_useful": 8.381302170283806,
+    "interruptions": 348,
+    "invalid_deliveries": 825,
+    "ledger_entries": 124657,
+    "ledger_final_hash": "06003eb69ea49d76af911131faf50a4dce49129dd62233774e167da5db29bac9",
+    "locked_peak_USDC": 29340.175664,
+    "modeled_system_surplus_USDC": 825525.556777,
+    "node_cash_net_USDC": 14714.543613,
+    "node_entitlement_net_USDC": 15000.932974,
+    "offered": 10000,
+    "outcomes": {
+      "agentWin": 4279,
+      "buyerWin": 760,
+      "cancelled": 76,
+      "neutralTimeout": 40,
+      "noSubmission": 657
+    },
+    "paid_USDC": 1039213.15206,
+    "paid_bad": 86,
+    "paid_job_volume_USDC": 497630.412244,
+    "pending_claims_USDC": 2498.531765,
+    "reject_reasons": {
+      "durable_daily_compute_budget": 518,
+      "forecast_deadline_or_human_queue": 129,
+      "modeled_economics": 2554,
+      "unsupported_authority_or_provider": 987
+    },
+    "rejected": 4188,
+    "resource_cost_USDC": 99824.677806,
+    "review_hours": 5278.536411099778,
+    "settlement_days_p50": 1.40143242748541,
+    "settlement_days_p95": 4.7532300596875,
+    "simulation_event_count": 57948,
+    "terminal": 5812,
+    "uncertain_actions_stopped": 44,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 486334.852588,
+    "useful_rate_admitted": 0.72143840330351,
+    "useful_rate_all_offers": 0.4193,
+    "useful_settled": 4193,
+    "useful_settled_by_day90": 4131,
+    "wallet10_gross_USDC": 49763.039296,
+    "wallet30_gross_USDC": 149289.121769
+  },
+  "current_evidence": {
+    "active_jobs_peak": 0,
+    "admitted": 0,
+    "agent_cash_net_USDC": 0.0,
+    "agent_entitlement_net_USDC": 0.0,
+    "agent_work_hours": 0.0,
+    "assumed_realized_value_USDC": 0.0,
+    "by_class": {
+      "business-operations": {
+        "admitted": 0,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "code": {
+        "admitted": 0,
+        "offered": 1100,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "crm-workflows": {
+        "admitted": 0,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "data-entry": {
+        "admitted": 0,
+        "offered": 1400,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "documents": {
+        "admitted": 0,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "multiple-applications": {
+        "admitted": 0,
+        "offered": 700,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "quality-assurance": {
+        "admitted": 0,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "research": {
+        "admitted": 0,
+        "offered": 1000,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "spreadsheets": {
+        "admitted": 0,
+        "offered": 1200,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "visual-editing": {
+        "admitted": 0,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "websites": {
+        "admitted": 0,
+        "offered": 700,
+        "paid_bad": 0,
+        "useful": 0
+      }
+    },
+    "capital_cost_USDC": 0.0,
+    "central_operator_cost_USDC": 0.0,
+    "compute_cost_USDC": 0.0,
+    "conservation_microUSDC": 0,
+    "daily": [],
+    "deposited_USDC": 0.0,
+    "disputes": 0,
+    "employer_net_value_USDC": 0.0,
+    "external_harm_USDC": 0.0,
+    "failure_reasons": {},
+    "false_acceptance_invalid": null,
+    "false_rejected_good": 0,
+    "final_deliveries": 0,
+    "fixed_cost_USDC": 0.0,
+    "gas_cost_USDC": 0.0,
+    "human_cost_USDC": 0.0,
+    "human_hours": 0.0,
+    "human_minutes_per_useful": null,
+    "interruptions": 0,
+    "invalid_deliveries": 0,
+    "ledger_entries": 10000,
+    "ledger_final_hash": "7e717392517be6047a0e0975c256e27e57d416b1ed328e829331195d693b8e02",
+    "locked_peak_USDC": 0.0,
+    "modeled_system_surplus_USDC": 0.0,
+    "node_cash_net_USDC": 0.0,
+    "node_entitlement_net_USDC": 0.0,
+    "offered": 10000,
+    "outcomes": {},
+    "paid_USDC": 0.0,
+    "paid_bad": 0,
+    "paid_job_volume_USDC": 0.0,
+    "pending_claims_USDC": 0.0,
+    "reject_reasons": {
+      "missing_operational_evidence": 10000
+    },
+    "rejected": 10000,
+    "resource_cost_USDC": 0.0,
+    "review_hours": 0.0,
+    "settlement_days_p50": null,
+    "settlement_days_p95": null,
+    "simulation_event_count": 10000,
+    "terminal": 0,
+    "uncertain_actions_stopped": 0,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 0.0,
+    "useful_rate_admitted": 0,
+    "useful_rate_all_offers": 0.0,
+    "useful_settled": 0,
+    "useful_settled_by_day90": 0,
+    "wallet10_gross_USDC": 0.0,
+    "wallet30_gross_USDC": 0.0
+  },
+  "fleet_defaults": {
+    "active_jobs_peak": 24,
+    "admitted": 334,
+    "agent_cash_net_USDC": 10738.53767,
+    "agent_entitlement_net_USDC": 10738.53767,
+    "agent_work_hours": 433.0411887038282,
+    "assumed_realized_value_USDC": 59972.496685,
+    "by_class": {
+      "business-operations": {
+        "admitted": 30,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 26
+      },
+      "code": {
+        "admitted": 48,
+        "offered": 1100,
+        "paid_bad": 0,
+        "useful": 31
+      },
+      "crm-workflows": {
+        "admitted": 22,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 18
+      },
+      "data-entry": {
+        "admitted": 5,
+        "offered": 1400,
+        "paid_bad": 0,
+        "useful": 4
+      },
+      "documents": {
+        "admitted": 35,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 25
+      },
+      "multiple-applications": {
+        "admitted": 29,
+        "offered": 700,
+        "paid_bad": 0,
+        "useful": 13
+      },
+      "quality-assurance": {
+        "admitted": 39,
+        "offered": 900,
+        "paid_bad": 1,
+        "useful": 31
+      },
+      "research": {
+        "admitted": 43,
+        "offered": 1000,
+        "paid_bad": 0,
+        "useful": 33
+      },
+      "spreadsheets": {
+        "admitted": 28,
+        "offered": 1200,
+        "paid_bad": 0,
+        "useful": 24
+      },
+      "visual-editing": {
+        "admitted": 18,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 15
+      },
+      "websites": {
+        "admitted": 37,
+        "offered": 700,
+        "paid_bad": 0,
+        "useful": 32
+      }
+    },
+    "capital_cost_USDC": 142.930463,
+    "central_operator_cost_USDC": 4353.4,
+    "compute_cost_USDC": 2039.750695,
+    "conservation_microUSDC": 0,
+    "daily": [
+      {
+        "day": 7,
+        "useful_settled": 7
+      },
+      {
+        "day": 8,
+        "useful_settled": 11
+      },
+      {
+        "day": 9,
+        "useful_settled": 2
+      },
+      {
+        "day": 10,
+        "useful_settled": 3
+      },
+      {
+        "day": 11,
+        "useful_settled": 1
+      },
+      {
+        "day": 14,
+        "useful_settled": 3
+      },
+      {
+        "day": 15,
+        "useful_settled": 6
+      },
+      {
+        "day": 16,
+        "useful_settled": 4
+      },
+      {
+        "day": 17,
+        "useful_settled": 3
+      },
+      {
+        "day": 18,
+        "useful_settled": 4
+      },
+      {
+        "day": 20,
+        "useful_settled": 2
+      },
+      {
+        "day": 21,
+        "useful_settled": 1
+      },
+      {
+        "day": 22,
+        "useful_settled": 2
+      },
+      {
+        "day": 23,
+        "useful_settled": 7
+      },
+      {
+        "day": 24,
+        "useful_settled": 3
+      },
+      {
+        "day": 25,
+        "useful_settled": 5
+      },
+      {
+        "day": 27,
+        "useful_settled": 1
+      },
+      {
+        "day": 29,
+        "useful_settled": 1
+      },
+      {
+        "day": 30,
+        "useful_settled": 7
+      },
+      {
+        "day": 31,
+        "useful_settled": 3
+      },
+      {
+        "day": 32,
+        "useful_settled": 6
+      },
+      {
+        "day": 34,
+        "useful_settled": 2
+      },
+      {
+        "day": 35,
+        "useful_settled": 1
+      },
+      {
+        "day": 36,
+        "useful_settled": 1
+      },
+      {
+        "day": 37,
+        "useful_settled": 5
+      },
+      {
+        "day": 38,
+        "useful_settled": 4
+      },
+      {
+        "day": 39,
+        "useful_settled": 1
+      },
+      {
+        "day": 40,
+        "useful_settled": 4
+      },
+      {
+        "day": 42,
+        "useful_settled": 2
+      },
+      {
+        "day": 43,
+        "useful_settled": 2
+      },
+      {
+        "day": 44,
+        "useful_settled": 3
+      },
+      {
+        "day": 45,
+        "useful_settled": 6
+      },
+      {
+        "day": 46,
+        "useful_settled": 2
+      },
+      {
+        "day": 47,
+        "useful_settled": 5
+      },
+      {
+        "day": 48,
+        "useful_settled": 2
+      },
+      {
+        "day": 50,
+        "useful_settled": 4
+      },
+      {
+        "day": 51,
+        "useful_settled": 1
+      },
+      {
+        "day": 52,
+        "useful_settled": 5
+      },
+      {
+        "day": 53,
+        "useful_settled": 3
+      },
+      {
+        "day": 54,
+        "useful_settled": 6
+      },
+      {
+        "day": 55,
+        "useful_settled": 1
+      },
+      {
+        "day": 56,
+        "useful_settled": 1
+      },
+      {
+        "day": 57,
+        "useful_settled": 1
+      },
+      {
+        "day": 58,
+        "useful_settled": 4
+      },
+      {
+        "day": 59,
+        "useful_settled": 2
+      },
+      {
+        "day": 60,
+        "useful_settled": 6
+      },
+      {
+        "day": 61,
+        "useful_settled": 3
+      },
+      {
+        "day": 62,
+        "useful_settled": 4
+      },
+      {
+        "day": 64,
+        "useful_settled": 2
+      },
+      {
+        "day": 65,
+        "useful_settled": 2
+      },
+      {
+        "day": 66,
+        "useful_settled": 3
+      },
+      {
+        "day": 67,
+        "useful_settled": 4
+      },
+      {
+        "day": 68,
+        "useful_settled": 5
+      },
+      {
+        "day": 69,
+        "useful_settled": 1
+      },
+      {
+        "day": 70,
+        "useful_settled": 4
+      },
+      {
+        "day": 71,
+        "useful_settled": 2
+      },
+      {
+        "day": 72,
+        "useful_settled": 2
+      },
+      {
+        "day": 73,
+        "useful_settled": 4
+      },
+      {
+        "day": 74,
+        "useful_settled": 1
+      },
+      {
+        "day": 75,
+        "useful_settled": 2
+      },
+      {
+        "day": 76,
+        "useful_settled": 2
+      },
+      {
+        "day": 77,
+        "useful_settled": 3
+      },
+      {
+        "day": 78,
+        "useful_settled": 3
+      },
+      {
+        "day": 79,
+        "useful_settled": 2
+      },
+      {
+        "day": 80,
+        "useful_settled": 4
+      },
+      {
+        "day": 81,
+        "useful_settled": 3
+      },
+      {
+        "day": 82,
+        "useful_settled": 3
+      },
+      {
+        "day": 83,
+        "useful_settled": 3
+      },
+      {
+        "day": 84,
+        "useful_settled": 2
+      },
+      {
+        "day": 85,
+        "useful_settled": 2
+      },
+      {
+        "day": 86,
+        "useful_settled": 1
+      },
+      {
+        "day": 88,
+        "useful_settled": 3
+      },
+      {
+        "day": 89,
+        "useful_settled": 4
+      },
+      {
+        "day": 90,
+        "useful_settled": 4
+      },
+      {
+        "day": 92,
+        "useful_settled": 6
+      },
+      {
+        "day": 93,
+        "useful_settled": 2
+      },
+      {
+        "day": 94,
+        "useful_settled": 2
+      },
+      {
+        "day": 95,
+        "useful_settled": 1
+      },
+      {
+        "day": 96,
+        "useful_settled": 4
+      },
+      {
+        "day": 97,
+        "useful_settled": 2
+      },
+      {
+        "day": 101,
+        "useful_settled": 1
+      }
+    ],
+    "deposited_USDC": 63265.726058,
+    "disputes": 63,
+    "employer_net_value_USDC": 29099.660171,
+    "external_harm_USDC": 32.776441,
+    "failure_reasons": {
+      "authority_revoked": 2,
+      "compute_reservation_exhausted": 1,
+      "insufficient_execution_window": 2,
+      "intermediate_review_failed": 8,
+      "runtime_identity_changed": 4,
+      "uncertain_external_action": 5,
+      "watchdog": 15
+    },
+    "false_acceptance_invalid": 0.02857142857142857,
+    "false_rejected_good": 2,
+    "final_deliveries": 290,
+    "fixed_cost_USDC": 6900.0,
+    "gas_cost_USDC": 864.0,
+    "human_cost_USDC": 2718.2,
+    "human_hours": 36.242666666666665,
+    "human_minutes_per_useful": 8.629206349206349,
+    "interruptions": 31,
+    "invalid_deliveries": 35,
+    "ledger_entries": 16596,
+    "ledger_final_hash": "688f8af5d9628fd603b8b176a5a758957d725f2b22fc2e403499e1c19bcbef38",
+    "locked_peak_USDC": 6164.95323,
+    "modeled_system_surplus_USDC": 47274.839086,
+    "node_cash_net_USDC": -586.70438,
+    "node_entitlement_net_USDC": -539.751515,
+    "offered": 10000,
+    "outcomes": {
+      "agentWin": 253,
+      "buyerWin": 35,
+      "cancelled": 7,
+      "neutralTimeout": 2,
+      "noSubmission": 37
+    },
+    "paid_USDC": 63218.773193,
+    "paid_bad": 1,
+    "paid_job_volume_USDC": 31181.808645,
+    "pending_claims_USDC": 46.952865,
+    "reject_reasons": {
+      "agent_active_job_cap": 8552,
+      "forecast_deadline_or_human_queue": 1,
+      "modeled_economics": 126,
+      "unsupported_authority_or_provider": 987
+    },
+    "rejected": 9666,
+    "resource_cost_USDC": 12664.881158,
+    "review_hours": 333.4839459042189,
+    "settlement_days_p50": 7.115743914713168,
+    "settlement_days_p95": 8.415849924940424,
+    "simulation_event_count": 12835,
+    "terminal": 334,
+    "uncertain_actions_stopped": 5,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 31050.702879,
+    "useful_rate_admitted": 0.7544910179640718,
+    "useful_rate_all_offers": 0.0252,
+    "useful_settled": 252,
+    "useful_settled_by_day90": 230,
+    "wallet10_gross_USDC": 3118.180745,
+    "wallet30_gross_USDC": 9354.542478
+  },
+  "future_automated_bridge": {
+    "active_jobs_peak": 236,
+    "admitted": 4367,
+    "agent_cash_net_USDC": 164603.814026,
+    "agent_entitlement_net_USDC": 165068.705833,
+    "agent_work_hours": 5288.246077720093,
+    "assumed_realized_value_USDC": 694848.363408,
+    "by_class": {
+      "business-operations": {
+        "admitted": 334,
+        "offered": 600,
+        "paid_bad": 2,
+        "useful": 248
+      },
+      "code": {
+        "admitted": 614,
+        "offered": 1100,
+        "paid_bad": 3,
+        "useful": 443
+      },
+      "crm-workflows": {
+        "admitted": 358,
+        "offered": 900,
+        "paid_bad": 2,
+        "useful": 288
+      },
+      "data-entry": {
+        "admitted": 67,
+        "offered": 1400,
+        "paid_bad": 0,
+        "useful": 58
+      },
+      "documents": {
+        "admitted": 412,
+        "offered": 900,
+        "paid_bad": 1,
+        "useful": 307
+      },
+      "multiple-applications": {
+        "admitted": 318,
+        "offered": 700,
+        "paid_bad": 3,
+        "useful": 158
+      },
+      "quality-assurance": {
+        "admitted": 530,
+        "offered": 900,
+        "paid_bad": 2,
+        "useful": 395
+      },
+      "research": {
+        "admitted": 547,
+        "offered": 1000,
+        "paid_bad": 2,
+        "useful": 365
+      },
+      "spreadsheets": {
+        "admitted": 423,
+        "offered": 1200,
+        "paid_bad": 3,
+        "useful": 334
+      },
+      "visual-editing": {
+        "admitted": 353,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 235
+      },
+      "websites": {
+        "admitted": 411,
+        "offered": 700,
+        "paid_bad": 6,
+        "useful": 299
+      }
+    },
+    "capital_cost_USDC": 958.926874,
+    "central_operator_cost_USDC": 17270.925,
+    "compute_cost_USDC": 24379.968752,
+    "conservation_microUSDC": 0,
+    "daily": [
+      {
+        "day": 1,
+        "useful_settled": 9
+      },
+      {
+        "day": 2,
+        "useful_settled": 52
+      },
+      {
+        "day": 3,
+        "useful_settled": 41
+      },
+      {
+        "day": 4,
+        "useful_settled": 22
+      },
+      {
+        "day": 5,
+        "useful_settled": 71
+      },
+      {
+        "day": 6,
+        "useful_settled": 24
+      },
+      {
+        "day": 7,
+        "useful_settled": 31
+      },
+      {
+        "day": 8,
+        "useful_settled": 46
+      },
+      {
+        "day": 9,
+        "useful_settled": 34
+      },
+      {
+        "day": 10,
+        "useful_settled": 24
+      },
+      {
+        "day": 11,
+        "useful_settled": 41
+      },
+      {
+        "day": 12,
+        "useful_settled": 43
+      },
+      {
+        "day": 13,
+        "useful_settled": 45
+      },
+      {
+        "day": 14,
+        "useful_settled": 30
+      },
+      {
+        "day": 15,
+        "useful_settled": 46
+      },
+      {
+        "day": 16,
+        "useful_settled": 35
+      },
+      {
+        "day": 17,
+        "useful_settled": 36
+      },
+      {
+        "day": 18,
+        "useful_settled": 48
+      },
+      {
+        "day": 19,
+        "useful_settled": 11
+      },
+      {
+        "day": 20,
+        "useful_settled": 37
+      },
+      {
+        "day": 21,
+        "useful_settled": 34
+      },
+      {
+        "day": 22,
+        "useful_settled": 32
+      },
+      {
+        "day": 23,
+        "useful_settled": 46
+      },
+      {
+        "day": 24,
+        "useful_settled": 54
+      },
+      {
+        "day": 25,
+        "useful_settled": 29
+      },
+      {
+        "day": 26,
+        "useful_settled": 9
+      },
+      {
+        "day": 27,
+        "useful_settled": 8
+      },
+      {
+        "day": 28,
+        "useful_settled": 27
+      },
+      {
+        "day": 29,
+        "useful_settled": 39
+      },
+      {
+        "day": 30,
+        "useful_settled": 41
+      },
+      {
+        "day": 31,
+        "useful_settled": 33
+      },
+      {
+        "day": 32,
+        "useful_settled": 21
+      },
+      {
+        "day": 33,
+        "useful_settled": 25
+      },
+      {
+        "day": 34,
+        "useful_settled": 15
+      },
+      {
+        "day": 35,
+        "useful_settled": 5
+      },
+      {
+        "day": 36,
+        "useful_settled": 41
+      },
+      {
+        "day": 37,
+        "useful_settled": 80
+      },
+      {
+        "day": 38,
+        "useful_settled": 41
+      },
+      {
+        "day": 39,
+        "useful_settled": 36
+      },
+      {
+        "day": 40,
+        "useful_settled": 8
+      },
+      {
+        "day": 41,
+        "useful_settled": 14
+      },
+      {
+        "day": 42,
+        "useful_settled": 24
+      },
+      {
+        "day": 43,
+        "useful_settled": 19
+      },
+      {
+        "day": 44,
+        "useful_settled": 64
+      },
+      {
+        "day": 45,
+        "useful_settled": 43
+      },
+      {
+        "day": 46,
+        "useful_settled": 29
+      },
+      {
+        "day": 47,
+        "useful_settled": 12
+      },
+      {
+        "day": 48,
+        "useful_settled": 24
+      },
+      {
+        "day": 49,
+        "useful_settled": 11
+      },
+      {
+        "day": 50,
+        "useful_settled": 35
+      },
+      {
+        "day": 51,
+        "useful_settled": 59
+      },
+      {
+        "day": 52,
+        "useful_settled": 38
+      },
+      {
+        "day": 53,
+        "useful_settled": 23
+      },
+      {
+        "day": 54,
+        "useful_settled": 24
+      },
+      {
+        "day": 55,
+        "useful_settled": 34
+      },
+      {
+        "day": 56,
+        "useful_settled": 30
+      },
+      {
+        "day": 57,
+        "useful_settled": 51
+      },
+      {
+        "day": 58,
+        "useful_settled": 41
+      },
+      {
+        "day": 59,
+        "useful_settled": 12
+      },
+      {
+        "day": 60,
+        "useful_settled": 13
+      },
+      {
+        "day": 61,
+        "useful_settled": 16
+      },
+      {
+        "day": 62,
+        "useful_settled": 53
+      },
+      {
+        "day": 63,
+        "useful_settled": 54
+      },
+      {
+        "day": 64,
+        "useful_settled": 31
+      },
+      {
+        "day": 65,
+        "useful_settled": 33
+      },
+      {
+        "day": 66,
+        "useful_settled": 10
+      },
+      {
+        "day": 67,
+        "useful_settled": 35
+      },
+      {
+        "day": 68,
+        "useful_settled": 30
+      },
+      {
+        "day": 69,
+        "useful_settled": 50
+      },
+      {
+        "day": 70,
+        "useful_settled": 32
+      },
+      {
+        "day": 71,
+        "useful_settled": 23
+      },
+      {
+        "day": 72,
+        "useful_settled": 25
+      },
+      {
+        "day": 73,
+        "useful_settled": 27
+      },
+      {
+        "day": 74,
+        "useful_settled": 29
+      },
+      {
+        "day": 75,
+        "useful_settled": 45
+      },
+      {
+        "day": 76,
+        "useful_settled": 68
+      },
+      {
+        "day": 77,
+        "useful_settled": 38
+      },
+      {
+        "day": 78,
+        "useful_settled": 46
+      },
+      {
+        "day": 79,
+        "useful_settled": 23
+      },
+      {
+        "day": 80,
+        "useful_settled": 30
+      },
+      {
+        "day": 81,
+        "useful_settled": 26
+      },
+      {
+        "day": 82,
+        "useful_settled": 61
+      },
+      {
+        "day": 83,
+        "useful_settled": 55
+      },
+      {
+        "day": 84,
+        "useful_settled": 30
+      },
+      {
+        "day": 85,
+        "useful_settled": 18
+      },
+      {
+        "day": 86,
+        "useful_settled": 35
+      },
+      {
+        "day": 87,
+        "useful_settled": 65
+      },
+      {
+        "day": 88,
+        "useful_settled": 33
+      },
+      {
+        "day": 89,
+        "useful_settled": 45
+      },
+      {
+        "day": 90,
+        "useful_settled": 34
+      },
+      {
+        "day": 91,
+        "useful_settled": 58
+      },
+      {
+        "day": 92,
+        "useful_settled": 17
+      },
+      {
+        "day": 93,
+        "useful_settled": 4
+      },
+      {
+        "day": 97,
+        "useful_settled": 1
+      }
+    ],
+    "deposited_USDC": 779078.720464,
+    "disputes": 810,
+    "employer_net_value_USDC": 328538.962422,
+    "external_harm_USDC": 1016.86229,
+    "failure_reasons": {
+      "authority_revoked": 28,
+      "compute_reservation_exhausted": 17,
+      "insufficient_execution_window": 5,
+      "intermediate_review_failed": 82,
+      "queued_or_execution_deadline": 6,
+      "runtime_identity_changed": 66,
+      "uncertain_external_action": 34,
+      "watchdog": 283
+    },
+    "false_acceptance_invalid": 0.038834951456310676,
+    "false_rejected_good": 21,
+    "final_deliveries": 3787,
+    "fixed_cost_USDC": 6900.0,
+    "gas_cost_USDC": 11310.4,
+    "human_cost_USDC": 13991.325,
+    "human_hours": 186.551,
+    "human_minutes_per_useful": 3.5760575079872203,
+    "interruptions": 262,
+    "invalid_deliveries": 618,
+    "ledger_entries": 95450,
+    "ledger_final_hash": "8fa83470980464ad1f62c856c6cdf91285f01ad373c4ef67e56fd8ebd3480150",
+    "locked_peak_USDC": 39675.729592,
+    "modeled_system_surplus_USDC": 636290.880492,
+    "node_cash_net_USDC": 13184.361149,
+    "node_entitlement_net_USDC": 13439.478679,
+    "offered": 10000,
+    "outcomes": {
+      "agentWin": 3154,
+      "buyerWin": 599,
+      "cancelled": 59,
+      "neutralTimeout": 34,
+      "noSubmission": 521
+    },
+    "paid_USDC": 776992.238375,
+    "paid_bad": 24,
+    "paid_job_volume_USDC": 368683.970672,
+    "pending_claims_USDC": 2086.482089,
+    "reject_reasons": {
+      "durable_daily_compute_budget": 65,
+      "forecast_deadline_or_human_queue": 2027,
+      "modeled_economics": 2554,
+      "unsupported_authority_or_provider": 987
+    },
+    "rejected": 5633,
+    "resource_cost_USDC": 57540.620626,
+    "review_hours": 3896.0593862463347,
+    "settlement_days_p50": 3.0332649176400284,
+    "settlement_days_p95": 5.612914248611427,
+    "simulation_event_count": 45755,
+    "terminal": 4367,
+    "uncertain_actions_stopped": 34,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 364616.521465,
+    "useful_rate_admitted": 0.7167391802152507,
+    "useful_rate_all_offers": 0.313,
+    "useful_settled": 3130,
+    "useful_settled_by_day90": 3016,
+    "wallet10_gross_USDC": 36868.395632,
+    "wallet30_gross_USDC": 110605.1898
+  },
+  "future_bridge_and_moderation": {
+    "active_jobs_peak": 172,
+    "admitted": 5550,
+    "agent_cash_net_USDC": 209308.688785,
+    "agent_entitlement_net_USDC": 209661.8153,
+    "agent_work_hours": 6686.471490021797,
+    "assumed_realized_value_USDC": 882804.888187,
+    "by_class": {
+      "business-operations": {
+        "admitted": 424,
+        "offered": 600,
+        "paid_bad": 3,
+        "useful": 313
+      },
+      "code": {
+        "admitted": 788,
+        "offered": 1100,
+        "paid_bad": 3,
+        "useful": 564
+      },
+      "crm-workflows": {
+        "admitted": 460,
+        "offered": 900,
+        "paid_bad": 2,
+        "useful": 374
+      },
+      "data-entry": {
+        "admitted": 85,
+        "offered": 1400,
+        "paid_bad": 0,
+        "useful": 71
+      },
+      "documents": {
+        "admitted": 514,
+        "offered": 900,
+        "paid_bad": 1,
+        "useful": 395
+      },
+      "multiple-applications": {
+        "admitted": 400,
+        "offered": 700,
+        "paid_bad": 3,
+        "useful": 197
+      },
+      "quality-assurance": {
+        "admitted": 674,
+        "offered": 900,
+        "paid_bad": 4,
+        "useful": 504
+      },
+      "research": {
+        "admitted": 692,
+        "offered": 1000,
+        "paid_bad": 4,
+        "useful": 470
+      },
+      "spreadsheets": {
+        "admitted": 542,
+        "offered": 1200,
+        "paid_bad": 3,
+        "useful": 428
+      },
+      "visual-editing": {
+        "admitted": 447,
+        "offered": 600,
+        "paid_bad": 2,
+        "useful": 306
+      },
+      "websites": {
+        "admitted": 524,
+        "offered": 700,
+        "paid_bad": 7,
+        "useful": 386
+      }
+    },
+    "capital_cost_USDC": 722.750851,
+    "central_operator_cost_USDC": 9891.0,
+    "compute_cost_USDC": 30728.019021,
+    "conservation_microUSDC": 0,
+    "daily": [
+      {
+        "day": 1,
+        "useful_settled": 9
+      },
+      {
+        "day": 2,
+        "useful_settled": 53
+      },
+      {
+        "day": 3,
+        "useful_settled": 40
+      },
+      {
+        "day": 4,
+        "useful_settled": 44
+      },
+      {
+        "day": 5,
+        "useful_settled": 40
+      },
+      {
+        "day": 6,
+        "useful_settled": 35
+      },
+      {
+        "day": 7,
+        "useful_settled": 42
+      },
+      {
+        "day": 8,
+        "useful_settled": 43
+      },
+      {
+        "day": 9,
+        "useful_settled": 43
+      },
+      {
+        "day": 10,
+        "useful_settled": 36
+      },
+      {
+        "day": 11,
+        "useful_settled": 47
+      },
+      {
+        "day": 12,
+        "useful_settled": 48
+      },
+      {
+        "day": 13,
+        "useful_settled": 39
+      },
+      {
+        "day": 14,
+        "useful_settled": 59
+      },
+      {
+        "day": 15,
+        "useful_settled": 40
+      },
+      {
+        "day": 16,
+        "useful_settled": 50
+      },
+      {
+        "day": 17,
+        "useful_settled": 58
+      },
+      {
+        "day": 18,
+        "useful_settled": 45
+      },
+      {
+        "day": 19,
+        "useful_settled": 54
+      },
+      {
+        "day": 20,
+        "useful_settled": 40
+      },
+      {
+        "day": 21,
+        "useful_settled": 37
+      },
+      {
+        "day": 22,
+        "useful_settled": 32
+      },
+      {
+        "day": 23,
+        "useful_settled": 40
+      },
+      {
+        "day": 24,
+        "useful_settled": 45
+      },
+      {
+        "day": 25,
+        "useful_settled": 42
+      },
+      {
+        "day": 26,
+        "useful_settled": 35
+      },
+      {
+        "day": 27,
+        "useful_settled": 52
+      },
+      {
+        "day": 28,
+        "useful_settled": 41
+      },
+      {
+        "day": 29,
+        "useful_settled": 33
+      },
+      {
+        "day": 30,
+        "useful_settled": 44
+      },
+      {
+        "day": 31,
+        "useful_settled": 55
+      },
+      {
+        "day": 32,
+        "useful_settled": 38
+      },
+      {
+        "day": 33,
+        "useful_settled": 43
+      },
+      {
+        "day": 34,
+        "useful_settled": 33
+      },
+      {
+        "day": 35,
+        "useful_settled": 42
+      },
+      {
+        "day": 36,
+        "useful_settled": 58
+      },
+      {
+        "day": 37,
+        "useful_settled": 24
+      },
+      {
+        "day": 38,
+        "useful_settled": 64
+      },
+      {
+        "day": 39,
+        "useful_settled": 40
+      },
+      {
+        "day": 40,
+        "useful_settled": 48
+      },
+      {
+        "day": 41,
+        "useful_settled": 53
+      },
+      {
+        "day": 42,
+        "useful_settled": 42
+      },
+      {
+        "day": 43,
+        "useful_settled": 45
+      },
+      {
+        "day": 44,
+        "useful_settled": 51
+      },
+      {
+        "day": 45,
+        "useful_settled": 44
+      },
+      {
+        "day": 46,
+        "useful_settled": 49
+      },
+      {
+        "day": 47,
+        "useful_settled": 34
+      },
+      {
+        "day": 48,
+        "useful_settled": 48
+      },
+      {
+        "day": 49,
+        "useful_settled": 45
+      },
+      {
+        "day": 50,
+        "useful_settled": 52
+      },
+      {
+        "day": 51,
+        "useful_settled": 47
+      },
+      {
+        "day": 52,
+        "useful_settled": 54
+      },
+      {
+        "day": 53,
+        "useful_settled": 60
+      },
+      {
+        "day": 54,
+        "useful_settled": 43
+      },
+      {
+        "day": 55,
+        "useful_settled": 38
+      },
+      {
+        "day": 56,
+        "useful_settled": 31
+      },
+      {
+        "day": 57,
+        "useful_settled": 51
+      },
+      {
+        "day": 58,
+        "useful_settled": 45
+      },
+      {
+        "day": 59,
+        "useful_settled": 41
+      },
+      {
+        "day": 60,
+        "useful_settled": 41
+      },
+      {
+        "day": 61,
+        "useful_settled": 51
+      },
+      {
+        "day": 62,
+        "useful_settled": 41
+      },
+      {
+        "day": 63,
+        "useful_settled": 44
+      },
+      {
+        "day": 64,
+        "useful_settled": 37
+      },
+      {
+        "day": 65,
+        "useful_settled": 48
+      },
+      {
+        "day": 66,
+        "useful_settled": 49
+      },
+      {
+        "day": 67,
+        "useful_settled": 40
+      },
+      {
+        "day": 68,
+        "useful_settled": 46
+      },
+      {
+        "day": 69,
+        "useful_settled": 44
+      },
+      {
+        "day": 70,
+        "useful_settled": 34
+      },
+      {
+        "day": 71,
+        "useful_settled": 43
+      },
+      {
+        "day": 72,
+        "useful_settled": 42
+      },
+      {
+        "day": 73,
+        "useful_settled": 55
+      },
+      {
+        "day": 74,
+        "useful_settled": 39
+      },
+      {
+        "day": 75,
+        "useful_settled": 61
+      },
+      {
+        "day": 76,
+        "useful_settled": 47
+      },
+      {
+        "day": 77,
+        "useful_settled": 53
+      },
+      {
+        "day": 78,
+        "useful_settled": 40
+      },
+      {
+        "day": 79,
+        "useful_settled": 40
+      },
+      {
+        "day": 80,
+        "useful_settled": 50
+      },
+      {
+        "day": 81,
+        "useful_settled": 45
+      },
+      {
+        "day": 82,
+        "useful_settled": 41
+      },
+      {
+        "day": 83,
+        "useful_settled": 36
+      },
+      {
+        "day": 84,
+        "useful_settled": 46
+      },
+      {
+        "day": 85,
+        "useful_settled": 57
+      },
+      {
+        "day": 86,
+        "useful_settled": 49
+      },
+      {
+        "day": 87,
+        "useful_settled": 50
+      },
+      {
+        "day": 88,
+        "useful_settled": 44
+      },
+      {
+        "day": 89,
+        "useful_settled": 29
+      },
+      {
+        "day": 90,
+        "useful_settled": 52
+      },
+      {
+        "day": 91,
+        "useful_settled": 27
+      },
+      {
+        "day": 95,
+        "useful_settled": 1
+      },
+      {
+        "day": 96,
+        "useful_settled": 1
+      },
+      {
+        "day": 105,
+        "useful_settled": 1
+      }
+    ],
+    "deposited_USDC": 984086.951217,
+    "disputes": 1011,
+    "employer_net_value_USDC": 419112.020358,
+    "external_harm_USDC": 1204.334285,
+    "failure_reasons": {
+      "authority_revoked": 34,
+      "compute_reservation_exhausted": 18,
+      "insufficient_execution_window": 7,
+      "intermediate_review_failed": 104,
+      "queued_or_execution_deadline": 5,
+      "runtime_identity_changed": 88,
+      "uncertain_external_action": 47,
+      "watchdog": 353
+    },
+    "false_acceptance_invalid": 0.04177545691906005,
+    "false_rejected_good": 27,
+    "final_deliveries": 4818,
+    "fixed_cost_USDC": 6900.0,
+    "gas_cost_USDC": 14409.6,
+    "human_cost_USDC": 6129.8,
+    "human_hours": 81.73066666666666,
+    "human_minutes_per_useful": 1.2235129740518962,
+    "interruptions": 334,
+    "invalid_deliveries": 766,
+    "ledger_entries": 118765,
+    "ledger_final_hash": "ecce6f61a2cb0bee162d4c6cfef5ed233e0bff6d812da0a78173a9cc97f61cad",
+    "locked_peak_USDC": 27568.582117,
+    "modeled_system_surplus_USDC": 822710.38403,
+    "node_cash_net_USDC": 17484.962041,
+    "node_entitlement_net_USDC": 17776.805825,
+    "offered": 10000,
+    "outcomes": {
+      "agentWin": 4040,
+      "buyerWin": 745,
+      "cancelled": 76,
+      "neutralTimeout": 33,
+      "noSubmission": 656
+    },
+    "paid_USDC": 982181.434722,
+    "paid_bad": 32,
+    "paid_job_volume_USDC": 466933.742544,
+    "pending_claims_USDC": 1905.516495,
+    "reject_reasons": {
+      "durable_daily_compute_budget": 693,
+      "forecast_deadline_or_human_queue": 216,
+      "modeled_economics": 2554,
+      "unsupported_authority_or_provider": 987
+    },
+    "rejected": 4450,
+    "resource_cost_USDC": 58890.169872,
+    "review_hours": 4893.495816472384,
+    "settlement_days_p50": 1.713423157918309,
+    "settlement_days_p95": 4.700473627500006,
+    "simulation_event_count": 54797,
+    "terminal": 5550,
+    "uncertain_actions_stopped": 47,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 462116.405354,
+    "useful_rate_admitted": 0.7221621621621621,
+    "useful_rate_all_offers": 0.4008,
+    "useful_settled": 4008,
+    "useful_settled_by_day90": 3926,
+    "wallet10_gross_USDC": 46693.37243,
+    "wallet30_gross_USDC": 140080.120968
+  },
+  "human_capacity_8h": {
+    "active_jobs_peak": 163,
+    "admitted": 5856,
+    "agent_cash_net_USDC": 221954.208779,
+    "agent_entitlement_net_USDC": 222602.252733,
+    "agent_work_hours": 7155.679761863723,
+    "assumed_realized_value_USDC": 934076.515366,
+    "by_class": {
+      "business-operations": {
+        "admitted": 437,
+        "offered": 600,
+        "paid_bad": 3,
+        "useful": 323
+      },
+      "code": {
+        "admitted": 834,
+        "offered": 1100,
+        "paid_bad": 3,
+        "useful": 603
+      },
+      "crm-workflows": {
+        "admitted": 483,
+        "offered": 900,
+        "paid_bad": 3,
+        "useful": 391
+      },
+      "data-entry": {
+        "admitted": 89,
+        "offered": 1400,
+        "paid_bad": 0,
+        "useful": 73
+      },
+      "documents": {
+        "admitted": 543,
+        "offered": 900,
+        "paid_bad": 1,
+        "useful": 419
+      },
+      "multiple-applications": {
+        "admitted": 431,
+        "offered": 700,
+        "paid_bad": 4,
+        "useful": 211
+      },
+      "quality-assurance": {
+        "admitted": 701,
+        "offered": 900,
+        "paid_bad": 4,
+        "useful": 536
+      },
+      "research": {
+        "admitted": 734,
+        "offered": 1000,
+        "paid_bad": 5,
+        "useful": 490
+      },
+      "spreadsheets": {
+        "admitted": 580,
+        "offered": 1200,
+        "paid_bad": 3,
+        "useful": 459
+      },
+      "visual-editing": {
+        "admitted": 474,
+        "offered": 600,
+        "paid_bad": 2,
+        "useful": 325
+      },
+      "websites": {
+        "admitted": 550,
+        "offered": 700,
+        "paid_bad": 6,
+        "useful": 399
+      }
+    },
+    "capital_cost_USDC": 701.269311,
+    "central_operator_cost_USDC": 48283.3,
+    "compute_cost_USDC": 32904.348567,
+    "conservation_microUSDC": 0,
+    "daily": [
+      {
+        "day": 1,
+        "useful_settled": 28
+      },
+      {
+        "day": 2,
+        "useful_settled": 51
+      },
+      {
+        "day": 3,
+        "useful_settled": 40
+      },
+      {
+        "day": 4,
+        "useful_settled": 53
+      },
+      {
+        "day": 5,
+        "useful_settled": 58
+      },
+      {
+        "day": 6,
+        "useful_settled": 43
+      },
+      {
+        "day": 7,
+        "useful_settled": 47
+      },
+      {
+        "day": 8,
+        "useful_settled": 43
+      },
+      {
+        "day": 9,
+        "useful_settled": 38
+      },
+      {
+        "day": 10,
+        "useful_settled": 44
+      },
+      {
+        "day": 11,
+        "useful_settled": 55
+      },
+      {
+        "day": 12,
+        "useful_settled": 41
+      },
+      {
+        "day": 13,
+        "useful_settled": 48
+      },
+      {
+        "day": 14,
+        "useful_settled": 59
+      },
+      {
+        "day": 15,
+        "useful_settled": 50
+      },
+      {
+        "day": 16,
+        "useful_settled": 47
+      },
+      {
+        "day": 17,
+        "useful_settled": 50
+      },
+      {
+        "day": 18,
+        "useful_settled": 47
+      },
+      {
+        "day": 19,
+        "useful_settled": 48
+      },
+      {
+        "day": 20,
+        "useful_settled": 43
+      },
+      {
+        "day": 21,
+        "useful_settled": 40
+      },
+      {
+        "day": 22,
+        "useful_settled": 40
+      },
+      {
+        "day": 23,
+        "useful_settled": 41
+      },
+      {
+        "day": 24,
+        "useful_settled": 56
+      },
+      {
+        "day": 25,
+        "useful_settled": 37
+      },
+      {
+        "day": 26,
+        "useful_settled": 57
+      },
+      {
+        "day": 27,
+        "useful_settled": 44
+      },
+      {
+        "day": 28,
+        "useful_settled": 41
+      },
+      {
+        "day": 29,
+        "useful_settled": 35
+      },
+      {
+        "day": 30,
+        "useful_settled": 48
+      },
+      {
+        "day": 31,
+        "useful_settled": 44
+      },
+      {
+        "day": 32,
+        "useful_settled": 32
+      },
+      {
+        "day": 33,
+        "useful_settled": 46
+      },
+      {
+        "day": 34,
+        "useful_settled": 40
+      },
+      {
+        "day": 35,
+        "useful_settled": 43
+      },
+      {
+        "day": 36,
+        "useful_settled": 57
+      },
+      {
+        "day": 37,
+        "useful_settled": 42
+      },
+      {
+        "day": 38,
+        "useful_settled": 60
+      },
+      {
+        "day": 39,
+        "useful_settled": 53
+      },
+      {
+        "day": 40,
+        "useful_settled": 48
+      },
+      {
+        "day": 41,
+        "useful_settled": 50
+      },
+      {
+        "day": 42,
+        "useful_settled": 46
+      },
+      {
+        "day": 43,
+        "useful_settled": 44
+      },
+      {
+        "day": 44,
+        "useful_settled": 60
+      },
+      {
+        "day": 45,
+        "useful_settled": 44
+      },
+      {
+        "day": 46,
+        "useful_settled": 53
+      },
+      {
+        "day": 47,
+        "useful_settled": 39
+      },
+      {
+        "day": 48,
+        "useful_settled": 56
+      },
+      {
+        "day": 49,
+        "useful_settled": 46
+      },
+      {
+        "day": 50,
+        "useful_settled": 36
+      },
+      {
+        "day": 51,
+        "useful_settled": 58
+      },
+      {
+        "day": 52,
+        "useful_settled": 50
+      },
+      {
+        "day": 53,
+        "useful_settled": 55
+      },
+      {
+        "day": 54,
+        "useful_settled": 46
+      },
+      {
+        "day": 55,
+        "useful_settled": 34
+      },
+      {
+        "day": 56,
+        "useful_settled": 55
+      },
+      {
+        "day": 57,
+        "useful_settled": 46
+      },
+      {
+        "day": 58,
+        "useful_settled": 49
+      },
+      {
+        "day": 59,
+        "useful_settled": 41
+      },
+      {
+        "day": 60,
+        "useful_settled": 45
+      },
+      {
+        "day": 61,
+        "useful_settled": 55
+      },
+      {
+        "day": 62,
+        "useful_settled": 37
+      },
+      {
+        "day": 63,
+        "useful_settled": 47
+      },
+      {
+        "day": 64,
+        "useful_settled": 47
+      },
+      {
+        "day": 65,
+        "useful_settled": 47
+      },
+      {
+        "day": 66,
+        "useful_settled": 42
+      },
+      {
+        "day": 67,
+        "useful_settled": 41
+      },
+      {
+        "day": 68,
+        "useful_settled": 47
+      },
+      {
+        "day": 69,
+        "useful_settled": 51
+      },
+      {
+        "day": 70,
+        "useful_settled": 38
+      },
+      {
+        "day": 71,
+        "useful_settled": 49
+      },
+      {
+        "day": 72,
+        "useful_settled": 48
+      },
+      {
+        "day": 73,
+        "useful_settled": 55
+      },
+      {
+        "day": 74,
+        "useful_settled": 48
+      },
+      {
+        "day": 75,
+        "useful_settled": 49
+      },
+      {
+        "day": 76,
+        "useful_settled": 54
+      },
+      {
+        "day": 77,
+        "useful_settled": 57
+      },
+      {
+        "day": 78,
+        "useful_settled": 35
+      },
+      {
+        "day": 79,
+        "useful_settled": 40
+      },
+      {
+        "day": 80,
+        "useful_settled": 54
+      },
+      {
+        "day": 81,
+        "useful_settled": 39
+      },
+      {
+        "day": 82,
+        "useful_settled": 45
+      },
+      {
+        "day": 83,
+        "useful_settled": 37
+      },
+      {
+        "day": 84,
+        "useful_settled": 55
+      },
+      {
+        "day": 85,
+        "useful_settled": 56
+      },
+      {
+        "day": 86,
+        "useful_settled": 49
+      },
+      {
+        "day": 87,
+        "useful_settled": 52
+      },
+      {
+        "day": 88,
+        "useful_settled": 60
+      },
+      {
+        "day": 89,
+        "useful_settled": 41
+      },
+      {
+        "day": 90,
+        "useful_settled": 44
+      },
+      {
+        "day": 91,
+        "useful_settled": 17
+      },
+      {
+        "day": 94,
+        "useful_settled": 1
+      },
+      {
+        "day": 96,
+        "useful_settled": 1
+      },
+      {
+        "day": 104,
+        "useful_settled": 1
+      }
+    ],
+    "deposited_USDC": 1045895.058807,
+    "disputes": 1068,
+    "employer_net_value_USDC": 441936.800602,
+    "external_harm_USDC": 1385.031395,
+    "failure_reasons": {
+      "authority_revoked": 35,
+      "compute_reservation_exhausted": 18,
+      "insufficient_execution_window": 2,
+      "intermediate_review_failed": 115,
+      "queued_or_execution_deadline": 1,
+      "runtime_identity_changed": 94,
+      "uncertain_external_action": 47,
+      "watchdog": 366
+    },
+    "false_acceptance_invalid": 0.04156479217603912,
+    "false_rejected_good": 31,
+    "final_deliveries": 5097,
+    "fixed_cost_USDC": 6900.0,
+    "gas_cost_USDC": 15218.0,
+    "human_cost_USDC": 44399.3,
+    "human_hours": 591.9906666666667,
+    "human_minutes_per_useful": 8.399016315913927,
+    "interruptions": 353,
+    "invalid_deliveries": 818,
+    "ledger_entries": 124994,
+    "ledger_final_hash": "8dc39591f0fbb89f4bf533a65a0b007108a55994c5acdf572a861731584ccb56",
+    "locked_peak_USDC": 28126.314687,
+    "modeled_system_surplus_USDC": 832568.566093,
+    "node_cash_net_USDC": 18607.386361,
+    "node_entitlement_net_USDC": 18841.696528,
+    "offered": 10000,
+    "outcomes": {
+      "agentWin": 4263,
+      "buyerWin": 798,
+      "cancelled": 81,
+      "neutralTimeout": 36,
+      "noSubmission": 678
+    },
+    "paid_USDC": 1043695.930612,
+    "paid_bad": 34,
+    "paid_job_volume_USDC": 495430.973412,
+    "pending_claims_USDC": 2199.128195,
+    "reject_reasons": {
+      "durable_daily_compute_budget": 473,
+      "forecast_deadline_or_human_queue": 130,
+      "modeled_economics": 2554,
+      "unsupported_authority_or_provider": 987
+    },
+    "rejected": 4144,
+    "resource_cost_USDC": 100122.917878,
+    "review_hours": 5243.572363674331,
+    "settlement_days_p50": 1.3887056697166935,
+    "settlement_days_p95": 4.640665101041666,
+    "simulation_event_count": 58156,
+    "terminal": 5856,
+    "uncertain_actions_stopped": 47,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 489890.847775,
+    "useful_rate_admitted": 0.7221653005464481,
+    "useful_rate_all_offers": 0.4229,
+    "useful_settled": 4229,
+    "useful_settled_by_day90": 4165,
+    "wallet10_gross_USDC": 49543.09541,
+    "wallet30_gross_USDC": 148629.290131
+  },
+  "qualified_8x4": {
+    "active_jobs_peak": 144,
+    "admitted": 1988,
+    "agent_cash_net_USDC": 73007.81044,
+    "agent_entitlement_net_USDC": 73229.266063,
+    "agent_work_hours": 2188.7079204978336,
+    "assumed_realized_value_USDC": 310718.723888,
+    "by_class": {
+      "business-operations": {
+        "admitted": 148,
+        "offered": 600,
+        "paid_bad": 1,
+        "useful": 109
+      },
+      "code": {
+        "admitted": 278,
+        "offered": 1100,
+        "paid_bad": 1,
+        "useful": 202
+      },
+      "crm-workflows": {
+        "admitted": 166,
+        "offered": 900,
+        "paid_bad": 1,
+        "useful": 138
+      },
+      "data-entry": {
+        "admitted": 28,
+        "offered": 1400,
+        "paid_bad": 0,
+        "useful": 23
+      },
+      "documents": {
+        "admitted": 189,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 142
+      },
+      "multiple-applications": {
+        "admitted": 113,
+        "offered": 700,
+        "paid_bad": 2,
+        "useful": 64
+      },
+      "quality-assurance": {
+        "admitted": 238,
+        "offered": 900,
+        "paid_bad": 2,
+        "useful": 171
+      },
+      "research": {
+        "admitted": 265,
+        "offered": 1000,
+        "paid_bad": 2,
+        "useful": 174
+      },
+      "spreadsheets": {
+        "admitted": 208,
+        "offered": 1200,
+        "paid_bad": 1,
+        "useful": 163
+      },
+      "visual-editing": {
+        "admitted": 162,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 109
+      },
+      "websites": {
+        "admitted": 193,
+        "offered": 700,
+        "paid_bad": 3,
+        "useful": 142
+      }
+    },
+    "capital_cost_USDC": 626.061141,
+    "central_operator_cost_USDC": 16499.45,
+    "compute_cost_USDC": 10089.113268,
+    "conservation_microUSDC": 0,
+    "daily": [
+      {
+        "day": 1,
+        "useful_settled": 7
+      },
+      {
+        "day": 2,
+        "useful_settled": 8
+      },
+      {
+        "day": 3,
+        "useful_settled": 33
+      },
+      {
+        "day": 4,
+        "useful_settled": 12
+      },
+      {
+        "day": 5,
+        "useful_settled": 17
+      },
+      {
+        "day": 6,
+        "useful_settled": 7
+      },
+      {
+        "day": 7,
+        "useful_settled": 18
+      },
+      {
+        "day": 8,
+        "useful_settled": 16
+      },
+      {
+        "day": 9,
+        "useful_settled": 23
+      },
+      {
+        "day": 10,
+        "useful_settled": 12
+      },
+      {
+        "day": 11,
+        "useful_settled": 17
+      },
+      {
+        "day": 12,
+        "useful_settled": 13
+      },
+      {
+        "day": 13,
+        "useful_settled": 12
+      },
+      {
+        "day": 14,
+        "useful_settled": 13
+      },
+      {
+        "day": 15,
+        "useful_settled": 10
+      },
+      {
+        "day": 16,
+        "useful_settled": 24
+      },
+      {
+        "day": 17,
+        "useful_settled": 19
+      },
+      {
+        "day": 18,
+        "useful_settled": 21
+      },
+      {
+        "day": 19,
+        "useful_settled": 13
+      },
+      {
+        "day": 20,
+        "useful_settled": 14
+      },
+      {
+        "day": 21,
+        "useful_settled": 13
+      },
+      {
+        "day": 22,
+        "useful_settled": 16
+      },
+      {
+        "day": 23,
+        "useful_settled": 20
+      },
+      {
+        "day": 24,
+        "useful_settled": 16
+      },
+      {
+        "day": 25,
+        "useful_settled": 19
+      },
+      {
+        "day": 26,
+        "useful_settled": 9
+      },
+      {
+        "day": 27,
+        "useful_settled": 15
+      },
+      {
+        "day": 28,
+        "useful_settled": 13
+      },
+      {
+        "day": 29,
+        "useful_settled": 13
+      },
+      {
+        "day": 30,
+        "useful_settled": 17
+      },
+      {
+        "day": 31,
+        "useful_settled": 14
+      },
+      {
+        "day": 32,
+        "useful_settled": 14
+      },
+      {
+        "day": 33,
+        "useful_settled": 14
+      },
+      {
+        "day": 34,
+        "useful_settled": 21
+      },
+      {
+        "day": 35,
+        "useful_settled": 12
+      },
+      {
+        "day": 36,
+        "useful_settled": 15
+      },
+      {
+        "day": 37,
+        "useful_settled": 14
+      },
+      {
+        "day": 38,
+        "useful_settled": 19
+      },
+      {
+        "day": 39,
+        "useful_settled": 10
+      },
+      {
+        "day": 40,
+        "useful_settled": 19
+      },
+      {
+        "day": 41,
+        "useful_settled": 17
+      },
+      {
+        "day": 42,
+        "useful_settled": 12
+      },
+      {
+        "day": 43,
+        "useful_settled": 21
+      },
+      {
+        "day": 44,
+        "useful_settled": 9
+      },
+      {
+        "day": 45,
+        "useful_settled": 10
+      },
+      {
+        "day": 46,
+        "useful_settled": 10
+      },
+      {
+        "day": 47,
+        "useful_settled": 13
+      },
+      {
+        "day": 48,
+        "useful_settled": 18
+      },
+      {
+        "day": 49,
+        "useful_settled": 15
+      },
+      {
+        "day": 50,
+        "useful_settled": 12
+      },
+      {
+        "day": 51,
+        "useful_settled": 20
+      },
+      {
+        "day": 52,
+        "useful_settled": 15
+      },
+      {
+        "day": 53,
+        "useful_settled": 11
+      },
+      {
+        "day": 54,
+        "useful_settled": 20
+      },
+      {
+        "day": 55,
+        "useful_settled": 13
+      },
+      {
+        "day": 56,
+        "useful_settled": 17
+      },
+      {
+        "day": 57,
+        "useful_settled": 16
+      },
+      {
+        "day": 58,
+        "useful_settled": 11
+      },
+      {
+        "day": 59,
+        "useful_settled": 16
+      },
+      {
+        "day": 60,
+        "useful_settled": 17
+      },
+      {
+        "day": 61,
+        "useful_settled": 17
+      },
+      {
+        "day": 62,
+        "useful_settled": 15
+      },
+      {
+        "day": 63,
+        "useful_settled": 17
+      },
+      {
+        "day": 64,
+        "useful_settled": 12
+      },
+      {
+        "day": 65,
+        "useful_settled": 20
+      },
+      {
+        "day": 66,
+        "useful_settled": 12
+      },
+      {
+        "day": 67,
+        "useful_settled": 13
+      },
+      {
+        "day": 68,
+        "useful_settled": 10
+      },
+      {
+        "day": 69,
+        "useful_settled": 15
+      },
+      {
+        "day": 70,
+        "useful_settled": 10
+      },
+      {
+        "day": 71,
+        "useful_settled": 19
+      },
+      {
+        "day": 72,
+        "useful_settled": 17
+      },
+      {
+        "day": 73,
+        "useful_settled": 8
+      },
+      {
+        "day": 74,
+        "useful_settled": 23
+      },
+      {
+        "day": 75,
+        "useful_settled": 11
+      },
+      {
+        "day": 76,
+        "useful_settled": 16
+      },
+      {
+        "day": 77,
+        "useful_settled": 19
+      },
+      {
+        "day": 78,
+        "useful_settled": 8
+      },
+      {
+        "day": 79,
+        "useful_settled": 21
+      },
+      {
+        "day": 80,
+        "useful_settled": 28
+      },
+      {
+        "day": 81,
+        "useful_settled": 15
+      },
+      {
+        "day": 82,
+        "useful_settled": 16
+      },
+      {
+        "day": 83,
+        "useful_settled": 13
+      },
+      {
+        "day": 84,
+        "useful_settled": 18
+      },
+      {
+        "day": 85,
+        "useful_settled": 14
+      },
+      {
+        "day": 86,
+        "useful_settled": 27
+      },
+      {
+        "day": 87,
+        "useful_settled": 9
+      },
+      {
+        "day": 88,
+        "useful_settled": 20
+      },
+      {
+        "day": 89,
+        "useful_settled": 13
+      },
+      {
+        "day": 90,
+        "useful_settled": 11
+      },
+      {
+        "day": 91,
+        "useful_settled": 13
+      },
+      {
+        "day": 92,
+        "useful_settled": 14
+      },
+      {
+        "day": 93,
+        "useful_settled": 16
+      },
+      {
+        "day": 94,
+        "useful_settled": 21
+      },
+      {
+        "day": 95,
+        "useful_settled": 1
+      }
+    ],
+    "deposited_USDC": 337171.01239,
+    "disputes": 342,
+    "employer_net_value_USDC": 145603.955409,
+    "external_harm_USDC": 515.052122,
+    "failure_reasons": {
+      "authority_revoked": 14,
+      "compute_reservation_exhausted": 9,
+      "insufficient_execution_window": 1,
+      "intermediate_review_failed": 26,
+      "queued_or_execution_deadline": 1,
+      "runtime_identity_changed": 35,
+      "uncertain_external_action": 20,
+      "watchdog": 127
+    },
+    "false_acceptance_invalid": 0.04779411764705882,
+    "false_rejected_good": 13,
+    "final_deliveries": 1726,
+    "fixed_cost_USDC": 6900.0,
+    "gas_cost_USDC": 5160.0,
+    "human_cost_USDC": 14191.85,
+    "human_hours": 189.22466666666665,
+    "human_minutes_per_useful": 7.900821155184412,
+    "interruptions": 139,
+    "invalid_deliveries": 272,
+    "ledger_entries": 48732,
+    "ledger_final_hash": "6398d2f10c694e3335b24e27c02d66fee663cb7dfff1c514061ca03a63cd9bd3",
+    "locked_peak_USDC": 21287.893747,
+    "modeled_system_surplus_USDC": 273236.647357,
+    "node_cash_net_USDC": 5129.268022,
+    "node_entitlement_net_USDC": 5236.880596,
+    "offered": 10000,
+    "outcomes": {
+      "agentWin": 1450,
+      "buyerWin": 266,
+      "cancelled": 29,
+      "neutralTimeout": 10,
+      "noSubmission": 233
+    },
+    "paid_USDC": 336433.896651,
+    "paid_bad": 13,
+    "paid_job_volume_USDC": 165730.144313,
+    "pending_claims_USDC": 737.115739,
+    "reject_reasons": {
+      "forecast_deadline_or_human_queue": 4471,
+      "modeled_economics": 2554,
+      "unsupported_authority_or_provider": 987
+    },
+    "rejected": 8012,
+    "resource_cost_USDC": 36967.024409,
+    "review_hours": 1612.0714196665901,
+    "settlement_days_p50": 4.954613448955476,
+    "settlement_days_p95": 8.7424683345641,
+    "simulation_event_count": 26089,
+    "terminal": 1988,
+    "uncertain_actions_stopped": 20,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 163669.935802,
+    "useful_rate_admitted": 0.7228370221327968,
+    "useful_rate_all_offers": 0.1437,
+    "useful_settled": 1437,
+    "useful_settled_by_day90": 1361,
+    "wallet10_gross_USDC": 16573.013787,
+    "wallet30_gross_USDC": 49719.042643
+  },
+  "two_macs_defaults": {
+    "active_jobs_peak": 0,
+    "admitted": 0,
+    "agent_cash_net_USDC": -450.0,
+    "agent_entitlement_net_USDC": -450.0,
+    "agent_work_hours": 0.0,
+    "assumed_realized_value_USDC": 0.0,
+    "by_class": {
+      "business-operations": {
+        "admitted": 0,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "code": {
+        "admitted": 0,
+        "offered": 1100,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "crm-workflows": {
+        "admitted": 0,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "data-entry": {
+        "admitted": 0,
+        "offered": 1400,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "documents": {
+        "admitted": 0,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "multiple-applications": {
+        "admitted": 0,
+        "offered": 700,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "quality-assurance": {
+        "admitted": 0,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "research": {
+        "admitted": 0,
+        "offered": 1000,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "spreadsheets": {
+        "admitted": 0,
+        "offered": 1200,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "visual-editing": {
+        "admitted": 0,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 0
+      },
+      "websites": {
+        "admitted": 0,
+        "offered": 700,
+        "paid_bad": 0,
+        "useful": 0
+      }
+    },
+    "capital_cost_USDC": 0.0,
+    "central_operator_cost_USDC": 1500.0,
+    "compute_cost_USDC": 0.0,
+    "conservation_microUSDC": 0,
+    "daily": [],
+    "deposited_USDC": 0.0,
+    "disputes": 0,
+    "employer_net_value_USDC": 0.0,
+    "external_harm_USDC": 0.0,
+    "failure_reasons": {},
+    "false_acceptance_invalid": null,
+    "false_rejected_good": 0,
+    "final_deliveries": 0,
+    "fixed_cost_USDC": 2400.0,
+    "gas_cost_USDC": 0.0,
+    "human_cost_USDC": 0.0,
+    "human_hours": 0.0,
+    "human_minutes_per_useful": null,
+    "interruptions": 0,
+    "invalid_deliveries": 0,
+    "ledger_entries": 10000,
+    "ledger_final_hash": "8eebf339fa2f75d85cd4a3e4ba7bf6428a9599cd940e2190ea660b2110609fd5",
+    "locked_peak_USDC": 0.0,
+    "modeled_system_surplus_USDC": -2400.0,
+    "node_cash_net_USDC": -450.0,
+    "node_entitlement_net_USDC": -450.0,
+    "offered": 10000,
+    "outcomes": {},
+    "paid_USDC": 0.0,
+    "paid_bad": 0,
+    "paid_job_volume_USDC": 0.0,
+    "pending_claims_USDC": 0.0,
+    "reject_reasons": {
+      "insufficient_independent_reviewers": 9013,
+      "unsupported_authority_or_provider": 987
+    },
+    "rejected": 10000,
+    "resource_cost_USDC": 2400.0,
+    "review_hours": 0.0,
+    "settlement_days_p50": null,
+    "settlement_days_p95": null,
+    "simulation_event_count": 10000,
+    "terminal": 0,
+    "uncertain_actions_stopped": 0,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 0.0,
+    "useful_rate_admitted": 0,
+    "useful_rate_all_offers": 0.0,
+    "useful_settled": 0,
+    "useful_settled_by_day90": 0,
+    "wallet10_gross_USDC": 0.0,
+    "wallet30_gross_USDC": 0.0
+  },
+  "two_macs_one_vote": {
+    "active_jobs_peak": 20,
+    "admitted": 783,
+    "agent_cash_net_USDC": 27997.738841,
+    "agent_entitlement_net_USDC": 27997.738841,
+    "agent_work_hours": 882.4541755276209,
+    "assumed_realized_value_USDC": 116060.079717,
+    "by_class": {
+      "business-operations": {
+        "admitted": 38,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 25
+      },
+      "code": {
+        "admitted": 90,
+        "offered": 1100,
+        "paid_bad": 1,
+        "useful": 65
+      },
+      "crm-workflows": {
+        "admitted": 73,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 54
+      },
+      "data-entry": {
+        "admitted": 102,
+        "offered": 1400,
+        "paid_bad": 2,
+        "useful": 82
+      },
+      "documents": {
+        "admitted": 73,
+        "offered": 900,
+        "paid_bad": 0,
+        "useful": 54
+      },
+      "multiple-applications": {
+        "admitted": 49,
+        "offered": 700,
+        "paid_bad": 0,
+        "useful": 30
+      },
+      "quality-assurance": {
+        "admitted": 80,
+        "offered": 900,
+        "paid_bad": 1,
+        "useful": 60
+      },
+      "research": {
+        "admitted": 74,
+        "offered": 1000,
+        "paid_bad": 0,
+        "useful": 52
+      },
+      "spreadsheets": {
+        "admitted": 105,
+        "offered": 1200,
+        "paid_bad": 1,
+        "useful": 84
+      },
+      "visual-editing": {
+        "admitted": 45,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 32
+      },
+      "websites": {
+        "admitted": 54,
+        "offered": 700,
+        "paid_bad": 0,
+        "useful": 44
+      }
+    },
+    "capital_cost_USDC": 73.480631,
+    "central_operator_cost_USDC": 7721.65,
+    "compute_cost_USDC": 2790.849978,
+    "conservation_microUSDC": 0,
+    "daily": [
+      {
+        "day": 1,
+        "useful_settled": 10
+      },
+      {
+        "day": 2,
+        "useful_settled": 7
+      },
+      {
+        "day": 3,
+        "useful_settled": 5
+      },
+      {
+        "day": 4,
+        "useful_settled": 7
+      },
+      {
+        "day": 5,
+        "useful_settled": 9
+      },
+      {
+        "day": 6,
+        "useful_settled": 9
+      },
+      {
+        "day": 7,
+        "useful_settled": 8
+      },
+      {
+        "day": 8,
+        "useful_settled": 9
+      },
+      {
+        "day": 9,
+        "useful_settled": 8
+      },
+      {
+        "day": 10,
+        "useful_settled": 7
+      },
+      {
+        "day": 11,
+        "useful_settled": 7
+      },
+      {
+        "day": 12,
+        "useful_settled": 7
+      },
+      {
+        "day": 13,
+        "useful_settled": 6
+      },
+      {
+        "day": 14,
+        "useful_settled": 9
+      },
+      {
+        "day": 15,
+        "useful_settled": 8
+      },
+      {
+        "day": 16,
+        "useful_settled": 5
+      },
+      {
+        "day": 17,
+        "useful_settled": 6
+      },
+      {
+        "day": 18,
+        "useful_settled": 7
+      },
+      {
+        "day": 19,
+        "useful_settled": 2
+      },
+      {
+        "day": 20,
+        "useful_settled": 9
+      },
+      {
+        "day": 21,
+        "useful_settled": 4
+      },
+      {
+        "day": 22,
+        "useful_settled": 9
+      },
+      {
+        "day": 23,
+        "useful_settled": 5
+      },
+      {
+        "day": 24,
+        "useful_settled": 9
+      },
+      {
+        "day": 25,
+        "useful_settled": 6
+      },
+      {
+        "day": 26,
+        "useful_settled": 10
+      },
+      {
+        "day": 27,
+        "useful_settled": 2
+      },
+      {
+        "day": 28,
+        "useful_settled": 8
+      },
+      {
+        "day": 29,
+        "useful_settled": 2
+      },
+      {
+        "day": 30,
+        "useful_settled": 10
+      },
+      {
+        "day": 31,
+        "useful_settled": 3
+      },
+      {
+        "day": 32,
+        "useful_settled": 8
+      },
+      {
+        "day": 33,
+        "useful_settled": 5
+      },
+      {
+        "day": 34,
+        "useful_settled": 6
+      },
+      {
+        "day": 35,
+        "useful_settled": 4
+      },
+      {
+        "day": 36,
+        "useful_settled": 4
+      },
+      {
+        "day": 37,
+        "useful_settled": 5
+      },
+      {
+        "day": 38,
+        "useful_settled": 3
+      },
+      {
+        "day": 39,
+        "useful_settled": 10
+      },
+      {
+        "day": 40,
+        "useful_settled": 4
+      },
+      {
+        "day": 41,
+        "useful_settled": 10
+      },
+      {
+        "day": 42,
+        "useful_settled": 3
+      },
+      {
+        "day": 43,
+        "useful_settled": 12
+      },
+      {
+        "day": 44,
+        "useful_settled": 3
+      },
+      {
+        "day": 45,
+        "useful_settled": 10
+      },
+      {
+        "day": 46,
+        "useful_settled": 2
+      },
+      {
+        "day": 47,
+        "useful_settled": 7
+      },
+      {
+        "day": 48,
+        "useful_settled": 4
+      },
+      {
+        "day": 49,
+        "useful_settled": 7
+      },
+      {
+        "day": 50,
+        "useful_settled": 5
+      },
+      {
+        "day": 51,
+        "useful_settled": 7
+      },
+      {
+        "day": 52,
+        "useful_settled": 7
+      },
+      {
+        "day": 53,
+        "useful_settled": 9
+      },
+      {
+        "day": 54,
+        "useful_settled": 5
+      },
+      {
+        "day": 55,
+        "useful_settled": 4
+      },
+      {
+        "day": 56,
+        "useful_settled": 5
+      },
+      {
+        "day": 57,
+        "useful_settled": 4
+      },
+      {
+        "day": 58,
+        "useful_settled": 4
+      },
+      {
+        "day": 59,
+        "useful_settled": 7
+      },
+      {
+        "day": 60,
+        "useful_settled": 7
+      },
+      {
+        "day": 61,
+        "useful_settled": 9
+      },
+      {
+        "day": 62,
+        "useful_settled": 5
+      },
+      {
+        "day": 63,
+        "useful_settled": 7
+      },
+      {
+        "day": 64,
+        "useful_settled": 5
+      },
+      {
+        "day": 65,
+        "useful_settled": 7
+      },
+      {
+        "day": 66,
+        "useful_settled": 6
+      },
+      {
+        "day": 67,
+        "useful_settled": 6
+      },
+      {
+        "day": 68,
+        "useful_settled": 3
+      },
+      {
+        "day": 69,
+        "useful_settled": 5
+      },
+      {
+        "day": 70,
+        "useful_settled": 2
+      },
+      {
+        "day": 71,
+        "useful_settled": 9
+      },
+      {
+        "day": 72,
+        "useful_settled": 6
+      },
+      {
+        "day": 73,
+        "useful_settled": 9
+      },
+      {
+        "day": 74,
+        "useful_settled": 6
+      },
+      {
+        "day": 75,
+        "useful_settled": 8
+      },
+      {
+        "day": 76,
+        "useful_settled": 6
+      },
+      {
+        "day": 77,
+        "useful_settled": 9
+      },
+      {
+        "day": 78,
+        "useful_settled": 5
+      },
+      {
+        "day": 79,
+        "useful_settled": 6
+      },
+      {
+        "day": 80,
+        "useful_settled": 7
+      },
+      {
+        "day": 81,
+        "useful_settled": 3
+      },
+      {
+        "day": 82,
+        "useful_settled": 8
+      },
+      {
+        "day": 83,
+        "useful_settled": 5
+      },
+      {
+        "day": 84,
+        "useful_settled": 9
+      },
+      {
+        "day": 85,
+        "useful_settled": 4
+      },
+      {
+        "day": 86,
+        "useful_settled": 9
+      },
+      {
+        "day": 87,
+        "useful_settled": 3
+      },
+      {
+        "day": 88,
+        "useful_settled": 11
+      },
+      {
+        "day": 89,
+        "useful_settled": 4
+      },
+      {
+        "day": 90,
+        "useful_settled": 14
+      },
+      {
+        "day": 91,
+        "useful_settled": 2
+      }
+    ],
+    "deposited_USDC": 98434.946291,
+    "disputes": 138,
+    "employer_net_value_USDC": 55810.48528,
+    "external_harm_USDC": 75.218464,
+    "failure_reasons": {
+      "authority_revoked": 4,
+      "compute_reservation_exhausted": 3,
+      "intermediate_review_failed": 9,
+      "queued_or_execution_deadline": 2,
+      "runtime_identity_changed": 19,
+      "uncertain_external_action": 9,
+      "watchdog": 47
+    },
+    "false_acceptance_invalid": 0.04854368932038835,
+    "false_rejected_good": 0,
+    "final_deliveries": 686,
+    "fixed_cost_USDC": 2400.0,
+    "gas_cost_USDC": 1507.6,
+    "human_cost_USDC": 5898.85,
+    "human_hours": 78.65133333333333,
+    "human_minutes_per_useful": 8.108384879725087,
+    "interruptions": 46,
+    "invalid_deliveries": 103,
+    "ledger_entries": 19840,
+    "ledger_final_hash": "a0168af99146a37bacb90b5883129d48132d3425dfc31567300c9f9f17fafdd8",
+    "locked_peak_USDC": 3715.652737,
+    "modeled_system_surplus_USDC": 103314.080644,
+    "node_cash_net_USDC": 2989.24533,
+    "node_entitlement_net_USDC": 3000.350762,
+    "offered": 10000,
+    "outcomes": {
+      "agentWin": 587,
+      "buyerWin": 94,
+      "cancelled": 4,
+      "neutralTimeout": 5,
+      "noSubmission": 93
+    },
+    "paid_USDC": 98408.012828,
+    "paid_bad": 5,
+    "paid_job_volume_USDC": 60751.592322,
+    "pending_claims_USDC": 26.933463,
+    "reject_reasons": {
+      "agent_active_job_cap": 8187,
+      "forecast_deadline_or_human_queue": 28,
+      "modeled_economics": 15,
+      "unsupported_authority_or_provider": 987
+    },
+    "rejected": 9217,
+    "resource_cost_USDC": 12670.780609,
+    "review_hours": 224.31998472295498,
+    "settlement_days_p50": 1.7748168111543339,
+    "settlement_days_p95": 4.869887640972222,
+    "simulation_event_count": 14989,
+    "terminal": 783,
+    "uncertain_actions_stopped": 9,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 60450.718459,
+    "useful_rate_admitted": 0.7432950191570882,
+    "useful_rate_all_offers": 0.0582,
+    "useful_settled": 582,
+    "useful_settled_by_day90": 566,
+    "wallet10_gross_USDC": 6075.158962,
+    "wallet30_gross_USDC": 18225.47743
+  },
+  "unscreened_8x4": {
+    "active_jobs_peak": 320,
+    "admitted": 7117,
+    "agent_cash_net_USDC": 22718.760367,
+    "agent_entitlement_net_USDC": 22718.760367,
+    "agent_work_hours": 1743.2856417762782,
+    "assumed_realized_value_USDC": 222133.752804,
+    "by_class": {
+      "business-operations": {
+        "admitted": 442,
+        "offered": 600,
+        "paid_bad": 1,
+        "useful": 85
+      },
+      "code": {
+        "admitted": 758,
+        "offered": 1100,
+        "paid_bad": 1,
+        "useful": 146
+      },
+      "crm-workflows": {
+        "admitted": 678,
+        "offered": 900,
+        "paid_bad": 1,
+        "useful": 149
+      },
+      "data-entry": {
+        "admitted": 1032,
+        "offered": 1400,
+        "paid_bad": 3,
+        "useful": 231
+      },
+      "documents": {
+        "admitted": 666,
+        "offered": 900,
+        "paid_bad": 1,
+        "useful": 133
+      },
+      "multiple-applications": {
+        "admitted": 336,
+        "offered": 700,
+        "paid_bad": 2,
+        "useful": 32
+      },
+      "quality-assurance": {
+        "admitted": 673,
+        "offered": 900,
+        "paid_bad": 2,
+        "useful": 133
+      },
+      "research": {
+        "admitted": 710,
+        "offered": 1000,
+        "paid_bad": 1,
+        "useful": 141
+      },
+      "spreadsheets": {
+        "admitted": 909,
+        "offered": 1200,
+        "paid_bad": 0,
+        "useful": 188
+      },
+      "visual-editing": {
+        "admitted": 422,
+        "offered": 600,
+        "paid_bad": 0,
+        "useful": 77
+      },
+      "websites": {
+        "admitted": 491,
+        "offered": 700,
+        "paid_bad": 3,
+        "useful": 90
+      }
+    },
+    "capital_cost_USDC": 1046.478659,
+    "central_operator_cost_USDC": 18823.85,
+    "compute_cost_USDC": 7997.435815,
+    "conservation_microUSDC": 0,
+    "daily": [
+      {
+        "day": 1,
+        "useful_settled": 9
+      },
+      {
+        "day": 2,
+        "useful_settled": 7
+      },
+      {
+        "day": 3,
+        "useful_settled": 24
+      },
+      {
+        "day": 4,
+        "useful_settled": 21
+      },
+      {
+        "day": 5,
+        "useful_settled": 17
+      },
+      {
+        "day": 6,
+        "useful_settled": 18
+      },
+      {
+        "day": 7,
+        "useful_settled": 12
+      },
+      {
+        "day": 8,
+        "useful_settled": 12
+      },
+      {
+        "day": 9,
+        "useful_settled": 14
+      },
+      {
+        "day": 10,
+        "useful_settled": 18
+      },
+      {
+        "day": 11,
+        "useful_settled": 11
+      },
+      {
+        "day": 12,
+        "useful_settled": 11
+      },
+      {
+        "day": 13,
+        "useful_settled": 16
+      },
+      {
+        "day": 14,
+        "useful_settled": 17
+      },
+      {
+        "day": 15,
+        "useful_settled": 10
+      },
+      {
+        "day": 16,
+        "useful_settled": 20
+      },
+      {
+        "day": 17,
+        "useful_settled": 10
+      },
+      {
+        "day": 18,
+        "useful_settled": 21
+      },
+      {
+        "day": 19,
+        "useful_settled": 19
+      },
+      {
+        "day": 20,
+        "useful_settled": 14
+      },
+      {
+        "day": 21,
+        "useful_settled": 19
+      },
+      {
+        "day": 22,
+        "useful_settled": 17
+      },
+      {
+        "day": 23,
+        "useful_settled": 23
+      },
+      {
+        "day": 24,
+        "useful_settled": 14
+      },
+      {
+        "day": 25,
+        "useful_settled": 8
+      },
+      {
+        "day": 26,
+        "useful_settled": 15
+      },
+      {
+        "day": 27,
+        "useful_settled": 13
+      },
+      {
+        "day": 28,
+        "useful_settled": 19
+      },
+      {
+        "day": 29,
+        "useful_settled": 13
+      },
+      {
+        "day": 30,
+        "useful_settled": 17
+      },
+      {
+        "day": 31,
+        "useful_settled": 16
+      },
+      {
+        "day": 32,
+        "useful_settled": 13
+      },
+      {
+        "day": 33,
+        "useful_settled": 11
+      },
+      {
+        "day": 34,
+        "useful_settled": 20
+      },
+      {
+        "day": 35,
+        "useful_settled": 19
+      },
+      {
+        "day": 36,
+        "useful_settled": 13
+      },
+      {
+        "day": 37,
+        "useful_settled": 12
+      },
+      {
+        "day": 38,
+        "useful_settled": 22
+      },
+      {
+        "day": 39,
+        "useful_settled": 17
+      },
+      {
+        "day": 40,
+        "useful_settled": 6
+      },
+      {
+        "day": 41,
+        "useful_settled": 11
+      },
+      {
+        "day": 42,
+        "useful_settled": 10
+      },
+      {
+        "day": 43,
+        "useful_settled": 12
+      },
+      {
+        "day": 44,
+        "useful_settled": 20
+      },
+      {
+        "day": 45,
+        "useful_settled": 18
+      },
+      {
+        "day": 46,
+        "useful_settled": 12
+      },
+      {
+        "day": 47,
+        "useful_settled": 10
+      },
+      {
+        "day": 48,
+        "useful_settled": 14
+      },
+      {
+        "day": 49,
+        "useful_settled": 18
+      },
+      {
+        "day": 50,
+        "useful_settled": 5
+      },
+      {
+        "day": 51,
+        "useful_settled": 10
+      },
+      {
+        "day": 52,
+        "useful_settled": 8
+      },
+      {
+        "day": 53,
+        "useful_settled": 11
+      },
+      {
+        "day": 54,
+        "useful_settled": 11
+      },
+      {
+        "day": 55,
+        "useful_settled": 15
+      },
+      {
+        "day": 56,
+        "useful_settled": 20
+      },
+      {
+        "day": 57,
+        "useful_settled": 10
+      },
+      {
+        "day": 58,
+        "useful_settled": 21
+      },
+      {
+        "day": 59,
+        "useful_settled": 15
+      },
+      {
+        "day": 60,
+        "useful_settled": 26
+      },
+      {
+        "day": 61,
+        "useful_settled": 15
+      },
+      {
+        "day": 62,
+        "useful_settled": 19
+      },
+      {
+        "day": 63,
+        "useful_settled": 17
+      },
+      {
+        "day": 64,
+        "useful_settled": 6
+      },
+      {
+        "day": 65,
+        "useful_settled": 9
+      },
+      {
+        "day": 66,
+        "useful_settled": 11
+      },
+      {
+        "day": 67,
+        "useful_settled": 17
+      },
+      {
+        "day": 68,
+        "useful_settled": 11
+      },
+      {
+        "day": 69,
+        "useful_settled": 11
+      },
+      {
+        "day": 70,
+        "useful_settled": 13
+      },
+      {
+        "day": 71,
+        "useful_settled": 18
+      },
+      {
+        "day": 72,
+        "useful_settled": 18
+      },
+      {
+        "day": 73,
+        "useful_settled": 7
+      },
+      {
+        "day": 74,
+        "useful_settled": 16
+      },
+      {
+        "day": 75,
+        "useful_settled": 10
+      },
+      {
+        "day": 76,
+        "useful_settled": 12
+      },
+      {
+        "day": 77,
+        "useful_settled": 7
+      },
+      {
+        "day": 78,
+        "useful_settled": 21
+      },
+      {
+        "day": 79,
+        "useful_settled": 16
+      },
+      {
+        "day": 80,
+        "useful_settled": 12
+      },
+      {
+        "day": 81,
+        "useful_settled": 29
+      },
+      {
+        "day": 82,
+        "useful_settled": 22
+      },
+      {
+        "day": 83,
+        "useful_settled": 14
+      },
+      {
+        "day": 84,
+        "useful_settled": 18
+      },
+      {
+        "day": 85,
+        "useful_settled": 14
+      },
+      {
+        "day": 86,
+        "useful_settled": 12
+      },
+      {
+        "day": 87,
+        "useful_settled": 11
+      },
+      {
+        "day": 88,
+        "useful_settled": 17
+      },
+      {
+        "day": 89,
+        "useful_settled": 21
+      },
+      {
+        "day": 90,
+        "useful_settled": 7
+      },
+      {
+        "day": 91,
+        "useful_settled": 21
+      },
+      {
+        "day": 92,
+        "useful_settled": 6
+      },
+      {
+        "day": 93,
+        "useful_settled": 25
+      },
+      {
+        "day": 94,
+        "useful_settled": 14
+      },
+      {
+        "day": 95,
+        "useful_settled": 20
+      },
+      {
+        "day": 96,
+        "useful_settled": 2
+      },
+      {
+        "day": 100,
+        "useful_settled": 1
+      }
+    ],
+    "deposited_USDC": 793204.861945,
+    "disputes": 349,
+    "employer_net_value_USDC": 127055.999521,
+    "external_harm_USDC": 529.58777,
+    "failure_reasons": {
+      "authority_revoked": 10,
+      "compute_reservation_exhausted": 10,
+      "insufficient_execution_window": 128,
+      "intermediate_review_failed": 15,
+      "queued_or_execution_deadline": 5005,
+      "runtime_identity_changed": 36,
+      "uncertain_external_action": 14,
+      "watchdog": 121
+    },
+    "false_acceptance_invalid": 0.05514705882352941,
+    "false_rejected_good": 10,
+    "final_deliveries": 1688,
+    "fixed_cost_USDC": 6900.0,
+    "gas_cost_USDC": 11266.8,
+    "human_cost_USDC": 14488.65,
+    "human_hours": 193.182,
+    "human_minutes_per_useful": 8.24976512455516,
+    "interruptions": 134,
+    "invalid_deliveries": 272,
+    "ledger_entries": 68418,
+    "ledger_final_hash": "7d31d2c591dcc4f45c5b905c40210bb0bb90c9b837591c325fb0f04d56e818ab",
+    "locked_peak_USDC": 38213.264817,
+    "modeled_system_surplus_USDC": 179904.80056,
+    "node_cash_net_USDC": 2151.577235,
+    "node_entitlement_net_USDC": 2302.795803,
+    "offered": 10000,
+    "outcomes": {
+      "agentWin": 1420,
+      "buyerWin": 263,
+      "cancelled": 90,
+      "neutralTimeout": 5,
+      "noSubmission": 5339
+    },
+    "paid_USDC": 791786.232864,
+    "paid_bad": 15,
+    "paid_job_volume_USDC": 119243.936989,
+    "pending_claims_USDC": 1418.629081,
+    "reject_reasons": {
+      "agent_active_job_cap": 359,
+      "durable_daily_compute_budget": 704,
+      "unsupported_authority_or_provider": 987,
+      "working_capital": 833
+    },
+    "rejected": 2883,
+    "resource_cost_USDC": 41699.364474,
+    "review_hours": 1271.1834207393201,
+    "settlement_days_p50": 3.440486484722222,
+    "settlement_days_p95": 6.4067388390227755,
+    "simulation_event_count": 31051,
+    "terminal": 7117,
+    "uncertain_actions_stopped": 14,
+    "unresolved": 0,
+    "unsettled_escrow_USDC": 0.0,
+    "useful_job_volume_USDC": 117125.585881,
+    "useful_rate_admitted": 0.19741464100042153,
+    "useful_rate_all_offers": 0.1405,
+    "useful_settled": 1405,
+    "useful_settled_by_day90": 1309,
+    "wallet10_gross_USDC": 11924.393067,
+    "wallet30_gross_USDC": 35773.180461
+  }
+}

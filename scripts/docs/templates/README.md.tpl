@@ -8,6 +8,10 @@ AGI Jobs covers work a person or team can do using a keyboard, mouse and screen.
 
 **New automated work uses operator budgets without retainers.** Agent/Node admission requires schema 6; employer funding requires schema 7; both require `reviewPayment: operator-budget`. Existing retainer credits, refunds and journals remain recoverable. Use [no-retainer operations](docs/OPERATIONS/NO_RETAINERS.md) and the [current admission reference](docs/OPERATIONS/QUALIFIED_ADMISSION.md). The manual console and permissionless contract do not enforce these private admission policies.
 
+## Learn from measured outcomes
+
+This edition adds [operating qualification and capacity planning](docs/OPERATIONS/OPERATING_QUALIFICATION.md). Workforce policy V2 checks held-out cohorts, separate Agent/Node economics, loss rates and human time per useful completion. Native production requires V2; historical V1 remains readable. A capacity report explains reviewer supply, human queues and settlement holds without changing live settings. The [10,000-offer experiment](experiments/workforce-10000/README.md) is reproducible synthetic planning evidence, not runtime qualification.
+
 ## Choose your starting point
 
 | You want to | Open |

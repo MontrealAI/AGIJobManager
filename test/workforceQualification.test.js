@@ -159,6 +159,7 @@ function fixture() {
   resign();
   return { now, policy, evidence, payloads, resign };
 }
+module.exports = { fixture };
 describe("Workforce operational qualification", function () {
   it("accepts only a complete signed synthetic test fixture (not deployment evidence)", () => {
     const f = fixture();
