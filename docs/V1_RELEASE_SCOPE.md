@@ -14,7 +14,7 @@ The 1.3 label identifies this software edition. It does not certify a deployed b
 
 ## Published download versus current source
 
-**New in v1.5.0:** [action-bound qualification](OPERATIONS/QUALIFIED_ADMISSION.md) adds exact vote/delivery commitments, fixed reviewer ballots, preparation-attempt limits and canonical completion observations. Private runtimes are excluded; admission remains conditional on measured inputs. [Qualification scope](qualification/V150_BOUND_ADMISSION.md).
+**New in v1.6.0:** [Pre-funding qualification](OPERATIONS/PREFUNDING.md), canonical posting observations and terminal receipt proofs. The manual console does not enforce this off-chain policy. [Qualification scope](qualification/V160_PREFUNDING.md).
 
 **New in v1.2.1:** the read-only status tool binds all state reads to one canonical block hash, verifies the expected token address and rejects stale or implausibly future RPC heads by default. Ethereum chain 1 requires native Circle USDC; other chains require an explicit expected token. See [review evidence](qualification/V121_REVIEW.md) and the [updated command guide](OPERATIONS/SETTLEMENT_RECOVERY.md). Contract and payment behavior are unchanged.
 
@@ -26,7 +26,7 @@ The v1.0.5 edition strengthens privacy rules and user responsibilities, adds fre
 
 | Edition | Contents |
 | --- | --- |
-| [v1.5.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.5.0) | Lifecycle stress modeling, signed qualification verification and canonical economic observations; contract, settlement and privacy safeguards retained |
+| [v1.6.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.6.0) | Lifecycle stress modeling, signed qualification verification and canonical economic observations; contract, settlement and privacy safeguards retained |
 | [v1.2.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.2.1) | Canonical block-hash snapshots, expected-token checks, RPC freshness limits and adversarial transport coverage |
 | [v1.2.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.2.0) | Read-only settlement visibility, recovery guidance and public regression coverage; contract behavior and privacy safeguards retained |
 | [v1.1.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.1.0) | Read-only manager/helper defaults, explicit broadcast mode, corrected operator guidance and regenerated versioned artifacts; v1.0.5 privacy safeguards and contract source retained |
@@ -69,6 +69,6 @@ Start with [the participant guide](START_HERE.md), run the [observed acceptance 
 
 The qualification approach follows layered testing, access-control review and operational precautions described in [Ethereum's smart-contract security guidance](https://ethereum.org/developers/docs/smart-contracts/security/). Native USDC addresses must be checked against [Circle's current registry](https://developers.circle.com/stablecoins/usdc-contract-addresses).
 
-## v1.5.0 admission primitives
+## v1.6.0 admission primitives
 
 The public tools cover explicit lifecycle stress cases, operator-owned economic limits, signed evidence attestations, and current canonical two-RPC terms. They do not implement an autonomous signing service or certify market inputs. See [qualified admission](OPERATIONS/QUALIFIED_ADMISSION.md) and [qualification limits](qualification/V150_BOUND_ADMISSION.md).

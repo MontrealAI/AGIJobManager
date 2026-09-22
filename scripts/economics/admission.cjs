@@ -15,11 +15,17 @@ const address = x => typeof x === 'string' && /^0x[0-9a-f]{40}$/.test(x) && !/^0
 const hash = x => typeof x === 'string' && /^[0-9a-f]{64}$/.test(x);
 const amount = (x, name) => { ok(typeof x === 'string' && /^(0|[1-9][0-9]{0,77})$/.test(x), name); return BigInt(x); };
 function validatePolicy(p) {
-  shape(p, [...(p?.schemaVersion === 2 ? ['maxPreparationAttempts'] : []),'schemaVersion','epoch','chainId','manager','wallet','role','trustedKeys','classes','maxPacketAgeSeconds','maxEvidenceAgeSeconds','minimumSamples','minimumHorizonDays','limits','maxOpenExposureUSDC','maxEpochCostUSDC','maxOpenJobs','maxGasWeiPerJob'], 'policy');
-  ok([1,2].includes(p.schemaVersion), 'POLICY_VERSION');
-  if(p.schemaVersion === 2) uint(p.maxPreparationAttempts, 1, 100, 'preparation attempts'); text(p.epoch, 'epoch');
+  shape(p, [...(p?.schemaVersion === 2 ? ['maxPreparationAttempts'] : []),...(p?.schemaVersion === 3 ? ['capacity'] : []),'schemaVersion','epoch','chainId','manager','wallet','role','trustedKeys','classes','maxPacketAgeSeconds','maxEvidenceAgeSeconds','minimumSamples','minimumHorizonDays','limits','maxOpenExposureUSDC','maxEpochCostUSDC','maxOpenJobs','maxGasWeiPerJob'], 'policy');
+  ok([1,2,3].includes(p.schemaVersion), 'POLICY_VERSION');
+  if(p.schemaVersion === 2) uint(p.maxPreparationAttempts, 1, 100, 'preparation attempts');
+  if(p.schemaVersion === 3) {
+    shape(p.capacity, ['allocationId','agentSlots','reviewerSlots','providerUnits'], 'capacity policy');
+    text(p.capacity.allocationId, 'allocation');
+    for(const k of ['agentSlots','reviewerSlots','providerUnits']) uint(p.capacity[k], 1, 1000000000, k);
+  }
+  text(p.epoch, 'epoch');
   uint(p.chainId, 1, Number.MAX_SAFE_INTEGER, 'chainId'); ok(address(p.manager) && address(p.wallet), 'POLICY_ADDRESS');
-  ok(['agent','reviewer'].includes(p.role), 'POLICY_ROLE');
+  ok(p.schemaVersion === 3 ? p.role === 'employer' : ['agent','reviewer'].includes(p.role), 'POLICY_ROLE');
   ok(p.trustedKeys && !Array.isArray(p.trustedKeys) && Object.keys(p.trustedKeys).length > 0 && Object.keys(p.trustedKeys).length <= 8, 'POLICY_KEYS');
   for (const [id, pem] of Object.entries(p.trustedKeys)) { text(id, 'key ID'); ok(typeof pem === 'string' && pem.length < 4096 && crypto.createPublicKey(pem).asymmetricKeyType === 'ed25519', 'ED25519_REQUIRED'); }
   ok(Array.isArray(p.classes) && p.classes.length > 0 && p.classes.length <= 100, 'POLICY_CLASSES'); p.classes.forEach(x => text(x, 'class'));
@@ -37,9 +43,12 @@ function checkAdmission({ policy, envelope, observed, portfolio, now = Math.floo
   const key = crypto.createPublicKey(policy.trustedKeys[envelope.keyId]);
   ok(crypto.verify(null, Buffer.from(canonical(envelope.payload)), key, Buffer.from(envelope.signature,'base64')), 'INVALID_SIGNATURE');
   const p = envelope.payload;
-  shape(p, [...(p?.schemaVersion === 2 ? ['commitment'] : []),'schemaVersion','policyDigest','jobId','participantId','jobClass','issuedAt','expiresAt','specURI','specSha256','evidence','identities','lifecycle','gasBudgetWei','ethPriceCeilingUSDC'], 'payload');
+  const funding = p?.schemaVersion === 3, idKey = funding ? 'offerId' : 'jobId';
+  shape(p, [...(p?.schemaVersion >= 2 ? ['commitment'] : []),...(funding ? ['capacity','valueEvidence'] : []),'schemaVersion','policyDigest',idKey,'participantId','jobClass','issuedAt','expiresAt','specURI','specSha256','evidence','identities','lifecycle','gasBudgetWei','ethPriceCeilingUSDC'], 'payload');
   ok(p.schemaVersion === policy.schemaVersion && p.policyDigest === digest(policy), 'POLICY_BINDING');
-  ok(typeof p.jobId === 'string' && /^(0|[1-9][0-9]{0,77})$/.test(p.jobId) && BigInt(p.jobId) < 2n**256n, 'JOB_ID'); text(p.participantId, 'participant');
+  if(funding) ok(hash(p.offerId), 'OFFER_ID');
+  else ok(typeof p.jobId === 'string' && /^(0|[1-9][0-9]{0,77})$/.test(p.jobId) && BigInt(p.jobId) < 2n**256n, 'JOB_ID');
+  text(p.participantId, 'participant');
   ok(policy.classes.includes(p.jobClass), 'UNQUALIFIED_CLASS'); text(p.specURI, 'spec URI'); ok(hash(p.specSha256), 'SPEC_HASH');
   uint(p.issuedAt, 1, now, 'issuedAt'); uint(p.expiresAt, now + 1, Number.MAX_SAFE_INTEGER, 'expiresAt');
   ok(now - p.issuedAt <= policy.maxPacketAgeSeconds && p.expiresAt - p.issuedAt <= policy.maxPacketAgeSeconds, 'STALE_PACKET');
@@ -47,8 +56,8 @@ function checkAdmission({ policy, envelope, observed, portfolio, now = Math.floo
   ok(hash(p.evidence.reportSha256) && p.evidence.qualification === 'qualified' && p.evidence.costsIncludeFailuresAndOverhead === true, 'EVIDENCE_ATTESTATION_REQUIRED');
   uint(p.evidence.measuredAt, 1, now, 'measurement time'); uint(p.evidence.sampleCount, policy.minimumSamples, 1000000000, 'sample count');
   ok(now - p.evidence.measuredAt <= policy.maxEvidenceAgeSeconds, 'STALE_EVIDENCE');
-  shape(observed, [...(p.schemaVersion === 2 ? ['commitment'] : []),'chainId','manager','wallet','jobId','specURI','specSha256','terms','observedAt'], 'observed');
-  ok(observed.chainId === policy.chainId && observed.manager === policy.manager && observed.wallet === policy.wallet && observed.jobId === p.jobId && observed.specURI === p.specURI && observed.specSha256 === p.specSha256, 'OBSERVATION_BINDING');
+  shape(observed, [...(p.schemaVersion >= 2 ? ['commitment'] : []),'chainId','manager','wallet',idKey,'specURI','specSha256','terms','observedAt'], 'observed');
+  ok(observed.chainId === policy.chainId && observed.manager === policy.manager && observed.wallet === policy.wallet && observed[idKey] === p[idKey] && observed.specURI === p.specURI && observed.specSha256 === p.specSha256, 'OBSERVATION_BINDING');
   uint(observed.observedAt, now - 120, now, 'observation time');
   ok(canonical(observed.terms) === canonical(p.lifecycle.terms), 'ECONOMIC_TERMS_CHANGED');
   const input = JSON.parse(JSON.stringify(p.lifecycle));
@@ -76,18 +85,40 @@ function checkAdmission({ policy, envelope, observed, portfolio, now = Math.floo
     }
     ok(canonical(observed.commitment) === canonical(c), 'COMMITMENT_CHANGED');
   }
+  if(funding) {
+    shape(p.commitment, ['action','durationSeconds','details'], 'funding commitment');
+    ok(p.commitment.action === 'createJob', 'FUNDING_ACTION');
+    ok(amount(p.commitment.durationSeconds, 'duration') > 0n && BigInt(p.commitment.durationSeconds) < 2n**256n, 'DURATION');
+    text(p.commitment.details, 'details');
+    ok(canonical(observed.commitment) === canonical(p.commitment), 'COMMITMENT_CHANGED');
+    shape(p.capacity, ['allocationId','leaseId','expiresAt','agentSlots','reviewerSlots','providerUnits'], 'capacity lease');
+    ok(p.capacity.allocationId === policy.capacity.allocationId && hash(p.capacity.leaseId), 'CAPACITY_SCOPE');
+    uint(p.capacity.expiresAt, p.expiresAt, Number.MAX_SAFE_INTEGER, 'capacity expiry');
+    for(const k of ['agentSlots','reviewerSlots','providerUnits']) uint(p.capacity[k], 1, policy.capacity[k], k);
+    ok(p.capacity.reviewerSlots >= input.participants.filter(x=>x.role === 'reviewer').length, 'REVIEWER_CAPACITY');
+    shape(p.valueEvidence, ['baselineSha256','outcomesSha256','measurementKind','sampleCount'], 'value evidence');
+    ok(hash(p.valueEvidence.baselineSha256) && hash(p.valueEvidence.outcomesSha256) && p.valueEvidence.measurementKind === 'observed', 'MEASURED_VALUE_EVIDENCE_REQUIRED');
+    uint(p.valueEvidence.sampleCount, policy.minimumSamples, 1000000000, 'value samples');
+  }
   const result = lifecycle(input); ok(result.decision === 'WITHIN_SUPPLIED_LIMITS', 'ECONOMIC_LIMITS: ' + result.failures.join(' '));
   const self = result.participants[me.id], exposure = money(self.conservativeExposureUSDC, 'exposure'), cost = money(self.maximumCostUSDC, 'cost');
   const gas = amount(p.gasBudgetWei, 'gas budget'); ok(gas > 0n && gas <= amount(policy.maxGasWeiPerJob, 'policy gas budget'), 'GAS_BUDGET_LIMIT');
   const ethPrice = money(p.ethPriceCeilingUSDC, 'ETH price ceiling'); ok(ethPrice > 0n, 'ETH_PRICE_CEILING_REQUIRED');
   const gasUSDC = (gas * ethPrice + 10n**18n - 1n)/(10n**18n);
   ok(input.cases.every(x=>money(x.costsUSDC[me.id], 'case cost') >= gasUSDC), 'GAS_NOT_INCLUDED_IN_COSTS');
-  shape(portfolio, ['openExposureUSDC','epochCostUSDC','openJobs'], 'portfolio');
+  shape(portfolio, [...(funding ? ['capacity'] : []),'openExposureUSDC','epochCostUSDC','openJobs'], 'portfolio');
+  if(funding) {
+    shape(portfolio.capacity, ['agentSlots','reviewerSlots','providerUnits'], 'portfolio capacity');
+    for(const k of ['agentSlots','reviewerSlots','providerUnits']) {
+      uint(portfolio.capacity[k], 0, policy.capacity[k], k);
+      ok(portfolio.capacity[k]+p.capacity[k] <= policy.capacity[k], 'CAPACITY_LIMIT_'+k);
+    }
+  }
   uint(portfolio.openJobs, 0, 100, 'open jobs');
   ok(portfolio.openJobs + 1 <= policy.maxOpenJobs, 'OPEN_JOB_LIMIT');
   ok(money(portfolio.openExposureUSDC, 'open exposure') + exposure <= money(policy.maxOpenExposureUSDC,'exposure cap'), 'AGGREGATE_EXPOSURE_LIMIT');
   ok(money(portfolio.epochCostUSDC,'epoch cost') + cost <= money(policy.maxEpochCostUSDC,'cost cap'), 'EPOCH_COST_LIMIT');
-  return { schemaVersion:p.schemaVersion, ...(p.schemaVersion === 2 ? {commitment:JSON.parse(JSON.stringify(p.commitment)),maxPreparationAttempts:policy.maxPreparationAttempts} : {}), decision:'QUALIFIED_UNDER_ATTESTED_INPUTS', packetDigest:digest(envelope), policyDigest:digest(policy), jobId:p.jobId, participantId:p.participantId, reserveExposureUSDC:formatUSDC(exposure), reserveCostUSDC:formatUSDC(cost), gasBudgetWei:gas.toString(), expiresAt:p.expiresAt, economics:result, authorization:'NONE — a runner must independently verify observations, reserve atomically and enforce signing limits.' };
+  return { schemaVersion:p.schemaVersion, ...(p.schemaVersion >= 2 ? {commitment:JSON.parse(JSON.stringify(p.commitment))} : {}), ...(p.schemaVersion === 2 ? {maxPreparationAttempts:policy.maxPreparationAttempts} : {}), ...(funding ? {capacity:JSON.parse(JSON.stringify(p.capacity))} : {}), decision:'QUALIFIED_UNDER_ATTESTED_INPUTS', packetDigest:digest(envelope), policyDigest:digest(policy), [idKey]:p[idKey], participantId:p.participantId, reserveExposureUSDC:formatUSDC(exposure), reserveCostUSDC:formatUSDC(cost), gasBudgetWei:gas.toString(), expiresAt:p.expiresAt, economics:result, authorization:'NONE — a runner must independently verify observations, reserve atomically and enforce signing limits.' };
 }
 if (require.main === module) {
   try { const args=process.argv.slice(2); if(args.length===1 && args[0]==='--help') { console.log('Usage: economics:admission -- input.json\nInput: {policy,envelope,observed,portfolio}. Offline verification; no signer or reservation.'); }
