@@ -4,7 +4,7 @@
 
 AGIJobManager v1.9.0. Status: **deployment-required**.
 
-Software release only; no live USDC manager or review escrow is recorded here. v1.9.0 adds optional separately deployed reviewer retainers, calibrated admission and bounded qualification scheduling. Existing manager behavior, ABI, payout rules and eight fixed library links remain unchanged. Complete independent contract review, observed economic evidence and deployment-specific commissioning before authorizing intake. The manual console does not enforce private pre-funding or retainer policies.
+Software release only; no live USDC manager is recorded here. v1.9.0 uses operator-budget admission for new work, with no new review retainers. Existing escrow credits and refunds remain recoverable. Existing manager behavior, ABI, payout rules and eight fixed library links remain unchanged. Complete independent contract review, observed economic evidence and deployment-specific commissioning before authorizing intake. The manual console does not enforce private pre-funding or economic admission policies.
 
 - Chain ID: 1
 - Manager: Not recorded
