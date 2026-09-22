@@ -1,7 +1,7 @@
 {
-  "public": "1.11.0",
-  "fleet": "1.9.0",
-  "agent": "1.15.0",
-  "node": "2.16.0",
-  "scope": "Simulation-informed operating qualification and capacity planning; native production requires policy v2 and actual observed evidence."
+  "public": "1.12.0",
+  "fleet": "1.10.0",
+  "agent": "1.16.0",
+  "node": "2.17.0",
+  "scope": "Participant project cash planning, cohort loss and supervision limits, and private native stale-observation rejection; production still requires observed qualification."
 }

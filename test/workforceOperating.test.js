@@ -24,6 +24,23 @@ describe('Simulation-informed operating qualification',function(){
  ])it('rejects '+name,()=>{const f=operating();mutate(f);f.resign();const r=qualifyWorkforce(f.policy,f.evidence,{now:f.now});assert.equal(r.eligible,false);assert(r.reasons.some(x=>x.code==='WORKFORCE_'+code),JSON.stringify(r.reasons));});
  it('binds operating thresholds to the signature',()=>{const f=operating();f.policy.operatingLimits.maximumLossRate=1;assert.equal(qualifyWorkforce(f.policy,f.evidence,{now:f.now}).eligible,false);});
  it('rejects unbounded or malformed operating limits',()=>{for(const value of [NaN,Infinity,-1,1.1]){const f=operating();f.policy.operatingLimits.maximumLossRate=value;assert.throws(()=>validatePolicy(f.policy));}});
+ it('does not let calibration hide held-out Node losses despite positive cohort profit',()=>{
+  const f=operating();
+  for(const r of f.payloads.validation.ledger.engagements.filter(r=>r.caseId.startsWith('evaluation-reviewer')).slice(0,5))r.costUSDC='2.1';
+  f.resign();const r=qualifyWorkforce(f.policy,f.evidence,{now:f.now});
+  assert.equal(r.eligible,false);assert(r.reasons.some(x=>x.code==='WORKFORCE_COHORT_LOSS_LIMIT'),JSON.stringify(r));
+ });
+ it('does not let an efficient cohort hide excessive supervision in another',()=>{
+  const f=operating(),v=f.payloads.validation;
+  f.policy.operatingLimits.cohorts=['costly','efficient'];
+  for(const c of v.plan.cases)if(c.partition==='evaluation')c.group='costly';
+  const originals=v.plan.cases.filter(c=>c.partition==='evaluation');
+  for(const c of originals){v.plan.cases.push({...c,id:c.id+'-efficient',group:'efficient'});v.ledger.engagements.push({...v.ledger.engagements.find(r=>r.caseId===c.id),caseId:c.id+'-efficient'});}
+  v.ledger.engagements.find(r=>r.caseId==='evaluation-agent-0').humanSeconds=11;
+  v.ledger.planSha256=digest(v.plan);f.resign();
+  const r=qualifyWorkforce(f.policy,f.evidence,{now:f.now});
+  assert.equal(r.eligible,false);assert(r.reasons.some(x=>x.code==='WORKFORCE_COHORT_SUPERVISION_LIMIT'),JSON.stringify(r));
+ });
 });
 describe('Fleet capacity and whole-project planning',function(){
  it('explains the default slot ceiling without changing settings',()=>{const p=planned(),before=JSON.stringify(p),r=capacityPlan(p);assert.equal(r.freeAgentSlots,3);assert.equal(r.ordinaryReviewedSettlementsPerDayCeiling,3/7);assert.equal(r.authorization,'NONE');assert.equal(JSON.stringify(p),before);});

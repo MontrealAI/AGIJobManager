@@ -10,7 +10,7 @@ AGI Jobs covers work a person or team can do using a keyboard, mouse and screen.
 
 ## Learn from measured outcomes
 
-This edition adds [operating qualification and capacity planning](docs/OPERATIONS/OPERATING_QUALIFICATION.md). Workforce policy V2 checks held-out cohorts, separate Agent/Node economics, loss rates and human time per useful completion. Native production requires V2; historical V1 remains readable. A capacity report explains reviewer supply, human queues and settlement holds without changing live settings. The [10,000-offer experiment](experiments/workforce-10000/README.md) is reproducible synthetic planning evidence, not runtime qualification.
+This edition tightens [operating qualification](docs/OPERATIONS/OPERATING_QUALIFICATION.md): each held-out job class must meet loss-rate and supervision limits as well as separate Agent/Node cash floors. The [project economics planner](docs/OPERATIONS/PROJECT_ECONOMICS.md) accounts for unpaid intermediate stages, failed work, deposits and each participant's capital. Examples at $100, $1,000 and $10,000 are explicitly assumptions. Use the [bounded pilot guide](docs/OPERATIONS/VALUE_TIER_PILOT.md) to replace those assumptions with real-machine evidence. Private companions also reject stale desktop observations after a failed refresh.
 
 ## Choose your starting point
 

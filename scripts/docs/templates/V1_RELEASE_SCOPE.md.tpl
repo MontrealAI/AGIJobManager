@@ -14,13 +14,15 @@ The public archive contains no private Fleet/Agent/Node application, production 
 
 ## Published download versus current source
 
-**{{TAG}} adds operational workforce qualification and native/confidential job specifications.** The public evidence gate requires signed commissioning, held-out independent validation, complete actual costs, useful cash settlements, measured intervention time and an external review of the exact source/scope. Private Fleet {{FLEET}}, Agent {{AGENT}} and Node {{NODE}} add a dedicated-account native execution workflow, encrypted handoffs, exact job/delivery grants, signed receipts, durable resumption, application identity pins, revocation, a private project DAG, reservations and a portable commissioning corpus. Public signing/payout behavior and dependency resolutions remain unchanged. These implementation changes do not establish actual Mac operation or independent assurance.
+**{{TAG}} adds participant project cash planning and stricter held-out cohort loss/supervision limits.** The public evidence gate requires signed commissioning, held-out independent validation, complete actual costs, useful cash settlements, measured intervention time and an external review of the exact source/scope. Private Fleet {{FLEET}}, Agent {{AGENT}} and Node {{NODE}} add a dedicated-account native execution workflow, encrypted handoffs, exact job/delivery grants, signed receipts, durable resumption, application identity pins, revocation, a private project DAG, reservations and a portable commissioning corpus. Public signing/payout behavior and dependency resolutions remain unchanged. These implementation changes do not establish actual Mac operation or independent assurance.
 
 Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md`, `SOURCE_CI.json` and `RELEASE_MANIFEST.json` identify the qualified source and publication evidence. Main may contain later work; never combine its scripts with an older release's instructions or attestations. Current guides apply to their checkout. Historical releases, dated qualification records and legal notices retain their original versions.
 
 | Edition | Change introduced |
 | --- | --- |
-| [{{TAG}}](https://github.com/MontrealAI/AGIJobManager/releases/tag/{{TAG}}) | Operational qualification, native runtime identity and separately delivered private native-workforce tools |
+| [{{TAG}}](https://github.com/MontrealAI/AGIJobManager/releases/tag/{{TAG}}) | Participant project cash scenarios, cohort loss/supervision gates and private stale-observation rejection |
+| [v1.11.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.11.0) | Workforce policy V2, capacity planning and dependent-review time admission |
+| [v1.10.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.10.0) | Operational qualification, native runtime identity and separately delivered private native-workforce tools |
 | [v1.9.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.9.1) | Current guides, complete admission inputs and recovery-only escrow tooling |
 | [v1.9.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.9.0) | Explicit no-retainer intake, feasible execution windows and role-specific model binding |
 | [v1.8.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.8.0) | General computer-work specification and explicit operator-budget review mode |
