@@ -10,7 +10,7 @@ import time
 from urllib.parse import quote
 
 root = pathlib.Path(__file__).resolve().parents[2]
-meta = root / 'docs/releases/v1.6.1'
+meta = root / 'docs/releases/v1.7.0'
 config = json.loads((meta / 'release.json').read_text())
 repo, tag, source = (config[k] for k in ['repository', 'tag', 'sourceCommit'])
 parser = argparse.ArgumentParser(description=__doc__)
@@ -190,8 +190,8 @@ if not args.publish:
 assert os.environ.get('GITHUB_EVENT_NAME') == 'push' and os.environ.get('GITHUB_REF') == 'refs/heads/main', 'Publication requires a main push.'
 subprocess.run(['git', 'merge-base', '--is-ancestor', source, 'HEAD'], cwd=root, check=True)
 changes = subprocess.check_output(['git', 'diff', '--name-only', source, 'HEAD'], cwd=root, text=True).splitlines()
-assert changes and all(p.startswith(('docs/releases/v1.6.1/', 'scripts/release/')) or p == '.github/workflows/current-state-release.yml' for p in changes), 'Release preparation must not change the frozen application.'
-out = root / 'build/release/v1.6.1'
+assert changes and all(p.startswith(('docs/releases/v1.7.0/', 'scripts/release/')) or p == '.github/workflows/current-state-release.yml' for p in changes), 'Release preparation must not change the frozen application.'
+out = root / 'build/release/v1.7.0'
 expected = {}
 for line in (out / 'SHA256SUMS.txt').read_text().splitlines():
     digest, name = line.split('  ', 1)
@@ -199,7 +199,7 @@ for line in (out / 'SHA256SUMS.txt').read_text().splitlines():
     assert hashlib.sha256((out / name).read_bytes()).hexdigest() == digest
     expected[name] = digest
 expected['SHA256SUMS.txt'] = hashlib.sha256((out / 'SHA256SUMS.txt').read_bytes()).hexdigest()
-assert set(expected) == {'AGIJobManager-v1.6.1-COMPLETE.zip', pathlib.Path(config['primaryUI']).name, 'RELEASE_MANIFEST.json', 'SHA256SUMS.txt'}
+assert set(expected) == {'AGIJobManager-v1.7.0-COMPLETE.zip', pathlib.Path(config['primaryUI']).name, 'RELEASE_MANIFEST.json', 'SHA256SUMS.txt'}
 assert {p.name for p in out.iterdir()} == set(expected), 'Unexpected local release assets.'
 matches = []
 page = 1

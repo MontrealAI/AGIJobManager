@@ -1,0 +1,274 @@
+{
+  "sourceCommit": "9b758293a7fdcf731299bf28264d601b4fa4e51f",
+  "previousTag": "v1.6.1",
+  "changes": [
+    {
+      "status": "M",
+      "path": ".github/workflows/current-state-release.yml"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "config/usdc-deployment.json"
+    },
+    {
+      "status": "A",
+      "path": "contracts/periphery/AGIReviewEscrow.sol"
+    },
+    {
+      "status": "A",
+      "path": "contracts/test/ReentrantReviewToken.sol"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT_CONFIGURATION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_READINESS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/NFT_POLICY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OPERATIONS/PREFUNDING.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/OPERATIONS/REVIEW_PROTECTION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/VERSIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/RELEASE_GUIDE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/START_HERE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/V1_RELEASE_SCOPE.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qualification/history/mainnet-cutover-v1.6.1.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/qualification/mainnet-cutover.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qualification/reviewer-qualification-benchmark-v170.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.6.1/CHANGES.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.6.1/GUIDE_CHECKS.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.6.1/PREVIOUS_RELEASE.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.6.1/RELEASE_NOTES.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.6.1/SOURCE_CI.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.6.1/START_HERE.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.6.1/VALIDATION.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.6.1/release.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/DEPLOYMENT_MAINNET.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/GITHUB_PAGES.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/STANDALONE_HTML_UIS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/VERSIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/.env.example"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/README.md"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package.json"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/scripts/deploy-review-escrow.cjs"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/scripts/deploy-review-escrow.js"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/scripts/deployment-safety.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/test/mainnet-deployment.test.js"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/test/mainnet-fork.test.js"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/test/review-deployment.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "M",
+      "path": "scripts/docs/release-alignment.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/economics/admission.cjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/economics/benchmark-qualification.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/economics/calibration.cjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/economics/lifecycle.cjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/economics/qualification-fixture.cjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/economics/qualification-service.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/economics/review-state.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/package-release.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/publish-release.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/test-release-gates.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/verify-usdc-ui.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/security/slither-reviewed-findings.json"
+    },
+    {
+      "status": "A",
+      "path": "test/calibratedAdmission.test.js"
+    },
+    {
+      "status": "A",
+      "path": "test/qualificationService.test.js"
+    },
+    {
+      "status": "A",
+      "path": "test/reviewEscrow.test.js"
+    },
+    {
+      "status": "A",
+      "path": "test/reviewState.test.js"
+    },
+    {
+      "status": "M",
+      "path": "ui/README.md"
+    },
+    {
+      "status": "M",
+      "path": "ui/agijobmanager-usdc.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/dist-ipfs/agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/package.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/generated/deployments.ts"
+    }
+  ]
+}
