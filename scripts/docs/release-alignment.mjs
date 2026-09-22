@@ -22,6 +22,8 @@ const commands=[
  ['Plan Sepolia ENS helper','deploy:ens-job-pages:sepolia','Explicit DRY_RUN=1; chain reads only'],
  ['Recover mainnet source verification','reverify:mainnet','Chain reads and explorer requests; no chain broadcasts'],
  ['Recover Sepolia source verification','reverify:sepolia','Chain reads and explorer requests; no chain broadcasts'],
+ ['Recover existing review escrow on mainnet','recover:review-escrow:mainnet','Read-only plan by default; existing address/journal required; no new deployment'],
+ ['Recover existing review escrow on Sepolia','recover:review-escrow:sepolia','Read-only plan by default; existing address/journal required; no new deployment'],
  ['Check mainnet instance','check:readiness','Read-only; requires saved receipt and reviewed NFT policy'],
  ['Check Sepolia instance','check:readiness:sepolia','Read-only; requires saved receipt and reviewed NFT policy'],
 ];
@@ -61,7 +63,7 @@ These command names are checked against the executable Hardhat package scripts. 
 | --- | --- | --- |
 ${commands.map(([task,name,effect])=>`| ${task} | \`${commandCell(name)}\` | ${effect} |`).join('\n')}
 
-Verification recovery requires DEPLOYMENT_RECEIPT. Readiness additionally requires READINESS_NFT_CONFIG and, only for reviewed identity changes, READINESS_CONFIG. Relative environment paths use the Hardhat npm process directory; follow the configuration reference. A successful offline check does not validate a live instance.
+Manager verification recovery requires DEPLOYMENT_RECEIPT; existing review-escrow recovery instead requires REVIEW_ESCROW_ADDRESS and its original journal. Readiness additionally requires READINESS_NFT_CONFIG and, only for reviewed identity changes, READINESS_CONFIG. Relative environment paths use the Hardhat npm process directory; follow the configuration reference. A successful offline check does not validate a live instance.
 
 ## Authorize deployment and then intake separately
 
@@ -78,7 +80,7 @@ The manager starts paused. Preserve its transaction journal and exact compiler i
 | Economic admission | Signed assumptions and configured cost/capital/capacity limits | Observed employer value, actual costs and independent participants |
 | Private Fleet commissioning | Rehearsed execution on the operator's actual machines and services | Sustained useful throughput and ongoing recovery measurements |
 
-The existing manager and its payout rules are unchanged. New work uses [no-retainer operations](OPERATIONS/NO_RETAINERS.md). Existing AGIReviewEscrow records are retained for credit and refund recovery. The companion deployment script also supports source-verification recovery against its original journal. Publishing software does not open intake, qualify private hardware or establish production throughput. Manual console posting does not enforce [pre-funding qualification](OPERATIONS/PREFUNDING.md).
+The existing manager and its payout rules are unchanged. New work uses [no-retainer operations](OPERATIONS/NO_RETAINERS.md). Existing AGIReviewEscrow records are retained for credit and refund recovery. The companion escrow script permits only source-verification recovery against its original journal; new escrow deployment is disabled. Publishing software does not open intake, qualify private hardware or establish production throughput. Manual console posting does not enforce [pre-funding qualification](OPERATIONS/PREFUNDING.md).
 `;
 
 const errors=[];

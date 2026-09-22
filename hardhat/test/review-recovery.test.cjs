@@ -1,0 +1,16 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const ethers=require('ethers');
+function harness({dryRun=false,missing=false,mismatch=false}={}){
+ const manager='0x'+'1'.repeat(40),address='0x'+'2'.repeat(40),token='0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',code='0x1234',hash='0x'+'3'.repeat(64),blockHash='0x'+'4'.repeat(64);
+ const state={writes:0,verified:0,destroyed:0,signers:0,factories:0};
+ const provider={getNetwork:async()=>({chainId:1n}),getCode:async()=>code,getBlock:async n=>({number:n==='latest'?100:n,hash:blockHash}),getTransactionReceipt:async()=>({status:1,blockNumber:90,blockHash,hash,contractAddress:address})};
+ const artifact={contractName:'AGIReviewEscrow',sourceName:'Review.sol',deployedBytecode:code,abi:[]},buildInfo={output:{contracts:{'Review.sol':{AGIReviewEscrow:{evm:{deployedBytecode:{immutableReferences:{}}}}}}}};
+ const hre={network:{name:'mainnet'},config:{verify:{etherscan:{enabled:true,apiKey:'fixture'}}},artifacts:{readArtifact:async()=>artifact,getBuildInfo:async()=>buildInfo},ethers:{...ethers,provider,getSigners:()=>{state.signers++;throw Error('Signer requested');},getContractFactory:()=>{state.factories++;throw Error('Factory requested');},Contract:class{async manager(){return manager;}async usdcToken(){return token;}},JsonRpcProvider:class{constructor(){Object.assign(this,provider);}destroy(){state.destroyed++;}}}};
+ const mocks={'node:fs':{mkdirSync(){},existsSync:()=>!missing,readFileSync:()=>JSON.stringify({manager,chainId:mismatch?2:1,address,transactionHash:hash}),writeFileSync(){state.writes++;},renameSync(){}},'node:path':path,'./runtime.cjs':{getRuntime:async()=>hre},'./verify-etherscan.cjs':{verifyEtherscan:async()=>{state.verified++;return true;}}};
+ const sandbox={module:{exports:{}},require:name=>Object.hasOwn(mocks,name)?mocks[name]:require(path.resolve(__dirname,'../scripts',name)),__dirname:path.resolve(__dirname,'../scripts'),process:{env:{DRY_RUN:dryRun?'1':'0',JOB_MANAGER:manager,JOB_MANAGER_CODE_HASH:ethers.keccak256(code),REVIEW_ESCROW_ADDRESS:address,VERIFY_RPC_URL:'https://rpc.invalid'}},console:{log(){}}};
+ vm.runInNewContext(fs.readFileSync(path.resolve(__dirname,'../scripts/deploy-review-escrow.cjs'),'utf8'),sandbox);
+ return {run:sandbox.module.exports.main,state};
+}
+test('existing-escrow plan requests no signing, deployment, verification or journal write',async()=>{const h=harness({dryRun:true});await h.run();assert.deepEqual(h.state,{writes:0,verified:0,destroyed:0,signers:0,factories:0});});
+test('existing-escrow recovery verifies receipt/runtime and checkpoints without a signer',async()=>{const h=harness();await h.run();assert.deepEqual(h.state,{writes:1,verified:1,destroyed:1,signers:0,factories:0});});
+for(const [label,options,pattern] of [['missing journal',{missing:true},/original local deployment journal/],['wrong journal scope',{mismatch:true},/Recovery scope differs/]])test('recovery rejects '+label+' without writes and closes its witness',async()=>{const h=harness(options);await assert.rejects(h.run(),pattern);assert.deepEqual(h.state,{writes:0,verified:0,destroyed:1,signers:0,factories:0});});

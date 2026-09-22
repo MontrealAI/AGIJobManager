@@ -2,9 +2,9 @@
 
 **Current operating policy:** new work uses [operator-budget admission without retainers](NO_RETAINERS.md). Retainer sections below describe historical analysis and existing-obligation recovery, not new funding.
 
-**Current private intake uses calibrated schema 5 with explicit reviewer retainers.** See [review protection and calibrated admission](REVIEW_PROTECTION.md). The schema 3 examples below document the earlier primitive and remain useful for historical verification.
+**Current private intake uses calibrated schema 7 with `reviewPayment: operator-budget`.** Review the [complete admission input](QUALIFIED_ADMISSION.md#required-calibration-and-report-bytes) before signing a funding policy. Existing escrow obligations use the separate [recovery procedure](REVIEW_PROTECTION.md).
 
-v1.6.1 supplies a **pre-funding qualification primitive**. Its purpose is to reject unsuitable work before employer escrow is deposited. It complements the existing Agent and reviewer checks. A passing calculation alone never authorizes a transaction.
+v1.9.1 supplies an **operator-budget pre-funding qualification primitive**. Its purpose is to reject unsuitable work before employer escrow is deposited. It complements the existing Agent and reviewer checks. A passing calculation alone never authorizes a transaction.
 
 The recommended sequence is: verify employer value and each participant's costs; reserve capital and capacity; recheck the exact offer against current chain terms; fund; obtain fresh job-specific Agent/reviewer packets; retain recovery and reconciliation throughout.
 
@@ -12,22 +12,22 @@ The recommended sequence is: verify employer value and each participant's costs;
 
 | Component | Function |
 | --- | --- |
-| `scripts/economics/admission.cjs` | Schema 3 employer qualification, signed exact funding intent, baseline/outcome evidence references, separate capital/cost/job/capacity budgets |
+| `scripts/economics/admission.cjs` | Schema 7 employer qualification, signed exact funding intent, baseline/outcome evidence references, separate capital/cost/job/capacity budgets |
 | `scripts/economics/funding-state.mjs` | Two-provider canonical observation of posting terms, duration-adjusted bonds, pauses, native-USDC balance, allowance and unpaid claims before a job exists |
 | `scripts/economics/closure-state.mjs` | Canonical successful terminal-event receipt verification, including deleted cancelled jobs and job zero, with at least 64 confirmations and explicit unpaid claims |
 | `scripts/economics/canonical-rpc.mjs` | Shared fail-closed chain/hash/freshness checks with no block-number fallback |
 
 The public console remains a manual, permissionless posting interface. **It does not enforce this off-chain qualification.** The private Fleet's separately supplied Employer service integrates these primitives at its approval, funding, signing and rebroadcast boundaries. Direct contract calls can bypass any off-chain policy. No contract or payout rule changes in this release.
 
-## Schema 3
+## Schema 7
 
-Use `npm run economics:funding -- input.json` for an offline check, or call `checkAdmission`. The outer object still has exactly `policy`, `envelope`, `observed`, `portfolio`. The [existing qualification guide](QUALIFIED_ADMISSION.md) defines signatures, money strings and shared fields. Schema 1/2 worker inputs remain compatible.
+Use `npm run economics:funding -- input.json` for an offline check, or call `checkNewWork`. The outer object still has exactly `policy`, `envelope`, `observed`, `portfolio`, `evidenceReport`. The [existing qualification guide](QUALIFIED_ADMISSION.md) defines signatures, money strings and shared fields. New worker inputs use schema 6. Older formats remain available only to the historical offline analysis API.
 
-Schema 3 has these differences:
+Schema 7 has these differences:
 
 | Object | Differences |
 | --- | --- |
-| Policy | `schemaVersion: 3`, `role: "employer"`; omit `maxPreparationAttempts`; add `capacity` with `allocationId` and positive integer caps `agentSlots`, `reviewerSlots`, `providerUnits` |
+| Policy | `schemaVersion: 7`, `role: "employer"`, `reviewPayment: "operator-budget"` and the calibration policy from the shared guide; omit `maxPreparationAttempts`; add `capacity` with `allocationId` and positive integer caps `agentSlots`, `reviewerSlots`, `providerUnits` |
 | Signed payload | Replace `jobId` with a unique 64-character lowercase hexadecimal `offerId`; the future contract job ID is unknown until the creation receipt |
 | Commitment | Exactly `action: "createJob"`, `durationSeconds` (canonical positive decimal integer string), and `details` (exact public contract text) |
 | Capacity lease | `allocationId`, unique lowercase SHA-256-shaped `leaseId`, `expiresAt`, `agentSlots`, `reviewerSlots`, `providerUnits`; lease expiry must cover the entire packet lifetime and reviewer slots must cover the declared reviewers |

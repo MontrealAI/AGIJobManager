@@ -1,10 +1,12 @@
 # Scripts and Automation Reference
 
-> Current workflow: Operator scripts use ethers 6 and the compiled Hardhat artifacts. The post-deploy configuration script only writes to disposable local chains. Use [Hardhat](../hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v1.0.3/docs/OWNER_CONTROLS.md) for live configuration.
+> Current workflow: Operator scripts use ethers 6 and the compiled Hardhat artifacts. The post-deploy configuration script only writes to disposable local chains. Use [Hardhat](../hardhat/README.md) for public deployments and the [owner console](OWNER_CONTROLS.md) for live configuration.
 
 This catalog documents operator and maintainer scripts across deployment, operations, security, docs, and UI maintenance.
 
 ## Script matrix
+
+The [complete command inventory](REFERENCE/COMMANDS.md) is generated from all three package manifests. Current operating qualification uses `economics:admission` / `economics:funding` with schema 6/7 operator-budget inputs. `economics:example` emits a complete synthetic worker input. `recover:review-escrow:mainnet` and `recover:review-escrow:sepolia` recover existing verification only; fresh review-escrow deployment is disabled.
 
 For participant cost planning, run `npm run economics:check -- --example` or pass your scenario JSON path. This offline tool compares payouts and explicit costs without querying a chain or certifying profitability. See [economics](game-theory.md).
 

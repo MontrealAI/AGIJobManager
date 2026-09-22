@@ -5,6 +5,9 @@ import { execFileSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 execFileSync('node', ['scripts/docs/release-alignment.mjs'], { cwd: root, stdio: 'inherit' });
+execFileSync('node', ['scripts/docs/current-release.mjs'], { cwd: root, stdio: 'inherit' });
+execFileSync('node', ['scripts/docs/check-current-guides.mjs'], { cwd: root, stdio: 'inherit' });
+execFileSync('node', ['scripts/docs/check-guide-links.mjs'], { cwd: root, stdio: 'inherit' });
 const requiredFiles = [
   'docs/LEGAL/README.md','docs/LEGAL/PUBLISHER_NOTICE.md','docs/LEGAL/TERMS_AND_CONDITIONS.md',
   'docs/LEGAL/USER_DATA_RULES.md','docs/OPERATIONS/PRIVACY_RESPONSE.md',
