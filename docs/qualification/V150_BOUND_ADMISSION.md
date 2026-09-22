@@ -1,0 +1,9 @@
+# v1.5.0 qualification boundary
+
+The audit of v1.4.0 found that its signed packet scoped participant economics and job terms, but did not bind a reviewer decision or completion bytes. Version 2 adds an exact action/decision/delivery commitment and rejects outcome-dependent ballots for the scoped reviewer. Canonical two-RPC reads now include the completion URI. A bounded preparation-attempt field is returned for durable enforcement by integrations. Legacy v1 remains an offline-compatible primitive, not a fallback for action-bound signing.
+
+The public regression suite adds eleven tests: agent/reviewer v2 success, decision and delivery substitution, outcome-dependent zero-weight ballots, schema downgrade/missing fields, role confusion, preparation-limit validation, detached result objects, RPC completion disagreement, and job-zero/uint256 boundary handling. The live contract starts job numbering at zero; admission now accepts that valid first job. Earlier lifecycle, signature, collateral, gas, canonical state and financial contract cases remain required. Release records pin the complete test results and exact source CI.
+
+This release leaves Solidity, ABI/bytecode, linked libraries and payouts unchanged. These are software checks, not measured employer value, accurate qualification probabilities, independently verified controllers, M1 throughput or funded live operation. No software-only assessment establishes a universal “10/10” or guaranteed positive-sum outcomes. A trusted signature authenticates an issuer assertion; it does not establish the assertion's truth.
+
+Read [qualified admission](../OPERATIONS/QUALIFIED_ADMISSION.md). Private Agent, Node and Fleet implementations, keys and artifacts are excluded. No public-chain deployment or funded job is part of release preparation.
