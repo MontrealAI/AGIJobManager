@@ -1,0 +1,44 @@
+{
+  "release": "1.6.1",
+  "activeGuides": 190,
+  "checkedDeploymentCommands": 16,
+  "deliberateDriftProbes": {
+    "passed": true,
+    "cases": [
+      {
+        "case": "Deployment registry software version differs",
+        "rejected": true
+      },
+      {
+        "case": "Package/lock version mismatch",
+        "rejected": true
+      },
+      {
+        "case": "Stale active guide heading",
+        "rejected": true
+      },
+      {
+        "case": "Old download in active guide",
+        "rejected": true
+      },
+      {
+        "case": "Missing Hardhat command",
+        "rejected": true
+      },
+      {
+        "case": "Missing executable",
+        "rejected": true
+      },
+      {
+        "case": "Standalone console title version differs",
+        "rejected": true
+      },
+      {
+        "case": "Generated release guide is stale",
+        "rejected": true
+      }
+    ],
+    "historicalRecordsUnmodified": true
+  },
+  "scope": "Local fault injection rejects mismatched release identities, stale guides/downloads and missing command entrypoints. Source CI independently runs the restored release-alignment checker."
+}

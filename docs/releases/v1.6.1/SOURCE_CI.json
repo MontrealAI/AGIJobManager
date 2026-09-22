@@ -1,0 +1,124 @@
+{
+  "sourceCommit": "9207667cdb6da72a87577f8e85f06fdedaa0c95b",
+  "sourceTree": "6ea5ecb9c07fb3fd08ec16314001219b0ea18c3d",
+  "checkoutCommit": "9207667cdb6da72a87577f8e85f06fdedaa0c95b",
+  "policy": "All five workflows and every required job succeeded for the frozen source. Publication re-verifies the full eight-job set and actual checkout marker in every job log.",
+  "runs": [
+    {
+      "id": 35677329166,
+      "workflow": "ci.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35677329166"
+    },
+    {
+      "id": 35677329106,
+      "workflow": "ui.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35677329106"
+    },
+    {
+      "id": 35677329182,
+      "workflow": "docs.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35677329182"
+    },
+    {
+      "id": 35677329099,
+      "workflow": "mainnet-fork.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35677329099"
+    },
+    {
+      "id": 35677329233,
+      "workflow": "security-verification.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35677329233"
+    }
+  ],
+  "verifiedJobs": [
+    {
+      "job": "build (0)",
+      "id": 106586479534,
+      "workflow": "ci.yml",
+      "checkout": "9207667cdb6da72a87577f8e85f06fdedaa0c95b",
+      "totals": [
+        "2026-09-22T01:53:38.4850849Z \u001b[1A\u001b[2K  19 passed (1.2m)",
+        "2026-09-22T01:54:30.1507590Z   183 passing (4s)",
+        "2026-09-22T01:54:43.4576715Z \u001b[1A\u001b[2K  1 passed (6.0s)"
+      ]
+    },
+    {
+      "job": "build (3)",
+      "id": 106586479707,
+      "workflow": "ci.yml",
+      "checkout": "9207667cdb6da72a87577f8e85f06fdedaa0c95b",
+      "totals": [
+        "2026-09-22T01:53:08.5122719Z   145 passing (7s)"
+      ]
+    },
+    {
+      "job": "build (1)",
+      "id": 106586479754,
+      "workflow": "ci.yml",
+      "checkout": "9207667cdb6da72a87577f8e85f06fdedaa0c95b",
+      "totals": [
+        "2026-09-22T01:53:00.4313789Z   122 passing (3s)"
+      ]
+    },
+    {
+      "job": "build (2)",
+      "id": 106586479816,
+      "workflow": "ci.yml",
+      "checkout": "9207667cdb6da72a87577f8e85f06fdedaa0c95b",
+      "totals": [
+        "2026-09-22T01:53:07.4233321Z   170 passing (8s)"
+      ]
+    },
+    {
+      "job": "docs",
+      "id": 106586479434,
+      "workflow": "docs.yml",
+      "checkout": "9207667cdb6da72a87577f8e85f06fdedaa0c95b",
+      "totals": [
+        "2026-09-22T01:52:01.1367798Z Release alignment passed: v1.6.1, 190 active guides, 16 deployment commands."
+      ]
+    },
+    {
+      "job": "mainnet-usdc",
+      "id": 106586479355,
+      "workflow": "mainnet-fork.yml",
+      "checkout": "9207667cdb6da72a87577f8e85f06fdedaa0c95b",
+      "totals": [
+        "2026-09-22T01:52:55.5248471Z   8 passing (2s)",
+        "2026-09-22T01:52:55.5261723Z 8 passing (8 mocha)",
+        "2026-09-22T01:53:10.6320260Z   23 passing (13s)",
+        "2026-09-22T01:53:10.6331043Z 23 passing (23 mocha)"
+      ]
+    },
+    {
+      "job": "security-verification",
+      "id": 106586479576,
+      "workflow": "security-verification.yml",
+      "checkout": "9207667cdb6da72a87577f8e85f06fdedaa0c95b",
+      "totals": [
+        "2026-09-22T01:52:38.9655786Z   10 passing (856ms)",
+        "2026-09-22T01:52:38.9663873Z 10 passing (10 mocha)",
+        "2026-09-22T01:53:06.0611342Z Suite result: ok. 9 passed; 0 failed; 0 skipped; finished in 76.48ms (75.73ms CPU time)",
+        "2026-09-22T01:53:06.3312180Z Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 361.86ms (357.44ms CPU time)",
+        "2026-09-22T01:53:06.3558362Z Suite result: ok. 6 passed; 0 failed; 0 skipped; finished in 3.26ms (2.29ms CPU time)",
+        "2026-09-22T01:53:06.6035185Z Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 638.68ms (637.95ms CPU time)",
+        "2026-09-22T01:53:06.6187827Z Suite result: ok. 8 passed; 0 failed; 0 skipped; finished in 653.92ms (1.59s CPU time)",
+        "2026-09-22T01:53:06.6189249Z Ran 5 test suites in 655.17ms (1.73s CPU time): 32 tests passed, 0 failed, 0 skipped (32 total tests)",
+        "2026-09-22T01:53:07.5317332Z Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 790.01ms (2.09s CPU time)",
+        "2026-09-22T01:53:10.3871489Z Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 3.65s (3.65s CPU time)",
+        "2026-09-22T01:53:10.3890637Z Ran 2 test suites in 3.65s (4.44s CPU time): 5 tests passed, 0 failed, 0 skipped (5 total tests)"
+      ]
+    },
+    {
+      "job": "ui",
+      "id": 106586479239,
+      "workflow": "ui.yml",
+      "checkout": "9207667cdb6da72a87577f8e85f06fdedaa0c95b",
+      "totals": [
+        "2026-09-22T01:54:58.3775099Z   9 passed (5.8s)",
+        "2026-09-22T01:55:33.8360999Z   4 passed (6.6s)",
+        "2026-09-22T01:56:03.3078931Z   2 passed (1.7s)"
+      ]
+    }
+  ]
+}
