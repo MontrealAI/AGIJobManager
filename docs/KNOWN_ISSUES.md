@@ -1,4 +1,6 @@
-# Known limitations and issue reporting — v1.0.3
+# Known limitations and issue reporting
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 This page records current operational limits. Exact test results and dependency counts belong to the release evidence and [dependency report](DEPENDENCY_SECURITY.md), rather than historical local logs.
 

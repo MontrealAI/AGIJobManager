@@ -1,6 +1,8 @@
-# Agent NFT policy — v1.0.3
+# Agent NFT policy
 
-The owner can require or waive an approved NFT for **newly posted jobs**. Fresh v1.0.3 managers start with NFT eligibility **disabled** (`agentNftRequired() == false`) and no registered collections. The owner can opt in later. Each job records the choice when its `createJob` transaction executes, before assignment; changing the default never changes an existing job.
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
+
+The owner can require or waive an approved NFT for **newly posted jobs**. Fresh managers start with NFT eligibility **disabled** (`agentNftRequired() == false`) and no registered collections. The owner can opt in later. Each job records the choice when its `createJob` transaction executes, before assignment; changing the default never changes an existing job.
 
 | Job policy | Agent needs |
 | --- | --- |
@@ -13,7 +15,7 @@ NFTs determine eligibility at application, not payment amounts. Successful settl
 
 ## Owner walkthrough
 
-1. Open the versioned [USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.3/agijobmanager-usdc.html), select the verified v1.0.3 manager and connect the accepted owner wallet. Confirm the chain and contract address.
+1. Open the versioned [USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.6.1/agijobmanager-usdc.html), select the verified compatible manager and connect the accepted owner wallet. Confirm the chain and contract address.
 2. In owner controls, choose **NFT requirement for new jobs**. Enter `true` to require an enabled NFT or `false` to waive it. Review and simulate the transaction, then submit through the owner's signing setup.
 3. Verify `AgentNftRequirementUpdated(required)` and `agentNftRequired()`. A pending owner has no authority until ownership is accepted. This operational setting remains available after identity configuration is locked.
 4. Agents and employers check `jobAgentNftRequired(jobId)` or the console's job detail/review for the actual job policy. Missing or cancelled jobs revert instead of reporting an optional policy.
@@ -22,7 +24,7 @@ NFTs determine eligibility at application, not payment amounts. Successful settl
 
 ## Configure approved collections
 
-A fresh v1.0.3 manager has **no registered collections** and NFT admission is **disabled**. No NFT-setting transaction is needed to keep that starting policy. To opt in, the accepted owner registers reviewed collections and calls `setAgentNftRequired(true)` before the jobs that should require them are posted. Enabling the requirement with no enabled collection prevents agents from applying and fails readiness.
+A fresh manager has **no registered collections** and NFT admission is **disabled**. No NFT-setting transaction is needed to keep that starting policy. To opt in, the accepted owner registers reviewed collections and calls `setAgentNftRequired(true)` before the jobs that should require them are posted. Enabling the requirement with no enabled collection prevents agents from applying and fails readiness.
 
 `addAGIType(collection, score)` adds or updates an ERC-721 collection with an integer score from 1 to 100. `disableAGIType(collection)` sets its score to zero. There are at most 32 slots; disabled slots can be reused when full. The historical names `payoutPercentage` and `getHighestPayoutPercentage` are retained for compatibility: any positive score establishes eligibility and never increases the payment share. Select **1** unless compatibility with existing score reporting needs another value.
 

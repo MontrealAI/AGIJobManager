@@ -1,10 +1,10 @@
-# v1.6.0 mainnet qualification
+# v1.6.1 mainnet qualification
 
-v1.6.0 is a software release for verified v0.9.6-compatible managers and new Ethereum deployments. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
+v1.6.1 is a software release for verified v0.9.6-compatible managers and new Ethereum deployments. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 
 The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction first included in v0.9.2 and retained in v1.1.0, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.
 
-The [v1.6.0 qualified admission tools](OPERATIONS/QUALIFIED_ADMISSION.md) add lifecycle modeling, signed attestations and canonical state reads. A result within supplied limits does not establish live admission readiness or guaranteed participant profitability. Canonical settlement reporting from v1.2.1 remains available.
+The retained [qualified admission tools](OPERATIONS/QUALIFIED_ADMISSION.md) add lifecycle modeling, signed attestations and canonical state reads. A result within supplied limits does not establish live admission readiness or guaranteed participant profitability. Canonical settlement reporting from v1.2.1 remains available.
 
 ## Settlement
 
@@ -29,7 +29,7 @@ The owner may set the validator budget to 1–60% for newly posted jobs. Existin
 - Transaction reviews bind the connected account, network and manager through approvals and submission. Changed contexts require a new review. Failed receipts cannot be reported as successful.
 - Qualification includes contract regressions, issuer restrictions, bonds/disputes, exact transfer ordering, fuzzing, concurrent-job invariants, deployment rejection scenarios, browser tests and static-analysis triage.
 
-## Version 1.0 qualification scope
+## Preserved contract qualification scope
 
 Version 1.1.0 adds read-only deployment defaults and corrected operator guidance while retaining v1.0.5 privacy notices, public-content review, credential handling and browser storage. It preserves v1.0.3 ABI, creation/runtime bytecode and disabled NFT default. Existing managers keep their settings, jobs and agreements. See [release scope](V1_RELEASE_SCOPE.md), the [internal contract review](qualification/V1_CONTRACT_REVIEW.md), [v1.0.3 default review](qualification/V103_NFT_DEFAULT.md), [v1.0.4 notice review](qualification/V104_OPERATOR_NOTICES.md), [v1.0.5 privacy review](qualification/V105_PRIVACY.md), [acceptance protocol](V1_ACCEPTANCE.md) and [launch checklist](LAUNCH_CHECKLIST.md).
 

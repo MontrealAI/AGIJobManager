@@ -1,4 +1,6 @@
-# Contract behavior — v1.0.3
+# Contract behavior
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 See [buyer protection](BUYER_PROTECTION.md) for a plain-language outcome table and [USDC distribution](USDC_PAYOUT_SPLIT.md) for arithmetic.
 

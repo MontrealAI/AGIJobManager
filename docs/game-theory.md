@@ -1,4 +1,6 @@
-# Economics and operating limits — v1.0.3
+# Economics and operating limits
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 The contract provides escrow, bonded review, and a trusted arbitration backstop. It does not prove work quality or guarantee that honest behavior is always the most profitable choice.
 

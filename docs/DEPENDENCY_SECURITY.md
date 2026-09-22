@@ -1,4 +1,6 @@
-# Dependency security — v1.0.3
+# Dependency security
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 v0.9.1 removed the discontinued Truffle/Ganache/OpenZeppelin test-helper dependency tree and migrated deployment and local EVM testing to Hardhat 3 with ethers 6. The complete root and Hardhat dependency audits report **zero known advisories at every severity** on 2026-09-17. UI qualification separately audits its complete dependency tree. Consult the immutable release validation record for final clean-install results, runtime versions and the source commit.
 

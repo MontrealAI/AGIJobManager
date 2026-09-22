@@ -1,4 +1,6 @@
-# Contracts and Permissions — v1.0.3
+# Contracts and Permissions
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 ## Contract map
 

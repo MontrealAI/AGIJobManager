@@ -1,9 +1,9 @@
-# USDC standalone console v1.6.0
+# USDC standalone console v1.6.1
 
-v1.6.0 retains the v1.0.5 protocol notices unchanged and links the [legal center](../LEGAL/README.md). Acknowledgement starts unchecked, is never restored from browser storage, and must be renewed after account/network/manager changes or page restoration. Withdrawing acknowledgement also cancels a pending transaction review. This is a local safeguard; the operator must supply its own legally appropriate service terms and acceptance process. The console retains the v1.0.5 separate public-content check for publishing text/links and IPFS uploads. It does not scan for every personal detail or restrict direct contract calls.
+v1.6.1 retains the v1.0.5 protocol notices unchanged and links the [legal center](../LEGAL/README.md). Acknowledgement starts unchecked, is never restored from browser storage, and must be renewed after account/network/manager changes or page restoration. Withdrawing acknowledgement also cancels a pending transaction review. This is a local safeguard; the operator must supply its own legally appropriate service terms and acceptance process. The console retains the v1.0.5 separate public-content check for publishing text/links and IPFS uploads. It does not scan for every personal detail or restrict direct contract calls.
 
 
-Use the [v1.6.0 console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.6.0/agijobmanager-usdc.html) with a verified v0.9.6 or v1.6.0 USDC manager on Ethereum mainnet. No manager is configured by default. A verified v0.9.6 instance does not need redeployment for this update.
+Use the [v1.6.1 console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.6.1/agijobmanager-usdc.html) with a verified v0.9.6 or v1.6.1 USDC manager on Ethereum mainnet. No manager is configured by default. A verified v0.9.6 instance does not need redeployment for this update.
 
 The [current repository console](../../ui/agijobmanager-usdc.html) includes clear cost and buyer guidance and requires `getJobBonds` for voting. v0.9.5 and older managers do not have that getter. See [compatibility and verification](../qualification/BUYER_ECONOMICS_FOLLOWUP.md), including the older console's bond-quote limitation. Existing jobs remain on their original contracts.
 

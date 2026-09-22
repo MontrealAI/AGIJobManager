@@ -1,4 +1,6 @@
-# Deployment and operations — v1.0.3
+# Deployment and operations
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 The supported public-network workflow is documented in the [Hardhat guide](../hardhat/README.md) and [deploy day runbook](DEPLOY_DAY_RUNBOOK.md). Root Truffle deployment/signing commands are retired for public networks.
 

@@ -1,4 +1,6 @@
-# Configuration Reference — v1.0.3
+# Configuration Reference
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 The deployed manager has no implementation upgrade switch. Its native USDC address and fixed successful-job 30%/10% shares cannot change. Owner controls maintain selected operating parameters; they do not permit withdrawal of reserved escrow or bonds. See [owner controls](OWNER_CONTROLS.md) for transaction procedures.
 
@@ -43,7 +45,7 @@ All setters below are owner-only.
 | Moderators | `addModerator` / `removeModerator` | Owner | Only listed moderators use typed dispute resolution |
 | Additional allowlists | `add/removeAdditionalAgent`, `add/removeAdditionalValidator` | Owner | Identity bypass only; a job’s required NFT credential remains enforced |
 | Blacklists | `blacklistAgent`, `blacklistValidator` | Owner | Blocks application or voting for that role |
-| Agent NFT default | `setAgentNftRequired` | Owner | Disabled on fresh v1.0.3 managers; owner opt-in; fixed per job at posting; default changes affect future jobs only |
+| Agent NFT default | `setAgentNftRequired` | Owner | Disabled on fresh managers; owner opt-in; fixed per job at posting; default changes affect future jobs only |
 | NFT eligibility scores | `addAGIType`, `disableAGIType` | Zero outstanding escrow/bonds for every change; add: ERC-721 support, score 1–100, at most 32 slots | Eligibility only; scores do not set the USDC payout |
 
 The role-list setters do not reject every unsuitable account automatically. Review the intended accounts operationally. The current ABI has no legacy terms/contact/additional-text setters or additional-agent payout setter.

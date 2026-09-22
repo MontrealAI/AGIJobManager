@@ -1,4 +1,6 @@
-# v1.0.3 — USDC job distribution
+# USDC job distribution
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 Jobs are posted and fully escrowed in native Circle USDC. A successful completion distributes the original job cost in this order, in one settlement transaction, with failed outgoing transfers reserved as claims:
 

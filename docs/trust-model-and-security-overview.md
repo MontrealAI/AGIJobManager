@@ -1,4 +1,6 @@
-# Trust model and security overview — v1.0.3
+# Trust model and security overview
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 AGIJobManager is an owner-operated USDC escrow system. The contract enforces accounting and lifecycle guards; participants still trust owner/moderator decisions, validator judgment, issuer behavior and the configured identity systems. This release is internally qualified, not independently audited.
 

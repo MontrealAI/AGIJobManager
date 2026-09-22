@@ -1,4 +1,6 @@
-# Source verification on Etherscan — v1.0.3
+# Source verification on Etherscan
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 The supported current procedure is the [Hardhat deployment guide](../hardhat/README.md). It covers qualified compilation, strict dry runs, native-USDC checks, paused deployment, linked-library source verification, transaction journals, failure recovery, owner acceptance and the read-only readiness check.
 

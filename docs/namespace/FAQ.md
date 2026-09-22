@@ -1,4 +1,6 @@
-# ENS membership FAQ — v1.0.3
+# ENS membership FAQ
+
+> Current guide for this source checkout. See [release identity and deployment commands](../RELEASE_GUIDE.md).
 
 ## Which names identify agents and validators?
 

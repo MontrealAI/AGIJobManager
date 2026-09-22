@@ -81,4 +81,4 @@ The public tools neither run these steps autonomously nor guarantee profit, thro
 
 ## Employer funding (schema 3)
 
-v1.6.0 adds a separate employer/offer scope before a job exists. See [pre-funding qualification](PREFUNDING.md) for exact additional fields, canonical observations, capacity reservations and cancellation proof boundaries. Schema 2 remains the action-bound Agent/reviewer interface.
+v1.6.1 adds a separate employer/offer scope before a job exists. See [pre-funding qualification](PREFUNDING.md) for exact additional fields, canonical observations, capacity reservations and cancellation proof boundaries. Schema 2 remains the action-bound Agent/reviewer interface.

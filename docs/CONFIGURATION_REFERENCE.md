@@ -1,4 +1,6 @@
-# Configuration Reference — v1.0.3
+# Configuration Reference
+
+> Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 The maintained [configuration catalog](CONFIGURATION.md) contains every current setter, guard, default and snapshot rule. Use [owner controls](OWNER_CONTROLS.md) for reviewed transaction procedures and the [Hardhat guide](../hardhat/README.md) for public-network deployment.
 

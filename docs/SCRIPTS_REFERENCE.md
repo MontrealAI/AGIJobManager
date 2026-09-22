@@ -1,6 +1,6 @@
 # Scripts and Automation Reference
 
-> v1.0.3: Operator scripts use ethers 6 and the compiled Hardhat artifacts. The post-deploy configuration script only writes to disposable local chains. Use [Hardhat](https://github.com/MontrealAI/AGIJobManager/blob/v1.0.3/hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v1.0.3/docs/OWNER_CONTROLS.md) for live configuration.
+> Current workflow: Operator scripts use ethers 6 and the compiled Hardhat artifacts. The post-deploy configuration script only writes to disposable local chains. Use [Hardhat](../hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v1.0.3/docs/OWNER_CONTROLS.md) for live configuration.
 
 This catalog documents operator and maintainer scripts across deployment, operations, security, docs, and UI maintenance.
 

@@ -1,4 +1,6 @@
-# Moderator Guide — v1.0.3
+# Moderator Guide
+
+> Current guide for this source checkout. See [release identity and deployment commands](../RELEASE_GUIDE.md).
 
 Moderators resolve active disputes through `resolveDisputeWithCode(jobId, resolutionCode, reason)`. The caller must be in the manager's `moderators` list and settlement must be enabled. Ownership alone does not grant this moderator role.
 
