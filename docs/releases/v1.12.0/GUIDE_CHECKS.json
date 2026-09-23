@@ -1,0 +1,9 @@
+{
+  "release": "1.12.0",
+  "alignmentScannedGuides": 201,
+  "currentGuides": 185,
+  "checkedDeploymentCommands": 18,
+  "passed": true,
+  "sourceWorkflow": 35799833285,
+  "scope": "README, companion editions, command inventory, project economics and pilot guides, generated UI deployment labels, local files and heading links, release labels and no-retainer instructions."
+}
