@@ -1,0 +1,15 @@
+{
+  "schema": "agi-review-reservation/v1",
+  "measurementKind": "synthetic",
+  "now": 100,
+  "terms": {"minimumReviewers": 3, "challengeSeconds": 10, "reserveSeconds": 10, "requireDistinctFailureDomains": true},
+  "reviewers": [
+    {"id": "node-a", "controller": "controller-a", "credential": "credential-a", "failureDomain": "domain-a", "availableAt": 100, "reservations": []},
+    {"id": "node-b", "controller": "controller-b", "credential": "credential-b", "failureDomain": "domain-b", "availableAt": 100, "reservations": []},
+    {"id": "node-c", "controller": "controller-c", "credential": "credential-c", "failureDomain": "domain-c", "availableAt": 100, "reservations": []}
+  ],
+  "jobs": [
+    {"id": "example-one", "workReadyAt": 100, "deadline": 170, "reviewSeconds": 30, "requiredReviewers": 3},
+    {"id": "example-two", "workReadyAt": 100, "deadline": 170, "reviewSeconds": 30, "requiredReviewers": 3}
+  ]
+}

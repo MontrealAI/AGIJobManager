@@ -12,6 +12,8 @@ AGI Jobs covers work a person or team can do using a keyboard, mouse and screen.
 
 This edition tightens [operating qualification](docs/OPERATIONS/OPERATING_QUALIFICATION.md): each held-out job class must meet loss-rate and supervision limits as well as separate Agent/Node cash floors. The [project economics planner](docs/OPERATIONS/PROJECT_ECONOMICS.md) accounts for unpaid intermediate stages, failed work, deposits and each participant's capital. Examples at $100, $1,000 and $10,000 are explicitly assumptions. Use the [bounded pilot guide](docs/OPERATIONS/VALUE_TIER_PILOT.md) to replace those assumptions with real-machine evidence. Private companions also reject stale desktop observations after a failed refresh.
 
+The [Astra review pilot](docs/OPERATIONS/ASTRA_REVIEW_PILOT.md) shows why reviewer participation can fail a job that otherwise passes modeled work checks. Its offline scheduler reserves three independent reviewer windows across competing jobs; its pilot audit keeps completion, supervision, Agent/Node losses, settlement defects and judgment errors separate. The study is synthetic, and neither tool authorizes live intake.
+
 ## Choose your starting point
 
 | You want to | Open |

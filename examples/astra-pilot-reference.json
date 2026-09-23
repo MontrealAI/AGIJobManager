@@ -1,0 +1,29 @@
+{
+  "schema": "agi-pilot-evaluation/v1",
+  "measurementKind": "synthetic",
+  "cohort": "astra_m1_fleet_reference_seed_20260923",
+  "counts": {
+    "offered": 10000,
+    "admitted": 446,
+    "useful": 137,
+    "humanSeconds": 655680,
+    "agentEngagements": 446,
+    "agentLosses": 308,
+    "reviewerEngagements": 948,
+    "reviewerLosses": 588,
+    "incorrectPaid": 1,
+    "settlementsAudited": 0,
+    "settlementRuleDefects": 0,
+    "independentlyScoredReviews": 0,
+    "reviewJudgmentErrors": 0
+  },
+  "thresholds": {
+    "minimumUsefulRateExclusive": 0.8,
+    "maximumHumanMinutesExclusive": 15,
+    "maximumAgentLossRate": 0.25,
+    "maximumReviewerLossRate": 0.25,
+    "maximumJudgmentErrorUpper95": 0.05,
+    "minimumAuditedSettlements": 10,
+    "minimumScoredReviews": 100
+  }
+}

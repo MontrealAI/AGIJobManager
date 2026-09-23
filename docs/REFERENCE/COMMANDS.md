@@ -50,8 +50,10 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 | `npm run ui:abi` | `node scripts/ui/export_abi.js` |
 | `npm run ui:abi:check` | `node scripts/ui/check_ui_abi.js` |
 | `npm run workforce:economics` | `node scripts/economics/project-economics.cjs` |
+| `npm run workforce:pilot` | `node scripts/economics/pilot-evaluation.cjs` |
 | `npm run workforce:plan` | `node scripts/economics/capacity-plan.cjs` |
 | `npm run workforce:qualify` | `node scripts/economics/workforce.cjs` |
+| `npm run workforce:reserve` | `node scripts/economics/review-reservation.cjs` |
 
 ## hardhat workspace
 

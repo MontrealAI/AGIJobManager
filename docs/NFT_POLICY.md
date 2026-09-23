@@ -15,7 +15,7 @@ NFTs determine eligibility at application, not payment amounts. Successful settl
 
 ## Owner walkthrough
 
-1. Open the versioned [USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.12.0/agijobmanager-usdc.html), select the verified compatible manager and connect the accepted owner wallet. Confirm the chain and contract address.
+1. Open the versioned [USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.13.0/agijobmanager-usdc.html), select the verified compatible manager and connect the accepted owner wallet. Confirm the chain and contract address.
 2. In owner controls, choose **NFT requirement for new jobs**. Enter `true` to require an enabled NFT or `false` to waive it. Review and simulate the transaction, then submit through the owner's signing setup.
 3. Verify `AgentNftRequirementUpdated(required)` and `agentNftRequired()`. A pending owner has no authority until ownership is accepted. This operational setting remains available after identity configuration is locked.
 4. Agents and employers check `jobAgentNftRequired(jobId)` or the console's job detail/review for the actual job policy. Missing or cancelled jobs revert instead of reporting an optional policy.

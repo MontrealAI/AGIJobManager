@@ -1,7 +1,7 @@
 # Standalone interfaces
 
-- [Published v1.12.0 USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.12.0/agijobmanager-usdc.html): use with a verified v0.9.6 or v1.12.0 manager and release checksums.
-- [Matching repository console](../../ui/agijobmanager-usdc.html): voting requires a verified v0.9.6 or v1.12.0 manager with `getJobBonds`. See [compatibility and the earlier bond-quote limitation](../qualification/BUYER_ECONOMICS_FOLLOWUP.md).
+- [Published v1.13.0 USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.13.0/agijobmanager-usdc.html): use with a verified v0.9.6 or v1.13.0 manager and release checksums.
+- [Matching repository console](../../ui/agijobmanager-usdc.html): voting requires a verified v0.9.6 or v1.13.0 manager with `getJobBonds`. See [compatibility and the earlier bond-quote limitation](../qualification/BUYER_ECONOMICS_FOLLOWUP.md).
 - [Repository single-file app](../../agijobmanager.html): bundled overview with deployment-required defaults.
 - [Operator interface](agijobmanager.html): configurable action interface with USDC transaction guards.
 

@@ -2,7 +2,7 @@
 
 **Deployment entrypoint:** [release identity and checked commands](RELEASE_GUIDE.md).
 
-> **v1.10.0: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
+> **v1.13.0: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
 AGI Jobs covers work a person or team can do using a keyboard, mouse and screen. This hub routes employers, Agents, Nodes, operators and contributors to current procedures. Use [release scope and earlier editions](V1_RELEASE_SCOPE.md#published-download-versus-current-source) to distinguish current instructions from historical evidence.
 
@@ -10,6 +10,7 @@ AGI Jobs covers work a person or team can do using a keyboard, mouse and screen.
 - **Use current admission:** [no retainers](OPERATIONS/NO_RETAINERS.md), [schema 6/7 and complete CLI inputs](OPERATIONS/QUALIFIED_ADMISSION.md), and [employer funding](OPERATIONS/PREFUNDING.md).
 - **Run private Mac companions:** [Fleet, Agent and Node editions and setup](OPERATIONS/PRIVATE_FLEET.md).
 - **Check vendor capabilities:** [current computer-use integration research](OPERATIONS/COMPUTER_USE_CURRENT.md).
+- **Plan Astra reviews:** [reviewer windows, synthetic results and measured pilot targets](OPERATIONS/ASTRA_REVIEW_PILOT.md).
 - **Find an executable command:** [complete generated npm inventory](REFERENCE/COMMANDS.md) and [script procedures](SCRIPTS_REFERENCE.md).
 
 - **Check participant economics:** [conditional margin and loss screening](OPERATIONS/ECONOMIC_SCREENING.md).

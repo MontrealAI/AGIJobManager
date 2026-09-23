@@ -10,6 +10,8 @@ The [complete command inventory](REFERENCE/COMMANDS.md) is generated from all th
 
 For participant cost planning, run `npm run economics:check -- --example` or pass your scenario JSON path. This offline tool compares payouts and explicit costs without querying a chain or certifying profitability. See [economics](game-theory.md).
 
+For multi-job review planning use `npm run workforce:reserve -- examples/review-reservation.json`; for separately reported pilot outcomes use `npm run workforce:pilot -- examples/astra-pilot-reference.json`. Both are offline, report `authorization: NONE` and require independent current evidence before any operational decision. See [Astra review pilot](OPERATIONS/ASTRA_REVIEW_PILOT.md).
+
 | Script / Command | Domain | Purpose | Typical user | Notes |
 | --- | --- | --- | --- | --- |
 | `npm --prefix hardhat run setup` | Deployment setup | Creates missing private configuration from examples | Operator | Offline; existing files and symlinks preserved; review required |
