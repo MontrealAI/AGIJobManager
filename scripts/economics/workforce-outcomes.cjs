@@ -4,6 +4,7 @@ const need=(v,c)=>{if(!v)throw Error('WORKFORCE_'+c);};
 const exact=(x,ks)=>need(x&&typeof x==='object'&&!Array.isArray(x)&&Object.keys(x).sort().join('|')===[...ks].sort().join('|'),'OPERATING_FIELDS');
 const fraction=x=>typeof x==='number'&&Number.isFinite(x)&&x>=0&&x<=1;
 const cash=x=>{need(typeof x==='string'&&/^-?(0|[1-9][0-9]{0,11})(\.[0-9]{1,6})?$/.test(x),'OPERATING_CASH');const negative=x[0]==='-', [a,b='']=(negative?x.slice(1):x).split('.');return (negative?-1n:1n)*(BigInt(a)*1000000n+BigInt(b.padEnd(6,'0')));};
+const cashText=x=>`${x<0n?'-':''}${(x<0n?-x:x)/1000000n}.${((x<0n?-x:x)%1000000n).toString().padStart(6,'0')}`;
 function validateOperatingLimits(l){
  exact(l,['minimumNetUSDCByRole','maximumHumanSecondsPerUsefulJob','minimumUsefulRateLower95','minimumCorrectReviewRateLower95','minimumCasesPerCohort','maximumCohortFalseAcceptanceRate','maximumLossRate','cohorts']);
  exact(l.minimumNetUSDCByRole,['agent','reviewer']);
@@ -37,8 +38,16 @@ function checkOperatingOutcomes(l,plan,ledger,report){
   need(interval(useful,agents.length).lower>=l.minimumUsefulRateLower95,'COHORT_USEFUL_LIMIT');
   need(interval(correct,reviewers.length).lower>=l.minimumCorrectReviewRateLower95,'COHORT_REVIEW_LIMIT');
   need(falseAccepts/invalid.length<=l.maximumCohortFalseAcceptanceRate,'COHORT_FALSE_ACCEPTANCE_LIMIT');
-  for(const role of ['agent','reviewer'])need(net(rows[role])>=cash(l.minimumNetUSDCByRole[role]),'COHORT_ECONOMICS_LIMIT');
-  result.push({group,agentEngagements:agents.length,reviewEngagements:reviewers.length,useful,correct,falseAccepts,invalid:invalid.length});
+  const economics={};
+  for(const role of ['agent','reviewer']){
+   const total=net(rows[role]),losses=rows[role].filter(x=>net([x])<0n).length;
+   need(total>=cash(l.minimumNetUSDCByRole[role]),'COHORT_ECONOMICS_LIMIT');
+   need(losses/rows[role].length<=l.maximumLossRate,'COHORT_LOSS_LIMIT');
+   economics[role]={netUSDC:cashText(total),lossEngagements:losses,engagements:rows[role].length,lossRate:losses/rows[role].length};
+  }
+  const humanSeconds=[...agents,...reviewers].reduce((n,x)=>n+x.row.humanSeconds,0);
+  need(useful>0&&humanSeconds/useful<=l.maximumHumanSecondsPerUsefulJob,'COHORT_SUPERVISION_LIMIT');
+  result.push({group,agentEngagements:agents.length,reviewEngagements:reviewers.length,useful,correct,falseAccepts,invalid:invalid.length,economics,humanSecondsPerUsefulJob:humanSeconds/useful});
  }
  return {cohorts:result,humanSecondsPerUsefulJob:(a.humanSeconds+n.humanSeconds)/a.useful,limitations:'Declared held-out cohorts constrain pooled masking. Cohort names, signatures and Wilson bounds do not establish independence or account for all correlated errors.'};
 }

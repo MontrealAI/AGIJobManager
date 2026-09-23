@@ -4,6 +4,7 @@ import os from 'node:os';
 import { execFileSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
+execFileSync('node', [path.join(root, 'ui/scripts/sync-deployments.mjs'), '--check'], { cwd: path.join(root, 'ui'), stdio: 'inherit' });
 execFileSync('node', ['scripts/docs/release-alignment.mjs'], { cwd: root, stdio: 'inherit' });
 execFileSync('node', ['scripts/docs/current-release.mjs'], { cwd: root, stdio: 'inherit' });
 execFileSync('node', ['scripts/docs/check-current-guides.mjs'], { cwd: root, stdio: 'inherit' });

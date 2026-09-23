@@ -21,3 +21,19 @@ Record successful and failed tool calls, timeouts, unavailable permissions, mode
 The native integration was checked against OpenClaw [v2026.9.5 source](https://github.com/openclaw/openclaw/tree/v2026.9.5): the gateway client/device-auth modules, protocol version, node describe/invoke handlers, computer-use contract and computer-tool execution close path. It uses normal device approval, loopback token authentication, no-tool role-specific planning, frame-bound actions, stable execution IDs and explicit closure. It does not use the generic `nodes` model tool to bypass its computer-action restrictions.
 
 Software fixtures exercise the actual WebSocket/HTTP transport with a mock gateway and desktop. This is implementation evidence, not a live OpenClaw/Mac/provider qualification. The [workforce gate](WORKFORCE_QUALIFICATION.md) preserves that distinction.
+
+## Current native contract and refresh behavior
+
+The OpenClaw node documentation requires a UUID `executionId` for direct
+`computer.act` calls. CUA coordinate actions use a `screen.snapshot` from that
+same execution, with its `displayFrameId` and returned width as `refWidth`.
+The companion keeps these bindings and clears cached screen/window observations
+before refreshing them: a failed or malformed refresh cannot authorize later
+input using an older observation. Clock rollback also requires fresh observation.
+These are local adapter tests; they do not establish live provider compatibility.
+
+OpenAI’s current guide recommends code-driven computer work for GPT-6 Astra and
+still supports structured computer actions. The native companion uses its bounded
+OpenClaw planner/action interface. It does not silently install a new execution
+path or give model-generated code access to the signing account. Qualify any
+candidate model and tool path against the exact held-out job scope first.

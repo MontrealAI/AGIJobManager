@@ -34,6 +34,8 @@ Open `Launch-Native-Workforce.command` and `docs/NATIVE_WORKFORCE.html` in the p
 
 The current OpenClaw profile pin is 2026.9.5; it is a reproducible baseline, not a claim that this is the newest available OpenClaw release. Review [current computer-use capabilities](COMPUTER_USE_CURRENT.md), then commission any changed model, provider, application or tool configuration before admitting its jobs. An account subscription alone does not demonstrate API/CLI access, capacity or an available billing path.
 
-The new [workforce qualification gate](WORKFORCE_QUALIFICATION.md) requires signed, exact-source evidence for two real Macs, restart recovery, held-out validation, actual bills and useful cash settlements, supervision limits and independent security review. The separate pilot mode allows bounded, explicitly signed rehearsals; pilot results cannot become production qualification automatically.
+Use the [project economics planner](PROJECT_ECONOMICS.md) and [bounded pilot guide](VALUE_TIER_PILOT.md) before assigning multi-stage paid work. Current private packages include the same planner and three price-tier examples. The native adapter clears stale observations after a failed refresh.
+
+The [workforce qualification gate](WORKFORCE_QUALIFICATION.md) requires signed, exact-source evidence for two real Macs, restart recovery, held-out validation, actual bills and useful cash settlements, supervision limits and independent security review. The separate pilot mode allows bounded, explicitly signed rehearsals; pilot results cannot become production qualification automatically.
 
 Record actual provider costs, outcomes, false approvals/rejections, deadlines, recovery and human exception time. Local tests and historical simulations do not prove these on physical Macs. Each private package includes the detailed commissioning and rollback guides.

@@ -54,11 +54,18 @@ field; calibration and evaluation group identifiers must remain disjoint.
 
 For every cohort, the gate checks a Wilson lower bound on useful Agent outcomes
 and correct Node verdicts, the raw false-acceptance fraction, and separate Agent
-and Node net cash floors. Failed work and abstentions remain in their respective
+and Node net cash floors, maximum loss fraction, and human seconds per useful
+completion within that cohort. Failed work and abstentions remain in their respective
 denominators. Each role must also meet its cash floor and maximum loss fraction
 across **all** calibration and evaluation engagements. Agent profit cannot cover
 a losing Node role. These are role/cohort aggregates, not proof every individual
 operator profits; retain participant-specific admission limits as well.
+
+Since public v1.12.0, a profitable held-out cohort with excessive losing engagements
+or supervision fails even if calibration or another cohort improves pooled results.
+Existing limits retain their signed fields; the stricter source requires fresh
+source-bound evidence for production. Successful reports expose each cohort’s
+role cash, loss counts and supervision so an operator can inspect the decision.
 
 Supervision is the sum of evaluation Agent and Node human seconds divided by
 useful Agent completions. No useful completions means rejection. This covers
