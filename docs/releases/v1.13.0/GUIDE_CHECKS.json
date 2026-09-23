@@ -1,0 +1,9 @@
+{
+  "release": "1.13.0",
+  "alignmentScannedGuides": 202,
+  "currentGuides": 186,
+  "checkedDeploymentCommands": 18,
+  "passed": true,
+  "sourceWorkflow": 35889584498,
+  "scope": "Current download/guide alignment, complete npm command inventory, Astra pilot instructions, linked files, generated deployment versions and no-retainer policy."
+}

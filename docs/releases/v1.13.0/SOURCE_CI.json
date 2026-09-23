@@ -1,0 +1,91 @@
+{
+  "sourceCommit": "5c491335a2d9069facad6d65781efefc5baee670",
+  "sourceTree": "43910ac44ed1655f07b83281aee459875f8b28e4",
+  "checkoutCommit": "5c491335a2d9069facad6d65781efefc5baee670",
+  "policy": "Five exact-source workflows and eight required jobs succeeded. Each actual checkout marker was checked in its completed job log; publication repeats these checks.",
+  "runs": [
+    {
+      "workflow": "ci.yml",
+      "id": 35889584459,
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35889584459"
+    },
+    {
+      "workflow": "security-verification.yml",
+      "id": 35889584451,
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35889584451"
+    },
+    {
+      "workflow": "ui.yml",
+      "id": 35889584563,
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35889584563"
+    },
+    {
+      "workflow": "mainnet-fork.yml",
+      "id": 35889584629,
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35889584629"
+    },
+    {
+      "workflow": "docs.yml",
+      "id": 35889584498,
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35889584498"
+    }
+  ],
+  "verifiedJobs": [
+    {
+      "job": "build (0)",
+      "id": 107278365728,
+      "run": 35889584459,
+      "checkout": "5c491335a2d9069facad6d65781efefc5baee670",
+      "conclusion": "success"
+    },
+    {
+      "job": "build (1)",
+      "id": 107278365602,
+      "run": 35889584459,
+      "checkout": "5c491335a2d9069facad6d65781efefc5baee670",
+      "conclusion": "success"
+    },
+    {
+      "job": "build (2)",
+      "id": 107278365504,
+      "run": 35889584459,
+      "checkout": "5c491335a2d9069facad6d65781efefc5baee670",
+      "conclusion": "success"
+    },
+    {
+      "job": "build (3)",
+      "id": 107278365318,
+      "run": 35889584459,
+      "checkout": "5c491335a2d9069facad6d65781efefc5baee670",
+      "conclusion": "success"
+    },
+    {
+      "job": "security-verification",
+      "id": 107278365424,
+      "run": 35889584451,
+      "checkout": "5c491335a2d9069facad6d65781efefc5baee670",
+      "conclusion": "success"
+    },
+    {
+      "job": "ui",
+      "id": 107278372215,
+      "run": 35889584563,
+      "checkout": "5c491335a2d9069facad6d65781efefc5baee670",
+      "conclusion": "success"
+    },
+    {
+      "job": "mainnet-usdc",
+      "id": 107278365655,
+      "run": 35889584629,
+      "checkout": "5c491335a2d9069facad6d65781efefc5baee670",
+      "conclusion": "success"
+    },
+    {
+      "job": "docs",
+      "id": 107278365411,
+      "run": 35889584498,
+      "checkout": "5c491335a2d9069facad6d65781efefc5baee670",
+      "conclusion": "success"
+    }
+  ]
+}
