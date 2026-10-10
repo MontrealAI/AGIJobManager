@@ -212,8 +212,8 @@
   .workspace-heading { text-align: left; }
   .progress-caption { padding: 20px 18px 10px; }
   .progress-caption > span { display: none; }
-  .builder-steps { padding-inline: 10px; gap: 2px; }
-  .builder-steps button { flex-direction: column; gap: 2px; font-size: 1rem; padding: 12px 4px; }
+  .builder-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-inline: 10px; gap: 2px; }
+  .builder-steps button { flex-direction: column; gap: 2px; font-size: var(--read-size); padding: 12px 8px; }
   .builder-main { padding: 24px 18px; }
   .template-grid, #more-examples .template-grid { grid-template-columns: 1fr; gap: 12px; }
   .template-grid button, #more-examples .template-grid button { min-height: 150px; padding: 20px; }
