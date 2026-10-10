@@ -27,7 +27,7 @@ REQUIRED_STEPS = {
     'current-state-release.yml': ['Source and dependency compatibility boundaries', 'Complete preflight and real entrypoint regressions', 'Native compiler, provider, storage and historical runtime compatibility', 'Test release qualification gates offline', 'Build and independently rebuild candidate assets', 'Clean extraction and offline smoke test', 'Retain source-pinned candidate assets'],
 }
 ROOT_FILES = {'.env.example', 'agijobmanager.html', 'truffle-config.js', 'LICENSE', 'README.md', 'package.json', 'package-lock.json', 'foundry.toml', 'remappings.txt', 'requirements.txt', 'pyproject.toml', 'tsconfig.json', 'slither.config.json', '.gitignore', '.gitmodules', '.gitattributes', '.npmrc', '.nvmrc', '.prettierrc', '.solhint.json', '.solhintignore'}
-ROOT_DIRS = {'examples', 'integrations', 'presentations', '.github', 'config', 'contracts', 'docs', 'experiments', 'forge-test', 'hardhat', 'lib', 'migrations', 'schemas', 'scripts', 'test', 'ui', 'ui-tests', 'vendor'}
+ROOT_DIRS = {'examples', 'integrations', 'presentations', '.github', 'config', 'contracts', 'docs', 'experiments', 'forge-test', 'hardhat', 'lib', 'migrations', 'schemas', 'scripts', 'site', 'test', 'ui', 'ui-tests', 'vendor'}
 FORBIDDEN = {'node_modules', '.git', '.venv', '__pycache__', '.next', 'cache', 'cache_hardhat', 'artifacts', 'artifacts_hardhat', 'build', 'out', 'coverage', 'playwright-report', 'test-results', 'originals-INTERNAL-DO-NOT-PUBLISH'}
 
 def require(condition, message):

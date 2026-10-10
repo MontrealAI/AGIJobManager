@@ -5,6 +5,8 @@ Next.js dApp and operations console with **read-only first**, **simulation-first
 USDC entry: [release status and verified assets](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.14.0) and current [repository console](../../ui/agijobmanager-usdc.html). The v1.13.0 console includes privacy reviews, explicit draft saving and credential-safe uploads. See [release versus current-source scope](../V1_RELEASE_SCOPE.md#published-download-versus-current-source) for the deployment-tooling changes included in v1.13.0. Voting requires the `getJobBonds` getter, absent from v0.9.5 and older managers. Read the [compatibility notes and earlier bond-quote limitation](../qualification/BUYER_ECONOMICS_FOLLOWUP.md). Verify checksums and configure a verified compatible v0.9.6/v0.9.7 or v1.0.x/v1.13.0 USDC manager; no live manager is supplied by default.
 
 ## Quick links
+- [AGI Jobs website](https://montrealai.github.io/AGIJobManager/) · [Français](https://montrealai.github.io/AGIJobManager/fr/)
+- [Hosted current USDC console](https://montrealai.github.io/AGIJobManager/agijobmanager-usdc.html)
 - [USDC standalone operator guide](./GENESIS_JOB_MAINNET_HTML_UI.md)
 - [Standalone HTML artifact index (`ui/*.html`)](./STANDALONE_HTML_UIS.md)
 - [UI directory inventory (`/ui`)](../../ui/README.md)

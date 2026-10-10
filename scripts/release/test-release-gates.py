@@ -93,6 +93,15 @@ class ReleaseGateTests(unittest.TestCase):
         with self.assertRaises(ValueError):source_path('README.md',stat.S_IFLNK|0o777)
         source_path('.env.example',stat.S_IFREG|0o644)
 
+    def test_site_sources_keep_archive_exclusions(self):
+        for name in ['site/assets/app.mjs', 'site/assets/style.css', 'site/assets/mark.svg', 'site/content/en.json', 'site/content/fr.json', 'site/template.mjs']:
+            source_path(name, stat.S_IFREG | 0o644)
+        for name in ['site/.env', 'site/.env.production', 'site/key.pem', 'site/key.key', 'site/build/index.html', 'site/node_modules/a', 'site/../secret', 'site/.git/config']:
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                source_path(name, stat.S_IFREG | 0o644)
+        with self.assertRaises(ValueError):
+            source_path('site/assets/link', stat.S_IFLNK | 0o777)
+
 class PublicationIntegrationTests(ReleaseGateTests):
     def setUp(self):
         super().setUp()
