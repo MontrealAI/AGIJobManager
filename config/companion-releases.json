@@ -1,7 +1,8 @@
 {
-  "public": "1.13.0",
+  "public": "1.14.0",
   "fleet": "1.10.0",
   "agent": "1.16.0",
   "node": "2.17.0",
-  "scope": "Offline reviewer-window planning and separate pilot quality/economics targets, with earlier project and cohort safeguards. Private companion editions are unchanged; production requires observed qualification."
+  "scope": "Ethereum mainnet verification and bounded compiler-derived NFT readiness; private companion editions and production contracts are unchanged.",
+  "previousPublished": "1.13.0"
 }

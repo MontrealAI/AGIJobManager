@@ -1,0 +1,678 @@
+{
+  "provenance": "Operator diagnostic captured 2026-10-10T08:06:58.718Z; public link metadata only. Compiler inputs, ABI and constructor fixtures in tests are synthetic.",
+  "targets": [
+    {
+      "name": "JobSettlement",
+      "address": "0xA28628B739F1F1ce61221e4500c67E5B9ee7099D",
+      "local": {
+        "artifactSourceName": "contracts/utils/JobSettlement.sol",
+        "artifactInputSourceName": "project/contracts/utils/JobSettlement.sol"
+      },
+      "comparison": {
+        "creationReferences": {
+          "present": true,
+          "validV1": true,
+          "count": 2,
+          "rows": [
+            {
+              "fqn": "project/contracts/utils/ReputationMath.sol:ReputationMath",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 1005,
+                  "length": 20
+                },
+                {
+                  "start": 1566,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/TransferUtils.sol:TransferUtils",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 535,
+                  "length": 20
+                }
+              ]
+            }
+          ]
+        },
+        "deployedReferences": {
+          "present": true,
+          "validV1": true,
+          "count": 2,
+          "rows": [
+            {
+              "fqn": "project/contracts/utils/ReputationMath.sol:ReputationMath",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 973,
+                  "length": 20
+                },
+                {
+                  "start": 1534,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/TransferUtils.sol:TransferUtils",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 503,
+                  "length": 20
+                }
+              ]
+            }
+          ]
+        },
+        "configuredLibraries": {
+          "validV1Structure": true,
+          "rows": [
+            {
+              "fqn": "project/contracts/utils/UriUtils.sol:UriUtils",
+              "value": "0x247e5bEED8B7ED6f72384F0aEdfB499fD321F718",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x247e5beed8b7ed6f72384f0aedfb499fd321f718"
+            },
+            {
+              "fqn": "project/contracts/utils/TransferUtils.sol:TransferUtils",
+              "value": "0x7F0f756d7803c6CbbBE8f409511bAa173687DC22",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x7f0f756d7803c6cbbbe8f409511baa173687dc22"
+            },
+            {
+              "fqn": "project/contracts/utils/BondMath.sol:BondMath",
+              "value": "0xDc73fD21a6a096ac27487c32094A52Fa1A586387",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xdc73fd21a6a096ac27487c32094a52fa1a586387"
+            },
+            {
+              "fqn": "project/contracts/utils/ReputationMath.sol:ReputationMath",
+              "value": "0xD03beEe18c14d99d86F1AbF6149eA6A0a583a427",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xd03beee18c14d99d86f1abf6149ea6a0a583a427"
+            },
+            {
+              "fqn": "project/contracts/utils/ENSOwnership.sol:ENSOwnership",
+              "value": "0x3C3F61032273D83Bc0B350F4Db85886c9f214d37",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x3c3f61032273d83bc0b350f4db85886c9f214d37"
+            },
+            {
+              "fqn": "project/contracts/utils/NftEligibility.sol:NftEligibility",
+              "value": "0x21716f5b902855703631730412346F4d2aB019c9",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x21716f5b902855703631730412346f4d2ab019c9"
+            },
+            {
+              "fqn": "project/contracts/utils/JobSettlement.sol:JobSettlement",
+              "value": "0xA28628B739F1F1ce61221e4500c67E5B9ee7099D",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xa28628b739f1f1ce61221e4500c67e5b9ee7099d"
+            },
+            {
+              "fqn": "project/contracts/utils/JobValidation.sol:JobValidation",
+              "value": "0xE0c713f2D6ecAe7c08A92B306a8ECc39975e6898",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xe0c713f2d6ecae7c08a92b306a8ecc39975e6898"
+            }
+          ]
+        },
+        "publishedLibraries": {
+          "validV1Structure": true,
+          "rows": [
+            {
+              "fqn": "project/contracts/utils/JobSettlement.sol:ReputationMath",
+              "value": "0xd03beee18c14d99d86f1abf6149ea6a0a583a427",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xd03beee18c14d99d86f1abf6149ea6a0a583a427"
+            },
+            {
+              "fqn": "project/contracts/utils/JobSettlement.sol:TransferUtils",
+              "value": "0x7f0f756d7803c6cbbbe8f409511baa173687dc22",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x7f0f756d7803c6cbbbe8f409511baa173687dc22"
+            }
+          ]
+        }
+      },
+      "record": {
+        "compilerVersion": "v0.8.37+commit.f401782d",
+        "contractName": "JobSettlement"
+      }
+    },
+    {
+      "name": "JobValidation",
+      "address": "0xE0c713f2D6ecAe7c08A92B306a8ECc39975e6898",
+      "local": {
+        "artifactSourceName": "contracts/utils/JobValidation.sol",
+        "artifactInputSourceName": "project/contracts/utils/JobValidation.sol"
+      },
+      "comparison": {
+        "creationReferences": {
+          "present": true,
+          "validV1": true,
+          "count": 2,
+          "rows": [
+            {
+              "fqn": "project/contracts/utils/BondMath.sol:BondMath",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 460,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/TransferUtils.sol:TransferUtils",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 1158,
+                  "length": 20
+                }
+              ]
+            }
+          ]
+        },
+        "deployedReferences": {
+          "present": true,
+          "validV1": true,
+          "count": 2,
+          "rows": [
+            {
+              "fqn": "project/contracts/utils/BondMath.sol:BondMath",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 428,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/TransferUtils.sol:TransferUtils",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 1126,
+                  "length": 20
+                }
+              ]
+            }
+          ]
+        },
+        "configuredLibraries": {
+          "validV1Structure": true,
+          "rows": [
+            {
+              "fqn": "project/contracts/utils/UriUtils.sol:UriUtils",
+              "value": "0x247e5bEED8B7ED6f72384F0aEdfB499fD321F718",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x247e5beed8b7ed6f72384f0aedfb499fd321f718"
+            },
+            {
+              "fqn": "project/contracts/utils/TransferUtils.sol:TransferUtils",
+              "value": "0x7F0f756d7803c6CbbBE8f409511bAa173687DC22",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x7f0f756d7803c6cbbbe8f409511baa173687dc22"
+            },
+            {
+              "fqn": "project/contracts/utils/BondMath.sol:BondMath",
+              "value": "0xDc73fD21a6a096ac27487c32094A52Fa1A586387",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xdc73fd21a6a096ac27487c32094a52fa1a586387"
+            },
+            {
+              "fqn": "project/contracts/utils/ReputationMath.sol:ReputationMath",
+              "value": "0xD03beEe18c14d99d86F1AbF6149eA6A0a583a427",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xd03beee18c14d99d86f1abf6149ea6a0a583a427"
+            },
+            {
+              "fqn": "project/contracts/utils/ENSOwnership.sol:ENSOwnership",
+              "value": "0x3C3F61032273D83Bc0B350F4Db85886c9f214d37",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x3c3f61032273d83bc0b350f4db85886c9f214d37"
+            },
+            {
+              "fqn": "project/contracts/utils/NftEligibility.sol:NftEligibility",
+              "value": "0x21716f5b902855703631730412346F4d2aB019c9",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x21716f5b902855703631730412346f4d2ab019c9"
+            },
+            {
+              "fqn": "project/contracts/utils/JobSettlement.sol:JobSettlement",
+              "value": "0xA28628B739F1F1ce61221e4500c67E5B9ee7099D",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xa28628b739f1f1ce61221e4500c67e5b9ee7099d"
+            },
+            {
+              "fqn": "project/contracts/utils/JobValidation.sol:JobValidation",
+              "value": "0xE0c713f2D6ecAe7c08A92B306a8ECc39975e6898",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xe0c713f2d6ecae7c08a92b306a8ecc39975e6898"
+            }
+          ]
+        },
+        "publishedLibraries": {
+          "validV1Structure": true,
+          "rows": [
+            {
+              "fqn": "project/contracts/utils/JobValidation.sol:BondMath",
+              "value": "0xdc73fd21a6a096ac27487c32094a52fa1a586387",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xdc73fd21a6a096ac27487c32094a52fa1a586387"
+            },
+            {
+              "fqn": "project/contracts/utils/JobValidation.sol:TransferUtils",
+              "value": "0x7f0f756d7803c6cbbbe8f409511baa173687dc22",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x7f0f756d7803c6cbbbe8f409511baa173687dc22"
+            }
+          ]
+        }
+      },
+      "record": {
+        "compilerVersion": "v0.8.37+commit.f401782d",
+        "contractName": "JobValidation"
+      }
+    },
+    {
+      "name": "AGIJobManager",
+      "address": "0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7",
+      "local": {
+        "artifactSourceName": "contracts/AGIJobManager.sol",
+        "artifactInputSourceName": "project/contracts/AGIJobManager.sol"
+      },
+      "comparison": {
+        "creationReferences": {
+          "present": true,
+          "validV1": true,
+          "count": 7,
+          "rows": [
+            {
+              "fqn": "project/contracts/utils/BondMath.sol:BondMath",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 7961,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/ENSOwnership.sol:ENSOwnership",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 21899,
+                  "length": 20
+                },
+                {
+                  "start": 22119,
+                  "length": 20
+                },
+                {
+                  "start": 23443,
+                  "length": 20
+                },
+                {
+                  "start": 23566,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/JobSettlement.sol:JobSettlement",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 9243,
+                  "length": 20
+                },
+                {
+                  "start": 9811,
+                  "length": 20
+                },
+                {
+                  "start": 24636,
+                  "length": 20
+                },
+                {
+                  "start": 24868,
+                  "length": 20
+                },
+                {
+                  "start": 25509,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/JobValidation.sol:JobValidation",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 10066,
+                  "length": 20
+                },
+                {
+                  "start": 17161,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/NftEligibility.sol:NftEligibility",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 11775,
+                  "length": 20
+                },
+                {
+                  "start": 12816,
+                  "length": 20
+                },
+                {
+                  "start": 21336,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/TransferUtils.sol:TransferUtils",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 14661,
+                  "length": 20
+                },
+                {
+                  "start": 15380,
+                  "length": 20
+                },
+                {
+                  "start": 19631,
+                  "length": 20
+                },
+                {
+                  "start": 23677,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/UriUtils.sol:UriUtils",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 13717,
+                  "length": 20
+                },
+                {
+                  "start": 19357,
+                  "length": 20
+                },
+                {
+                  "start": 26147,
+                  "length": 20
+                }
+              ]
+            }
+          ]
+        },
+        "deployedReferences": {
+          "present": true,
+          "validV1": true,
+          "count": 7,
+          "rows": [
+            {
+              "fqn": "project/contracts/utils/BondMath.sol:BondMath",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 5217,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/ENSOwnership.sol:ENSOwnership",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 19155,
+                  "length": 20
+                },
+                {
+                  "start": 19375,
+                  "length": 20
+                },
+                {
+                  "start": 20699,
+                  "length": 20
+                },
+                {
+                  "start": 20822,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/JobSettlement.sol:JobSettlement",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 6499,
+                  "length": 20
+                },
+                {
+                  "start": 7067,
+                  "length": 20
+                },
+                {
+                  "start": 21892,
+                  "length": 20
+                },
+                {
+                  "start": 22124,
+                  "length": 20
+                },
+                {
+                  "start": 22765,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/JobValidation.sol:JobValidation",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 7322,
+                  "length": 20
+                },
+                {
+                  "start": 14417,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/NftEligibility.sol:NftEligibility",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 9031,
+                  "length": 20
+                },
+                {
+                  "start": 10072,
+                  "length": 20
+                },
+                {
+                  "start": 18592,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/TransferUtils.sol:TransferUtils",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 11917,
+                  "length": 20
+                },
+                {
+                  "start": 12636,
+                  "length": 20
+                },
+                {
+                  "start": 16887,
+                  "length": 20
+                },
+                {
+                  "start": 20933,
+                  "length": 20
+                }
+              ]
+            },
+            {
+              "fqn": "project/contracts/utils/UriUtils.sol:UriUtils",
+              "validV1Positions": true,
+              "positions": [
+                {
+                  "start": 10973,
+                  "length": 20
+                },
+                {
+                  "start": 16613,
+                  "length": 20
+                },
+                {
+                  "start": 23403,
+                  "length": 20
+                }
+              ]
+            }
+          ]
+        },
+        "configuredLibraries": {
+          "validV1Structure": true,
+          "rows": [
+            {
+              "fqn": "project/contracts/utils/UriUtils.sol:UriUtils",
+              "value": "0x247e5bEED8B7ED6f72384F0aEdfB499fD321F718",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x247e5beed8b7ed6f72384f0aedfb499fd321f718"
+            },
+            {
+              "fqn": "project/contracts/utils/TransferUtils.sol:TransferUtils",
+              "value": "0x7F0f756d7803c6CbbBE8f409511bAa173687DC22",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x7f0f756d7803c6cbbbe8f409511baa173687dc22"
+            },
+            {
+              "fqn": "project/contracts/utils/BondMath.sol:BondMath",
+              "value": "0xDc73fD21a6a096ac27487c32094A52Fa1A586387",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xdc73fd21a6a096ac27487c32094a52fa1a586387"
+            },
+            {
+              "fqn": "project/contracts/utils/ReputationMath.sol:ReputationMath",
+              "value": "0xD03beEe18c14d99d86F1AbF6149eA6A0a583a427",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xd03beee18c14d99d86f1abf6149ea6a0a583a427"
+            },
+            {
+              "fqn": "project/contracts/utils/ENSOwnership.sol:ENSOwnership",
+              "value": "0x3C3F61032273D83Bc0B350F4Db85886c9f214d37",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x3c3f61032273d83bc0b350f4db85886c9f214d37"
+            },
+            {
+              "fqn": "project/contracts/utils/NftEligibility.sol:NftEligibility",
+              "value": "0x21716f5b902855703631730412346F4d2aB019c9",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x21716f5b902855703631730412346f4d2ab019c9"
+            },
+            {
+              "fqn": "project/contracts/utils/JobSettlement.sol:JobSettlement",
+              "value": "0xA28628B739F1F1ce61221e4500c67E5B9ee7099D",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xa28628b739f1f1ce61221e4500c67e5b9ee7099d"
+            },
+            {
+              "fqn": "project/contracts/utils/JobValidation.sol:JobValidation",
+              "value": "0xE0c713f2D6ecAe7c08A92B306a8ECc39975e6898",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xe0c713f2d6ecae7c08a92b306a8ecc39975e6898"
+            }
+          ]
+        },
+        "publishedLibraries": {
+          "validV1Structure": true,
+          "rows": [
+            {
+              "fqn": "project/contracts/AGIJobManager.sol:BondMath",
+              "value": "0xdc73fd21a6a096ac27487c32094a52fa1a586387",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xdc73fd21a6a096ac27487c32094a52fa1a586387"
+            },
+            {
+              "fqn": "project/contracts/AGIJobManager.sol:ENSOwnership",
+              "value": "0x3c3f61032273d83bc0b350f4db85886c9f214d37",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x3c3f61032273d83bc0b350f4db85886c9f214d37"
+            },
+            {
+              "fqn": "project/contracts/AGIJobManager.sol:JobSettlement",
+              "value": "0xa28628b739f1f1ce61221e4500c67e5b9ee7099d",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xa28628b739f1f1ce61221e4500c67e5b9ee7099d"
+            },
+            {
+              "fqn": "project/contracts/AGIJobManager.sol:JobValidation",
+              "value": "0xe0c713f2d6ecae7c08a92b306a8ecc39975e6898",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0xe0c713f2d6ecae7c08a92b306a8ecc39975e6898"
+            },
+            {
+              "fqn": "project/contracts/AGIJobManager.sol:NftEligibility",
+              "value": "0x21716f5b902855703631730412346f4d2ab019c9",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x21716f5b902855703631730412346f4d2ab019c9"
+            },
+            {
+              "fqn": "project/contracts/AGIJobManager.sol:TransferUtils",
+              "value": "0x7f0f756d7803c6cbbbe8f409511baa173687dc22",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x7f0f756d7803c6cbbbe8f409511baa173687dc22"
+            },
+            {
+              "fqn": "project/contracts/AGIJobManager.sol:UriUtils",
+              "value": "0x247e5beed8b7ed6f72384f0aedfb499fd321f718",
+              "strictV1Address": true,
+              "normalized20ByteHexDiagnosticOnly": "0x247e5beed8b7ed6f72384f0aedfb499fd321f718"
+            }
+          ]
+        }
+      },
+      "record": {
+        "compilerVersion": "v0.8.37+commit.f401782d",
+        "contractName": "AGIJobManager"
+      }
+    }
+  ],
+  "chainId": 1
+}

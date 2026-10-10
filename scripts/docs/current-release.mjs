@@ -5,7 +5,7 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const json=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const pkg=json('package.json'),c=json('config/companion-releases.json');
 if(c.public!==pkg.version)throw Error('Companion map public edition differs from package.json');
-const values={VERSION:pkg.version,TAG:'v'+pkg.version,FLEET:c.fleet,AGENT:c.agent,NODE:c.node,PUBLIC_NODE:pkg.engines.node};
+const values={PREVIOUS_TAG:'v'+c.previousPublished,VERSION:pkg.version,TAG:'v'+pkg.version,FLEET:c.fleet,AGENT:c.agent,NODE:c.node,PUBLIC_NODE:pkg.engines.node};
 const outputs=new Map();
 for(const [template,dest] of [['README.md.tpl','README.md'],['PRIVATE_FLEET.md.tpl','docs/OPERATIONS/PRIVATE_FLEET.md'],['V1_RELEASE_SCOPE.md.tpl','docs/V1_RELEASE_SCOPE.md']]){
  const s=fs.readFileSync(path.join(root,'scripts/docs/templates',template),'utf8').replace(/\{\{([A-Z_]+)\}\}/g,(_,key)=>{if(!(key in values))throw Error('Unknown template field '+key);return values[key];});

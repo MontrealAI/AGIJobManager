@@ -1,12 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-export function auditGuide(text,{version,scripts}){
+export function auditGuide(text,{version,scripts,previousPublished}){
  const errors=[];
  for(const m of text.matchAll(/\[([^\]]+)\]\((https:\/\/github\.com\/MontrealAI\/AGIJobManager\/(?:releases\/(?:tag|download)|blob)\/v(\d+\.\d+\.\d+)[^)]*)\)/g)){
   const labels=[...m[1].matchAll(/\bv(\d+\.\d+\.\d+)\b/g)].map(x=>x[1]);
   if(labels.some(x=>x!==m[3]))errors.push('Release link label differs from its target: '+m[1]);
-  if(m[2].includes('/releases/download/')&&m[3]!==version)errors.push('Current download points to another edition: '+m[2]);
+  if(m[2].includes('/releases/download/')&&m[3]!==version&&!(m[3]===previousPublished&&m[1].startsWith('previously published v'+previousPublished)))errors.push('Current download points to another edition: '+m[2]);
  }
  for(const m of text.matchAll(/(?:Current (?:software )?edition|Current application|Current release)\s*:?\s*\*{0,2}\[?v?(\d+\.\d+\.\d+)/gi))if(m[1]!==version)errors.push('Stale current edition: '+m[1]);
  for(const m of text.matchAll(/npm\s+(?:--prefix\s+([\w./-]+)\s+)?run\s+([\w:-]+)/g)){
@@ -28,7 +28,8 @@ export function activeGuides(root){
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..'),pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
  const scripts=Object.fromEntries(['','hardhat','ui'].map(dir=>[dir,new Set(Object.keys(JSON.parse(fs.readFileSync(path.join(root,dir,'package.json'),'utf8')).scripts))]));
+ const previousPublished=JSON.parse(fs.readFileSync(path.join(root,'config/companion-releases.json'),'utf8')).previousPublished;
  const files=activeGuides(root);let failures=0;
- for(const name of files)for(const problem of auditGuide(fs.readFileSync(path.join(root,name),'utf8'),{version:pkg.version,scripts})){console.error(name+': '+problem);failures++;}
+ for(const name of files)for(const problem of auditGuide(fs.readFileSync(path.join(root,name),'utf8'),{version:pkg.version,scripts,previousPublished})){console.error(name+': '+problem);failures++;}
  if(failures)process.exitCode=1;else console.log('Current guide audit passed: '+files.length+' guides; release labels, policy instructions and npm commands.');
 }

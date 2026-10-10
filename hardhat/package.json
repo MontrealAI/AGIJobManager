@@ -1,7 +1,7 @@
 {
   "name": "agijobmanager-hardhat",
   "private": true,
-  "version": "1.13.0",
+  "version": "1.14.0",
   "description": "Official Hardhat deployment + verification workflow for AGIJobManager",
   "scripts": {
     "clean": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs clean",
@@ -14,16 +14,17 @@
     "test:deployment": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs test test/mainnet-deployment.test.js",
     "test:mainnet-fork": "node ../node_modules/hardhat/dist/src/cli.js test --config ../hardhat.mainnet-fork.config.mjs test/mainnet-fork.test.js",
     "test:cutover": "node ../node_modules/hardhat/dist/src/cli.js test --config ../hardhat.cutover-fork.config.mjs test/mainnet-cutover.test.js",
-    "check:readiness": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/check-readiness.js --network mainnet",
+    "check:readiness": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run --no-compile scripts/check-readiness.js --network mainnet",
     "postinstall": "node ../scripts/security/patch-openzeppelin-compiler.cjs",
-    "reverify:mainnet": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/reverify-deployment.js --network mainnet",
-    "reverify:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/reverify-deployment.js --network sepolia",
-    "check:readiness:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/check-readiness.js --network sepolia",
+    "reverify:mainnet": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run --no-compile scripts/reverify-deployment.js --network mainnet",
+    "reverify:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run --no-compile scripts/reverify-deployment.js --network sepolia",
+    "check:readiness:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run --no-compile scripts/check-readiness.js --network sepolia",
     "setup": "node scripts/setup.cjs",
     "check:config:mainnet": "node scripts/check-config.cjs mainnet",
     "check:config:sepolia": "node scripts/check-config.cjs sepolia",
     "recover:review-escrow:mainnet": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-review-escrow.js --network mainnet",
-    "recover:review-escrow:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-review-escrow.js --network sepolia"
+    "recover:review-escrow:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-review-escrow.js --network sepolia",
+    "test:registry-native": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs test test/nft-registry-native.test.js"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "4.1.0",

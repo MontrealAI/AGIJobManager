@@ -1,0 +1,14 @@
+{
+  "name": "braces",
+  "version": "3.0.3-agijobmanager.1",
+  "private": true,
+  "description": "Reviewed braces 3.0.3 compatibility fork with bounded nested AST traversal for GHSA-vfj7-8cjw-p6xm",
+  "main": "index.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.23.2"
+  },
+  "dependencies": {
+    "fill-range": "7.1.1"
+  }
+}

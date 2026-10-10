@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "operator-provided historical mainnet readiness observation",
+  "observedDate": "2026-10-10",
+  "chainId": 1,
+  "blockNumber": 26161848,
+  "blockHash": "0x7a6b3821258b3da08fbf8caab6f38f361648ab118742406bcf6c570e61ceefdf",
+  "manager": "0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7",
+  "owner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+  "pendingOwner": "0x0000000000000000000000000000000000000000",
+  "intakePaused": true,
+  "checksPassed": true,
+  "nftPolicy": {
+    "agentNftRequired": false,
+    "agiTypes": [],
+    "enumeration": {
+      "method": "compiler-derived-length-and-bounded-getters",
+      "slot": "59",
+      "source": "project/contracts/AGIJobManager.sol",
+      "contract": "AGIJobManager",
+      "compiler": "0.8.37+commit.f401782d",
+      "originalInputSha256": "34ba5d0665454490fdb8f04a81a1e590d5abc8685b0e23eca0bcc751611f5292",
+      "storageLayoutSha256": "d30dad789d75cc8998cf59b48df1438eb5d6e8d0ce64474a22459453f58c2238",
+      "bytecodesReconstructedExactly": true,
+      "manager": "0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7",
+      "blockNumber": 26161848,
+      "count": 0,
+      "lengthWord": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "endOfArrayRevertAssumptions": false,
+      "transactionsBroadcast": 0
+    }
+  },
+  "accounting": {
+    "reserved": "0",
+    "balance": "0"
+  },
+  "runtimeCodeHashes": {
+    "UriUtils": "0x3fa7a328e1d42a0abe5020bb380986c8012b982b46e9684a1e16fe7f2a89ceca",
+    "TransferUtils": "0x3c072adbe151740f3c0f36e8013f8379b0831c432040e201b8aea0c763ccf946",
+    "BondMath": "0xfe5a9a65b0e309b8f1335847b4351d0333cb16f7e70cc9ea3a4264b629d48165",
+    "ReputationMath": "0x69f7a96d0f6a82f652ec33abea0871030bda76b6e753db57c2b5890b05968959",
+    "ENSOwnership": "0x7a2996cc1a4e4dd98ace6f33fce64c2c1254f95045faa97ee8412a6357720828",
+    "NftEligibility": "0xaea31b27ba88629f6daeeca31f2e97e16fe0dab3f0ea058add0dbce7a0e9da99",
+    "JobSettlement": "0xedc1b973ac39dbb2e08f416d2c9827783904d42b261cb0efb1028e0e2a8fffe1",
+    "JobValidation": "0x880407f67f1bfe9c64c8532e84e0c969081d83037df3d9e4fbe14ed2cc98afc6",
+    "AGIJobManager": "0x346ae8bb4bc480db5f8ed9e53a878162d859cae2345eaba8408929f70f23ea5a"
+  },
+  "transactionsBroadcast": 0,
+  "reportedOperatorPreflight": {
+    "passed": 185,
+    "failed": 0,
+    "skipped": 0
+  },
+  "scope": "Original operator-patched v1.13.0 checkout. Not CI for the final v1.14.0 commit, not a fresh observation, not production activation or independent security approval.",
+  "explorerVerification": "Recorded recovered receipt statuses; no fresh explorer query during readiness.",
+  "libraries": {
+    "contracts/utils/UriUtils.sol:UriUtils": "0x247e5bEED8B7ED6f72384F0aEdfB499fD321F718",
+    "contracts/utils/TransferUtils.sol:TransferUtils": "0x7F0f756d7803c6CbbBE8f409511bAa173687DC22",
+    "contracts/utils/BondMath.sol:BondMath": "0xDc73fD21a6a096ac27487c32094A52Fa1A586387",
+    "contracts/utils/ReputationMath.sol:ReputationMath": "0xD03beEe18c14d99d86F1AbF6149eA6A0a583a427",
+    "contracts/utils/ENSOwnership.sol:ENSOwnership": "0x3C3F61032273D83Bc0B350F4Db85886c9f214d37",
+    "contracts/utils/NftEligibility.sol:NftEligibility": "0x21716f5b902855703631730412346F4d2aB019c9",
+    "contracts/utils/JobSettlement.sol:JobSettlement": "0xA28628B739F1F1ce61221e4500c67E5B9ee7099D",
+    "contracts/utils/JobValidation.sol:JobValidation": "0xE0c713f2D6ecAe7c08A92B306a8ECc39975e6898"
+  },
+  "usdcToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+}

@@ -234,7 +234,7 @@ async function verifyWithRetry(params, verifyDelayMs) {
 async function qualifiedBuild() {
   await initializeRuntime();
   const buildInfo = await artifacts.getBuildInfo(FQNS.AGIJobManager);
-  if (!buildInfo) throw new Error('Manager build info missing. Run `npm run compile` first.');
+  if (!buildInfo) throw new Error('Manager build info missing. Restore the matching saved deployment build; compile fresh source only in a separate development checkout. Never overwrite preserved deployment evidence.');
   const settings = buildInfo.input.settings;
   const actualSettings = {
     version: buildInfo.solcVersion,
@@ -253,7 +253,7 @@ async function qualifiedBuild() {
     runtimeBytes[name] = requireRuntimeSize(name, artifact.deployedBytecode);
     const compiled = buildInfo.output.contracts[artifact.inputSourceName || artifact.sourceName]?.[artifact.contractName];
     if (!compiled || `0x${compiled.evm.bytecode.object}` !== artifact.bytecode || `0x${compiled.evm.deployedBytecode.object}` !== artifact.deployedBytecode) {
-      throw new Error(`${name} artifact differs from the manager build. Clean and recompile the complete release.`);
+      throw new Error(`${name} artifact differs from the manager build. Restore matching saved artifacts and build-info, or reproduce in a separate development checkout; preserve the original deployment evidence.`);
     }
   }
   return { buildInfo, runtimeBytes };

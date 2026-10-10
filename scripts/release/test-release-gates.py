@@ -1,277 +1,202 @@
 #!/usr/bin/env python3
-"""Exercise source qualification offline; every subprocess and GitHub response is mocked."""
-
+"""Adversarial release gates and publication integration with mocked GitHub; no credentials."""
+import ast
 import contextlib
 import copy
-import ast
 import io
 import json
 import os
 from pathlib import Path
 import runpy
+import stat
 import subprocess
 import sys
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
 from urllib.parse import quote
-
+from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, source_path, validate_qualification, verify_assets, sha
 
 PUBLISHER = Path(__file__).with_name('publish-release.py')
-REPOSITORY = 'MontrealAI/AGIJobManager'
 SOURCE = 'a' * 40
 TREE = 'b' * 40
-CHECKOUT = SOURCE
-WORKFLOWS = {
-    'ci.yml': ['build (0)', 'build (1)', 'build (2)', 'build (3)'],
-    'ui.yml': ['ui'],
-    'docs.yml': ['docs'],
-    'security-verification.yml': ['security-verification'],
-    'mainnet-fork.yml': ['mainnet-usdc'],
-}
-
 
 class ReleaseGateTests(unittest.TestCase):
     def setUp(self):
-        directory = tempfile.TemporaryDirectory(prefix='release-gate-test-')
-        self.addCleanup(directory.cleanup)
-        self.root = Path(directory.name)
-        self.script = self.root / 'scripts/release/publish-release.py'
-        self.script.parent.mkdir(parents=True)
-        self.script.write_text(PUBLISHER.read_text())
-        self.meta = self.root / 'docs/releases/v1.13.0'
-        self.meta.mkdir(parents=True)
-        self.config = {
-            'repository': REPOSITORY, 'tag': 'v1.13.0', 'sourceCommit': SOURCE,
-            'sourceTree': TREE,
-            'requiredSourceRuns': {
-                workflow: {'id': index, 'workflow': workflow, 'requiredJobs': jobs[:]}
-                for index, (workflow, jobs) in enumerate(WORKFLOWS.items(), 1)
-            },
-        }
-        self.evidence = {'sourceCommit': SOURCE, 'sourceTree': TREE, 'checkoutCommit': CHECKOUT}
-        self.responses = {f'git/commits/{CHECKOUT}': {'tree': {'sha': TREE}}}
-        for item in self.config['requiredSourceRuns'].values():
-            endpoint = f'actions/runs/{item["id"]}'
-            self.responses[endpoint] = {
-                'repository': {'full_name': REPOSITORY}, 'head_sha': SOURCE,
-                'path': '.github/workflows/' + item['workflow'],
-                'status': 'completed', 'conclusion': 'success',
-                'name': item['workflow'], 'html_url': 'https://github.invalid/' + endpoint,
-            }
-            self.responses[endpoint + '/jobs?per_page=100&page=1'] = {
-                'jobs': [self.job(item['id'] * 1000 + index, name)
-                         for index, name in enumerate(item['requiredJobs'])],
-            }
-        self.calls = []
-
-    def job(self, job_id, name):
-        self.responses[f'actions/jobs/{job_id}/logs'] = (
-            '2026-09-17T12:00:00.0000000Z unrelated log output\n'
-            f'2026-09-17T12:00:00.0000000Z QUALIFIED_SOURCE_COMMIT={SOURCE}\n')
-        return {'id': job_id, 'name': name, 'status': 'completed', 'conclusion': 'success',
-                'steps': [{'name': 'Verify qualified source checkout', 'status': 'completed', 'conclusion': 'success'}]}
-
-    def fake_run(self, command, **kwargs):
-        prefix = ['gh', 'api', f'repos/{REPOSITORY}/']
-        if (len(command) < 3 or command[:2] != prefix[:2]
-                or not command[2].startswith(prefix[2])
-                or kwargs.get('input') is not None or kwargs.get('timeout') != 180):
-            raise RuntimeError(f'Unexpected or mutating subprocess in offline test: {command!r}')
-        endpoint = command[2][len(prefix[2]):]
-        flags = ['--method', 'GET']
-        if endpoint.startswith('actions/jobs/') and endpoint.endswith('/logs'):
-            flags.append('--allow-escape-sequences')
-            if kwargs.get('capture_output') is not True:
-                raise RuntimeError('Job logs must be captured, never printed directly')
-        if command[3:] != flags:
-            raise RuntimeError(f'Unexpected transport flags in offline test: {command!r}')
-        self.calls.append(endpoint)
-        if endpoint not in self.responses:
-            raise RuntimeError(f'Unmocked GitHub endpoint: {endpoint}')
-        response = self.responses[endpoint]
-        if isinstance(response, Exception):
-            raise response
-        return subprocess.CompletedProcess(command, 0, stdout=response if isinstance(response, str) else json.dumps(response), stderr='')
-
+        self.config = {'repository': REPOSITORY, 'tag': TAG, 'name': TITLE, 'status': 'qualified', 'publicationAuthorized': True,
+            'sourceCommit': SOURCE, 'sourceTree': TREE, 'checkoutCommit': SOURCE, 'releaseDate': '2026-10-10', 'requiredSourceRuns': {}}
+        self.responses = {f'git/commits/{SOURCE}': {'tree': {'sha': TREE}}, 'git/ref/heads/main': {'object': {'sha': SOURCE}}}
+        self.logs = {}
+        for index, (workflow, names) in enumerate(WORKFLOWS.items(), 1):
+            item = {'id': index, 'workflow': workflow, 'workflowId': index + 100, 'attempt': 1, 'event': 'push', 'headBranch': 'main'}
+            self.config['requiredSourceRuns'][workflow] = item
+            self.responses[f'actions/workflows/{index+100}'] = {'id': index+100, 'path': '.github/workflows/' + workflow}
+            self.responses[f'actions/runs/{index}'] = {'id': index, 'workflow_id': index+100, 'run_attempt': 1, 'repository': {'full_name': REPOSITORY}, 'head_repository': {'full_name': REPOSITORY}, 'head_sha': SOURCE, 'head_branch': 'main', 'path': '.github/workflows/' + workflow, 'event': 'push', 'status': 'completed', 'conclusion': 'success'}
+            jobs = []
+            for j, name in enumerate(names):
+                job_id = index*100+j
+                steps = ['Verify qualified source checkout', *REQUIRED_STEPS[workflow]]
+                if workflow == 'ci.yml' and name == 'build (0)':
+                    steps += ['Released USDC console browser checks', 'Simulation accounting regression checks', 'UI smoke test']
+                jobs.append({'id': job_id, 'name': name, 'head_sha': SOURCE, 'run_id': index, 'status': 'completed', 'conclusion': 'success', 'steps': [{'name': n, 'status': 'completed', 'conclusion': 'success'} for n in steps]})
+                self.logs[job_id] = f'2026-10-10T12:00:00Z QUALIFIED_SOURCE_COMMIT={SOURCE}\n'
+            self.responses[f'actions/runs/{index}/attempts/1/jobs?per_page=100&page=1'] = {'jobs': jobs}
+    def api(self, endpoint):
+        return self.responses[endpoint]
     def verify(self):
-        (self.meta / 'release.json').write_text(json.dumps(self.config))
-        (self.meta / 'SOURCE_CI.json').write_text(json.dumps(self.evidence))
-        self.calls = []
-        self.output = io.StringIO()
-        with patch.dict(os.environ, {'GITHUB_REPOSITORY': REPOSITORY}, clear=True), \
-                patch.object(sys, 'argv', [str(self.script)]), \
-                patch('subprocess.run', side_effect=self.fake_run), \
-                patch('subprocess.check_output', side_effect=RuntimeError('Unexpected local subprocess')), \
-                contextlib.redirect_stdout(self.output):
-            runpy.run_path(str(self.script), run_name='__main__')
-
-    def rejects(self):
-        with self.assertRaises((AssertionError, subprocess.CalledProcessError)):
-            self.verify()
-
-    def test_valid_nonpublish_checks_all_five_workflows_without_mutation(self):
-        with self.assertRaises(SystemExit) as result:
-            self.verify()
-        self.assertEqual(result.exception.code, 0)
-        self.assertEqual(set(self.calls), set(self.responses))
-        self.assertEqual(len(self.calls), 19)
-
-    def test_jobs_pagination_is_fully_checked(self):
-        item = self.config['requiredSourceRuns']['ci.yml']
-        item['requiredJobs'] = [f'qualification ({index})' for index in range(101)]
-        jobs = [self.job(10000 + index, name) for index, name in enumerate(item['requiredJobs'])]
-        endpoint = f'actions/runs/{item["id"]}/jobs?per_page=100&page='
-        self.responses[endpoint + '1'] = {'jobs': jobs[:100]}
-        self.responses[endpoint + '2'] = {'jobs': jobs[100:]}
-        with self.assertRaises(SystemExit) as result:
-            self.verify()
-        self.assertEqual(result.exception.code, 0)
-        self.assertIn(endpoint + '2', self.calls)
-        self.responses[endpoint + '2']['jobs'][0]['conclusion'] = 'failure'
-        self.rejects()
-
-    def test_rejects_wrong_recorded_source_or_tree(self):
-        for field in ['sourceCommit', 'sourceTree']:
-            with self.subTest(field=field):
-                original = self.evidence[field]
-                self.evidence[field] = 'd' * 40
-                self.rejects()
-                self.evidence[field] = original
-
-    def test_rejects_different_checkout_tree(self):
-        self.responses[f'git/commits/{CHECKOUT}']['tree']['sha'] = 'd' * 40
-        self.rejects()
-
-    def test_rejects_unrelated_checkout_even_with_identical_tree(self):
-        other = 'c' * 40
-        self.evidence['checkoutCommit'] = other
-        self.responses[f'git/commits/{other}'] = {'tree': {'sha': TREE}}
-        self.rejects()
-
-    def test_rejects_missing_duplicate_or_unsuccessful_checkout_assertion(self):
-        job = self.responses['actions/runs/1/jobs?per_page=100&page=1']['jobs'][0]
-        step = job['steps'][0]
-        cases = [[], [step, dict(step)], [dict(step, name='unrelated step')],
-                 [dict(step, status='queued', conclusion=None)],
-                 [dict(step, conclusion='skipped')], [dict(step, conclusion='failure')]]
-        for index, steps in enumerate(cases):
-            with self.subTest(case=index):
-                job['steps'] = steps
-                self.rejects()
-
-    def test_rejects_missing_wrong_duplicate_or_echoed_checkout_marker(self):
-        for item in self.config['requiredSourceRuns'].values():
-            jobs = self.responses[f'actions/runs/{item["id"]}/jobs?per_page=100&page=1']['jobs']
-            for job in jobs:
-                endpoint = f'actions/jobs/{job["id"]}/logs'
-                original = self.responses[endpoint]
-                cases = ['', original.replace(SOURCE, 'c' * 40), original + original,
-                         f'2026-09-17T12:00:00Z echo QUALIFIED_SOURCE_COMMIT={SOURCE}\n']
-                for index, logs in enumerate(cases):
-                    with self.subTest(job=job['name'], case=index):
-                        self.responses[endpoint] = logs
-                        self.rejects()
-                self.responses[endpoint] = original
-
-    def test_accepts_plain_and_crlf_checkout_log_lines(self):
-        for logs in [f'QUALIFIED_SOURCE_COMMIT={SOURCE}\n',
-                     f'2026-09-17T12:00:00.0000000Z QUALIFIED_SOURCE_COMMIT={SOURCE}\r\n']:
-            with self.subTest(logs=logs):
-                self.responses['actions/jobs/1000/logs'] = logs
-                with self.assertRaises(SystemExit) as result:
-                    self.verify()
-                self.assertEqual(result.exception.code, 0)
-
-    def test_ansi_logs_are_captured_without_weakening_checkout_evidence(self):
-        endpoint = 'actions/jobs/1000/logs'
-        noise = '2026-09-17T12:00:00Z \x1b[32mANSI log content must stay captured\x1b[0m\n'
-        marker = f'2026-09-17T12:00:00Z QUALIFIED_SOURCE_COMMIT={SOURCE}\n'
-        self.responses[endpoint] = noise + marker
-        with self.assertRaises(SystemExit) as result:
-            self.verify()
-        self.assertEqual(result.exception.code, 0)
-        self.assertNotIn('ANSI log content', self.output.getvalue())
-        self.assertNotIn('\x1b', self.output.getvalue())
-        for logs in [noise, noise + marker.replace(SOURCE, 'c' * 40), noise + marker + marker]:
-            with self.subTest(logs=logs):
-                self.responses[endpoint] = logs
-                self.rejects()
-
-    def test_mock_requires_escape_flag_only_for_captured_job_logs(self):
-        log_command = ['gh', 'api', f'repos/{REPOSITORY}/actions/jobs/1000/logs', '--method', 'GET']
-        for command, kwargs in [
-                (log_command, {'capture_output': True, 'timeout': 180}),
-                (log_command + ['--allow-escape-sequences'], {'capture_output': False, 'timeout': 180}),
-                (['gh', 'api', f'repos/{REPOSITORY}/git/commits/{SOURCE}', '--method', 'GET', '--allow-escape-sequences'], {'capture_output': True, 'timeout': 180})]:
-            with self.subTest(command=command, kwargs=kwargs), self.assertRaises(RuntimeError):
-                self.fake_run(command, **kwargs)
-
-    def test_rejects_unavailable_checkout_logs(self):
-        self.responses['actions/jobs/1000/logs'] = subprocess.CalledProcessError(
-            1, ['gh', 'api'], stderr='HTTP 404: Not Found')
-        self.rejects()
-
-    def test_rejects_wrong_source_workflow_or_repository(self):
-        for item in self.config['requiredSourceRuns'].values():
-            endpoint = f'actions/runs/{item["id"]}'
-            for field, value in [('head_sha', 'd' * 40), ('path', '.github/workflows/unqualified.yml'),
-                                 ('repository', {'full_name': 'unrelated/repository'})]:
-                with self.subTest(workflow=item['workflow'], field=field):
-                    original = self.responses[endpoint][field]
-                    self.responses[endpoint][field] = value
-                    self.rejects()
-                    self.responses[endpoint][field] = original
-
-    def test_rejects_missing_qualification_workflow(self):
+        return validate_qualification(self.config, self.api, lambda job: self.logs[job], publication=True)
+    def test_complete_six_workflow_success(self):
+        self.assertEqual(self.verify(), SOURCE)
+    def test_missing_workflow(self):
         for workflow in WORKFLOWS:
-            with self.subTest(workflow=workflow):
-                item = self.config['requiredSourceRuns'].pop(workflow)
-                self.rejects()
-                self.config['requiredSourceRuns'][workflow] = item
+            item=self.config['requiredSourceRuns'].pop(workflow)
+            with self.assertRaises(ValueError): self.verify()
+            self.config['requiredSourceRuns'][workflow]=item
+    def test_wrong_release_identity(self):
+        for key,value in [('repository','wrong/repo'),('tag','v1.13.0'),('status','prepared'),('sourceTree','c'*40),('checkoutCommit','c'*40)]:
+            previous=self.config[key]; self.config[key]=value
+            with self.assertRaises(ValueError): self.verify()
+            self.config[key]=previous
+    def test_wrong_stale_incomplete_failed_or_skipped_runs(self):
+        for i in range(1,7):
+            run=self.responses[f'actions/runs/{i}']
+            for key,value in [('head_sha','c'*40),('event','workflow_dispatch'),('event','pull_request'),('head_branch','bootstrap/transport'),('path','.github/workflows/other.yml'),('workflow_id',999),('run_attempt',2),('status','in_progress'),('conclusion','failure'),('conclusion','cancelled'),('conclusion','skipped'),('repository',{'full_name':'wrong/repo'}),('head_repository',{'full_name':'wrong/repo'})]:
+                previous=run[key];run[key]=value
+                with self.subTest(run=i,key=key,value=value),self.assertRaises(ValueError):self.verify()
+                run[key]=previous
+    def test_workflow_id_path_binding(self):
+        self.responses['actions/workflows/101']['path']='.github/workflows/other.yml'
+        with self.assertRaises(ValueError):self.verify()
+    def test_required_job_failures_and_duplicates(self):
+        for i in range(1,7):
+            endpoint=f'actions/runs/{i}/attempts/1/jobs?per_page=100&page=1';original=self.responses[endpoint]['jobs']
+            for altered in [[],original+original,[dict(j,conclusion='skipped') for j in original],[dict(j,status='in_progress') for j in original],[dict(j,head_sha='c'*40) for j in original],[dict(j,name='renamed') for j in original]]:
+                self.responses[endpoint]['jobs']=altered
+                with self.assertRaises(ValueError):self.verify()
+            self.responses[endpoint]['jobs']=original
+    def test_each_required_step_must_execute(self):
+        for i in range(1,7):
+            for job in self.responses[f'actions/runs/{i}/attempts/1/jobs?per_page=100&page=1']['jobs']:
+                for step in job['steps']:
+                    step['conclusion']='skipped'
+                    with self.assertRaises(ValueError):self.verify()
+                    step['conclusion']='success'
+    def test_checkout_log_evidence(self):
+        original=self.logs[100]
+        for text in ['',original+original,original.replace(SOURCE,'c'*40),f'echo QUALIFIED_SOURCE_COMMIT={SOURCE}\n']:
+            self.logs[100]=text
+            with self.assertRaises(ValueError):self.verify()
+        self.logs[100]=original.replace('\n','\r\n');self.verify()
+    def test_path_policy(self):
+        for name in ['../secret','/secret','contracts/../secret','scripts\\secret','.env','hardhat/.env.mainnet','ui/node_modules/a','source.zip','scripts/key.pem','.v114-bootstrap.py','.github/workflows/v114-preparation-bootstrap.yml','unreviewed/file']:
+            with self.subTest(name=name),self.assertRaises(ValueError):source_path(name,stat.S_IFREG|0o644)
+        with self.assertRaises(ValueError):source_path('README.md',stat.S_IFLNK|0o777)
+        source_path('.env.example',stat.S_IFREG|0o644)
 
-    def test_rejects_duplicate_qualification_workflow(self):
-        self.config['requiredSourceRuns']['duplicate'] = copy.deepcopy(self.config['requiredSourceRuns']['ci.yml'])
-        self.rejects()
-
-    def test_rejects_unsuccessful_or_incomplete_workflows(self):
-        for workflow in WORKFLOWS:
-            item = self.config['requiredSourceRuns'][workflow]
-            run = self.responses[f'actions/runs/{item["id"]}']
-            for status, conclusion in [('completed', 'failure'), ('completed', 'skipped'),
-                                       ('completed', 'cancelled'), ('completed', 'neutral'),
-                                       ('in_progress', None)]:
-                with self.subTest(workflow=workflow, status=status, conclusion=conclusion):
-                    run['status'], run['conclusion'] = status, conclusion
-                    self.rejects()
-            run['status'], run['conclusion'] = 'completed', 'success'
-
-    def test_rejects_unavailable_workflow_evidence(self):
-        self.responses['actions/runs/1'] = subprocess.CalledProcessError(
-            1, ['gh', 'api'], stderr='HTTP 404: Not Found')
-        self.rejects()
-
-    def test_rejects_missing_extra_duplicate_or_renamed_jobs(self):
-        endpoint = 'actions/runs/1/jobs?per_page=100&page=1'
-        jobs = self.responses[endpoint]['jobs']
-        cases = [jobs[:-1], jobs + [{'name': 'unexpected', 'status': 'completed', 'conclusion': 'success'}],
-                 jobs[:-1] + [dict(jobs[0])], [dict(job, name='renamed') for job in jobs]]
-        for index, changed in enumerate(cases):
-            with self.subTest(case=index):
-                self.responses[endpoint]['jobs'] = changed
-                self.rejects()
-
-    def test_rejects_failed_skipped_cancelled_or_incomplete_jobs(self):
-        for item in self.config['requiredSourceRuns'].values():
-            jobs = self.responses[f'actions/runs/{item["id"]}/jobs?per_page=100&page=1']['jobs']
-            for index, job in enumerate(jobs):
-                for status, conclusion in [('completed', 'failure'), ('completed', 'skipped'),
-                                           ('completed', 'cancelled'), ('queued', None)]:
-                    with self.subTest(workflow=item['workflow'], job=index, status=status, conclusion=conclusion):
-                        job['status'], job['conclusion'] = status, conclusion
-                        self.rejects()
-                job['status'], job['conclusion'] = 'completed', 'success'
-
+class PublicationIntegrationTests(ReleaseGateTests):
+    def setUp(self):
+        super().setUp()
+        directory=tempfile.TemporaryDirectory();self.addCleanup(directory.cleanup);self.root=Path(directory.name)
+        self.script=self.root/'scripts/release/publish-release.py';self.script.parent.mkdir(parents=True);self.script.write_text(PUBLISHER.read_text())
+        meta=self.root/'docs/releases/v1.14.0';meta.mkdir(parents=True);(meta/'RELEASE_NOTES.md').write_text('Reviewed release notes')
+        self.out=self.root/'assets';self.out.mkdir()
+        (self.out/f'AGIJobManager-{TAG}-COMPLETE.zip').write_bytes(b'mocked qualified package')
+        (self.out/'agijobmanager-usdc.html').write_text('mocked console')
+        (self.out/'RELEASE_MANIFEST.json').write_text(json.dumps({'sourceCommit':SOURCE,'sourceTree':TREE}))
+        self.config['artifactDigests']={p.name:sha(p.read_bytes()) for p in self.out.iterdir()}
+        self.release={'id':999,'draft':True,'tag_name':TAG,'target_commitish':SOURCE,'name':TITLE,'body':'Reviewed release notes','assets':[],'prerelease':False,'html_url':'https://github.invalid/release','upload_url':f'https://uploads.github.com/repos/{REPOSITORY}/releases/999/assets{{?name,label}}'}
+        self.config['candidateArtifact']={'id':77,'name':f'AGIJobManager-{TAG}-candidate-{SOURCE}','digest':'sha256:'+'e'*64,'size_in_bytes':123}
+        self.responses['actions/artifacts/77']={**self.config['candidateArtifact'],'expired':False,'workflow_run':{'id':6,'head_sha':SOURCE}}
+        self.original_assets={p.name:p.read_bytes() for p in self.out.iterdir()}
+        self.mutations=[]
+        self.env={'GITHUB_REPOSITORY':REPOSITORY,'GITHUB_EVENT_NAME':'workflow_dispatch','GITHUB_REF':'refs/heads/main','RELEASE_PUBLISH_CONFIRMATION':'PUBLISH_v1.14.0'}
+    def fake_run(self,command,**kwargs):
+        if command[:2]==['python3','scripts/release/package-release.py']:
+            target=Path(command[3]);target.mkdir()
+            for name,data in self.original_assets.items():(target/name).write_bytes(data)
+            (target/'SHA256SUMS.txt').write_text(''.join(f'{sha(data)}  {name}\n' for name,data in sorted(self.original_assets.items())))
+            return subprocess.CompletedProcess(command,0)
+        self.assertEqual(command[:2],['gh','api']);endpoint=command[2];method=command[command.index('--method')+1]
+        if endpoint.startswith(f'repos/{REPOSITORY}/'):endpoint=endpoint[len(f'repos/{REPOSITORY}/'):]
+        if method!='GET':self.mutations.append((method,endpoint))
+        data=json.loads(kwargs['input']) if kwargs.get('input') else None
+        if method=='GET':
+            if endpoint in self.responses:value=self.responses[endpoint]
+            elif endpoint.startswith('actions/jobs/'):return subprocess.CompletedProcess(command,0,stdout=self.logs[int(endpoint.split('/')[2])])
+            elif endpoint.startswith('releases?'):value=[]
+            elif endpoint=='git/ref/tags/'+TAG:raise subprocess.CalledProcessError(1,command,stderr='HTTP 404')
+            elif endpoint=='releases/999':value=self.release
+            elif endpoint.startswith('releases/999/assets?'):value=self.release['assets']
+            else:raise AssertionError('Unexpected read: '+endpoint)
+        elif endpoint=='git/tags':value={'sha':'d'*40}
+        elif endpoint=='git/refs':
+            self.responses['git/ref/tags/'+TAG]={'object':{'type':'commit','sha':SOURCE}};value={}
+        elif endpoint=='releases':value=self.release
+        elif endpoint.startswith('https://uploads.github.com/'):
+            p=Path(command[command.index('--input')+1]);value={'name':p.name,'size':p.stat().st_size,'state':'uploaded','digest':'sha256:'+sha(p.read_bytes())};self.release['assets'].append(value)
+        elif endpoint=='releases/999' and method=='PATCH':self.release.update(data);value=self.release
+        else:raise AssertionError('Unexpected write: '+endpoint)
+        return subprocess.CompletedProcess(command,0,stdout=json.dumps(value),stderr='')
+    def local_read(self,command,**kwargs):
+        if command==['git','rev-parse','HEAD']:return SOURCE+'\n'
+        if command==['git','rev-parse','HEAD^{tree}']:return TREE+'\n'
+        if command==['git','status','--porcelain','--untracked-files=no']:return b''
+        raise AssertionError('Unexpected local command')
+    def publish(self,publish=True):
+        qualification=self.out/'QUALIFICATION.json';qualification.write_text(json.dumps(self.config))
+        (self.out/'SHA256SUMS.txt').write_text(''.join(f'{sha(p.read_bytes())}  {p.name}\n' for p in sorted(self.out.iterdir()) if p.name!='SHA256SUMS.txt'))
+        argv=[str(self.script),'--qualification',str(qualification),'--assets',str(self.out)]+(['--publish'] if publish else [])
+        with patch.dict(os.environ,self.env,clear=True),patch.object(sys,'argv',argv),patch('subprocess.run',side_effect=self.fake_run),patch('subprocess.check_output',side_effect=self.local_read),contextlib.redirect_stdout(io.StringIO()):
+            runpy.run_path(str(self.script),run_name='__main__')
+    def test_successful_explicit_publication_path(self):
+        self.publish();self.assertFalse(self.release['draft']);self.assertEqual(len(self.release['assets']),5)
+        self.assertEqual(self.responses['git/ref/tags/'+TAG]['object']['sha'],SOURCE)
+    def test_dry_run_cannot_mutate(self):
+        with self.assertRaises(SystemExit) as result:self.publish(False)
+        self.assertEqual(result.exception.code,0);self.assertEqual(self.mutations,[])
+    def test_authority_and_context_fail_before_mutation(self):
+        for key,value in [('GITHUB_EVENT_NAME','push'),('GITHUB_REF','refs/heads/branch'),('RELEASE_PUBLISH_CONFIRMATION','wrong')]:
+            previous=self.env[key];self.env[key]=value
+            with self.assertRaises(ValueError):self.publish()
+            self.assertEqual(self.mutations,[]);self.env[key]=previous
+        self.config['publicationAuthorized']=False
+        with self.assertRaises(ValueError):self.publish()
+        self.assertEqual(self.mutations,[])
+    def test_advanced_main_blocks_publication(self):
+        self.responses['git/ref/heads/main']['object']['sha']='c'*40
+        with self.assertRaises(ValueError):self.publish()
+        self.assertEqual(self.mutations,[])
+    def test_conflicting_tag_never_moves(self):
+        self.responses['git/ref/tags/'+TAG]={'object':{'type':'commit','sha':'c'*40}}
+        with self.assertRaises(AssertionError):self.publish()
+        self.assertEqual(self.mutations,[])
+    def test_self_consistent_substitute_package_is_rejected(self):
+        (self.out/f'AGIJobManager-{TAG}-COMPLETE.zip').write_bytes(b'changed package')
+        self.config['artifactDigests'][f'AGIJobManager-{TAG}-COMPLETE.zip']=sha(b'changed package')
+        with self.assertRaises(ValueError):self.publish()
+        self.assertEqual(self.mutations,[])
+    def test_wrong_or_expired_candidate_artifact_is_rejected(self):
+        self.responses['actions/artifacts/77']['expired']=True
+        with self.assertRaises(ValueError):self.publish()
+        self.assertEqual(self.mutations,[])
+    def test_optimized_python_retains_conflicting_tag_guard(self):
+        result=subprocess.run([sys.executable,'-O',str(Path(__file__).resolve()),'PublicationIntegrationTests.test_conflicting_tag_never_moves'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+    def test_tag_retarget_during_upload_is_rejected_before_publication(self):
+        original=self.fake_run
+        def changed(command,**kwargs):
+            result=original(command,**kwargs)
+            if len(command)>2 and command[2].startswith('https://uploads.github.com/'):
+                self.responses['git/ref/tags/'+TAG]={'object':{'type':'commit','sha':'c'*40}}
+            return result
+        self.fake_run=changed
+        with self.assertRaises(ValueError):self.publish()
+        self.assertTrue(self.release['draft'])
+        self.assertNotIn(('PATCH','releases/999'),self.mutations)
+    def test_asset_substitution_is_rejected(self):
+        (self.out/'agijobmanager-usdc.html').write_text('substituted')
+        with self.assertRaises(ValueError):self.publish()
+        self.assertEqual(self.mutations,[])
 
 class ReleaseUploadTests(unittest.TestCase):
     def setUp(self):
@@ -282,14 +207,14 @@ class ReleaseUploadTests(unittest.TestCase):
         self.digest = 'd' * 64
         self.asset = {'name': self.file.name, 'size': self.file.stat().st_size,
                       'state': 'uploaded', 'digest': 'sha256:' + self.digest}
-        self.release = {'id': 123, 'tag_name': 'v1.13.0', 'target_commitish': SOURCE,
+        self.release = {'id': 123, 'tag_name': 'v1.14.0', 'target_commitish': SOURCE,
                         'draft': True, 'assets': [],
                         'upload_url': f'https://uploads.github.com/repos/{REPOSITORY}/releases/123/assets{{?name,label}}'}
         self.api = Mock(return_value=copy.deepcopy(self.release))
         self.list_assets = Mock(return_value=[])
         self.gh = Mock(return_value=json.dumps(self.asset))
         self.clock = Mock()
-        namespace = {'repo': REPOSITORY, 'tag': 'v1.13.0', 'source': SOURCE,
+        namespace = {'repo': REPOSITORY, 'tag': 'v1.14.0', 'source': SOURCE,
                      'api': self.api, 'release_assets': self.list_assets, 'gh': self.gh, 'time': self.clock,
                      'json': json, 'subprocess': subprocess, 'quote': quote}
         # Isolate the real helper without executing publication or credentials.

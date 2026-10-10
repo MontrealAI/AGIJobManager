@@ -61,8 +61,8 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 | --- | --- |
 | `npm --prefix hardhat run check:config:mainnet` | `node scripts/check-config.cjs mainnet` |
 | `npm --prefix hardhat run check:config:sepolia` | `node scripts/check-config.cjs sepolia` |
-| `npm --prefix hardhat run check:readiness` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/check-readiness.js --network mainnet` |
-| `npm --prefix hardhat run check:readiness:sepolia` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/check-readiness.js --network sepolia` |
+| `npm --prefix hardhat run check:readiness` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run --no-compile scripts/check-readiness.js --network mainnet` |
+| `npm --prefix hardhat run check:readiness:sepolia` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run --no-compile scripts/check-readiness.js --network sepolia` |
 | `npm --prefix hardhat run clean` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs clean` |
 | `npm --prefix hardhat run compile` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs compile` |
 | `npm --prefix hardhat run deploy:ens-job-pages:mainnet` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-ens-job-pages.js --network mainnet` |
@@ -72,13 +72,14 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 | `npm --prefix hardhat run postinstall` | `node ../scripts/security/patch-openzeppelin-compiler.cjs` |
 | `npm --prefix hardhat run recover:review-escrow:mainnet` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-review-escrow.js --network mainnet` |
 | `npm --prefix hardhat run recover:review-escrow:sepolia` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-review-escrow.js --network sepolia` |
-| `npm --prefix hardhat run reverify:mainnet` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/reverify-deployment.js --network mainnet` |
-| `npm --prefix hardhat run reverify:sepolia` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/reverify-deployment.js --network sepolia` |
+| `npm --prefix hardhat run reverify:mainnet` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run --no-compile scripts/reverify-deployment.js --network mainnet` |
+| `npm --prefix hardhat run reverify:sepolia` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run --no-compile scripts/reverify-deployment.js --network sepolia` |
 | `npm --prefix hardhat run setup` | `node scripts/setup.cjs` |
 | `npm --prefix hardhat run test:cutover` | `node ../node_modules/hardhat/dist/src/cli.js test --config ../hardhat.cutover-fork.config.mjs test/mainnet-cutover.test.js` |
 | `npm --prefix hardhat run test:deployment` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs test test/mainnet-deployment.test.js` |
 | `npm --prefix hardhat run test:mainnet-fork` | `node ../node_modules/hardhat/dist/src/cli.js test --config ../hardhat.mainnet-fork.config.mjs test/mainnet-fork.test.js` |
 | `npm --prefix hardhat run test:preflight` | `node --test test/*.test.cjs` |
+| `npm --prefix hardhat run test:registry-native` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs test test/nft-registry-native.test.js` |
 
 ## ui workspace
 
@@ -97,7 +98,7 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 | `npm --prefix ui run sync:deployment` | `node scripts/sync-deployments.mjs` |
 | `npm --prefix ui run sync:deployments` | `node scripts/sync-deployments.mjs` |
 | `npm --prefix ui run sync:deployments:check` | `node scripts/sync-deployments.mjs --check` |
-| `npm --prefix ui run test` | `vitest run` |
+| `npm --prefix ui run test` | `node --test security-tests/*.test.cjs && vitest run` |
 | `npm --prefix ui run test:a11y` | `NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run build && playwright test e2e/a11y.spec.ts` |
 | `npm --prefix ui run test:e2e` | `NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run build && playwright test e2e/demo.spec.ts e2e/smoke.spec.ts` |
 | `npm --prefix ui run test:fuzz` | `vitest run tests/fuzz.invariants.test.ts` |
