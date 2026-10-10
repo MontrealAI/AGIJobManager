@@ -18,12 +18,15 @@ permissions:
   id-token: write
 
 concurrency:
-  group: proof-gradient-pages
+  group: github-pages
   cancel-in-progress: false
 
 jobs:
   add-aep002-page:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - uses: actions/checkout@v4
@@ -167,16 +170,23 @@ jobs:
             git push
           fi
 
+      - name: Build the complete project website
+        if: ${{ inputs.deploy_pages == 'true' }}
+        run: |
+          node scripts/site/build.mjs
+          node scripts/site/check.mjs
+
       - name: Configure GitHub Pages
         if: ${{ inputs.deploy_pages == 'true' }}
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
 
       - name: Upload GitHub Pages artifact
         if: ${{ inputs.deploy_pages == 'true' }}
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
-          path: ${{ steps.build.outputs.web_root }}
+          path: build/pages
 
       - name: Deploy GitHub Pages
+        id: deployment
         if: ${{ inputs.deploy_pages == 'true' }}
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
