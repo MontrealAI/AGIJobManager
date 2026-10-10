@@ -98,7 +98,7 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 | `npm --prefix ui run sync:deployment` | `node scripts/sync-deployments.mjs` |
 | `npm --prefix ui run sync:deployments` | `node scripts/sync-deployments.mjs` |
 | `npm --prefix ui run sync:deployments:check` | `node scripts/sync-deployments.mjs --check` |
-| `npm --prefix ui run test` | `vitest run` |
+| `npm --prefix ui run test` | `node --test security-tests/*.test.cjs && vitest run` |
 | `npm --prefix ui run test:a11y` | `NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run build && playwright test e2e/a11y.spec.ts` |
 | `npm --prefix ui run test:e2e` | `NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run build && playwright test e2e/demo.spec.ts e2e/smoke.spec.ts` |
 | `npm --prefix ui run test:fuzz` | `vitest run tests/fuzz.invariants.test.ts` |

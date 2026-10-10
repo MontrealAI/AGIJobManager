@@ -2,7 +2,7 @@
 
 **Software release scope. Publication and qualification are established by the GitHub release and its external `QUALIFICATION.json`; this source document alone does not establish publication or authorize intake.**
 
-This release integrates the two off-chain corrections exercised during the October 10, 2026 mainnet recovery into the supported commands. Solidity contracts, compiler settings, dependency resolutions, ABI, payout rules and live contract addresses are unchanged.
+This release integrates the two off-chain corrections exercised during the October 10, 2026 mainnet recovery into the supported commands. Solidity contracts, compiler settings, ABI, payout rules and live contract addresses are unchanged. Maintainer-authorized security dependency repairs are recorded in `SECURITY_REPAIRS.md`.
 
 ## Verification that accepts the explorer's representation, not different code
 

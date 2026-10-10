@@ -21,7 +21,7 @@ These are development-workspace observations from 2026-10-10, prior to final-sou
 | Browser qualification in this workspace | Blocked: locked Chromium download was truncated; attempted USDC browser tests did not pass. Required CI browser gates remain mandatory |
 | Foundry and Slither in this workspace | Not run; tools unavailable locally. Required security workflow remains mandatory |
 
-Local JavaScript checks used Node 24.19.0, within the manifest engine range. Final GitHub workflows use pinned Node 22.23.2. Lockfiles and dependency identities are unchanged apart from package version fields; Solidity 0.8.37, Hardhat 3.17.0, ethers 6.17.0 and reviewed OpenZeppelin compatibility patches are preserved.
+Local JavaScript checks used Node 24.19.0, within the manifest engine range. Final GitHub workflows use pinned Node 22.23.2. Dependency changes are restricted to the reviewed security repair inventory in `config/v114-dependency-repairs.json`; Solidity 0.8.37, Hardhat 3.17.0, ethers 6.17.0 and reviewed OpenZeppelin compatibility patches are preserved.
 
 Independent AI code review was separate from implementation. It identified and drove fixes for incomplete link evidence, malformed output selection, native read-bound coverage, saved-build recovery wording, publication asset provenance, optimized-Python safety checks and the final publication recheck. This is not human approval or an independent security audit.
 

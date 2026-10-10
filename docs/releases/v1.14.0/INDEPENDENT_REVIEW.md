@@ -9,3 +9,20 @@ Findings corrected: incomplete/malformed library link evidence, malformed output
 Independent checks included 28 focused verifier regressions, 45 release tests both normally and under optimized Python, 35 offline UI checks, complete archive extraction, and comparison of 1,157 packaged source entries with their Git blobs. The two deterministic local archives were 29,216,268 bytes. These archive hashes identify the local development commit, not a later PR/main commit; later commits must be rebuilt and qualified independently.
 
 Subsequent administrative corrections document actual GitHub audit blockers and use the GitHub-observed `Run npm ...` names for implicit UI steps. They do not turn failed/skipped audit or UI qualification into success. See [BLOCKERS.md](BLOCKERS.md) and the live exact-head workflow results.
+
+## Authorized security repair review
+
+After the maintainer's 2026-10-10 dependency-freeze exception, independent AI
+review verified the braces registry tarball integrity and eight original source
+hashes, reviewed the exact two root and 43 UI lock-entry changes and vendor
+inventory, and independently passed the boundary mutation test. The review found
+and drove repairs for external expansion queues, non-string AST values and
+numeric-field coercion. The final guard SHA-256 is
+`b13edaddc253129d7952c5d15120bf398734ba0eebbb9955f47510d270ee6989`.
+
+Final review passed the eleven security tests, 76 additional adversarial checks
+and 6,000 comparisons with integrity-verified upstream behavior. No remaining
+blocker was found in that scoped repair. Audit thresholds and all six release
+workflows remain mandatory. This is AI review; final-source CI, human approval
+and any independent security audit are separate evidence. General expansion
+output exhaustion is outside the local patch's stated scope.

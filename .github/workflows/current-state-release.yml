@@ -46,7 +46,9 @@ jobs:
       - name: Verify active guide and metadata alignment
         run: npm run docs:check
       - name: Test release qualification gates offline
-        run: python3 scripts/release/test-release-gates.py
+        run: |
+          python3 scripts/release/test-release-gates.py
+          python3 scripts/release/test-dependency-boundaries.py
       - name: Build and independently rebuild candidate assets
         run: |
           python3 scripts/release/package-release.py

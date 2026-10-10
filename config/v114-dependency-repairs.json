@@ -1,0 +1,294 @@
+{
+  "baseline": "191cf3590e5cdc08df1bb0af500ee28a91c8b010",
+  "authorization": "Maintainer explicitly authorized documented security dependency repairs and necessary UI compatibility changes on 2026-10-10.",
+  "lockChanges": {
+    "package-lock.json": {
+      "node_modules/http-cache-semantics": {
+        "beforeVersion": "4.2.0",
+        "afterVersion": "4.3.0",
+        "beforeDigest": "547a805c606f0a27255af303c69dec9e030f909af8122cbeebd777c3a97dcb32",
+        "afterDigest": "7d625ff9c8e887bb00180e706fb62e9b03c84fd8a7ff9a3dbea554e3604e2133"
+      },
+      "node_modules/serialize-javascript": {
+        "beforeVersion": "7.1.1",
+        "afterVersion": "7.1.2",
+        "beforeDigest": "dcacdae8740604d84bdf8fc44600d156872b8b041aafd5260b0d94c979a71f64",
+        "afterDigest": "7266526e85d352ea0dd92dc737f7459ba481bd8cbad961707c0471ae69548155"
+      }
+    },
+    "ui/package-lock.json": {
+      "node_modules/@img/sharp-darwin-arm64": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "d374b454b85d71f73c1cd0d47ba172cfc9f97477373859149e367b79a14c1624",
+        "afterDigest": "d53352332fd71759c380670d1d9f7f5b720b08584a305e982c934e53343a0bbd"
+      },
+      "node_modules/@img/sharp-darwin-x64": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "34f608ae4e0406c7b521924afe32db37bc95bfc0c638696f8e36ef0e7b890a0c",
+        "afterDigest": "7e0c2478d87544b1870ee9a16ff7b64be7e1c7eed4396a977d32572b6091ba3b"
+      },
+      "node_modules/@img/sharp-freebsd-wasm32": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "2c176722f90d306286fcf8d690f9885477d2e36789395696a63c906f6520a2c2",
+        "afterDigest": "5c353f978c062f27b066295935269624582c32748ede737faad7e97451156a6d"
+      },
+      "node_modules/@img/sharp-libvips-darwin-arm64": {
+        "beforeVersion": "1.3.3",
+        "afterVersion": "1.3.4",
+        "beforeDigest": "379ab49081237ee07ce9900cbf5ae5c27c4f1a8f8dd9525867b7b51d97da8192",
+        "afterDigest": "cbf7996518f8be75779155ef77399faf22286c07ca515b2246ca064092114953"
+      },
+      "node_modules/@img/sharp-libvips-darwin-x64": {
+        "beforeVersion": "1.3.3",
+        "afterVersion": "1.3.4",
+        "beforeDigest": "1fff83272c54270378c3b0ab53dffa970bca9f4de736b59a38f677899ba614ad",
+        "afterDigest": "1a0fe751b77e05b080d9b869eff6c9faa3fbca8de2a6208bee02d211999df461"
+      },
+      "node_modules/@img/sharp-libvips-linux-arm": {
+        "beforeVersion": "1.3.3",
+        "afterVersion": "1.3.4",
+        "beforeDigest": "2036691858d71b054aa9a2243dd14660f05436aa943f1a2509fc8aeb15db9dfe",
+        "afterDigest": "13a8e7d147f56b086de970f567a31cc67b5737d5678c1499331be5cb8330eec0"
+      },
+      "node_modules/@img/sharp-libvips-linux-arm64": {
+        "beforeVersion": "1.3.3",
+        "afterVersion": "1.3.4",
+        "beforeDigest": "7b8f386a29ca8ef136caec246f2081f7881ebbd5d76f531fee3e0ef582d25a75",
+        "afterDigest": "579fd1af7c75ee702d8b9bac3af43f34f4a5714de6c20529941513779b582a9e"
+      },
+      "node_modules/@img/sharp-libvips-linux-ppc64": {
+        "beforeVersion": "1.3.3",
+        "afterVersion": "1.3.4",
+        "beforeDigest": "1413cb601f1e5f97c1d90848790b138941dfcb2d47bbeec284c8a18a0b19b03f",
+        "afterDigest": "b27e756f7ab9e9d0a15e124f6f3c49bc58093c05d7d0a9cc790d09c5f274588c"
+      },
+      "node_modules/@img/sharp-libvips-linux-riscv64": {
+        "beforeVersion": "1.3.3",
+        "afterVersion": "1.3.4",
+        "beforeDigest": "890cc032b651ce5d79ddec8bee4cf952793087c233a19a2a799484f71af80a06",
+        "afterDigest": "1227f89b3e5615fcfbb8fcf8807e3e3bc96f963737cd3e6c4a521dc7c20231d9"
+      },
+      "node_modules/@img/sharp-libvips-linux-s390x": {
+        "beforeVersion": "1.3.3",
+        "afterVersion": "1.3.4",
+        "beforeDigest": "4a1e7b39ae5b85b382c7d3f99e11587969a7e1f2b509258006c4bc63d97a7526",
+        "afterDigest": "c05c186a760e3cbac1071ca2abd2189f813826c2d8742a60219f282f5080642a"
+      },
+      "node_modules/@img/sharp-libvips-linux-x64": {
+        "beforeVersion": "1.3.3",
+        "afterVersion": "1.3.4",
+        "beforeDigest": "a20061e5554a28abb732b4b52a22acc9c2798e1a468e8982a345faa4908eef6e",
+        "afterDigest": "2c6390c846c234dc0ded2e8a2a8ca049fb84763c3a7a1794e33e953254e54f89"
+      },
+      "node_modules/@img/sharp-libvips-linuxmusl-arm64": {
+        "beforeVersion": "1.3.3",
+        "afterVersion": "1.3.4",
+        "beforeDigest": "e5ceec8192e736a19fb3b58fab145065cf60552ac6be7feea6d9edaf40c75620",
+        "afterDigest": "caf06f4fae01c20ff7a8597cc8c69b78dde41f51f3f3cb5b6f8802139105706e"
+      },
+      "node_modules/@img/sharp-libvips-linuxmusl-x64": {
+        "beforeVersion": "1.3.3",
+        "afterVersion": "1.3.4",
+        "beforeDigest": "1a97bbffae694ce5d724ef85fdb9554f68313bf4f40a2063bb1320880b4cc92d",
+        "afterDigest": "ca270b0dbad8a0ac7e2b37751b1f071ab5519680c76391a60572834432ebdacd"
+      },
+      "node_modules/@img/sharp-linux-arm": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "eb022c1310a4c3afa6c7aa82bd6084d5d0df4ea156707a8a979a379ac7433a42",
+        "afterDigest": "c6a17cfe5423cb62389cc9eb45aa126643220a0658e7c39d5d9dd27936963d62"
+      },
+      "node_modules/@img/sharp-linux-arm64": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "2b81ec0bfbcf7993db5ebb65671883bdd4577609c657fbe85696f8b23853e96f",
+        "afterDigest": "e8b4a7a8c6f407e345f3bda66b6a7da63a6e834d442b32251565f243f5d96a26"
+      },
+      "node_modules/@img/sharp-linux-ppc64": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "8cb02c25ed79aa790176060dd7678d801f5c648d6c7e3fbe41b71d5de583d682",
+        "afterDigest": "0644917e06c84ec755d198b490a1d16c7bd0cd2c129f2ec1507a3e8e3bdc902b"
+      },
+      "node_modules/@img/sharp-linux-riscv64": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "f3fbd297f8a058187e7ac9ebd16e30f085b3cb57f30e3fcd41e60a0aa322e150",
+        "afterDigest": "5b63dcbc35ee2e9aac901a09a1a2be731a876fbbd13565977551cf7cee404805"
+      },
+      "node_modules/@img/sharp-linux-s390x": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "4fb283dc2135716aa55c0cdb4675c379a463e0575cdf9ee0676fd1de5a04e972",
+        "afterDigest": "c7e7d010546dc5cf2020ced0d84b92c882d9bb5f66d051ec6102a136c34f5720"
+      },
+      "node_modules/@img/sharp-linux-x64": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "7a423d8257f65e8f8793f3809eab541c7c92fd3732cc516aca63959d43569391",
+        "afterDigest": "dd21f5de4f6eb854a3c10c3a16781db37d5e78dc5c8490c58c02bbc8385b6296"
+      },
+      "node_modules/@img/sharp-linuxmusl-arm64": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "9b3bcfe3df8d4327351044dc831cc94979b2698954c8c48bea3b2651f7858cf7",
+        "afterDigest": "730bc23882a67807bc9002fcfea7d1394694184d1feff0c3a38af9ca13bf37de"
+      },
+      "node_modules/@img/sharp-linuxmusl-x64": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "2bc80108bdb94e643e7d39f5eabc5360dbca9f2f06fb72d7a3d73f176a0e6932",
+        "afterDigest": "b19c5d5b50e6b295b2eff7ae19f6b94c34b4e37c6b43286732be2082249febb3"
+      },
+      "node_modules/@img/sharp-wasm32": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "d9d24361fd516ddec4eb042ff4b032b77125ecf7a4f605faaec7ce9b0aa20088",
+        "afterDigest": "1f71d194d52583fee8f10f43d2c26bd19cac60dd21e8e32a6c87dcbc6ee89a86"
+      },
+      "node_modules/@img/sharp-webcontainers-wasm32": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "e370b2bb5e256146332c4963fa53d0f105cb27fd15a2490b8091fdf366b69967",
+        "afterDigest": "9b9d187ad9aae09a1528ddac8578487d12ebf66e38903b20e9da3686af3fb8f3"
+      },
+      "node_modules/@img/sharp-win32-arm64": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "eededb7645b77c57cad9c9059d38dfa11f8e9287dc71e95280c82e2fe044046a",
+        "afterDigest": "5a70f5376d718d832ff4da673e4ed75a280e506c3b1ca89ab2eacfbc6b0cac0b"
+      },
+      "node_modules/@img/sharp-win32-ia32": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "c159d3d8106959400d1f495c03b98b607e4d7b670a41882088b1feb80c3b9c69",
+        "afterDigest": "959c34aec241c80b24040f04851bcae918771453fb75a31a1976a38b57f5cb71"
+      },
+      "node_modules/@img/sharp-win32-x64": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "3685e8e245e3caabb9864f805a6a1b5a46bf01b8b1763d2950f1e02436a6c0f6",
+        "afterDigest": "c10ef9bc6fcf7fdf3a5cb7e7b7b0c94170ec0e01a3c9920c29a1bf4af0072b24"
+      },
+      "node_modules/@next/env": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "bead188b0ec2cbcb64a53b40561eef033244cb27b30627764f18151566b0d5b3",
+        "afterDigest": "688b92cd1529131c22d2488d6bdf095428b0384efab785ce190574636ff16d1b"
+      },
+      "node_modules/@next/eslint-plugin-next": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "70c0b04563b0d148f5c75fffc7bd05611bec805354f9843ef1fbf48aa505a2d9",
+        "afterDigest": "600e427a776f7ba1ed18348c0fe82ff5da99253ead1097e8f8d09bc8af03aa3f"
+      },
+      "node_modules/@next/swc-darwin-arm64": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "54495df3ded9e49ce8c23100980c38b7cbb621426d99da224c6560d8c0b4a38f",
+        "afterDigest": "0827637cb1fbe34e017a13349b5bd66ee8373b85eaca94e27b5e039c27f867c9"
+      },
+      "node_modules/@next/swc-darwin-x64": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "d098b9983f5efe2c0e793361462ef5aecfd470a1d1c6e4f3504c0011fba1f7d1",
+        "afterDigest": "d3e6ea1f8847f0a1d1f1b6fff98a4cf3c7f2b0dd0ac3a75b39ad0a3013201923"
+      },
+      "node_modules/@next/swc-linux-arm64-gnu": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "3157c80d18bc3c799e0526185049f156ba442ae78873fc1cbfb94366d77f4933",
+        "afterDigest": "ee76ba42b34f5b909d5b886e80656449aea7adf35615a4cac5019d023e8b10ed"
+      },
+      "node_modules/@next/swc-linux-arm64-musl": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "59a596fb6c80ade8fd2d86e816e9a31fb4be4f66e2cdbcae82a4f5ce71e04cd0",
+        "afterDigest": "43e20fa065b0ba324fa06fd086093648a6bab05958959a9590cda2d9a2b4489d"
+      },
+      "node_modules/@next/swc-linux-x64-gnu": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "c603808d361ec689942be025346895cd552546e858a70dd32a2ee344d7488eb5",
+        "afterDigest": "b732e241b3c44f23282adc3908d552f66a897dc3c82a44ee53ff7532d8ea1ac5"
+      },
+      "node_modules/@next/swc-linux-x64-musl": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "29c89fe70a4478cf8953f2ba9949978417673bf3aa792309dca551c0f73a7f22",
+        "afterDigest": "e4058a97399fc6223928972a13141f1048276edf7e0675011ae338ee333b541d"
+      },
+      "node_modules/@next/swc-win32-arm64-msvc": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "e35ef42497ded4b80ed7d67e0e714d5e641697ad4fa31685e52d82869ad09bd8",
+        "afterDigest": "74661ae28d5c21484550105fcf309a6fbc46ad1d3cfddf6ba74cc0cfd90f8e80"
+      },
+      "node_modules/@next/swc-win32-x64-msvc": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "50e1e2cc3e64836614339ffbc5b20056fb850c9e357b88b98be74241262a5c27",
+        "afterDigest": "4795520c57edb94bf79c7ec3608dc08c221e7337a216dc61c6c471583e9bee4c"
+      },
+      "node_modules/braces": {
+        "beforeVersion": "3.0.3",
+        "afterVersion": null,
+        "beforeDigest": "6971eb7cd446f0341d2c9deb7de387efc52fd606fcc042baf0ff3c32b429d5b6",
+        "afterDigest": "d06af156c90b3c14f5ecd3540423e09571e9179b66f342a4c7dc2d06af1544ac"
+      },
+      "node_modules/eslint-config-next": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "3792a397448af25f824145d717a644040b31db0b745f9402b14cf01d940c5523",
+        "afterDigest": "7f460a52053df067422ccd4feec55d86e3a76743d6f1acaded88e95026714b59"
+      },
+      "node_modules/next": {
+        "beforeVersion": "15.5.24",
+        "afterVersion": "15.5.27",
+        "beforeDigest": "3e15c6c6878e0dadc93e5381062087bdb6b48bfbec3f4381588422b1f27cc093",
+        "afterDigest": "ed046f474d649c762fbd198ce58fa09d24b24737a7cd780482ea2e4f8aabed2a"
+      },
+      "node_modules/postcss-selector-parser": {
+        "beforeVersion": "6.1.4",
+        "afterVersion": "7.1.6",
+        "beforeDigest": "8affd19fbb40ec66cd9aae7b9ebcd24bcd7696afa74110edc08f716575344566",
+        "afterDigest": "a956141e4d102875f35c0ba2487f0a7cd3f3919c607fbfa46cb9c317d0d6697a"
+      },
+      "node_modules/sharp": {
+        "beforeVersion": "0.35.4",
+        "afterVersion": "0.35.5",
+        "beforeDigest": "070e0b51392b01918994c38f382e86f30690e3b6dd3b83f76f11b44be760a23a",
+        "afterDigest": "727e75a4e67eb89b61e6cbb2ec0ba071268f1ee41858616ad0d468774f51b3d0"
+      },
+      "node_modules/source-map-js": {
+        "beforeVersion": "1.2.1",
+        "afterVersion": "1.2.2",
+        "beforeDigest": "b478c71360cb632ce02844d7f319e2088ae2a33c0f3dd7a18b1ccec05b8db550",
+        "afterDigest": "e886760c62fe6c5e09ec2a4ea68e4677907f39dcd2a52b8881917ca02b35727a"
+      },
+      "vendor/braces": {
+        "beforeVersion": null,
+        "afterVersion": "3.0.3-agijobmanager.1",
+        "beforeDigest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+        "afterDigest": "ab0ed29f7f4974095eaa0a79d41d3b51be75c0d4844bbb3a70f803ce6e366e73"
+      }
+    }
+  },
+  "vendoredFiles": {
+    "ui/vendor/braces/LICENSE": "35bdd8a44339719441900fb50fbefc5e2dca1ca662cbaed7a687de842c8b70f2",
+    "ui/vendor/braces/README.md": "b56db45e867bdbad5de38c2f2f3d9b2929e1b9e50e219ecc9a98a7342711abb5",
+    "ui/vendor/braces/UPSTREAM.json": "f1c54a124d52d56337f2ee8bc8bbf9b64fbe4facde75c401a4e5fdf9f787cd61",
+    "ui/vendor/braces/index.js": "332ea07c7b006361aad12aa994ca75dc1db8e8382b884909e2f38f10b85c88a4",
+    "ui/vendor/braces/lib/compile.js": "ca5dcd06aadfe1d386d907f24ccdf98d4f9d3e7dc5e2e1e0fe0cb22b5d5cb6b8",
+    "ui/vendor/braces/lib/constants.js": "c18ac5adb57308f1ce42a28552da3a31f5d83709743ebd9a636336813a744d4b",
+    "ui/vendor/braces/lib/expand.js": "994f6657a4d1241a8935980c2db07dd88b0f03c1a42453255de30a7df1908a1f",
+    "ui/vendor/braces/lib/guard.js": "b13edaddc253129d7952c5d15120bf398734ba0eebbb9955f47510d270ee6989",
+    "ui/vendor/braces/lib/parse.js": "944fdf1c29dc043954d79fcddcc932edeb33933b2f97995a3477aeb1ff8ff783",
+    "ui/vendor/braces/lib/stringify.js": "04bf2306ac07e820b8aed28538d7d1800c9b547492e74ca5c3cb4c297d1cffdb",
+    "ui/vendor/braces/lib/utils.js": "6935d5d6d55d26cbde3ee748801287eb2bc3279e89f11093c4b4d21f546626a9",
+    "ui/vendor/braces/package.json": "7e2d7da5409e7abe1d4f157931cd0e134e0f427814425bfcba06758bd112f311"
+  }
+}
