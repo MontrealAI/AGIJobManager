@@ -2,7 +2,7 @@
 
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
-v0.9.1 removed the discontinued Truffle/Ganache/OpenZeppelin test-helper dependency tree and migrated deployment and local EVM testing to Hardhat 3 with ethers 6. The published v1.14.0 qualification on 2026-10-10 recorded **zero known npm advisories at every severity** across the complete root, Hardhat and UI dependency trees. This is a dated observation, not a claim about future advisory databases. The scoped [dependency repairs](releases/v1.14.0/SECURITY_REPAIRS.md) also include the integrity-checked local braces repair and its adversarial regressions; local forks require source review in addition to registry audits. Consult the immutable release validation record for final clean-install results, runtime versions and the source commit.
+v0.9.1 removed the discontinued Truffle/Ganache/OpenZeppelin test-helper dependency tree and migrated deployment and local EVM testing to Hardhat 3 with ethers 6. The published v1.14.0 qualification on 2026-10-10 recorded **zero known npm advisories at every severity** across the complete root, Hardhat and UI dependency trees. This is a dated observation, not a claim about future advisory databases. The scoped [dependency repairs](releases/v1.14.0/SECURITY_REPAIRS.md) also include the integrity-checked local braces repair and its adversarial regressions; local forks require source review in addition to registry audits. Consult the published release validation record for final clean-install results, runtime versions and the source commit.
 
 ## Required checks
 

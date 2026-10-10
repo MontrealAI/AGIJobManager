@@ -31,7 +31,7 @@ For UI changes, run `npm --prefix ui run lint`, `npm --prefix ui run typecheck`,
 
 Keep production contracts, compiler settings and historical deployment receipts unchanged unless the task explicitly authorizes them. Public-chain transactions, ownership changes and intake activation require separate operator authority. Never replace missing original deployment-build evidence with a fresh build and claim it is original. Never upload private handoff packages, transcripts, keys or RPC credentials.
 
-A PR should explain the failure or user problem, the resulting behavior, focused regression evidence and remaining limits. Request review independent of the implementation. CI proves the tested cases for its exact commit; it does not certify universal correctness or independent security audit. Do not merge temporary transport PRs or bypass release protections. Published tags and release assets are immutable evidence.
+A PR should explain the failure or user problem, the resulting behavior, focused regression evidence and remaining limits. Request review independent of the implementation. CI proves the tested cases for its exact commit; it does not certify universal correctness or independent security audit. Do not merge temporary transport PRs or bypass release protections. Treat published tags and release assets as permanent evidence: never move tags or replace published assets. Enable and verify GitHub release immutability for future publications; checksums alone do not prevent replacement.
 
 ## Documentation changes
 Documentation improvements are welcome. Please:
