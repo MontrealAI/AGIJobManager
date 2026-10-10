@@ -25,13 +25,13 @@ function fixture(length = 0) {
   const requests = [], compilations = [];
   const compiler = { version: () => `${VERSION}.Emscripten.clang`, compile: text => {
     compilations.push(JSON.parse(text)); return JSON.stringify({contracts: {[SOURCE]: {AGIJobManager: target}}}); } };
-  const calls = { blockTag: 26161720 };
+  const calls = { blockTag: { blockHash: '0x'+'a'.repeat(64), requireCanonical: true } };
   const entries = Array.from({length}, (_, i) => ({nftAddress: `0x${(i + 1).toString(16).padStart(40, '0')}`, payoutPercentage: BigInt(i % 2 ? 0 : 1)}));
   const manager = { getAddress: async () => MANAGER,
     MAX_AGI_TYPES: async at => {requests.push(['cap', at.blockTag]); return 32n;},
     agentNftRequired: async at => {requests.push(['policy', at.blockTag]); return false;},
     agiTypes: async (i, at) => {requests.push(['entry', i, at.blockTag]); if (i >= entries.length) throw Object.assign(new Error('execution reverted'), {code: 3, data: undefined}); return entries[i];} };
-  const provider = {getStorage: async (addr, slot, block) => {requests.push(['storage', addr, slot.toString(), block]); return word(length);}};
+  const provider = {blockNumber:26161720,blockHash:calls.blockTag.blockHash,getStorage: async (addr, slot, block) => {requests.push(['storage', addr, slot.toString(), block]); return word(length);}};
   return {layout, target, artifact, buildInfo, requests, compilations, compiler, calls, entries, manager, provider};
 }
 test('reproduces the screenshot error in the old sentinel reader; new zero-length read never calls agiTypes(0)', async () => {
@@ -56,9 +56,9 @@ for (const length of [1, 2, 31, 32]) test(`reads exactly ${length} entries, incl
   assert.deepEqual(f.requests.filter(r => r[0] === 'entry').map(r => r[1]), Array.from({length}, (_, i) => i));
   assert.deepEqual(result.agiTypes.map(e => e.payoutPercentage), f.entries.map(e => String(e.payoutPercentage)));
 });
-test('all storage and getter reads use one pinned numeric block and the compiler-derived slot', async () => {
+test('all storage and getter reads use one canonical hash and the compiler-derived slot', async () => {
   const f = fixture(2); await readRegistrySnapshot(f);
-  for (const request of f.requests) assert.equal(request.at(-1), f.calls.blockTag);
+  for (const request of f.requests) assert.deepEqual(request.at(-1), f.calls.blockTag);
   for (const request of f.requests.filter(r => r[0] === 'storage')) assert.deepEqual(request.slice(1), [MANAGER, '77', f.calls.blockTag]);
 });
 test('changes only outputSelection in memory and preserves input, artifact and compiler output', async () => {
@@ -105,7 +105,7 @@ for (const [label, mutate] of [
   test(`rejects ${label}`, () => {const f=fixture();mutate(f);assert.throws(()=>validateLayout(f.layout,SOURCE), /NFT_REGISTRY_READ_BLOCKED/);});
 for (const value of [undefined, null, '0x', '0x0', '0x00', `0x${'0'.repeat(63)}`, `0x${'0'.repeat(65)}`, `0x${'z'.repeat(64)}`, word(33), word((1n<<256n)-1n)])
   test(`does not treat malformed or excessive length ${String(value).slice(0,18)} as an empty array`, () => assert.throws(()=>parseLength(value), /NFT_REGISTRY_READ_BLOCKED/));
-for (const calls of [{}, {blockTag:'latest'}, {blockTag:'0x1'}, {blockTag:-1}, {blockTag:1.5}, {blockTag:1, from:MANAGER}])
+for (const calls of [{}, {blockTag:'latest'}, {blockTag:'0x1'}, {blockTag:-1}, {blockTag:1.5}, {blockTag:26161720}, {blockTag:1, from:MANAGER}, {blockTag:{blockHash:'0x'+'a'.repeat(64),requireCanonical:false}}])
   test(`requires explicit safe blockTag ${JSON.stringify(calls)}`, async () => {
     const f=fixture(); f.calls=calls; await assert.rejects(readRegistrySnapshot(f), /blockTag/); assert.equal(f.requests.length,0);
   });
@@ -134,5 +134,5 @@ test('rejects malformed requirement and registry entries, including duplicates',
 test('no signer, sendTransaction or write interface is required', async () => {
   const f=fixture(2), result=await readRegistrySnapshot(f);
   assert.equal(result.evidence.transactionsBroadcast,0);
-  assert.deepEqual(Object.keys(f.provider), ['getStorage']);
+  assert.deepEqual(Object.keys(f.provider), ['blockNumber','blockHash','getStorage']);
 });

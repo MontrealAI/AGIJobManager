@@ -46,20 +46,9 @@ async function loadManager(address, network, { provider: suppliedProvider, local
   }
 }
 
-async function fetchAgiTypes(instance, calls = {}) {
-  const items = [];
-  for (let index = 0; ; index += 1) {
-    try {
-      const entry = await instance.agiTypes(index, calls);
-      items.push({ nftAddress: entry.nftAddress, payoutPercentage: entry.payoutPercentage.toString() });
-    } catch (error) {
-      // Generated public array getters revert with empty data at the end;
-      // explicit array access may instead return Panic(0x32). RPC errors fail closed.
-      if (error.code === 'CALL_EXCEPTION' && [
-        '0x', `0x4e487b71${'0'.repeat(62)}32`,
-      ].includes(error.data?.toLowerCase())) return items;
-      throw error;
-    }
+function assertSupportedConfig(config) {
+  if (config.agiTypes !== undefined) {
+    throw new Error('Legacy agiTypes configuration is retired: array-getter reverts cannot prove a complete registry. Use canonical readiness with READINESS_NFT_CONFIG and original build evidence for verification; use reviewed addAGIType/disableAGIType calls on disposable local chains for setup. No operations were performed.');
   }
 }
 
@@ -70,4 +59,4 @@ function cliCallback(error) {
   }
 }
 
-module.exports = { providerFor, assertNetwork, managerAbi, loadManager, fetchAgiTypes, cliCallback };
+module.exports = { providerFor, assertNetwork, managerAbi, loadManager, assertSupportedConfig, cliCallback };

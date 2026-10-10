@@ -1,12 +1,12 @@
 'use client';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { computeDeadlines, deriveStatus, getActionGate } from '@/lib/jobStatus';
 import { fmtTime, fmtToken } from '@/lib/format';
 import { sanitizeUri } from '@/lib/web3/safeUri';
 import { Button } from '@/components/ui/button';
-import { useJobs, usePlatformSummary } from '@/lib/web3/queries';
+import { useJob } from '@/lib/web3/queries';
 import { isDemoMode, useDemoRoleFlags, useDemoScenario } from '@/lib/demo';
 
 const roleFromActor: Record<string, 'Employer' | 'Agent' | 'Validator' | 'Moderator' | 'Owner'> = {
@@ -19,12 +19,13 @@ const roleFromActor: Record<string, 'Employer' | 'Agent' | 'Validator' | 'Modera
 
 export default function JobDetail() {
   const params = useParams();
-  const jobId = Number(params.jobId);
+  const jobId = String(params.jobId);
   const scenario = useDemoScenario();
   const { actor } = useDemoRoleFlags();
-  const { data: jobs } = useJobs(scenario);
-  const { data: p } = usePlatformSummary(scenario);
-  const j: any = (jobs ?? []).find((x: any) => x?.id === jobId);
+  const { data, isPending, isError, refetch } = useJob(jobId, scenario);
+  const [notice, setNotice] = useState('');
+  const j = data?.job;
+  const p = data?.platform;
   const status = j
     ? deriveStatus(
         { assignedAgent: j.agent, assignedAt: j.assignedAt, duration: j.duration, completed: j.completed, disputed: j.disputed, expired: j.expired },
@@ -45,7 +46,9 @@ export default function JobDetail() {
     [status]
   );
 
-  if (!j || !p || !status) return <div className="container-shell py-8">Loading...</div>;
+  if (isPending) return <div className="container-shell py-8">Loading job…</div>;
+  if (isError) return <div className="container-shell py-8"><p role="alert">Job unavailable. Check the job ID, deployment and RPC connection.</p><button className="btn-outline" onClick={() => refetch()}>Retry</button></div>;
+  if (!j || !p || !status) return <div className="container-shell py-8">Job #{jobId} was not found in this snapshot.</div>;
 
   const estimate = computeDeadlines(
     { assignedAgent: j.agent, assignedAt: j.assignedAt, duration: j.duration, completed: j.completed, disputed: j.disputed, expired: j.expired },
@@ -55,7 +58,6 @@ export default function JobDetail() {
   const d = isDemoMode ? estimate : j.deadlines ? {
     expiryTime: j.deadlines[0], completionReviewEnd: j.deadlines[1], disputeReviewEnd: j.deadlines[3]
   } : null;
-  const safeSpec = sanitizeUri(j.specUri);
   const activeRole = roleFromActor[actor];
   const actorActions = activeRole ? Object.entries(actions[activeRole]).filter(([, v]) => v).map(([k]) => k) : [];
 
@@ -64,6 +66,7 @@ export default function JobDetail() {
       <Card>
         <h1 className="font-serif text-2xl">Job #{String(jobId)} · {status.status}</h1>
         <p>Payout {fmtToken(j.payout)}</p>
+        {data?.blockNumber != null && <p>Snapshot block {String(data.blockNumber)}. Refresh before acting.</p>}
         {!d ? <p>Deadlines unavailable. Refresh before acting.</p> : p.settlementPaused ? <p>Settlement is paused. Deadlines extend until settlement resumes.</p> : <>
           <p>Submission deadline {fmtTime(d.expiryTime)}</p>
           <p>Validator review end {fmtTime(d.completionReviewEnd)}</p>
@@ -77,18 +80,15 @@ export default function JobDetail() {
       </Card>
       <Card>
         <h2 className="font-serif">URIs (untrusted)</h2>
-        <p className="break-all text-xs">{j.specUri}</p>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigator.clipboard.writeText(j.specUri)}>
-            Copy
-          </Button>
-          <a aria-disabled={!safeSpec.safe} className={`text-sm underline ${safeSpec.safe ? '' : 'pointer-events-none opacity-50'}`} href={safeSpec.href} target="_blank" rel="noreferrer">
-            Open link
-          </a>
-        </div>
+        {([['Specification', j.specUri], ['Completion', j.completionUri]] as const).map(([label, uri]) => {
+          const safe = sanitizeUri(uri ?? '');
+          return <div key={label} className="mt-3"><h3>{label}</h3><p className="break-all text-xs">{uri || 'No URI recorded.'}</p>{uri && <div className="flex gap-2"><Button variant="outline" onClick={async () => { try { await navigator.clipboard.writeText(uri); setNotice(`${label} URI copied.`); } catch { setNotice('Clipboard unavailable. Select and copy the URI above.'); } }}>Copy {label.toLowerCase()}</Button>{safe.safe ? <a className="text-sm underline" href={safe.href} target="_blank" rel="noopener noreferrer">Open {label.toLowerCase()} link</a> : <p>Link blocked: unsupported or unsafe URI.</p>}</div>}</div>;
+        })}
+        <p role="status">{notice}</p>
       </Card>
       <Card>
-        <h2 className="font-serif">Sovereign ledger timeline</h2>
+        <h2 className="font-serif">Contract lifecycle reference</h2>
+        <p>This is a reference of possible events, not a history of this job.</p>
         <ul className="text-sm list-disc pl-6">
           <li>JobCreated</li><li>JobApplied</li><li>JobCompletionRequested</li><li>JobValidated / JobDisapproved</li><li>JobDisputed</li><li>DisputeResolvedWithCode</li><li>JobCompleted / JobCancelled / JobExpired</li><li>NFTIssued</li>
         </ul>

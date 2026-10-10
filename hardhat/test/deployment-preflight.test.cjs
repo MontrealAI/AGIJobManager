@@ -115,6 +115,8 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
   let broadcasts = 0;
   const logs = [];
   let managerRuntimeReadFailed = false;
+  const managerAbi = ['function usdcToken() view returns(address)','function owner() view returns(address)',
+    'function pendingOwner() view returns(address)','function paused() view returns(bool)'];
   const input = { settings: { optimizer: { enabled: true, runs: 40 }, evmVersion: 'shanghai', viaIR: true,
     metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } };
   const buildInfo = { solcVersion: '0.8.37', input, output: { contracts: {} } };
@@ -124,7 +126,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
       const [sourceName, contractName] = fqn.split(':');
       buildInfo.output.contracts[sourceName] ||= {};
       buildInfo.output.contracts[sourceName][contractName] = { evm: { bytecode: { object: '6000' }, deployedBytecode: { object: '6000', immutableReferences: {} } } };
-      return { sourceName, contractName, bytecode: '0x6000', deployedBytecode: '0x6000', deployedLinkReferences: {} };
+      return { sourceName, contractName, bytecode: '0x6000', deployedBytecode: '0x6000', deployedLinkReferences: {}, abi:managerAbi };
     },
   };
   const provider = { getNetwork: async () => ({ chainId: 1n }), getBlock: async tag => ({ number: tag === 'latest' ? 1000 : tag, hash: hash(tag === 'latest' ? 1000 : tag) }), estimateGas: async () => estimatedGas, getCode: async () => {
@@ -137,6 +139,13 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
     getTransactionReceipt: async transactionHash => { const nonce = Number(BigInt(transactionHash)); return { hash: transactionHash, status: 1, blockNumber: 123 + nonce, blockHash: hash(123 + nonce), contractAddress: `0x${String(nonce + 100).padStart(40, '0')}` }; },
     getTransaction: async () => ({ to: null, from: A, data: '0x6000' }) };
   const manager = { agentNftRequired: async () => initialNftRequired, paused: async () => true, owner: async () => A, pendingOwner: async () => ZERO, usdcToken: async () => TOKEN };
+  provider.send = async (method, params) => {
+    assert.deepEqual(params.at(-1), {blockHash:hash(1000),requireCanonical:true});
+    if (method==='eth_getCode') return provider.getCode(params[0],params[1]);
+    assert.equal(method,'eth_call');
+    const iface=new realEthers.Interface(managerAbi),parsed=iface.parseTransaction(params[0]);
+    return iface.encodeFunctionResult(parsed.name,[await manager[parsed.name]()]);
+  };
   const mockEthers = { ...realEthers, provider, getSigners: async () => noSigner ? [] : [{ address: A }],
     Contract: function () { return token(); }, getContractAt: async () => manager,
     getContractFactory: async () => ({ runner: { getAddress: async () => A }, getDeployTransaction: async () => ({ data: creationData }), deploy: async (...args) => {
@@ -152,7 +161,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
   const module = { exports: {} };
   const mockRequire = name => {
     if (name === 'hardhat') return { ethers: mockEthers, network: { name: 'mainnet' }, artifacts: mockArtifacts, config: { verify: { etherscan: { enabled: verifierEnabled, apiKey: 'test-key' } } },
-      run: async () => { if (verificationError) throw verificationError; if (failVerification) throw new Error('Explorer unavailable'); return verificationResult; } };
+      run: async (task, params) => { logs.push(['verifier call',params]); if (verificationError) throw verificationError; if (failVerification) throw new Error('Explorer unavailable'); return verificationResult; } };
     if (name === './runtime.cjs') return { getRuntime: async () => mockRequire('hardhat') };
     if (name === './deployment-safety.cjs') return require('../scripts/deployment-safety.cjs');
     return require(name);
@@ -631,8 +640,10 @@ function recoveryHarness(deployment, { failVerification = false } = {}) {
     if (name === 'hardhat') return hardhat;
     if (name === './runtime.cjs') return { getRuntime: async () => mockRequire('hardhat') };
     if (name === './deployment-safety.cjs') return require('../scripts/deployment-safety.cjs');
+    if (name === './canonical-state.cjs') return require('../scripts/canonical-state.cjs');
     if (name === '../../scripts/lib/usdc') return require('../../scripts/lib/usdc');
     if (name === './deploy.cjs') return { ...deployment.program, verifyWithRetry: async params => {
+      assert.equal(params.blockReference.hash,hash(1000));assert.equal(params.blockReference.number,1000);
       verificationCalls.push(params.name); return { contract: params.name, status: failVerification ? 'failed' : 'verified', attempts: 1, error: failVerification ? 'Explorer unavailable' : null };
     } };
     return require(name);
@@ -663,6 +674,36 @@ test('verification recovery reconciles receipts and runtime without redeployment
     assert.match(recovered.configHash, /^0x[a-f0-9]{64}$/);
     await assert.rejects(recovery.main(), /EEXIST/);
   } finally { deployment.cleanup(); }
+});
+
+test('verification recovery requires hash-bound code and calls and rejects unsupported RPCs without a number fallback', async () => {
+  for (const rejected of ['eth_getCode','eth_call']) {
+    const deployment=deploymentHarness({failVerification:true});
+    try {
+      await assert.rejects(deployment.main(),/verification incomplete/);
+      const original=fs.readFileSync(deployment.receiptPath()),send=deployment.hardhat.ethers.provider.send;
+      let failures=0;
+      deployment.hardhat.ethers.provider.send=async(method,params)=>{
+        assert.deepEqual(params.at(-1),{blockHash:hash(1000),requireCanonical:true});
+        if(method===rejected){failures++;throw new Error('canonical hash unavailable');}
+        return send(method,params);
+      };
+      const recovery=recoveryHarness(deployment);
+      await assert.rejects(recovery.main(),/CANONICAL_STATE_READ_BLOCKED.*No block-number fallback/);
+      assert.equal(failures,rejected==='eth_call'?4:1);assert.equal(fs.existsSync(recovery.recoveredPath()),false);
+      assert.deepEqual(fs.readFileSync(deployment.receiptPath()),original);assert.equal(deployment.broadcasts(),9);
+    } finally {deployment.cleanup();}
+  }
+});
+
+test('verification retry forwards a recovery hash without changing default deployment verification', async () => {
+  const deployment=deploymentHarness({dryRun:true}),blockReference={number:1000,hash:hash(1000)};
+  try {
+    await deployment.program.verifyWithRetry({name:'AGIJobManager',record:{address:A},blockReference},0);
+    await deployment.program.verifyWithRetry({name:'AGIJobManager',record:{address:A}},0);
+    const calls=deployment.logs.filter(([label])=>label==='verifier call').map(([,params])=>params);
+    assert.deepEqual(calls[0].blockReference,blockReference);assert.equal(calls[1].blockReference,undefined);
+  } finally {deployment.cleanup();}
 });
 
 test('verification recovery preserves the need for explicit ownership proposal and acceptance', async () => {

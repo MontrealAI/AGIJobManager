@@ -55,9 +55,12 @@ async function initialize() {
       const buildInfo = await artifacts.getBuildInfo(parameters.contract || 'ENSJobPages');
       if (!buildInfo) throw new Error('Verification requires intact release build information.');
       const { requireArtifactMatch } = require('./deployment-safety.cjs');
+      const codeReader = parameters.blockReference
+        ? require('./canonical-state.cjs').createCanonicalReader(connection.ethers.provider, parameters.blockReference)
+        : connection.ethers.provider;
       requireArtifactMatch({ artifact, buildInfo, address: parameters.address, libraries: parameters.libraries,
         tokenAddress: artifact.contractName === 'AGIJobManager' ? parameters.constructorArguments?.[0] : undefined,
-        code: await connection.ethers.provider.getCode(parameters.address) });
+        code: await codeReader.getCode(parameters.address) });
       const { verifyEtherscan } = require('./verify-etherscan.cjs');
       return verifyEtherscan({ chainId: Number((await connection.ethers.provider.getNetwork()).chainId),
         address: parameters.address, artifact, buildInfo, constructorArguments: parameters.constructorArguments || [],

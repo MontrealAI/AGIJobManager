@@ -156,3 +156,7 @@ __pycache__/
 /hardhat/deploy.config.cjs
 /hardhat/reviewed-nft-policy.json
 /hardhat/reviewed-identity.json
+
+# Local UI browser-test output
+/ui/test-results/
+/ui/playwright-report/

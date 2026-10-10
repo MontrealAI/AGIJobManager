@@ -4,7 +4,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { AbiCoder, Interface } = require('ethers');
-const { assertNetwork, fetchAgiTypes, loadManager } = require('../scripts/lib/operations');
+const { assertNetwork, assertSupportedConfig, loadManager } = require('../scripts/lib/operations');
 
 const root = path.resolve(__dirname, '..');
 const wallet = '0x0000000000000000000000000000000000000001';
@@ -35,16 +35,29 @@ describe('Maintained operator tooling', () => {
     assert.equal(signerCalls, 0);
   });
 
-  it('distinguishes the public array getter boundary from an RPC failure', async () => {
-    const instance = { agiTypes: async index => {
-      if (index === 0) return { nftAddress: wallet, payoutPercentage: 80n };
-      throw Object.assign(new Error('require(false)'), { code: 'CALL_EXCEPTION', data: '0x' });
-    } };
-    assert.deepEqual(await fetchAgiTypes(instance), [{ nftAddress: wallet, payoutPercentage: '80' }]);
-    const broken = { agiTypes: async () => { throw Object.assign(new Error('RPC unavailable'), { code: 'NETWORK_ERROR' }); } };
-    await assert.rejects(fetchAgiTypes(broken), /RPC unavailable/);
-    const unexpected = { agiTypes: async () => { throw Object.assign(new Error('Unexpected revert'), { code: 'CALL_EXCEPTION', data: '0x12345678' }); } };
-    await assert.rejects(fetchAgiTypes(unexpected), /Unexpected revert/);
+  it('rejects every legacy registry policy before reads or transactions, including empty policies', () => {
+    for (const agiTypes of [[], null, {}, [{ nftAddress: wallet, payoutPercentage: 0 }]]) {
+      assert.throws(() => assertSupportedConfig({ agiTypes }), /Legacy agiTypes configuration is retired/);
+    }
+    assert.doesNotThrow(() => assertSupportedConfig({ agentNftRequired: false }));
+    for (const script of ['scripts/verify-config.js', 'scripts/postdeploy-config.js']) {
+      const config = path.join(temporary, 'policy.json');
+      fs.writeFileSync(config, JSON.stringify({ agiTypes: [] }));
+      const result = spawnSync(process.execPath, [script, '--config-path', config], {
+        cwd: root, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, RPC_URL: 'http://127.0.0.1:1', AGIJOBMANAGER_ADDRESS: wallet, AGI_TYPES_JSON: '' },
+      });
+      assert.equal(result.status, 1, result.stderr);
+      assert.match(result.stderr, /Legacy agiTypes configuration is retired/);
+      assert.doesNotMatch(result.stderr, /ECONNREFUSED/);
+      for (const policy of ['null', 'false', '{}', '[]', 'not-json']) {
+        const envResult = spawnSync(process.execPath, [script], { cwd: root, encoding: 'utf8', timeout: 5000,
+          env: { ...process.env, RPC_URL: 'http://127.0.0.1:1', AGIJOBMANAGER_ADDRESS: wallet, AGI_TYPES_JSON: policy } });
+        assert.equal(envResult.status, 1, envResult.stderr);
+        assert.match(envResult.stderr, /Legacy agiTypes configuration is retired/);
+        assert.doesNotMatch(envResult.stderr, /ECONNREFUSED/);
+      }
+    }
   });
 
   it('encodes constructor tuples and USDC settlement wallets without Web3', () => {

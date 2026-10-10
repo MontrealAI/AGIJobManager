@@ -58,7 +58,7 @@ describe('wallet/runtime integration in single-file artifact', () => {
     expect(provider.request).toHaveBeenCalledWith({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x1' }] });
   });
 
-  it('renders admin defaults and disabled controls for read-only mode', async () => {
+  it('renders admin defaults and directs writes to the maintained console', async () => {
     const dom = new JSDOM('<!doctype html><html><body><main></main></body></html>', { url: 'https://example.com/agijobmanager.html#/admin', runScripts: 'outside-only' });
     dom.window.eval(extractRouterBootstrapScript(html));
     await wait(120);
@@ -67,10 +67,10 @@ describe('wallet/runtime integration in single-file artifact', () => {
     const settlement = dom.window.document.getElementById('admin-settlement') as HTMLButtonElement;
     const rpc = dom.window.document.getElementById('settings-rpc') as HTMLTextAreaElement;
 
-    expect(pause.disabled).toBe(true);
-    expect(settlement.disabled).toBe(true);
-    expect(dom.window.document.body.textContent).toContain('Not authorized');
-    expect(dom.window.document.body.textContent).toContain('Connect MetaMask on Ethereum Mainnet for write actions');
+    expect(pause).toBeNull();
+    expect(settlement).toBeNull();
+    expect(dom.window.document.body.textContent).toContain('Read-only dashboard');
+    expect(dom.window.document.querySelector('a[href="https://montrealai.github.io/AGIJobManager/agijobmanager-usdc.html"]')).toBeTruthy();
     expect(rpc.value).toContain('https://eth.llamarpc.com');
     expect(rpc.value).toContain('https://ethereum-rpc.publicnode.com');
   });

@@ -1,5 +1,6 @@
 'use strict';
 const { createHash } = require('node:crypto');
+const { canonicalReference } = require('./canonical-state.cjs');
 const MAX_TYPES = 32n;
 const UINT256 = 1n << 256n;
 const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
@@ -101,12 +102,14 @@ function normalizeEntry(entry) {
   return { nftAddress: entry.nftAddress, payoutPercentage: String(value) };
 }
 async function readRegistrySnapshot({ manager, provider, buildInfo, artifact, calls, compiler }) {
-  if (!object(calls) || Object.keys(calls).some(k => k !== 'blockTag') ||
-      !Number.isSafeInteger(calls.blockTag) || calls.blockTag < 0) fail('a single explicit numeric blockTag is required.');
+  if (!object(calls) || Object.keys(calls).some(k => k !== 'blockTag')) fail('a single canonical blockTag is required.');
+  let blockTag;
+  try { blockTag = canonicalReference(calls.blockTag); } catch { fail('blockTag must contain a canonical blockHash; numeric block tags are not accepted.'); }
   if (!manager || typeof manager.getAddress !== 'function' || typeof manager.agiTypes !== 'function' ||
       typeof manager.agentNftRequired !== 'function' || typeof manager.MAX_AGI_TYPES !== 'function' ||
-      !provider || typeof provider.getStorage !== 'function') fail('required read-only manager/provider methods are unavailable.');
-  const at = Object.freeze({ blockTag: calls.blockTag });
+      !provider || typeof provider.getStorage !== 'function' || !Number.isSafeInteger(provider.blockNumber) || provider.blockNumber < 0 ||
+      provider.blockHash !== blockTag.blockHash) fail('required canonical read-only manager/provider methods are unavailable.');
+  const at = Object.freeze({ blockTag });
   const layout = deriveRegistryLayout(buildInfo, artifact, compiler);
   const managerAddress = await manager.getAddress();
   if (!address(managerAddress)) fail('manager address is invalid.');
@@ -128,7 +131,7 @@ async function readRegistrySnapshot({ manager, provider, buildInfo, artifact, ca
   if (parseLength(after) !== count || after.toLowerCase() !== before.toLowerCase()) fail('registry length changed within the same pinned block.');
   return { agentNftRequired: required, agiTypes: items,
     evidence: { method: 'compiler-derived-length-and-bounded-getters', ...layout,
-      manager: managerAddress, blockNumber: at.blockTag, count, lengthWord: before.toLowerCase(),
+      manager: managerAddress, blockNumber: provider.blockNumber, blockHash: blockTag.blockHash, requireCanonical: true, count, lengthWord: before.toLowerCase(),
       endOfArrayRevertAssumptions: false, transactionsBroadcast: 0 } };
 }
 module.exports = { deriveRegistryLayout, validateLayout, parseLength, readRegistrySnapshot };

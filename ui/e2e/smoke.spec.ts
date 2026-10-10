@@ -10,10 +10,10 @@ test('jobs list renders', async ({ page }) => {
   await expect(page.locator('table')).toBeVisible();
 });
 
-test('admin unauthorized', async ({ page }) => {
+test('admin dashboard is read-only', async ({ page }) => {
   await page.goto('/admin');
-  await expect(page.getByText('Connect the current owner wallet to view this dashboard.')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Download the USDC console' })).toBeVisible();
+  await expect(page.getByText(/This dashboard is read-only/)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open the USDC console' })).toBeVisible();
 });
 
 
