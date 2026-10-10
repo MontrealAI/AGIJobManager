@@ -8,6 +8,7 @@ const { USDC_ABI, describeMembershipConfig, requireDeploymentNetwork, requireCod
 
 const { normalizeNftPolicy } = require('./nft-policy.cjs');
 const { readRegistrySnapshot } = require('./nft-registry-snapshot.cjs');
+const { createCanonicalReader } = require('./canonical-state.cjs');
 
 const IDENTITY_FIELDS = { ensConfig: 2, rootNodes: 4, merkleRoots: 2 };
 
@@ -102,9 +103,10 @@ async function main() {
   const { buildInfo } = await qualifiedBuild();
   const block = await ethers.provider.getBlock('latest');
   if (!block || !Number.isSafeInteger(block.number) || !ethers.isHexString(block.hash, 32)) throw new Error('Unable to resolve the readiness block and hash.');
-  const calls = { blockTag: block.number };
+  const pinned = createCanonicalReader(ethers.provider, block);
+  const calls = { blockTag: pinned.at };
   const managerAddress = receipt.contracts.AGIJobManager.address;
-  const manager = await ethers.getContractAt('AGIJobManager', managerAddress, ethers.provider);
+  const manager = pinned.contract(managerAddress, (await artifacts.readArtifact(FQNS.AGIJobManager)).abi);
   const tokenAddress = await manager.usdcToken(calls);
   if (tokenAddress.toLowerCase() !== receipt.constructorArgs.usdcTokenAddress.toLowerCase()) throw new Error('Manager token differs from the reviewed deployment receipt.');
   const runtimeCodeHashes = {};
@@ -112,13 +114,13 @@ async function main() {
     const deployment = receipt.contracts[name];
     if (!deployment || !ethers.isAddress(deployment.address)) throw new Error(`Missing ${name} deployment address.`);
     if (name !== 'AGIJobManager' && receipt.libraries[FQNS[name]]?.toLowerCase() !== deployment.address.toLowerCase()) throw new Error(`Linked ${name} address differs from the deployment receipt.`);
-    const code = await requireCode(ethers.provider, deployment.address, name, block.number);
+    const code = await requireCode(pinned, deployment.address, name, pinned.at);
     requireArtifactMatch({ artifact: await artifacts.readArtifact(FQNS[name]), buildInfo, address: deployment.address,
       libraries: receipt.libraries, tokenAddress, code });
     runtimeCodeHashes[name] = ethers.keccak256(code);
     if (runtimeCodeHashes[name] !== deployment.runtimeCodeHash.toLowerCase()) throw new Error(`${name} bytecode hash differs from the deployment receipt.`);
   }
-  const token = new ethers.Contract(tokenAddress, USDC_ABI, ethers.provider);
+  const token = pinned.contract(tokenAddress, USDC_ABI);
   const [owner, pendingOwner, paused, settlementPaused, wallet30, wallet10, balance, ...reserves] = await Promise.all([
     manager.owner(calls), manager.pendingOwner(calls), manager.paused(calls), manager.settlementPaused(calls),
     manager.wallet30(calls), manager.wallet10(calls), token.balanceOf(managerAddress, calls),
@@ -139,7 +141,7 @@ async function main() {
     });
   }
   console.log('NFT registry: reconstructing the pinned build in memory; no artifacts or chain state are changed.');
-  const nftSnapshot = await readRegistrySnapshot({ manager, provider: ethers.provider, buildInfo,
+  const nftSnapshot = await readRegistrySnapshot({ manager, provider: pinned, buildInfo,
     artifact: await artifacts.readArtifact(FQNS.AGIJobManager), calls });
   const observedNftPolicy = normalizeNftPolicy({ agentNftRequired: nftSnapshot.agentNftRequired, agiTypes: nftSnapshot.agiTypes });
   if (JSON.stringify(observedNftPolicy) !== JSON.stringify(expectedNftPolicy)) {
@@ -149,11 +151,11 @@ async function main() {
   const nftCodeHashes = {};
   for (const entry of observedNftPolicy.agiTypes) {
     if (BigInt(entry.payoutPercentage) > 0n) {
-      const code = await requireCode(ethers.provider, entry.nftAddress, 'Enabled NFT collection', block.number);
+      const code = await requireCode(pinned, entry.nftAddress, 'Enabled NFT collection', pinned.at);
       nftCodeHashes[entry.nftAddress] = ethers.keccak256(code);
     }
   }
-  const tokenState = await requireOperationalUSDC({ chainId, tokenAddress, token, recipients: [managerAddress, owner, wallet30, wallet10], blockTag: block.number });
+  const tokenState = await requireOperationalUSDC({ chainId, tokenAddress, token, recipients: [managerAddress, owner, wallet30, wallet10], blockTag: pinned.at });
   const confirmedBlock = await ethers.provider.getBlock(block.number);
   if (!confirmedBlock || confirmedBlock.number !== block.number || confirmedBlock.hash?.toLowerCase() !== block.hash.toLowerCase()) {
     throw new Error('Readiness block changed or disappeared during verification. No report was written; rerun against a consistent chain state.');
@@ -163,6 +165,7 @@ async function main() {
     legalScope: 'Not assessed. Operator identity, fee beneficiaries, service terms, jurisdiction, required authorizations and privacy/language duties require separate review; see docs/LEGAL/README.md.',
     chainId, network: network.name, manager: managerAddress, owner, pendingOwner, intakePaused: paused,
     settlementWallets: [wallet30, wallet10], blockNumber: block.number, blockHash: block.hash,
+    stateReference: 'EIP-1898 canonical block hash; no number fallback',
     identityConfig: { expected: reviewedConfig.expected, observed: observedConfig, reviewedOverride: reviewedConfig.override },
     membership: describeMembershipConfig(observedConfig),
     nftPolicy: { expected: expectedNftPolicy, observed: observedNftPolicy,

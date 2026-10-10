@@ -5,6 +5,7 @@ let ethers = require('ethers');
 const { requireCanonicalUSDC } = require('../../scripts/lib/usdc');
 const { FQNS, LIBRARIES, qualifiedBuild, resolveConstructor, stableObject, verifyWithRetry, parsePositiveInt } = require('./deploy.cjs');
 const { requireDeploymentNetwork, requireExplorerEnabled, requireConfirmedReceipt, requireCode, requireArtifactMatch, requireVerified } = require('./deployment-safety.cjs');
+const { createCanonicalReader } = require('./canonical-state.cjs');
 
 async function main() {
   const runtime = await getRuntime();
@@ -30,6 +31,7 @@ async function main() {
   const { buildInfo } = await qualifiedBuild();
   const block = await ethers.provider.getBlock('latest');
   if (!block || !ethers.isHexString(block.hash, 32)) throw new Error('Cannot identify the current chain block for recovery.');
+  const pinned = createCanonicalReader(ethers.provider, block);
   const contracts = {};
   const managerArgs = [constructorArgs.usdcTokenAddress, constructorArgs.baseIpfsUrl, constructorArgs.ensConfig,
     constructorArgs.rootNodes, constructorArgs.merkleRoots, constructorArgs.settlementWallets];
@@ -51,7 +53,7 @@ async function main() {
     if (!minedBlock || minedBlock.hash?.toLowerCase() !== transactionReceipt.blockHash.toLowerCase()) throw new Error(`${name} receipt is not in the canonical chain; reconcile before retrying.`);
     if (recorded.blockNumber !== undefined && recorded.blockNumber !== transactionReceipt.blockNumber) throw new Error(`${name} mined block differs from the saved journal.`);
     if (recorded.blockHash && recorded.blockHash.toLowerCase() !== transactionReceipt.blockHash.toLowerCase()) throw new Error(`${name} block hash differs from the saved journal.`);
-    const code = await requireCode(ethers.provider, recorded.address, name, block.number);
+    const code = await requireCode(pinned, recorded.address, name, pinned.at);
     requireArtifactMatch({ artifact: await artifacts.readArtifact(FQNS[name]), buildInfo, address: recorded.address,
       libraries, tokenAddress: constructorArgs.usdcTokenAddress, code });
     const runtimeCodeHash = ethers.keccak256(code);
@@ -59,8 +61,8 @@ async function main() {
     contracts[name] = { address: recorded.address, txHash: recorded.txHash, blockNumber: transactionReceipt.blockNumber,
       blockHash: transactionReceipt.blockHash, runtimeCodeHash };
   }
-  const manager = await ethers.getContractAt('AGIJobManager', contracts.AGIJobManager.address, ethers.provider);
-  const calls = { blockTag: block.number };
+  const manager = pinned.contract(contracts.AGIJobManager.address, (await artifacts.readArtifact(FQNS.AGIJobManager)).abi);
+  const calls = { blockTag: pinned.at };
   const [tokenAddress, paused, owner, pendingOwner] = await Promise.all([manager.usdcToken(calls), manager.paused(calls), manager.owner(calls), manager.pendingOwner(calls)]);
   if (tokenAddress.toLowerCase() !== constructorArgs.usdcTokenAddress.toLowerCase() || !paused) throw new Error('Manager token or paused intake differs from the intended deployment. Reconcile before recovery.');
   if (![receipt.finalOwner, receipt.deployer].some(address => address.toLowerCase() === owner.toLowerCase())) throw new Error('Current owner differs from the saved deployer and intended final owner.');
@@ -68,7 +70,7 @@ async function main() {
   const verification = {};
   for (const name of [...LIBRARIES, 'AGIJobManager']) {
     verification[name] = await verifyWithRetry({ name, record: contracts[name],
-      constructorArguments: name === 'AGIJobManager' ? managerArgs : [], libraries }, delay);
+      constructorArguments: name === 'AGIJobManager' ? managerArgs : [], libraries, blockReference: block }, delay);
   }
   requireVerified(verification, [...LIBRARIES, 'AGIJobManager']);
   const sameBlock = await ethers.provider.getBlock(block.number);
@@ -77,7 +79,8 @@ async function main() {
   const recovered = { ...receipt, contracts, configHash, verification, status: 'awaiting_readiness_review', intakePaused: paused,
     ownershipTransfer: { ...(receipt.ownershipTransfer || {}), currentOwner: owner, pendingOwner, accepted,
       acceptanceRequired: !accepted, proposalRequired: !accepted && pendingOwner === ethers.ZeroAddress },
-    recovery: { originalReceipt: receiptPath, blockNumber: block.number, blockHash: block.hash, blockchainTransactionsBroadcast: 0 } };
+    recovery: { originalReceipt: receiptPath, blockNumber: block.number, blockHash: block.hash,
+      stateReference: 'EIP-1898 canonical block hash; no number fallback', blockchainTransactionsBroadcast: 0 } };
   delete recovered.error;
   const recoveredPath = receiptPath.replace(/\.json$/, '') + `.reverified.${block.number}.json`;
   fs.writeFileSync(recoveredPath, `${JSON.stringify(recovered, null, 2)}\n`, { flag: 'wx', mode: 0o600 });

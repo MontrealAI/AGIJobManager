@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { loadManager, fetchAgiTypes, cliCallback } = require("./lib/operations");
+const { loadManager, assertSupportedConfig, cliCallback } = require("./lib/operations");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -56,6 +56,7 @@ function parseNftRequirement(value) {
 }
 
 function loadConfig(args) {
+  if (process.env.AGI_TYPES_JSON) assertSupportedConfig({ agiTypes: process.env.AGI_TYPES_JSON });
   const envConfigPath = process.env.AGI_CONFIG_PATH;
   const fileConfig = loadJsonConfig(args.configPath || envConfigPath);
 
@@ -128,6 +129,7 @@ module.exports = async function verifyConfig(callback) {
   try {
     const args = parseArgs(process.argv);
     const config = loadConfig(args);
+    assertSupportedConfig(config);
     if (config.agentNftRequired !== undefined) config.agentNftRequired = parseNftRequirement(config.agentNftRequired);
 
     const address = args.address || process.env.AGIJOBMANAGER_ADDRESS || config.address;
@@ -219,26 +221,6 @@ module.exports = async function verifyConfig(callback) {
           report("PASS", `${group.key}:${addr}`, "present");
         } else {
           failed = report("FAIL", `${group.key}:${addr}`, "missing") || failed;
-        }
-      }
-    }
-
-    if (Array.isArray(config.agiTypes)) {
-      const current = await fetchAgiTypes(instance);
-      for (const entry of config.agiTypes) {
-        if (!entry || !entry.nftAddress) continue;
-        const expected = toStringValue(entry.payoutPercentage);
-        const found = current.find(
-          (item) => item.nftAddress.toLowerCase() === entry.nftAddress.toLowerCase()
-        );
-        if (found && found.payoutPercentage === expected) {
-          report("PASS", `agiType:${entry.nftAddress}`, `payout ${expected}`);
-        } else {
-          failed = report(
-            "FAIL",
-            `agiType:${entry.nftAddress}`,
-            `expected payout ${expected}, got ${found ? found.payoutPercentage : "missing"}`
-          ) || failed;
         }
       }
     }

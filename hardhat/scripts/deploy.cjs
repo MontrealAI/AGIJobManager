@@ -213,6 +213,7 @@ async function verifyWithRetry(params, verifyDelayMs) {
         constructorArguments: params.constructorArguments || [],
         libraries: params.libraries,
         contract: FQNS[name],
+        blockReference: params.blockReference,
       });
       if (verified !== true) throw new Error('Explorer verification did not return an explicit successful result.');
       verificationEntry.status = 'verified';

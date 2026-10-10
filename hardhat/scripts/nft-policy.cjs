@@ -1,5 +1,4 @@
 const { isAddress, ZeroAddress } = require('ethers');
-const { fetchAgiTypes } = require('../../scripts/lib/operations');
 
 function normalizeNftPolicy(config) {
   if (!config || typeof config !== 'object' || Array.isArray(config) ||
@@ -25,13 +24,4 @@ function normalizeNftPolicy(config) {
   return { agentNftRequired: config.agentNftRequired, agiTypes };
 }
 
-async function checkNftPolicy(manager, expected, calls) {
-  const [agentNftRequired, agiTypes] = await Promise.all([manager.agentNftRequired(calls), fetchAgiTypes(manager, calls)]);
-  const observed = normalizeNftPolicy({ agentNftRequired, agiTypes });
-  if (JSON.stringify(observed) !== JSON.stringify(expected)) {
-    throw new Error('On-chain NFT policy differs from READINESS_NFT_CONFIG. Review the default and every registry entry, including disabled collections; no readiness report was written.');
-  }
-  return observed;
-}
-
-module.exports = { normalizeNftPolicy, checkNftPolicy };
+module.exports = { normalizeNftPolicy };

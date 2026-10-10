@@ -11,7 +11,7 @@
 | UI workspace | 1.14.0 | ui/package.json and lockfile |
 | Deployment registry | 1.14.0 | config/usdc-deployment.json; version labels software, not an on-chain deployment |
 
-[Release status and verified assets for v1.14.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.14.0). Candidate builds are not published releases. The previous published v1.13.0 downloads remain valid during preparation.
+[Release status and verified assets for v1.14.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.14.0). The immutable release assets identify their exact source. Later main-branch changes and candidate builds require separate qualification; they do not inherit the release evidence. Previous v1.13.0 downloads remain available for historical comparison.
 
 ## Prepare once
 

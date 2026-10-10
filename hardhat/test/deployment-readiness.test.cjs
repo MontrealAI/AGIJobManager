@@ -48,7 +48,7 @@ function makeReceipt() {
   return receipt;
 }
 
-function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock = BLOCK, initialBlock = BLOCK, owner = A, code = CODE, nftPolicy = NFT_POLICY, nftEntries = NFT_POLICY.agiTypes, omitNftConfig = false, balance = 0n } = {}) {
+function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock = BLOCK, initialBlock = BLOCK, owner = A, code = CODE, nftPolicy = NFT_POLICY, nftEntries = NFT_POLICY.agiTypes, omitNftConfig = false, balance = 0n, unsupportedMethod } = {}) {
   const receipt = makeReceipt();
   mutateReceipt(receipt);
   const calls = [], writes = [];
@@ -59,6 +59,8 @@ function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock =
   const originalArgs = makeReceipt().constructorArgs;
   for (const [field, getters] of Object.entries(CONFIG_GETTERS)) getters.forEach((getter, index) => { values[getter] = originalArgs[field][index]; });
   Object.assign(values, observed);
+  const managerAbi = Object.entries(values).map(([name,value])=>`function ${name}() view returns (${typeof value==='boolean'?'bool':typeof value==='string'?(value.length===66?'bytes32':'address'):'uint256'})`);
+  const managerInterface = new ethers.Interface(managerAbi), tokenInterface = new ethers.Interface(safety.USDC_ABI);
   const manager = Object.fromEntries(Object.entries(values).map(([method, value]) => [method, async options => {
     calls.push({ method, options });
     return value;
@@ -77,7 +79,16 @@ function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock =
   const provider = {
     getNetwork: async () => { calls.push({ method: 'getNetwork' }); return { chainId: 1n }; },
     getBlock: async tag => { calls.push({ method: 'getBlock', tag }); return tag === 'latest' ? initialBlock : endBlock; },
-    getCode: async (address, tag) => { calls.push({ method: 'getCode', tag }); return code; },
+    async send(method, params) {
+      assert.deepEqual(params.at(-1), {blockHash:BLOCK.hash,requireCanonical:true});
+      if (method===unsupportedMethod) throw new Error('unsupported canonical block identifier');
+      if (method==='eth_getCode') { calls.push({method:'getCode',tag:params[1]}); return code; }
+      assert.equal(method,'eth_call');
+      const isToken=params[0].to.toLowerCase()===TOKEN.toLowerCase(), iface=isToken?tokenInterface:managerInterface;
+      const parsed=iface.parseTransaction(params[0]);
+      const value=await (isToken?token:manager)[parsed.name](...parsed.args,{blockTag:params[1]});
+      return iface.encodeFunctionResult(parsed.name,[value]);
+    },
   };
   const receiptPath = '/tmp/agi-readiness/receipt.json';
   const overridePath = '/tmp/agi-readiness/reviewed.json';
@@ -98,10 +109,11 @@ function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock =
     if (name === 'hardhat') return {
       ethers: { ...ethers, provider, Contract: function () { return token; }, getContractAt: async () => manager },
       network: { name: 'mainnet' },
-      artifacts: { readArtifact: async fqn => ({ sourceName: 'source', contractName: fqn.split(':')[1], deployedBytecode: CODE }) },
+      artifacts: { readArtifact: async fqn => ({ sourceName: 'source', contractName: fqn.split(':')[1], deployedBytecode: CODE, abi:managerAbi }) },
     };
     if (name === './deploy.cjs') return { FQNS, LIBRARIES, qualifiedBuild: async () => ({ buildInfo }) };
     if (name === './deployment-safety.cjs') return safety;
+    if (name === './canonical-state.cjs') return require('../scripts/canonical-state.cjs');
     if (name === './nft-policy.cjs') return require('../scripts/nft-policy.cjs');
     // Policy-gate isolation only; registry implementation is exercised by native and integration suites.
     if (name === './nft-registry-snapshot.cjs') return { readRegistrySnapshot: async ({calls: at}) => {
@@ -251,16 +263,24 @@ test('changed, disappeared or incorrectly numbered blocks never produce a readin
   }
 });
 
-test('all configuration, accounting, issuer and code reads use the same reviewed block number', async () => {
+test('all configuration, accounting, issuer and code reads require the same canonical block hash', async () => {
   const run = harness();
   await run.main();
   for (const call of run.calls) {
-    if (call.method === 'getCode') assert.equal(call.tag, BLOCK.number);
-    if (call.options) assert.equal(call.options.blockTag, BLOCK.number);
+    if (call.method === 'getCode') assert.deepEqual(call.tag, {blockHash:BLOCK.hash,requireCanonical:true});
+    if (call.options) assert.deepEqual(call.options.blockTag, {blockHash:BLOCK.hash,requireCanonical:true});
   }
   const getters = Object.values(CONFIG_GETTERS).flat();
   assert.equal(run.calls.filter(call => getters.includes(call.method)).length, 8);
   assert.deepEqual(run.calls.filter(call => call.method === 'getBlock').map(call => call.tag), ['latest', BLOCK.number]);
+});
+
+test('unsupported or noncanonical RPC state reads never write a readiness report or retry by number', async () => {
+  for (const unsupportedMethod of ['eth_call','eth_getCode']) {
+    const run=harness({unsupportedMethod});
+    await assert.rejects(run.main(),/CANONICAL_STATE_READ_BLOCKED.*No block-number fallback/);
+    assert.equal(run.writes.length,0);
+  }
 });
 
 test('missing initial block identity, ownership mismatch and substituted runtime remain blocking', async () => {

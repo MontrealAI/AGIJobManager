@@ -2,7 +2,7 @@
 
 ## Source-specific qualification
 
-Use the release's `VALIDATION.md`, `SOURCE_CI.json`, `RELEASE_MANIFEST.json` and `SHA256SUMS.txt` to identify the exact source commit, checks and artifacts. This navigation page does not claim a completed qualification run or carry forward test counts and bytecode sizes from older releases.
+For v1.14.0, use the published `QUALIFICATION.json`, `RELEASE_MANIFEST.json` and `SHA256SUMS.txt`, together with `VALIDATION.md` inside the COMPLETE ZIP, to identify the exact source commit, six required workflow runs and artifact hashes. Check the release asset digests before extraction. Later main-branch checks qualify their own commit and do not change the immutable release evidence. This navigation page does not claim a completed qualification run or carry forward test counts and bytecode sizes from older releases.
 
 ## Current local commands
 

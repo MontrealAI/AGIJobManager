@@ -43,7 +43,7 @@ const generated=`# Release identity and deployment commands
 | UI workspace | ${version} | ui/package.json and lockfile |
 | Deployment registry | ${version} | config/usdc-deployment.json; version labels software, not an on-chain deployment |
 
-[Release status and verified assets for ${tag}](https://github.com/MontrealAI/AGIJobManager/releases/tag/${tag}). Candidate builds are not published releases. The previous published v${previousPublished} downloads remain valid during preparation.
+[Release status and verified assets for ${tag}](https://github.com/MontrealAI/AGIJobManager/releases/tag/${tag}). The immutable release assets identify their exact source. Later main-branch changes and candidate builds require separate qualification; they do not inherit the release evidence. Previous v${previousPublished} downloads remain available for historical comparison.
 
 ## Prepare once
 

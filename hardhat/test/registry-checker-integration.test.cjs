@@ -50,7 +50,8 @@ function fixture() {
   const main=load(candidate,{'fs':{readFileSync:file=>JSON.stringify(file.endsWith('policy.json')?expectedPolicy:receipt),writeFileSync:(file,text,options)=>writes.push({file,text,options})},
     'path':path,'crypto':crypto,'./runtime.cjs':{getRuntime:async()=>({ethers,network:{name:'mainnet'},artifacts:{readArtifact:async()=>({})}})},
     'ethers':ethers,'./deploy.cjs':{qualifiedBuild:async()=>({buildInfo:{}}),FQNS:fqns,LIBRARIES:libraries},'./deployment-safety.cjs':safety,
-    './nft-policy.cjs':policy,'./nft-registry-snapshot.cjs':{readRegistrySnapshot:async options=>{trace.push('registry');assert.equal(options.calls.blockTag,44);if(state.snapshotError)throw state.snapshotError;return snapshot;}}}).main;
+    './canonical-state.cjs':{createCanonicalReader:()=>({at:{blockHash:H,requireCanonical:true},contract:address=>address===C?new ethers.Contract():manager})},
+    './nft-policy.cjs':policy,'./nft-registry-snapshot.cjs':{readRegistrySnapshot:async options=>{trace.push('registry');assert.equal(options.calls.blockTag.blockHash,H);assert.equal(options.calls.blockTag.requireCanonical,true);if(state.snapshotError)throw state.snapshotError;return snapshot;}}}).main;
   return {main,state,receipt,expectedPolicy,snapshot,trace,writes};
 }
 test('standard full checker completes with empty observed registry, accepted owner, paused intake and original gates',async()=>{

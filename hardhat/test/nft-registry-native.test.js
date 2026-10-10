@@ -5,8 +5,9 @@ import runtime from '../scripts/runtime.cjs';
 import deployment from '../scripts/deploy.cjs';
 import safety from '../scripts/deployment-safety.cjs';
 import registry from '../scripts/nft-registry-snapshot.cjs';
+import canonical from '../scripts/canonical-state.cjs';
 const require=createRequire(import.meta.url);
-const {ethers,artifacts,network}=await runtime.getRuntime();
+const {ethers,artifacts,network,run}=await runtime.getRuntime();
 const {FQNS,LIBRARIES,qualifiedBuild}=deployment;
 const evidence=JSON.parse(fs.readFileSync(new URL('../../docs/releases/v1.14.0/MAINNET_EVIDENCE.json',import.meta.url),'utf8'));
 const word=n=>ethers.zeroPadValue(ethers.toBeHex(BigInt(n)),32);
@@ -18,9 +19,11 @@ describe('Native v1.14.0 verification and readiness compatibility',function(){
   const indices=[];
   const original=network.provider.request.bind(network.provider);
   const allowed=new Set(['eth_call','eth_getStorageAt','eth_getCode','eth_blockNumber','eth_chainId','eth_getBlockByNumber']);
-  network.provider.request=async request=>{assert(allowed.has(request.method),`Snapshot attempted forbidden RPC ${request.method}`);return original(request);};
-  const view={getAddress:()=>manager.getAddress(),MAX_AGI_TYPES:at=>manager.MAX_AGI_TYPES(at),agentNftRequired:at=>manager.agentNftRequired(at),agiTypes:async(i,at)=>{indices.push(i);return manager.agiTypes(i,at);}};
-  try {return {snapshot:await registry.readRegistrySnapshot({manager:view,provider:ethers.provider,buildInfo,artifact,calls}),indices};}
+  const block=await ethers.provider.getBlock(calls.blockTag),pinned=canonical.createCanonicalReader(ethers.provider,block);
+  network.provider.request=async request=>{assert(allowed.has(request.method),`Snapshot attempted forbidden RPC ${request.method}`);if(['eth_call','eth_getCode','eth_getStorageAt'].includes(request.method))assert.deepEqual(request.params.at(-1),pinned.at);return original(request);};
+  const reader=pinned.contract(await manager.getAddress(),artifact.abi);
+  const view={getAddress:()=>reader.getAddress(),MAX_AGI_TYPES:at=>reader.MAX_AGI_TYPES(at),agentNftRequired:at=>reader.agentNftRequired(at),agiTypes:async(i,at)=>{indices.push(i);return reader.agiTypes(i,at);}};
+  try {return {snapshot:await registry.readRegistrySnapshot({manager:view,provider:pinned,buildInfo,artifact,calls:{blockTag:pinned.at}}),indices};}
   finally {network.provider.request=original;}
  }
 
@@ -53,7 +56,7 @@ describe('Native v1.14.0 verification and readiness compatibility',function(){
   }
  });
  it('uses the real compiler, provider and empty public-array getter without an end-of-array probe',async()=>{
-  const calls={blockTag:await ethers.provider.getBlockNumber()};
+  const calls={blockTag:Number(await ethers.provider.send('eth_blockNumber',[]))};
   const {snapshot,indices}=await guardedSnapshot(calls);
   assert.deepEqual(indices,[]);
   assert.equal(snapshot.agiTypes.length,0);assert.equal(snapshot.agentNftRequired,false);
@@ -72,5 +75,15 @@ describe('Native v1.14.0 verification and readiness compatibility',function(){
   assert.deepEqual(indices,[0,1]);
   assert.deepEqual(snapshot.agiTypes.map(x=>x.payoutPercentage),['1','0']);
   assert.equal(snapshot.agiTypes[1].nftAddress.toLowerCase(),accounts[2].address.toLowerCase());
+ });
+ it('verification runtime honors the recovery hash and stops before explorer requests when it is unavailable',async()=>{
+  const original=network.provider.request.bind(network.provider),requests=[];
+  network.provider.request=async request=>{requests.push(request);assert.equal(request.method,'eth_getCode');return original(request);};
+  try {
+   await assert.rejects(run('verify:verify',{contract:FQNS.AGIJobManager,address:await manager.getAddress(),
+    blockReference:{number:0,hash:ethers.ZeroHash}}),/CANONICAL_STATE_READ_BLOCKED.*No block-number fallback/);
+   assert.equal(requests.length,1);
+   assert.deepEqual(requests[0].params.at(-1),{blockHash:ethers.ZeroHash,requireCanonical:true});
+  } finally {network.provider.request=original;}
  });
 });

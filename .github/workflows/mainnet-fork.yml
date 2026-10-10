@@ -16,6 +16,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - name: Verify qualified source checkout
         env:
           QUALIFICATION_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}

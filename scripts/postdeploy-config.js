@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { loadManager, fetchAgiTypes, cliCallback } = require("./lib/operations");
+const { loadManager, assertSupportedConfig, cliCallback } = require("./lib/operations");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -66,6 +66,7 @@ function parseNftRequirement(value) {
 }
 
 function loadConfig(args) {
+  if (process.env.AGI_TYPES_JSON) assertSupportedConfig({ agiTypes: process.env.AGI_TYPES_JSON });
   const envConfigPath = process.env.AGI_CONFIG_PATH;
   const fileConfig = loadJsonConfig(args.configPath || envConfigPath);
 
@@ -118,17 +119,6 @@ function resolveNetworkName(args) {
   return "development";
 }
 
-async function ensureAgiType(instance, configEntry) {
-  const current = await fetchAgiTypes(instance);
-  const currentEntry = current.find(
-    (item) => item.nftAddress.toLowerCase() === configEntry.nftAddress.toLowerCase()
-  );
-  if (currentEntry && currentEntry.payoutPercentage === toStringValue(configEntry.payoutPercentage)) {
-    return { needsUpdate: false, currentEntry };
-  }
-  return { needsUpdate: true, currentEntry };
-}
-
 async function runTx(op, dryRun) {
   console.log(`- ${op.label}`);
   if (dryRun) {
@@ -151,6 +141,7 @@ module.exports = async function postdeployConfig(callback) {
   try {
     const args = parseArgs(process.argv);
     const config = loadConfig(args);
+    assertSupportedConfig(config);
     if (config.agentNftRequired !== undefined) config.agentNftRequired = parseNftRequirement(config.agentNftRequired);
 
     const address = args.address || process.env.AGIJOBMANAGER_ADDRESS || config.address;
@@ -487,43 +478,9 @@ module.exports = async function postdeployConfig(callback) {
         } });
     }
 
-    const agiTypeOps = [];
-    if (Array.isArray(config.agiTypes)) {
-      for (const entry of config.agiTypes) {
-        if (!entry || !entry.nftAddress || entry.nftAddress === ZERO_ADDRESS) {
-          throw new Error("AGI type entry missing nftAddress");
-        }
-        const payout = toStringValue(entry.payoutPercentage);
-        const { needsUpdate } = await ensureAgiType(instance, {
-          nftAddress: entry.nftAddress,
-          payoutPercentage: payout,
-        });
-        if (!needsUpdate) continue;
-        agiTypeOps.push({
-          key: `agiType:${entry.nftAddress}`,
-          label: `Add/update AGI type ${entry.nftAddress} eligibility score ${payout}`,
-          send: () => instance.addAGIType(entry.nftAddress, payout),
-          verify: async () => {
-            const updated = await fetchAgiTypes(instance);
-            const found = updated.find(
-              (item) => item.nftAddress.toLowerCase() === entry.nftAddress.toLowerCase()
-            );
-            if (!found || found.payoutPercentage !== payout) {
-              throw new Error(`AGI type ${entry.nftAddress} eligibility score did not update`);
-            }
-          },
-        });
-      }
-    }
-
     if (!Number.isInteger(validationRewardTargetNumber) || validationRewardTargetNumber < 1 || validationRewardTargetNumber > 60) {
       throw new Error('Validator rewards must be 1..60%; fixed wallet shares consume 40% of the job cost.');
     }
-    if (agiTypeOps.length) {
-      const reserves = await Promise.all(['lockedEscrow', 'lockedAgentBonds', 'lockedValidatorBonds', 'lockedDisputeBonds'].map(method => instance[method]()));
-      if (reserves.some(value => BigInt(value) !== 0n)) throw new Error('NFT registry changes require zero outstanding escrow and bonds. Settle or cancel existing jobs before changing collections.');
-    }
-    ops.push(...agiTypeOps);
     await addValidationRewardOp();
 
     const listOps = [

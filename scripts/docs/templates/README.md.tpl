@@ -6,7 +6,7 @@
 
 **Source edition: {{TAG}} — Ethereum Mainnet Verification & Readiness.** [Release status and exact-source qualification](https://github.com/MontrealAI/AGIJobManager/releases/tag/{{TAG}}) · [Existing-deployment recovery](docs/releases/v1.14.0/RECOVERY_GUIDE.md) · [Start here](docs/START_HERE.md).
 
-The [previously published {{PREVIOUS_TAG}} package](https://github.com/MontrealAI/AGIJobManager/releases/download/{{PREVIOUS_TAG}}/AGIJobManager-{{PREVIOUS_TAG}}-COMPLETE.zip) remains available. Use the {{TAG}} release page for its verified assets once published. Source preparation, release publication and intake activation are separate decisions.
+**[Download the published {{TAG}} COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/{{TAG}}/AGIJobManager-{{TAG}}-COMPLETE.zip)** · [Qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/{{TAG}}/QUALIFICATION.json) · [SHA-256 checksums](https://github.com/MontrealAI/AGIJobManager/releases/download/{{TAG}}/SHA256SUMS.txt). Release assets are bound to the immutable tagged source; subsequent `main` changes require their own qualification. The [previously published {{PREVIOUS_TAG}} package](https://github.com/MontrealAI/AGIJobManager/releases/download/{{PREVIOUS_TAG}}/AGIJobManager-{{PREVIOUS_TAG}}-COMPLETE.zip) remains available for historical comparison. Software publication and intake activation are separate decisions.
 
 AGI Jobs covers work a person or team can do using a keyboard, mouse and screen. Employers define the result and acceptance criteria; AGI Agents perform the work; AGI Nodes independently validate the delivered result. AGIJobManager provides the on-chain job lifecycle, USDC escrow, bonded voting, dispute outcomes and payment recovery. Computer execution and judging the work happen outside the contract.
 
@@ -40,7 +40,7 @@ The [Astra review pilot](docs/OPERATIONS/ASTRA_REVIEW_PILOT.md) shows why review
 | Workforce qualification | Exact source/runtime identities, signed Mac commissioning, independent validation, reconciled costs, cash settlements and external review evidence | Missing or expired evidence blocks production native execution; signatures establish attested provenance, not truth |
 | Supporting private services | Employer, Evidence, Moderator and Recovery services; exception and human-time records | Automated decisions require supported criteria and reviewed standing authority |
 
-Private companion editions are **Fleet {{FLEET}}, Agent {{AGENT}} and Node {{NODE}}**. They are separate private downloads with offline HTML guides and Mac launchers, not files in this public repository. The [companion guide](docs/OPERATIONS/PRIVATE_FLEET.md) explains the M1/M2 setup, upgrade procedure and actual commissioning requirements.
+This source documents the compatibility baseline **Fleet {{FLEET}}, Agent {{AGENT}} and Node {{NODE}}**; newer private editions are tracked separately. They are separate private downloads with offline HTML guides and Mac launchers, not files in this public repository. The [companion guide](docs/OPERATIONS/PRIVATE_FLEET.md) explains the M1/M2 setup, upgrade procedure and actual commissioning requirements.
 
 Use the [workforce qualification guide](docs/OPERATIONS/WORKFORCE_QUALIFICATION.md) to assess operational readiness. Native/private task execution is a separate workflow: it does not load a wallet, publish private plaintext, or automatically submit encrypted jobs and signed votes to the public manager. See the companion guide for this integration boundary.
 

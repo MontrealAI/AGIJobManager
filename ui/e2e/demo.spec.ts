@@ -63,3 +63,14 @@ test('csv export text present', async ({ page }) => {
   await page.goto('/jobs');
   await expect(page.getByTestId('csv-output')).toContainText('jobId,status,payout,employer,agent');
 });
+
+test('job zero opens directly and a missing large ID is explicit', async ({ page }) => {
+  await page.goto('/jobs');
+  await page.getByRole('textbox', { name: 'Job ID', exact: true }).fill('0');
+  await page.getByRole('button', { name: 'Open job', exact: true }).click();
+  await expect(page).toHaveURL(/\/jobs\/0$/);
+  await expect(page.getByRole('heading', { name: /Job #0/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open specification link' })).toHaveAttribute('href', 'https://example.com/spec/0');
+  await page.goto('/jobs/9007199254740993');
+  await expect(page.getByText('Job #9007199254740993 was not found in this snapshot.')).toBeVisible();
+});

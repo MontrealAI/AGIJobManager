@@ -19,4 +19,14 @@ describe('Canonical admission observations',()=>{
  it('never falls back to block numbers when canonical reads are unsupported',async()=>{await assert.rejects(run(rpc({unsupported:true}),rpc()),/unsupported/);});
  it('requires native USDC, six decimals and two clients',async()=>{await assert.rejects(run(rpc({wrongToken:true}),rpc()),/Circle USDC/);await assert.rejects(run(rpc({decimals:18}),rpc()),/DECIMALS/);const a=rpc();await assert.rejects(run(a,a),/TWO_RPC/);});
  it('supports bounded confirmation depth for releasing collateral reservations',async()=>{const r=await run(rpc(),rpc(),{confirmations:64});assert.equal(r.block.number,192);await assert.rejects(run(rpc(),rpc(),{confirmations:129}),/CONFIRMATION/);});
+ it('rejects confirmation-depth loss on either final head even when the snapshot hash stays canonical',async()=>{
+  const rollback=()=>{const p=rpc(),send=p.send;let heads=0;p.send=async(method,args)=>{const result=await send.call(p,method,args);if(method==='eth_getBlockByNumber'&&args[0]==='latest'&&++heads>1)result.number='0xc8';return result;};return p;};
+  // Initially 256-64=192; a final head of 200 leaves only eight confirmations.
+  for(const clients of [[rollback(),rpc()],[rpc(),rollback()],[rollback(),rollback()]])await assert.rejects(run(...clients,{confirmations:64}),/SNAPSHOT_AGED/);
+ });
+ it('rejects a canonical-hash change detected only after both peer collections complete',async()=>{
+  const p=rpc(),send=p.send;let pinnedReads=0;
+  p.send=async(method,args)=>{const result=await send.call(p,method,args);if(method==='eth_getBlockByNumber'&&args[0]!=='latest'&&++pinnedReads===3)result.hash='0x'+'b'.repeat(64);return result;};
+  await assert.rejects(run(rpc(),p,{confirmations:64}),/RPC_REORG/);
+ });
 });

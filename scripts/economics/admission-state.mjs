@@ -42,6 +42,6 @@ export async function readAdmissionState({primary, secondary, chainId, manager, 
  const results=await Promise.all([collect(primary),collect(secondary)]);
  ensure(JSON.stringify(results[0])===JSON.stringify(results[1]),'RPC_STATE_DISAGREEMENT');
  // Recheck both after all reads, including a slower peer.
- for(const p of [primary,secondary]) {const h=validateBlock(await p.send('eth_getBlockByNumber',['latest',false]));checkFreshness(h,120,Math.floor(Date.now()/1000));ensure(h.number-blockNumber<=2+confirmations && h.number>=blockNumber,'SNAPSHOT_AGED');ensure((await p.send('eth_getBlockByNumber',[tag,false]))?.hash===results[0].block.hash,'RPC_REORG');}
+ for(const p of [primary,secondary]) {const h=validateBlock(await p.send('eth_getBlockByNumber',['latest',false]));checkFreshness(h,120,Math.floor(Date.now()/1000));ensure(h.number-blockNumber<=2+confirmations && h.number>=blockNumber+confirmations,'SNAPSHOT_AGED');ensure((await p.send('eth_getBlockByNumber',[tag,false]))?.hash===results[0].block.hash,'RPC_REORG');}
  return results[0];
 }
