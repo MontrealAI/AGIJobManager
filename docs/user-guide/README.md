@@ -1,5 +1,15 @@
 # User guide
 
+## Your first request starts here
+
+**[Start my request — English →](https://montrealai.github.io/AGIJobManager/employers/)** · **[Commencer ma demande — français →](https://montrealai.github.io/AGIJobManager/fr/employers/)**
+
+Would you like a website, a presentation, a clear report or a comparison? Choose an example, describe what you need, then save, download or print your request. The guided page uses everyday words and large buttons, with **Larger text / Texte agrandi** available at the top.
+
+**Preparing is free, with no sign-up or wallet required.** Publishing and payment are a separate, advanced step requiring a digital wallet, USDC and ETH network fees. Your draft does not post a job or reserve a worker. Read the [employer guide](../ui/EMPLOYER_ONBOARDING.md) when you are ready to continue.
+
+## After preparing your request
+
 > Current guide for this source checkout. See [release identity and deployment commands](../RELEASE_GUIDE.md).
 
 Start with the [main user guide](../USERS.md) for USDC amounts, the fixed 30%/10% shares, required bonds, and a complete job lifecycle.

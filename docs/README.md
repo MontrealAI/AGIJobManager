@@ -1,8 +1,18 @@
 # AGIJobManager Documentation Hub
 
+## New here? Bring your idea
+
+**[Start my request — English →](https://montrealai.github.io/AGIJobManager/employers/)** · **[Commencer ma demande — français →](https://montrealai.github.io/AGIJobManager/fr/employers/)**
+
+Prepare a request for a website, presentation, report or comparison, one step at a time. Choose an example, make it yours, then save, download or print it. Everyday words, large buttons and **Larger text / Texte agrandi** help you work at your own pace.
+
+**Free preparation. No sign-up. No wallet needed to begin.** Publishing and payment use a separate, advanced screen with a digital wallet, USDC and ETH network fees. Preparing here does not post a job or reserve a worker. [Read the employer guide](ui/EMPLOYER_ONBOARDING.md), or continue below for participant and technical documentation.
+
+## Participant and technical documentation
+
 **Deployment entrypoint:** [release identity and checked commands](RELEASE_GUIDE.md).
 
-> **v1.13.0: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
+> **[Start here](START_HERE.md)** for the current download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
 AGI Jobs covers work a person or team can do using a keyboard, mouse and screen. This hub routes employers, Agents, Nodes, operators and contributors to current procedures. Use [release scope and earlier editions](V1_RELEASE_SCOPE.md#published-download-versus-current-source) to distinguish current instructions from historical evidence.
 
@@ -23,6 +33,7 @@ AGI Jobs covers work a person or team can do using a keyboard, mouse and screen.
 
 ## Start here in one minute
 
+- **Describe work you want done:** [English guided page](https://montrealai.github.io/AGIJobManager/employers/) or [page guidée en français](https://montrealai.github.io/AGIJobManager/fr/employers/).
 - **Employer, agent or validator:** [Start here](START_HERE.md), then [participant guide](USERS.md).
 - **Release reviewer:** [testing](TESTING.md), [mainnet readiness](MAINNET_READINESS.md) and [dependency security](DEPENDENCY_SECURITY.md).
 
@@ -38,6 +49,7 @@ If you only read one thing right now:
 
 | Surface | What it is now | Use this when | Canonical doc |
 | --- | --- | --- | --- |
+| Guided request page | A welcoming English/French form with examples, larger text, save, download and print. | You want to describe work before deciding whether to publish and pay. | [Employer onboarding guide](ui/EMPLOYER_ONBOARDING.md) |
 | Standalone HTML UI artifact | Versioned, single-file, mainnet-focused browser artifact (`ui/agijobmanager-usdc.html`). | You need a direct operator/reviewer interface without running the full UI stack. | [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md) |
 | Broader/full UI effort | Next.js UI with ongoing development, test, and release tracks. | You are developing, testing, or evaluating the full UI roadmap. | [ui/README.md](./ui/README.md) and [../ui/README.md](../ui/README.md) |
 

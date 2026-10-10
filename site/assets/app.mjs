@@ -1,6 +1,15 @@
 import { splitPayment, formatUSDC } from "./payments.mjs";
 const $ = (id) => document.getElementById(id),
   fr = document.documentElement.lang === "fr";
+const largerText = $("home-larger-text");
+if (largerText) {
+  largerText.addEventListener("click", () => {
+    const large = document.body.classList.toggle("large-text");
+    largerText.setAttribute("aria-pressed", String(large));
+  });
+  largerText.disabled = false;
+  largerText.hidden = false;
+}
 const roleButtons = [...document.querySelectorAll("[data-role]")];
 function selectRole(id) {
   roleButtons.forEach((button) =>
