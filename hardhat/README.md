@@ -6,7 +6,7 @@ Current automated work uses [schema 6/7 operator-budget admission without retain
 
 **Deployment entrypoint:** [release identity and checked commands](../docs/RELEASE_GUIDE.md).
 
-**v1.13.0 deployment tooling:** these instructions match this checkout. Manager and helper commands default to read-only when `DRY_RUN` is missing or empty. Published v1.0.5 downloads are unchanged; always use explicit `DRY_RUN=1` for plans on older tags. Record the reviewed commit with `git rev-parse HEAD` and use its matching scripts, documentation and CI results. See [release scope](../docs/V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+**v1.14.0 deployment tooling:** these instructions match this checkout. Manager and helper commands default to read-only when `DRY_RUN` is missing or empty. Published v1.0.5 downloads are unchanged; always use explicit `DRY_RUN=1` for plans on older tags. Record the reviewed commit with `git rev-parse HEAD` and use its matching scripts, documentation and CI results. See [release scope](../docs/V1_RELEASE_SCOPE.md#published-download-versus-current-source).
 
 ## Deployment at a glance
 
@@ -191,3 +191,5 @@ Before locks, require a full ENS lifecycle: successful creation, actual employer
 Pause intake to stop new work while allowing existing work to settle. Use settlement pause separately for emergency containment. Recipient rotation requires paused intake and zero job escrow and bonds, preventing redirection of existing commitments. USDC issuer restrictions cannot be bypassed by the manager.
 
 Code is non-upgradeable. Future code changes require a fresh deployment and an explicit migration plan. See the [deploy-day runbook](../docs/DEPLOY_DAY_RUNBOOK.md) and [incident response](../docs/OPERATIONS/INCIDENT_RESPONSE.md).
+
+For existing mainnet deployments, use the [v1.14.0 verification and readiness recovery guide](../docs/releases/v1.14.0/RECOVERY_GUIDE.md). Standard reverify/readiness commands preserve saved builds with `--no-compile`; native registry qualification is `npm --prefix hardhat run test:registry-native` from the source root.

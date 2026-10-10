@@ -6,7 +6,8 @@ let ethers = require('ethers');
 const { qualifiedBuild, FQNS, LIBRARIES } = require('./deploy.cjs');
 const { USDC_ABI, describeMembershipConfig, requireDeploymentNetwork, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch } = require('./deployment-safety.cjs');
 
-const { normalizeNftPolicy, checkNftPolicy } = require('./nft-policy.cjs');
+const { normalizeNftPolicy } = require('./nft-policy.cjs');
+const { readRegistrySnapshot } = require('./nft-registry-snapshot.cjs');
 
 const IDENTITY_FIELDS = { ensConfig: 2, rootNodes: 4, merkleRoots: 2 };
 
@@ -137,7 +138,14 @@ async function main() {
       }
     });
   }
-  const observedNftPolicy = await checkNftPolicy(manager, expectedNftPolicy, calls);
+  console.log('NFT registry: reconstructing the pinned build in memory; no artifacts or chain state are changed.');
+  const nftSnapshot = await readRegistrySnapshot({ manager, provider: ethers.provider, buildInfo,
+    artifact: await artifacts.readArtifact(FQNS.AGIJobManager), calls });
+  const observedNftPolicy = normalizeNftPolicy({ agentNftRequired: nftSnapshot.agentNftRequired, agiTypes: nftSnapshot.agiTypes });
+  if (JSON.stringify(observedNftPolicy) !== JSON.stringify(expectedNftPolicy)) {
+    throw new Error('On-chain NFT policy differs from READINESS_NFT_CONFIG. Review the default and every registry entry, including disabled collections; no readiness report was written.');
+  }
+  console.log(`NFT registry: ${nftSnapshot.evidence.count} entries read at block ${block.number}; length slot ${nftSnapshot.evidence.slot}.`);
   const nftCodeHashes = {};
   for (const entry of observedNftPolicy.agiTypes) {
     if (BigInt(entry.payoutPercentage) > 0n) {
@@ -158,6 +166,7 @@ async function main() {
     identityConfig: { expected: reviewedConfig.expected, observed: observedConfig, reviewedOverride: reviewedConfig.override },
     membership: describeMembershipConfig(observedConfig),
     nftPolicy: { expected: expectedNftPolicy, observed: observedNftPolicy,
+      enumeration: nftSnapshot.evidence,
       reviewedConfig: { path: nftConfigPath, sha256: createHash('sha256').update(nftConfigText).digest('hex') },
       runtimeCodeHashes: nftCodeHashes,
       scope: 'Default and complete collection registry matched at this block. Per-job requirements are fixed at posting. Participant NFT balances, collection upgrade authority and future availability require separate operational review.' },

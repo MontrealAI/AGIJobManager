@@ -1,0 +1,20 @@
+{
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v1.14.0",
+  "version": "1.14.0",
+  "name": "v1.14.0 \u2014 Ethereum Mainnet Verification & Readiness",
+  "status": "prepared",
+  "publicationAuthorized": false,
+  "sourceCommit": null,
+  "sourceTree": null,
+  "requiredWorkflows": [
+    "ci.yml",
+    "ui.yml",
+    "docs.yml",
+    "security-verification.yml",
+    "mainnet-fork.yml",
+    "current-state-release.yml"
+  ],
+  "qualificationModel": "Final-source identity and successful run evidence live in external QUALIFICATION.json, generated only after main-source qualification. This source file is never edited to qualify its own commit.",
+  "remainingGate": "Completed exact-source workflows, reviewed immutable archive and explicit confirmed publication dispatch."
+}

@@ -7,12 +7,14 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const json=p=>JSON.parse(read(p));
 const version=json('package.json').version;
 const tag='v'+version;
+const previousPublished=json('config/companion-releases.json').previousPublished;
 const commands=[
  ['Create private configuration','setup','Offline; preserves existing files'],
  ['Check mainnet profile','check:config:mainnet','Offline; no signer or RPC'],
  ['Check Sepolia profile','check:config:sepolia','Offline; no signer or RPC'],
  ['Compile pinned contracts','compile','Local compiler; no chain transactions'],
  ['Test preflight and recovery','test:preflight','Local fixtures'],
+ ['Test compiler-derived registry','test:registry-native','Pinned compiler and disposable local chain'],
  ['Test actual local deployments','test:deployment','Disposable local chain'],
  ['Test historical native USDC','test:mainnet-fork','Local fork; no public-chain broadcasts'],
  ['Test USDC/ENS cutover','test:cutover','Local fork; preserves historical evidence'],
@@ -41,7 +43,7 @@ const generated=`# Release identity and deployment commands
 | UI workspace | ${version} | ui/package.json and lockfile |
 | Deployment registry | ${version} | config/usdc-deployment.json; version labels software, not an on-chain deployment |
 
-[Download ${tag}](https://github.com/MontrealAI/AGIJobManager/releases/tag/${tag}) · [Complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/${tag}/AGIJobManager-${tag}-COMPLETE.zip) · [Standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/${tag}/agijobmanager-usdc.html).
+[Release status and verified assets for ${tag}](https://github.com/MontrealAI/AGIJobManager/releases/tag/${tag}). Candidate builds are not published releases. The previous published v${previousPublished} downloads remain valid during preparation.
 
 ## Prepare once
 
@@ -104,7 +106,7 @@ collect('docs');
 for(const file of files){
  const text=read(file),heading=text.split('\n')[0];
  if(!/superseded/i.test(heading))for(const m of heading.matchAll(/\bv?(\d+\.\d+(?:\.\d+)?)\b/g))if(m[1]!==version)errors.push(`Stale active guide heading: ${file}`);
- for(const m of text.matchAll(/https:\/\/github\.com\/MontrealAI\/AGIJobManager\/releases\/download\/v(\d+\.\d+\.\d+)\//g))if(m[1]!==version)errors.push(`Old download in active guide: ${file}`);
+ for(const m of text.matchAll(/https:\/\/github\.com\/MontrealAI\/AGIJobManager\/releases\/download\/v(\d+\.\d+\.\d+)\//g))if(m[1]!==version&&m[1]!==previousPublished)errors.push(`Old download in active guide: ${file}`);
 }
 const consoleHTML=read('ui/agijobmanager-usdc.html');
 if(!consoleHTML.match(/<title>([^<]+)<\/title>/)?.[1].includes(tag))errors.push('Standalone console title version differs');

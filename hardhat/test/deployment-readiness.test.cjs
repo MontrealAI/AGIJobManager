@@ -103,6 +103,13 @@ function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock =
     if (name === './deploy.cjs') return { FQNS, LIBRARIES, qualifiedBuild: async () => ({ buildInfo }) };
     if (name === './deployment-safety.cjs') return safety;
     if (name === './nft-policy.cjs') return require('../scripts/nft-policy.cjs');
+    // Policy-gate isolation only; registry implementation is exercised by native and integration suites.
+    if (name === './nft-registry-snapshot.cjs') return { readRegistrySnapshot: async ({calls: at}) => {
+      const agiTypes = [];
+      for (let i = 0; i < nftEntries.length; i += 1) agiTypes.push(await manager.agiTypes(i, at));
+      return {agentNftRequired: await manager.agentNftRequired(at), agiTypes,
+        evidence: {method: 'unit-test-double', count: agiTypes.length, slot: '77', transactionsBroadcast: 0}};
+    }};
     return require(name);
   };
   const module = { exports: {} };

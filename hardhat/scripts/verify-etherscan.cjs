@@ -1,5 +1,6 @@
 const { Interface, Fragment, isAddress } = require('ethers');
 const { resolveInputSource } = require('./deployment-safety.cjs');
+const { publishedInputMatchesBuild } = require('./explorer-input-comparison.cjs');
 const API = 'https://api.etherscan.io/v2/api';
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 const canonical = value => Array.isArray(value) ? value.map(canonical) : value && typeof value === 'object'
@@ -55,7 +56,7 @@ async function verifyEtherscan({ chainId, address, artifact, buildInfo, construc
       typeof record.ConstructorArguments !== 'string' || record.ConstructorArguments.replace(/^0x/, '').toLowerCase() !== encodedArgs.toLowerCase()) {
       throw new Error('Etherscan verified source identity differs from the reviewed contract/compiler/constructor.');
     }
-    if (JSON.stringify(canonical(publishedInput)) !== JSON.stringify(canonical(sourceCode)) ||
+    if (!publishedInputMatchesBuild(publishedInput, sourceCode, { ...artifact, inputSourceName: inputSource }) ||
       JSON.stringify(comparableABI(abi)) !== JSON.stringify(comparableABI(artifact.abi))) {
       throw new Error('Etherscan published source, compiler settings, linked libraries or ABI differs from the reviewed build.');
     }
