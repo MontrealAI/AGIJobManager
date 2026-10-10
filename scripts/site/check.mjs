@@ -50,7 +50,7 @@ assert.equal(
   huge.agent + huge.validators + huge.wallet30 + huge.wallet10,
   huge.cost,
 );
-for (const file of ["index.html", "fr/index.html"]) {
+for (const file of ["index.html", "fr/index.html", "employers/index.html", "fr/employers/index.html"]) {
   const full = path.join(out, file),
     html = fs.readFileSync(full, "utf8");
   assert.equal((html.match(/<h1\b/g) || []).length, 1, `${file}: one h1`);
@@ -86,7 +86,12 @@ for (const file of ["index.html", "fr/index.html"]) {
     assert.ok(fs.existsSync(dest), `Missing Pages asset: ${url}`);
   }
   assert.ok(html.includes("connect-src 'none'"));
-  assert.equal((html.match(/class="resource"/g) || []).length, 12);
+  if (!file.includes("employers/")) assert.equal((html.match(/class="resource"/g) || []).length, 12);
+  else {
+    assert.ok(html.includes('id="employer-form"'));
+    assert.ok(html.includes('Load saved draft'));
+    assert.ok(html.includes('data-employer-language="'));
+  }
 }
 for (const alias of ["agijobmanager-usdc.html", "agijobmanagerv0.html"])
   assert.equal(

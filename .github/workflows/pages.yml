@@ -55,12 +55,16 @@ jobs:
           node scripts/site/build.mjs
           node scripts/site/check.mjs
           node --check site/assets/app.mjs
+          node --check site/assets/employer.mjs
+          node --test scripts/site/employer-model.test.mjs
       - name: Install browser test dependencies
         run: npm ci
       - name: Install test browser
         run: npx playwright install --with-deps chromium
       - name: Verify mobile, desktop and bilingual interactions
-        run: node scripts/site/browser-test.mjs
+        run: |
+          node scripts/site/browser-test.mjs
+          node scripts/site/employer-browser-test.mjs
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4

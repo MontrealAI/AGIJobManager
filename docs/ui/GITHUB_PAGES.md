@@ -1,8 +1,10 @@
 # GitHub Pages — publishing and maintenance
 
-The repository’s public entry point is [AGI Jobs](https://montrealai.github.io/AGIJobManager/), with a [French homepage](https://montrealai.github.io/AGIJobManager/fr/) and the [current USDC console](https://montrealai.github.io/AGIJobManager/agijobmanager-usdc.html).
+The repository’s public entry point is [AGI Jobs](https://montrealai.github.io/AGIJobManager/), with a [French homepage](https://montrealai.github.io/AGIJobManager/fr/), dedicated employer onboarding in [English](https://montrealai.github.io/AGIJobManager/employers/) and [French](https://montrealai.github.io/AGIJobManager/fr/employers/), and the [current USDC console](https://montrealai.github.io/AGIJobManager/agijobmanager-usdc.html).
 
 The homepage explains participant roles, the job lifecycle, illustrative work, exact base USDC allocation, historical mainnet evidence, and where to find the right guide. It does not connect a wallet, make RPC requests, collect analytics or send transactions. The linked console is the existing transaction interface and retains its own behavior and notices.
+
+The employer page provides bilingual guided drafting, payment illustrations, explicit local draft controls, a JSON brief download and an explicit handoff to the console's saved builder draft. It makes no wallet or RPC connection and does not publish a job. The console still requires **Load saved draft**, metadata publication, deployment checks and separate transaction review. See the [employer onboarding guide](EMPLOYER_ONBOARDING.md), including the measured scaling work required beyond static page delivery.
 
 ## One-time GitHub setting
 
@@ -26,8 +28,12 @@ To republish without editing, use **Actions → GitHub Pages → Run workflow �
 | --- | --- |
 | `site/content/en.json` and `site/content/fr.json` | English and French copy; update both for shared facts |
 | `site/template.mjs` | Semantic page layout and links |
+| `site/employers.mjs` | English/French employer page layout, copy, starter templates and guidance |
 | `site/assets/style.css` | Responsive purple visual design, keyboard focus and reduced-motion support |
 | `site/assets/app.mjs` | Role selection, guide filtering, copy control and calculator interaction |
+| `site/assets/employer.css` | Responsive employer form, progress and preview styling |
+| `site/assets/employer.mjs` | Guided form, explicit local persistence, export and console handoff |
+| `site/assets/employer-model.mjs` | Pure draft validation, exact amounts, serialization and console draft conversion |
 | `site/assets/payments.mjs` | BigInt USDC amounts, whole-percent rates and six-decimal formatting |
 | `scripts/site/build.mjs` | Dependency-free static build into ignored `build/pages/` |
 | `scripts/site/check.mjs` | Local paths, fragments, copy identity, invalid inputs and allocation checks |
@@ -46,6 +52,8 @@ From the repository root with its supported Node.js version:
 node scripts/site/build.mjs
 node scripts/site/check.mjs
 node --check site/assets/app.mjs
+node --check site/assets/employer.mjs
+node --check site/assets/employer-model.mjs
 ```
 
 For the browser checks, install the repository’s existing test dependencies and browser, then run:
@@ -64,12 +72,14 @@ The browser suite serves only the generated directory under the real `/AGIJobMan
 | --- | --- |
 | `/` | English homepage |
 | `fr/` | French homepage; linked technical guides and console are in English |
+| `employers/` | English guided employer onboarding and local job brief builder |
+| `fr/employers/` | French guided employer onboarding; the linked console and technical guides are in English |
 | `agijobmanager-usdc.html` | Byte-identical copy of `ui/agijobmanager-usdc.html` |
 | `agijobmanagerv0.html` | Preserved compatibility alias for that same current USDC console |
 | `agijobmanager.html` | Preserved committed single-file React interface from `ui/dist-ipfs/agijobmanager.html` |
 | `build-info.json` | Source commit, version, source paths, published file sizes and SHA-256 digests |
 | `404.html` | Return-to-home page |
-| `sitemap.xml` | Homepage language URLs |
+| `sitemap.xml` | Homepage and employer onboarding language URLs |
 
 These hosted consoles follow the publishing commit. For an immutable release, use [release assets](https://github.com/MontrealAI/AGIJobManager/releases) and verify their checksums. The existing UI CI remains responsible for reproducing and qualifying the committed React artifact. The Pages builder does not silently rebuild it with a different configuration.
 
