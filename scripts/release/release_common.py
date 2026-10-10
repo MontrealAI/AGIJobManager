@@ -20,7 +20,7 @@ WORKFLOWS = {
 }
 REQUIRED_STEPS = {
     'ci.yml': ['Lint', 'Build', 'Bytecode size check', 'Test'],
-    'ui.yml': ['npm audit --audit-level=low', 'npm run lint', 'npm run typecheck', 'npm run test', 'npm run test:e2e', 'npm run test:a11y', 'npm run verify:deterministic'],
+    'ui.yml': ['Run npm audit --audit-level=low', 'Run npm run lint', 'Run npm run typecheck', 'Run npm run test', 'Run npm run test:e2e', 'Run npm run test:a11y', 'Run npm run verify:deterministic'],
     'docs.yml': ['Check docs freshness/integrity', 'ENS docs integrity'],
     'security-verification.yml': ['Verify deployment toolchain', 'Forge build', 'Forge unit + fuzz tests', 'Forge invariants', 'Run and review extended Slither findings'],
     'mainnet-fork.yml': ['Test actual Circle USDC on a pinned local mainnet fork', 'Rehearse USDC and ENS cutover beside the actual legacy manager', 'Match the committed qualification to the executed source and observations'],
