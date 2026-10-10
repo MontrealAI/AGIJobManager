@@ -1,0 +1,67 @@
+name: One-shot v1.14.0 source preparation
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: write
+concurrency:
+  group: v114-one-shot-preparation
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: github.event.pull_request.head.repo.full_name == 'MontrealAI/AGIJobManager' && github.event.pull_request.head.ref == 'bootstrap/v1.14.0-preparation-20261010'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify exact byte identity before preparation
+        run: |
+          python3 - <<'PY'
+          import pathlib,hashlib,base64,lzma,json,subprocess
+          parts=sorted(pathlib.Path('.').glob('.v114-bootstrap-payload.part*'))
+          assert len(parts)==4
+          b=base64.b64decode(''.join(p.read_text() for p in parts),validate=True)
+          assert hashlib.sha256(b).hexdigest()=='2d0c4e7f0ff0af5c0228a98607528bbff7d79996027d3ca026bf725aa7e373f5'
+          payload=json.loads(lzma.decompress(b));assert len(payload)==16
+          path='hardhat/scripts/check-readiness.cjs'
+          b=pathlib.Path(path).read_bytes()
+          assert hashlib.sha256(b).hexdigest()=='e075221cd8641c21613d702c148c09c5fee0d6b19873cf175c2002e1465f609b'
+          blob=hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
+          assert subprocess.check_output(['git','diff','--name-only','191cf3590e5cdc08df1bb0af500ee28a91c8b010','--',path],text=True).strip()==''
+          script=pathlib.Path('.v114-bootstrap.py');text=script.read_text()
+          old="'hardhat/scripts/check-readiness.cjs':'4c3462d975feac82b380756d696aa49927dcad79'"
+          assert text.count(old)==1
+          script.write_text(text.replace(old,"'hardhat/scripts/check-readiness.cjs':'"+blob+"'"))
+          PY
+      - name: Expand hash-bound source and normalize test EOF whitespace
+        run: |
+          python3 .v114-bootstrap.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('hardhat/test/verify-etherscan.normalization.test.cjs')
+          s=p.read_text();p.write_text(s.rstrip('\n')+'\n')
+          PY
+          sha256sum hardhat/scripts/check-readiness.cjs
+          grep -nE 'readRegistrySnapshot|checkNftPolicy' hardhat/scripts/check-readiness.cjs
+      - name: Freeze isolated reviewable draft; qualification remains pending
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test -z "$(git diff --name-only 191cf3590e5cdc08df1bb0af500ee28a91c8b010 -- contracts hardhat.config.mjs hardhat/hardhat.config.js foundry.toml remappings.txt)"
+          test ! -e .v114-bootstrap.py
+          test ! -e .github/workflows/v114-preparation-bootstrap.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          tree="$(git write-tree)"
+          commit="$(printf '%s\n' 'Prepare v1.14.0 Ethereum Mainnet Verification & Readiness (draft; qualification pending)' | git commit-tree "$tree" -p 191cf3590e5cdc08df1bb0af500ee28a91c8b010)"
+          printf 'PREPARED_SOURCE_TREE=%s\nPREPARED_SOURCE_COMMIT=%s\n' "$tree" "$commit"
+          git -c 'credential.helper=!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f' push origin "$commit":refs/heads/release/v1.14.0-preparation
+          git ls-remote origin refs/heads/release/v1.14.0-preparation
+# Draft source only. No qualification, merge, tag, release or activation is implied.
