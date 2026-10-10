@@ -65,3 +65,5 @@ This source document never labels an unexecuted final-source gate as passed.
 
 No public-chain write, redeployment, ownership change, token approval or intake
 activation is part of these dependency repairs.
+
+The fresh Slither 0.11.6 reports from PR run 38058718461 match every existing reviewed finding identity, detector, severity and confidence: 12 extended, 29 reentrancy and 122 all-detector entries. The source-bound gate correctly rejected the changed root lockfile fingerprint. Only that fingerprint was refreshed after confirming the exact two authorized Node tooling repairs; no finding, rationale, detector or acceptance threshold was removed or changed. The immutable Actions evidence envelope SHA-256 is `3e2ca04ec314abe2f5da29d7dc99e2d28fb1140de8035729df11ed535dea43c2`. Final-source reruns remain mandatory.
