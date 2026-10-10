@@ -4,11 +4,13 @@ import {
   LANGUAGE_KEY,
   LIMITS,
   TEMPLATES,
+  PRIMARY_TEMPLATE_IDS,
   emptyDraft,
   parseDraft,
   templateFields,
   validateDraft,
-  durationSeconds,
+  draftTitle,
+  toReadableBrief,
   toMetadata,
   toConsoleDraft,
 } from "./employer-model.mjs";
@@ -22,15 +24,15 @@ function initialize() {
     fr = lang === "fr",
     say = (en, french) => (fr ? french : en);
   const labels = {
-    title: say("Job title", "Titre de la mission"),
-    summary: say("Summary", "Résumé"),
-    inputs: say("Public input URLs", "Liens vers les sources publiques"),
-    deliverables: say("Deliverables", "Livrables"),
-    acceptance: say("Acceptance criteria", "Critères d’acceptation"),
-    requirements: say("Requirements", "Exigences"),
+    title: say("Request name", "Nom de la demande"),
+    summary: say("What you would like", "Ce que vous souhaitez"),
+    inputs: say("Public links", "Liens publics"),
+    deliverables: say("What you will receive", "Ce que vous recevrez"),
+    acceptance: say("How to check the result", "Comment vérifier le résultat"),
+    requirements: say("Other details", "Autres précisions"),
     budget: say("Budget", "Budget"),
-    days: say("Duration", "Durée"),
-    template: say("Work template", "Modèle de mission"),
+    days: say("Time allowed", "Délai"),
+    template: say("Starting example", "Exemple de départ"),
     public: say(
       "Public-content confirmation",
       "Confirmation du contenu public",
@@ -62,28 +64,46 @@ function initialize() {
     const label = labels[error.field] || labels.title;
     if (error.code === "template")
       return say(
-        "Choose a work template to start.",
-        "Choisissez un modèle de mission pour commencer.",
+        "Choose an example, or choose “Something else” to start with your own idea.",
+        "Choisissez un exemple, ou « Autre chose » pour décrire votre idée.",
       );
-    if (error.code === "required")
-      return say(
-        `Add ${label.toLowerCase()} before continuing.`,
-        `Ajoutez le champ « ${label} » avant de continuer.`,
+    if (error.code === "required") {
+      const messages = {
+        summary: say(
+          "Tell us what you would like someone to do.",
+          "Dites-nous ce que vous souhaitez faire réaliser.",
+        ),
+        deliverables: say(
+          "Describe what you would like to receive, such as a website, document or report.",
+          "Décrivez ce que vous souhaitez recevoir, comme un site, un document ou un rapport.",
+        ),
+        acceptance: say(
+          "Tell us how you will know the work is done well.",
+          "Dites-nous comment vous saurez que le travail est bien fait.",
+        ),
+      };
+      return (
+        messages[error.field] ||
+        say(
+          `Add ${label.toLowerCase()} before continuing.`,
+          `Remplissez le champ « ${label} » avant de continuer.`,
+        )
       );
+    }
     if (error.code === "inputs")
       return say(
-        "Public input URLs: add 1–10 HTTPS links, one per line, without login credentials, tokens or signed access keys. Local addresses and IP literals are not accepted. Use public, licensed or synthetic material; link accessibility is not checked here.",
-        "Sources publiques : ajoutez de 1 à 10 liens HTTPS, un par ligne, sans identifiants, jetons ni clés d’accès signées. Les adresses locales et les adresses IP sont refusées. Utilisez du contenu public, sous licence ou synthétique; l’accessibilité n’est pas vérifiée ici.",
+        "Check your links. Each one must start with https:// and be a public website address, with no passwords or private access codes. Put one link on each line, up to 10. You can also leave this optional box empty. Links are not opened or checked here.",
+        "Vérifiez vos liens. Chacun doit commencer par https:// et être une adresse publique, sans mot de passe ni code d’accès privé. Mettez un lien par ligne, jusqu’à 10. Vous pouvez aussi laisser ce champ facultatif vide. Les liens ne sont pas ouverts ni vérifiés ici.",
       );
     if (error.code === "budget")
       return say(
-        "Budget: enter a positive USDC amount with up to 18 whole-number digits and 6 decimal places. Use a decimal point and no thousands separators.",
-        "Budget : saisissez un montant USDC positif avec au plus 18 chiffres entiers et 6 décimales. Utilisez une virgule ou un point décimal, sans séparateur de milliers.",
+        "Enter a budget above zero, such as 100 or 1000.50. Use a decimal point and no commas or spaces. Very large amounts and more than six decimal places are not accepted.",
+        "Entrez un budget supérieur à zéro, par exemple 100 ou 1000,50. Utilisez une virgule ou un point pour les décimales, sans espace. Les montants très élevés et plus de six décimales ne sont pas acceptés.",
       );
     if (error.code === "days")
       return say(
-        "Duration: enter a whole number from 1 to 365 days. The live contract may impose a lower limit.",
-        "Durée : saisissez un nombre entier de 1 à 365 jours. Le contrat actif peut imposer une limite inférieure.",
+        "Choose a number of days from 1 to 365, such as 7. The available limit will be checked again before payment.",
+        "Choisissez un nombre de jours de 1 à 365, par exemple 7. La limite disponible sera vérifiée avant le paiement.",
       );
     if (error.code === "lines")
       return say(
@@ -92,8 +112,8 @@ function initialize() {
       );
     if (error.code === "public")
       return say(
-        "Confirm that the brief and links contain only public, appropriately licensed or synthetic material, with no personal information, secrets or private access links.",
-        "Confirmez que la description et les liens contiennent uniquement du contenu public, sous licence appropriée ou synthétique, sans renseignements personnels, secrets ni liens d’accès privés.",
+        "Tick the box confirming that your request is safe to share publicly and uses only material you are allowed to share. Leave out personal information, passwords and private links.",
+        "Cochez la case confirmant que votre demande peut être partagée publiquement et utilise seulement du contenu que vous avez le droit de partager. N’incluez aucun renseignement personnel, mot de passe ni lien privé.",
       );
     return say(
       "This draft is too large or malformed. Shorten the fields or clear the draft and start again.",
@@ -133,6 +153,12 @@ function initialize() {
                 ? 3
                 : 1;
         showStage(errorStage, false);
+        for (
+          let parent = field?.parentElement;
+          parent;
+          parent = parent.parentElement
+        )
+          if (parent.tagName === "DETAILS") parent.open = true;
         field?.focus();
       });
       if (error.field !== "template")
@@ -143,36 +169,109 @@ function initialize() {
     $("errors").append(intro, list);
     $("errors").focus();
   }
+  const previews = {
+    website: [
+      "↗",
+      say("A simple website", "Un site simple"),
+      say(
+        "A welcoming page for your project, idea or organization.",
+        "Une page accueillante pour votre projet, idée ou organisation.",
+      ),
+    ],
+    intelligence: [
+      "⇄",
+      say("Compare my options", "Comparer mes options"),
+      say(
+        "A clear comparison to help you choose a product or service.",
+        "Un comparatif clair pour choisir un produit ou un service.",
+      ),
+    ],
+    presentation: [
+      "▤",
+      say("A presentation", "Une présentation"),
+      say(
+        "Attractive slides that make your message easy to understand.",
+        "Des diapositives attrayantes pour bien faire passer votre message.",
+      ),
+    ],
+    report: [
+      "≡",
+      say("Research a topic", "Étudier un sujet"),
+      say(
+        "Useful answers, clearly explained, with sources you can check.",
+        "Des réponses utiles, simples et accompagnées de sources.",
+      ),
+    ],
+    dashboard: [
+      "▥",
+      say("Make data easy to read", "Mieux lire mes données"),
+      say(
+        "Clear charts and a dashboard built from public information.",
+        "Des graphiques clairs à partir d’informations publiques.",
+      ),
+    ],
+    custom: [
+      "+",
+      say("Something else", "Autre chose"),
+      say(
+        "Tell us what you have in mind, in your own words.",
+        "Décrivez votre idée avec vos propres mots.",
+      ),
+    ],
+  };
   function renderTemplates() {
-    const container = $("templates");
+    const container = $("templates"),
+      more = $("more-templates");
     container.replaceChildren();
-    for (const item of TEMPLATES) {
+    more?.replaceChildren();
+    const ordered = [
+      ...PRIMARY_TEMPLATE_IDS.map((id) =>
+        TEMPLATES.find((item) => item.id === id),
+      ),
+      ...TEMPLATES.filter((item) => !PRIMARY_TEMPLATE_IDS.includes(item.id)),
+    ];
+    for (const item of ordered) {
       const button = document.createElement("button"),
+        icon = document.createElement("span"),
         name = document.createElement("strong"),
-        detail = document.createElement("span");
+        detail = document.createElement("span"),
+        preview = previews[item.id] || [
+          "◇",
+          item[lang].title,
+          item[lang].summary,
+        ];
       button.type = "button";
       button.className = "employer-template";
       button.dataset.template = item.id;
       button.id = `employer-template-${item.id}`;
       button.setAttribute("aria-pressed", String(draft.template === item.id));
-      name.textContent = item[lang].title;
-      detail.textContent = item[lang].summary;
-      button.append(name, detail);
+      icon.className = "employer-template-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = preview[0];
+      name.textContent = preview[1];
+      detail.textContent = preview[2];
+      button.append(icon, name, detail);
       button.addEventListener("click", () => {
         if (draft.template === item.id) return;
-        const next = read();
-        if (
-          [
+        const next = read(),
+          previous = draft.template ? templateFields(draft.template, lang) : {},
+          edited = [
             "title",
             "summary",
             "deliverables",
             "acceptance",
             "requirements",
-          ].some((key) => next.fields[key].trim()) &&
+          ].some(
+            (key) =>
+              next.fields[key].trim() &&
+              next.fields[key] !== (previous[key] || ""),
+          );
+        if (
+          edited &&
           !window.confirm(
             say(
-              "Replace the current title, summary, deliverables, acceptance criteria and requirements with this template? Your source links and budget will stay.",
-              "Remplacer le titre, le résumé, les livrables, les critères d’acceptation et les exigences par ce modèle? Vos liens sources et votre budget seront conservés.",
+              "Use this example instead? It will replace your written request. Your links, budget and time allowed will stay.",
+              "Utiliser cet exemple à la place? Il remplacera le texte de votre demande. Vos liens, votre budget et votre délai seront conservés.",
             ),
           )
         )
@@ -185,13 +284,39 @@ function initialize() {
         clearErrors();
         status(
           say(
-            "Template selected. Continue to tailor the brief to your actual project.",
-            "Modèle sélectionné. Continuez pour adapter la mission à votre projet.",
+            "Example selected. Choose Next to make it your own.",
+            "Exemple sélectionné. Choisissez Suivant pour l’adapter à votre projet.",
           ),
         );
-        $("templates").querySelector(`[data-template="${item.id}"]`)?.focus();
+        document.getElementById(`employer-template-${item.id}`)?.focus();
       });
-      container.append(button);
+      (PRIMARY_TEMPLATE_IDS.includes(item.id) || !more
+        ? container
+        : more
+      ).append(button);
+    }
+    if ($("selection")) {
+      const selected = TEMPLATES.find((item) => item.id === draft.template),
+        title = selected
+          ? previews[selected.id]?.[1] || selected[lang].title
+          : "";
+      $("selection").textContent = title
+        ? say(
+            `Selected: ${title}. Choose Next to tell us more.`,
+            `Votre choix : ${title}. Choisissez Suivant pour en dire plus.`,
+          )
+        : say(
+            "Choose an example to get started. You can change it later.",
+            "Choisissez un exemple pour commencer. Vous pourrez le changer ensuite.",
+          );
+    }
+    if (
+      more &&
+      draft.template &&
+      !PRIMARY_TEMPLATE_IDS.includes(draft.template)
+    ) {
+      const details = more.closest("details");
+      if (details) details.open = true;
     }
   }
   function checkConflict() {
@@ -231,11 +356,12 @@ function initialize() {
       "acceptance",
       "requirements",
     ]) {
-      if (!fields[key].trim()) continue;
+      if (key !== "title" && !fields[key].trim()) continue;
       const term = document.createElement("dt"),
         description = document.createElement("dd");
       term.textContent = labels[key];
-      description.textContent = fields[key].trim();
+      description.textContent =
+        key === "title" ? draftTitle(fields) : fields[key].trim();
       list.append(term, description);
     }
     const money = document.createElement("p"),
@@ -243,14 +369,22 @@ function initialize() {
       amounts = splitPayment(fields.budget);
     money.className = "employer-budget-summary";
     money.textContent = `${say("Total job budget", "Budget total de la mission")} : ${formatUSDC(parseUSDC(fields.budget), lang)}`;
-    duration.textContent = `${labels.days} : ${fields.days} ${say("days after assignment", "jours après l’attribution")} (${durationSeconds(fields.days)} ${say("seconds", "secondes")})`;
+    duration.textContent = `${labels.days} : ${fields.days} ${say("days after work is assigned", "jours après l’attribution du travail")}`;
     const estimate = document.createElement("p");
     estimate.className = "fine-print";
     estimate.textContent = say(
       `Illustration at an 8% validator share: agent ${formatUSDC(amounts.agent, lang)}, validators ${formatUSDC(amounts.validators, lang)}, protocol allocations ${formatUSDC(amounts.wallet30 + amounts.wallet10, lang)}. Gas is additional. Verify the live rate and limits in the console.`,
       `Exemple avec une part de validation de 8 % : agent ${formatUSDC(amounts.agent, lang)}, validateurs ${formatUSDC(amounts.validators, lang)}, allocations du protocole ${formatUSDC(amounts.wallet30 + amounts.wallet10, lang)}. Les frais de réseau sont en sus. Vérifiez le taux et les limites actifs dans la console.`,
     );
-    $("review").append(money, duration, estimate, list);
+    const breakdown = document.createElement("details"),
+      explanation = document.createElement("summary");
+    breakdown.className = "employer-budget-breakdown";
+    explanation.textContent = say(
+      "How the budget is shared (example)",
+      "Comment le budget est réparti (exemple)",
+    );
+    breakdown.append(explanation, estimate);
+    $("review").append(money, duration, list, breakdown);
     checkConflict();
   }
   function showStage(next, focus = true) {
@@ -265,7 +399,20 @@ function initialize() {
       else button.removeAttribute("aria-current");
     });
     $("back").hidden = stage === 0;
-    $("next").hidden = stage === 3;
+    const nextLabels = [
+      say("Next: tell us more", "Suivant : votre demande"),
+      say("Next: choose your budget", "Suivant : votre budget"),
+      say("Review my request", "Relire ma demande"),
+    ];
+    for (const button of [$("next"), $("next-top")].filter(Boolean)) {
+      button.hidden = stage === 3;
+      button.textContent = nextLabels[stage] || "";
+    }
+    if ($("step-status"))
+      $("step-status").textContent = say(
+        `Step ${stage + 1} of 4`,
+        `Étape ${stage + 1} sur 4`,
+      );
     if (stage === 3) renderReview();
     if (focus)
       document
@@ -297,8 +444,8 @@ function initialize() {
   const storageError = () =>
     status(
       say(
-        "Browser storage is unavailable. Your current brief remains on this page; download its JSON after completing the review. Nothing was saved or sent to the console.",
-        "Le stockage du navigateur est indisponible. Votre mission reste sur cette page; téléchargez son JSON après la vérification. Rien n’a été enregistré ni envoyé à la console.",
+        "This browser could not save your request. Keep this page open, then download a copy at the review step. Nothing was sent or paid.",
+        "Ce navigateur n’a pas pu enregistrer votre demande. Gardez cette page ouverte, puis téléchargez une copie à l’étape de relecture. Rien n’a été envoyé ni payé.",
       ),
     );
   form.addEventListener("submit", (event) => event.preventDefault());
@@ -308,7 +455,22 @@ function initialize() {
       $("public").checked = false;
   });
   for (const [key, max] of Object.entries(LIMITS)) $(key).maxLength = max;
-  $("next").addEventListener("click", () => navigate(Math.min(stage + 1, 3)));
+  for (const button of [$("next"), $("next-top")].filter(Boolean))
+    button.addEventListener("click", () => navigate(Math.min(stage + 1, 3)));
+  $("larger-text")?.addEventListener("click", () => {
+    const large = document.body.classList.toggle("large-text");
+    $("larger-text").setAttribute("aria-pressed", String(large));
+  });
+  document.querySelectorAll("[data-employer-budget]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const value = button.dataset.employerBudget;
+      if (!/^[1-9]\d*$/.test(value)) return;
+      $("budget").value = value;
+      $("public").checked = false;
+      hasChanges = true;
+      $("budget").focus();
+    }),
+  );
   $("back").addEventListener("click", () => navigate(Math.max(stage - 1, 0)));
   document
     .querySelectorAll("[data-employer-step]")
@@ -330,8 +492,8 @@ function initialize() {
       hasChanges = false;
       status(
         say(
-          "Draft saved on this browser. It is unencrypted and has not been posted or funded.",
-          "Brouillon enregistré dans ce navigateur. Il n’est pas chiffré et n’a été ni publié ni financé.",
+          "Saved on this browser. Use Open my saved request when you come back. Anyone using this browser may be able to read it. Nothing has been published or paid.",
+          "Enregistré dans ce navigateur. À votre retour, choisissez Ouvrir ma demande enregistrée. Une personne utilisant ce navigateur pourrait la lire. Rien n’a été publié ni payé.",
         ),
       );
     } catch {
@@ -345,8 +507,8 @@ function initialize() {
       if (raw === null) {
         status(
           say(
-            "No saved onboarding draft was found in this browser.",
-            "Aucun brouillon de démarrage enregistré dans ce navigateur.",
+            "There is no saved request in this browser yet. Choose Save on this device to keep the request you are working on.",
+            "Il n’y a pas encore de demande enregistrée dans ce navigateur. Choisissez Enregistrer sur cet appareil pour conserver votre travail.",
           ),
         );
         return;
@@ -383,8 +545,8 @@ function initialize() {
     showStage(restored.stage);
     status(
       say(
-        "Saved draft restored. Review it before sharing or funding.",
-        "Brouillon enregistré restauré. Relisez-le avant de le partager ou de le financer.",
+        "Your saved request is open. You can keep editing it, then review it before sharing or payment.",
+        "Votre demande enregistrée est ouverte. Vous pouvez la modifier, puis la relire avant de la partager ou de payer.",
       ),
     );
   });
@@ -423,24 +585,47 @@ function initialize() {
           ),
     );
   });
-  $("export").addEventListener("click", () => {
-    if (!ready()) return;
-    const blob = new Blob(
-        [JSON.stringify(toMetadata(read(), lang), null, 2) + "\n"],
-        { type: "application/json" },
-      ),
+  function download(contents, type, filename) {
+    const blob = new Blob([contents], { type }),
       url = URL.createObjectURL(blob),
       link = document.createElement("a");
     link.href = url;
-    link.download = "agi-job-brief.json";
+    link.download = filename;
     document.body.append(link);
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  $("download-text")?.addEventListener("click", () => {
+    if (!ready()) return;
+    download(
+      toReadableBrief(read(), lang),
+      "text/plain;charset=utf-8",
+      fr ? "ma-demande-agi-jobs.txt" : "my-agi-jobs-request.txt",
+    );
     status(
       say(
-        "JSON downloaded. This is an unposted draft. In the console, verify live parameters and generate the final metadata before publishing.",
-        "JSON téléchargé. Ce brouillon n’est pas publié. Dans la console, vérifiez les paramètres actifs et générez les métadonnées finales avant publication.",
+        "Your readable copy has been downloaded. You can open it, keep it or share it with someone you trust. Your request has not been published or paid.",
+        "Votre copie lisible a été téléchargée. Vous pouvez l’ouvrir, la conserver ou la partager avec une personne de confiance. Votre demande n’a été ni publiée ni payée.",
+      ),
+    );
+  });
+  $("print")?.addEventListener("click", () => {
+    if (!ready()) return;
+    showStage(3, false);
+    window.print();
+  });
+  $("export").addEventListener("click", () => {
+    if (!ready()) return;
+    download(
+      JSON.stringify(toMetadata(read(), lang), null, 2) + "\n",
+      "application/json",
+      "agi-job-brief.json",
+    );
+    status(
+      say(
+        "Technical JSON copy downloaded. This is a draft. Before publishing, check the current terms and create the final job file in the console.",
+        "Copie technique JSON téléchargée. Ceci est un brouillon. Avant la publication, vérifiez les conditions actuelles et créez le fichier final dans la console.",
       ),
     );
   });
@@ -540,6 +725,7 @@ function initialize() {
   form.querySelectorAll("[data-employer-control]").forEach((control) => {
     control.disabled = false;
   });
+  if ($("larger-text")) $("larger-text").disabled = false;
   form.hidden = false;
   if (carried) hasChanges = true;
   if (carried)

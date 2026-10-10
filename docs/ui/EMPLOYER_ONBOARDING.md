@@ -1,19 +1,25 @@
-# Employer onboarding — from a clear brief to a funded job
+# Employer onboarding — prepare your first request
 
-Start with the dedicated [English employer page](https://montrealai.github.io/AGIJobManager/employers/) or [French employer page](https://montrealai.github.io/AGIJobManager/fr/employers/). It helps you describe a result, choose a USDC budget and assignment duration, and prepare a brief before opening the transaction console.
+Start with the dedicated [English employer page](https://montrealai.github.io/AGIJobManager/employers/) or [French employer page](https://montrealai.github.io/AGIJobManager/fr/employers/). Choose an example, describe what you want, set a budget and work period, then read your request. The four-step form uses everyday language, with examples you can edit and optional details you can open when needed.
+
+Preparing a request is free and needs no account or wallet. You can download a readable copy or print it before deciding whether to continue. Posting and paying still use the separate, advanced transaction console. That step requires a compatible wallet, native USDC and ETH on Ethereum, deployment checks and a publicly hosted job specification. Follow the console checklist before committing funds.
 
 The onboarding page is a static planning interface. Drafting needs no wallet, ENS name or account. It does not select a live manager, verify live availability, reserve an Agent or reviewer, upload your brief, or send a transaction. The [deployment registry](../../config/usdc-deployment.json) currently supplies no default live manager. Obtain and independently verify your operator's deployment before funding.
 
 ## Prepare your first job
 
-1. **Choose a result.** Choose the closest template, then tailor it to your own deliverable. Example jobs and budgets are planning aids, not offers, completed jobs or guaranteed capability.
-2. **Make success checkable.** Specify the files or behavior to deliver, public input sources, acceptance tests and evidence a separate reviewer should inspect. State permitted tools, dependencies and licensing where relevant.
-3. **Set the full job cost in USDC.** Use up to six decimal places. This is the total escrowed job cost, including the settlement allocations below. ETH for gas and any external service expenses are separate.
-4. **Set the duration after assignment.** The contract counts seconds from the first successful eligible Agent application, not from when you write or post the brief. Review, challenges and disputes can extend the time until settlement.
-5. **Review the public content and download the brief.** Use **Download job brief (JSON)** to keep a portable planning copy. Do not include personal information, confidential inputs, credentials or private sharing links. Downloading does not upload or publish the brief.
-6. **Continue to the console when ready.** Use **Continue to posting console** for the existing USDC interface. Follow the draft-transfer instructions below and verify the transaction's actual fields before signing.
+1. **Choose an example.** Begin with a website, comparison, presentation, research report, data display or your own idea, then change the words to fit your request. Eight more technical examples remain available in a separate section. Examples and budgets are planning aids, not offers, completed jobs or guaranteed capability.
+2. **Describe what you want.** Answer three questions: what should be done, what should you receive, and how can someone check that it is done? Public source links are optional when the request contains everything needed; otherwise provide the public materials required to do the work. Add a title or extra requirements only when useful; the page can generate a title from your description.
+3. **Choose a budget and work period.** USDC is a digital token designed to track the US dollar; this is not a price in Canadian dollars. Your budget is the total amount set aside for the job, including the settlement allocations below. ETH transaction fees and any external service expenses are separate. The work period starts when an eligible Agent takes the job, not when you write or post the request. Review, challenges and disputes can extend the time until settlement.
+4. **Read your request.** Check every detail and confirm that its content can be used and made public, then download a readable text copy or print it. Do not include personal information, confidential inputs, credentials or private sharing links. The download and print actions do not upload, publish or pay for a job. A JSON export and the advanced posting handoff remain available when needed.
 
-Write a small first job with observable acceptance criteria. For example: “Add CSV export to this public demo; deliver the source change, a runnable demo, and tests covering empty data, commas and Unicode.” Avoid a broad instruction such as “improve the product” without a definition of completion.
+Start with one small result. For example: “Create a two-page beginner guide from these public gardening resources. Use everyday language, large headings and a checklist. Include a link for every factual claim and deliver a PDF plus an editable version.” Before posting, make sure a reviewer can check the requested result against the sources. A request such as “make something useful” needs a clearer description of completion.
+
+## Reading and using the page
+
+The employer page provides larger readable text, high-contrast form surfaces, large controls and an option to enlarge the text further. The text-size choice applies to the current page; use the browser's zoom controls if you need more magnification. Keyboard navigation, visible focus, reduced-motion preferences and narrow-screen layouts are supported. The initial examples describe familiar results; technical vocabulary and detailed payment information are explained or placed in optional sections.
+
+You can go back through the steps to make changes. Validation explains missing or incorrect information beside the form without deleting your work. Saving, resuming and clearing a browser draft are optional actions. Worker availability must still be checked before funding. Usability testing with people of different ages, reading preferences and technical experience remains necessary before claiming universal accessibility or ease of use.
 
 ## Drafts, language switching and the console handoff
 
@@ -21,9 +27,9 @@ Typing does not automatically persist an onboarding draft. Explicit save, restor
 
 The console handoff can write the compatible builder draft on this device only after the page's explicit transfer action and any required replacement confirmation. In the console, open the job builder and choose **Load saved draft**. The console does not load it automatically. Read every restored field, including the USDC payout and duration in seconds.
 
-The download is a planning brief. It is not a funded job, admission authorization, transaction receipt or final published metadata URI. In the console, complete the required metadata fields, generate and review the job specification, then publish it using your chosen public hosting or pinning workflow. Put the resulting durable specification URI in the posting form. A local file on your computer is not a publicly retrievable specification.
+The text download, printout and JSON export are planning copies. They are not funded jobs, admission authorizations, transaction receipts or final published metadata URIs. In the console, complete the required metadata fields, generate and review the job specification, then publish it using your chosen public hosting or pinning workflow. Put the resulting durable specification URI in the posting form. A local file on your computer is not a publicly retrievable specification.
 
-If storage is unavailable, use the JSON download and copy the reviewed fields into the console. Export an existing console draft before replacing it. Clearing an onboarding draft cannot erase downloads, published content or on-chain records; use the console's **Clear saved job content** for its own saved content.
+If storage is unavailable, download your request and copy the reviewed fields into the console. The advanced JSON export retains the structured fields for technical users. Export an existing console draft before replacing it. Clearing an onboarding draft cannot erase downloads, published content or on-chain records; use the console's **Clear saved job content** for its own saved content.
 
 ## What to verify before funding
 
