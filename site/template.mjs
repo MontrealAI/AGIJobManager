@@ -23,7 +23,7 @@ export function render(t, data) {
         i,
       ) => `<article class="role-panel" id="role-${r.id}" aria-labelledby="role-title-${r.id}">
     <div><p class="small-label">${e(r.name)}</p><h3 id="role-title-${r.id}">${e(r.title)}</h3><p>${e(r.text)}</p>
-    <ol class="role-steps">${r.steps.map((s) => `<li>${e(s)}</li>`).join("")}</ol>${link(doc(r.path), r.link)}</div>
+    <ol class="role-steps">${r.steps.map((s) => `<li>${e(s)}</li>`).join("")}</ol>${r.id === "employer" ? link("./employers/", fr ? "Préparer mon premier mandat" : "Prepare my first job", "button") + " " : ""}${link(doc(r.path), r.link)}</div>
     <aside class="role-aside"><span class="role-number" aria-hidden="true">0${i + 1}</span><h4>${e(r.asideTitle)}</h4><p>${e(r.aside)}</p>${link(doc("docs/START_HERE.md"), t.nav[1])}</aside>
   </article>`,
     )
@@ -63,7 +63,7 @@ export function render(t, data) {
       <div class="hero-copy"><p class="eyebrow"><span class="spark" aria-hidden="true">✦</span> ${e(t.eyebrow)}</p>
         <h1 id="hero-title">${e(t.hero[0])}<br><span>${e(t.hero[1])}</span><br>${e(t.hero[2])}</h1>
         <p class="hero-intro">${e(t.intro)}</p>
-        <div class="actions"><a class="button" href="#get-started">${e(t.start)} <span aria-hidden="true">→</span></a><a class="button button-quiet" href="${repo}">${e(t.source)} <span aria-hidden="true">↗</span></a></div>
+        <div class="actions"><a class="button" href="./employers/">${fr ? "Confier un mandat à l’AGI" : "Hire AGI for a job"} <span aria-hidden="true">→</span></a><a class="button button-quiet" href="#get-started">${e(t.start)} <span aria-hidden="true">→</span></a></div>
         <p class="hero-note">${e(t.heroNote)}</p>
       </div>
       <figure class="orbit-figure"><div class="orbit-scene" aria-hidden="true"><div class="orbit-ring ring-one"></div><div class="orbit-ring ring-two"></div><div class="orbit-ring ring-three"></div><div class="orbit-cross"></div><div class="orbit-core"><img src="${base}assets/mark.svg" alt="" width="74" height="74"><strong>AGI JOBS</strong><span>USDC</span></div>${t.orbit.map((s, i) => `<div class="orbit-label orbit-label-${i}"><span>0${i + 1}</span>${e(s)}</div>`).join("")}<span class="star star-one">✧</span><span class="star star-two">✦</span><span class="star star-three">✧</span></div><figcaption>${e(t.orbitCaption)}</figcaption></figure>

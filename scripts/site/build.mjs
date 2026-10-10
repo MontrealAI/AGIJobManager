@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { render } from "../../site/template.mjs";
+import { renderEmployer } from "../../site/employers.mjs";
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -46,7 +47,7 @@ if (
   );
 fs.rmSync(output, { recursive: true, force: true });
 fs.mkdirSync(path.join(output, "assets"), { recursive: true });
-for (const name of ["app.mjs", "payments.mjs", "style.css", "mark.svg"])
+for (const name of ["app.mjs", "payments.mjs", "style.css", "mark.svg", "employer.mjs", "employer-model.mjs", "employer.css"])
   fs.copyFileSync(
     path.join(root, "site/assets", name),
     path.join(output, "assets", name),
@@ -64,6 +65,9 @@ for (const lang of ["en", "fr"]) {
   const directory = lang === "en" ? output : path.join(output, lang);
   fs.mkdirSync(directory, { recursive: true });
   fs.writeFileSync(path.join(directory, "index.html"), html);
+  const employerDirectory = path.join(directory, "employers");
+  fs.mkdirSync(employerDirectory, { recursive: true });
+  fs.writeFileSync(path.join(employerDirectory, "index.html"), renderEmployer(lang, { commit, version: pkg.version }));
 }
 const consoleHtml = read("ui/agijobmanager-usdc.html");
 for (const name of ["agijobmanager-usdc.html", "agijobmanagerv0.html"])
@@ -86,7 +90,7 @@ fs.writeFileSync(
 );
 fs.writeFileSync(
   path.join(output, "sitemap.xml"),
-  '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://montrealai.github.io/AGIJobManager/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/</loc></url></urlset>',
+  '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://montrealai.github.io/AGIJobManager/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/employers/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/employers/</loc></url></urlset>',
 );
 const files = {};
 function inventory(dir) {
