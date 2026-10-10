@@ -1,10 +1,22 @@
 # AGIJobManager UI / Sovereign Ops Console
 
+## Looking for a simple place to start?
+
+**[Start my request — English →](https://montrealai.github.io/AGIJobManager/employers/)** · **[Commencer ma demande — français →](https://montrealai.github.io/AGIJobManager/fr/employers/)**
+
+The guided request page helps you describe a website, presentation, report or other computer task with everyday words. Choose an example, make it yours, then save, download or print. Large buttons and **Larger text / Texte agrandi** make the page easier to use.
+
+**Preparation is free, with no account or wallet required.** Publishing and payment remain on a separate, advanced screen using a digital wallet, USDC and ETH network fees. Preparing a request does not post, pay for or reserve a job. See the [employer onboarding guide](EMPLOYER_ONBOARDING.md).
+
+## Developer UI and operations console
+
 Next.js dApp and operations console with **read-only first**, **simulation-first writes**, and deterministic demo mode.
 
 USDC entry: [release status and verified assets](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.14.0) and current [repository console](../../ui/agijobmanager-usdc.html). The v1.13.0 console includes privacy reviews, explicit draft saving and credential-safe uploads. See [release versus current-source scope](../V1_RELEASE_SCOPE.md#published-download-versus-current-source) for the deployment-tooling changes included in v1.13.0. Voting requires the `getJobBonds` getter, absent from v0.9.5 and older managers. Read the [compatibility notes and earlier bond-quote limitation](../qualification/BUYER_ECONOMICS_FOLLOWUP.md). Verify checksums and configure a verified compatible v0.9.6/v0.9.7 or v1.0.x/v1.13.0 USDC manager; no live manager is supplied by default.
 
 ## Quick links
+
+- [Guided request page — English](https://montrealai.github.io/AGIJobManager/employers/) · [Page guidée — français](https://montrealai.github.io/AGIJobManager/fr/employers/)
 - [AGI Jobs website](https://montrealai.github.io/AGIJobManager/) · [Français](https://montrealai.github.io/AGIJobManager/fr/)
 - [Hosted current USDC console](https://montrealai.github.io/AGIJobManager/agijobmanager-usdc.html)
 - [USDC standalone operator guide](./GENESIS_JOB_MAINNET_HTML_UI.md)

@@ -1,17 +1,17 @@
 {
   "lang": "fr",
-  "title": "AGI Jobs — Travail utile. Résultats vérifiables. Paiement en USDC.",
-  "description": "Découvrez AGIJobManager, choisissez votre rôle, comprenez les paiements en USDC et ouvrez la console. Guides pour employeurs, agents, validateurs et opérateurs.",
+  "title": "AGI Jobs — Votre prochain projet commence ici.",
+  "description": "Préparez une demande claire pour un site, une présentation, une recherche ou un autre travail numérique. Des exemples simples et un brouillon gratuit avant toute publication ou tout paiement.",
   "skip": "Aller au contenu",
   "nav": ["Fonctionnement", "Pour commencer", "Paiements", "Ressources"],
   "console": "Ouvrir la console USDC",
   "language": "English",
-  "eyebrow": "Un protocole pour un travail vérifiable",
-  "hero": ["Travail utile.", "Résultats vérifiables.", "Paiement en USDC."],
-  "intro": "D’un mandat bien défini à un résultat que l’on peut examiner. AGIJobManager coordonne employeurs, AGI Agents et validateurs indépendants grâce au séquestre, aux preuves et au règlement sur Ethereum.",
-  "start": "Choisir votre point de départ",
+  "eyebrow": "Chaque bonne idée mérite un point de départ",
+  "hero": ["Votre prochain projet.", "Commence ici.", ""],
+  "intro": "Besoin d’un site, d’une présentation ou d’une recherche claire ? Décrivez ce que vous souhaitez faire réaliser avec l’aide d’agents IA. Nous vous guidons dans votre demande, une étape à la fois.",
+  "start": "Montrez-moi comment ça marche",
   "source": "Explorer le code source",
-  "heroNote": "Le travail s’effectue hors chaîne. Le séquestre et le règlement passent par Ethereum.",
+  "heroNote": "Préparation gratuite. Aucune inscription. Aucun paiement à cette étape.",
   "orbit": [
     "Définir le résultat",
     "Réaliser le travail",
@@ -24,24 +24,24 @@
   "releaseLink": "Versions et téléchargements vérifiés",
   "releaseNote": "La console s’ouvre sans gestionnaire présélectionné. Utilisez le déploiement vérifié de votre opérateur.",
   "roleEyebrow": "01 / VOTRE POINT DE DÉPART",
-  "roleTitle": "Que souhaitez-vous faire ?",
-  "roleIntro": "Un parcours clair pour chaque participant, du cahier des charges au reçu final.",
+  "roleTitle": "Une place pour chaque participant.",
+  "roleIntro": "Vous avez un travail à faire réaliser ? Commencez par préparer votre demande. Des guides sont aussi disponibles pour ceux qui réalisent, vérifient et organisent le travail.",
   "roles": [
     {
       "id": "employer",
-      "label": "Publier un mandat",
-      "name": "Pour les employeurs",
-      "title": "Acheter un résultat défini.",
-      "text": "Commencez par un livrable qu’une autre personne peut examiner et accepter. Financez le coût convenu en USDC.",
+      "label": "Demander un travail",
+      "name": "Pour les personnes avec un projet",
+      "title": "Dites-nous ce dont vous avez besoin.",
+      "text": "Partez d’un exemple utile ou rédigez votre propre demande. Quelques questions simples vous aident à décrire le résultat souhaité.",
       "steps": [
-        "Définissez le périmètre, les données publiques, l’échéance et les critères d’acceptation mesurables.",
-        "Vérifiez le contrat, la répartition des paiements et les participants. Autorisez les USDC nécessaires, puis publiez le mandat.",
-        "Examinez les preuves livrées. Suivez les étapes d’acceptation, de litige ou de règlement correspondant à l’état réel du mandat."
+        "Décrivez ce que vous souhaitez recevoir, comment vous le vérifierez, votre budget et votre délai.",
+        "Relisez votre demande, modifiez-la et téléchargez ou imprimez une copie. Rien n’est publié ni payé à cette étape.",
+        "Si vous décidez de publier, utilisez l’écran avancé distinct pour vérifier la configuration active, les conditions de paiement et les besoins du portefeuille."
       ],
       "link": "Guide des participants et employeurs",
       "path": "docs/USERS.md",
-      "asideTitle": "Avant de publier",
-      "aside": "Une autorisation de dépense ne crée pas de mandat. Conservez son identifiant et le reçu de transaction après publication."
+      "asideTitle": "Votre demande, à votre rythme",
+      "aside": "Vous pouvez préparer une demande sans compte ni portefeuille. Publier et financer un travail sont des étapes distinctes : un brouillon enregistré n’est pas un travail publié."
     },
     {
       "id": "agent",
@@ -282,7 +282,7 @@
     ],
     [
       "Puis-je commencer immédiatement depuis ce site ?",
-      "Vous pouvez lire les guides et ouvrir la console actuelle. Les transactions nécessitent un gestionnaire vérifié et configuré, des participants admissibles lorsque requis, des USDC et de l’ETH pour les frais réseau. Cette page d’accueil ne connecte aucun portefeuille et n’envoie aucune transaction."
+      "Oui. Vous pouvez préparer votre demande gratuitement, sans compte, sans portefeuille et sans paiement. Choisissez un exemple et répondez aux questions simples. La publication et le financement se font ensuite dans la console distincte. Ils nécessitent un gestionnaire vérifié et configuré, des participants admissibles lorsque requis, des USDC pour le travail et de l’ETH pour les frais de réseau. Préparer un brouillon ne publie pas de travail."
     ],
     [
       "L’Agent reçoit-il tout le budget affiché ?",
@@ -301,10 +301,79 @@
       "Les soumissions publiques ne doivent contenir ni renseignements personnels, ni contenu confidentiel, ni identifiants d’accès, ni liens privés. Utilisez des données publiques, sous licence ou synthétiques. L’exécution informatique se fait hors chaîne et doit être validée pour le travail prévu."
     ]
   ],
-  "endTitle": "Commencez par un mandat clair.",
-  "endText": "Choisissez votre rôle. Comprenez les conditions. Vérifiez le résultat.",
+  "endTitle": "Que souhaitez-vous créer ?",
+  "endText": "Choisissez un exemple, dites-nous ce qui compte et faites le premier pas. Vous pouvez modifier, enregistrer ou imprimer votre demande avant de décider de la publier.",
   "footer": "Travail utile. Ambition planétaire.",
   "footerLinks": ["GitHub", "Versions", "Sécurité", "Droit et confidentialité"],
   "built": "Généré à partir du commit",
-  "noscript": "Les guides et les liens vers la console fonctionnent sans JavaScript. Activez-le pour choisir un rôle, filtrer les guides et utiliser le calculateur."
+  "noscript": "Les guides et les liens vers la console fonctionnent sans JavaScript. Activez-le pour choisir un rôle, filtrer les guides et utiliser le calculateur.",
+  "easyStart": {
+    "navLabel": "Commencer ici",
+    "largerText": "Texte agrandi",
+    "eyebrow": "UN PREMIER PAS TOUT SIMPLE",
+    "title": "Parlez-nous de votre idée.",
+    "intro": "Pas besoin de mots techniques pour expliquer votre projet. Choisissez un exemple pour vous inspirer, puis adaptez la demande à vos besoins.",
+    "examples": [
+      [
+        "Un site simple",
+        "Une page accueillante pour votre projet, groupe ou organisation."
+      ],
+      [
+        "Comparer mes options",
+        "Un comparatif clair des produits ou services qui vous intéressent."
+      ],
+      [
+        "Une présentation",
+        "Des diapositives attrayantes pour expliquer votre idée."
+      ],
+      [
+        "Étudier un sujet",
+        "Un rapport utile avec des réponses claires et des sources publiques."
+      ],
+      [
+        "Mieux lire les données",
+        "Des graphiques pour comprendre des informations publiques."
+      ],
+      ["Autre chose", "Décrivez votre idée avec vos propres mots."]
+    ],
+    "cta": "Préparer ma demande",
+    "steps": [
+      [
+        "Choisir un exemple",
+        "Partez d’un exemple familier ou décrivez votre propre idée."
+      ],
+      [
+        "L’adapter à vos besoins",
+        "Précisez ce que vous souhaitez recevoir, votre budget et votre délai."
+      ],
+      [
+        "Relire votre demande",
+        "Modifiez ce que vous voulez, puis téléchargez ou imprimez une copie."
+      ]
+    ],
+    "reassurance": "Prenez votre temps. Préparer une demande est gratuit, ne publie aucun travail et n’autorise aucun paiement.",
+    "paymentNote": "La publication se fait ensuite, sur un écran distinct. Elle exige une configuration vérifiée, un portefeuille Ethereum, des USDC pour le travail et de l’ETH pour les frais de réseau. Vérifiez les conditions et la disponibilité avant de payer.",
+    "toolsTitle": "Vous cherchez les outils techniques ?",
+    "toolsText": "Les guides ci-dessous expliquent les rôles, le parcours d’un travail, les vérifications de déploiement et les paiements. La console avancée permet de publier et de gérer les travaux financés.",
+    "consoleLink": "Publication et paiements · avancé"
+  },
+  "heroPreview": {
+    "label": "Exemple de demande",
+    "quote": "J’aimerais un site simple pour notre groupe communautaire.",
+    "note": "Ceci est un exemple. Choisissez et adaptez votre propre demande.",
+    "points": [
+      [
+        "Mon idée",
+        "Une page accueillante avec nos activités et des informations publiques."
+      ],
+      [
+        "Ce que je recevrai",
+        "Les fichiers du site et des instructions simples pour le mettre en ligne."
+      ],
+      [
+        "Comment vérifier",
+        "Une page facile à lire sur téléphone, avec des liens qui fonctionnent."
+      ]
+    ]
+  }
 }

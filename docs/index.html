@@ -32,11 +32,40 @@
     .muted {
       color: #94a3b8;
     }
+    .welcome {
+      margin: 28px 0;
+      padding: 24px;
+      border-radius: 12px;
+      background: #faf6ef;
+      color: #291b3d;
+      font-size: 18px;
+      line-height: 1.65;
+    }
+    .welcome h2 { margin-top: 0; }
+    .welcome-links { display: flex; flex-wrap: wrap; gap: 16px; }
+    .welcome a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 56px;
+      padding: 12px 20px;
+      background: #633099;
+      color: white;
+      border-radius: 8px;
+      font-weight: 650;
+      text-decoration: none;
+    }
+    a:focus-visible { outline: 3px solid #ba8aed; outline-offset: 5px; }
   </style>
 </head>
 <body>
   <div class="panel">
     <h1>AGIJobManager Documentation</h1>
+    <section class="welcome" aria-labelledby="welcome-title">
+      <h2 id="welcome-title">What would you like done?</h2>
+      <p>A website, a presentation or a clear report. Start with your idea and prepare a request, one step at a time.</p>
+      <div class="welcome-links"><a href="https://montrealai.github.io/AGIJobManager/employers/">Start my request →</a><a lang="fr" href="https://montrealai.github.io/AGIJobManager/fr/employers/">Préparer ma demande →</a></div>
+      <p>Free to prepare. No sign-up or wallet needed to start. Use larger text, save your draft, download it or print it. Publishing and payment happen separately.</p>
+    </section>
     <p class="muted">Static docs and UI entry point for the AGIJobManager repository.</p>
     <h2>Web UI</h2>
     <ul>

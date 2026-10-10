@@ -2,7 +2,9 @@
 
 The repository’s public entry point is [AGI Jobs](https://montrealai.github.io/AGIJobManager/), with a [French homepage](https://montrealai.github.io/AGIJobManager/fr/), dedicated employer onboarding in [English](https://montrealai.github.io/AGIJobManager/employers/) and [French](https://montrealai.github.io/AGIJobManager/fr/employers/), and the [current USDC console](https://montrealai.github.io/AGIJobManager/agijobmanager-usdc.html).
 
-The homepage explains participant roles, the job lifecycle, illustrative work, exact base USDC allocation, historical mainnet evidence, and where to find the right guide. It does not connect a wallet, make RPC requests, collect analytics or send transactions. The linked console is the existing transaction interface and retains its own behavior and notices.
+The homepage welcomes first-time visitors with familiar examples, a simple request preview, larger text and prominent **Start my request** links in the header, hero, welcome section and closing invitation. Each link keeps the visitor's selected language and opens guided employer onboarding. The repository README and current documentation hubs feature the same route before technical instructions.
+
+Participant roles, the job lifecycle, exact base USDC allocation, historical mainnet evidence and technical guides remain available below the welcome section. Publishing and payment are explicitly labeled as advanced access. The homepage does not connect a wallet, make RPC requests, collect analytics or send transactions. The linked console is the existing transaction interface and retains its own behavior and notices.
 
 The employer page provides four simple drafting steps in English and French, familiar examples, optional technical details, larger text and controls, a text-size option, a readable text download and printing. Public links are optional for self-contained requests. Optional controls manage saved drafts; JSON export and console handoff are available in the advanced posting area. The page makes no wallet or RPC connection and does not publish a job. The console still requires **Load saved draft**, metadata publication, deployment checks and separate transaction review. See the [employer onboarding guide](EMPLOYER_ONBOARDING.md), including the payment boundary and measured scaling work required beyond static page delivery.
 
@@ -30,14 +32,16 @@ To republish without editing, use **Actions → GitHub Pages → Run workflow �
 | `site/template.mjs` | Semantic page layout and links |
 | `site/employers.mjs` | English/French employer page layout, copy, starter templates and guidance |
 | `site/assets/style.css` | Responsive purple visual design, keyboard focus and reduced-motion support |
-| `site/assets/app.mjs` | Role selection, guide filtering, copy control and calculator interaction |
+| `site/assets/home.css` | Welcoming homepage, readable light sections, purple hero, large controls and larger-text mode |
+| `site/assets/start-here.svg` | Accessible repository-native welcome artwork linked from the README; essential copy and language links also appear as Markdown |
+| `site/assets/app.mjs` | Homepage text-size control, role selection, guide filtering, copy control and calculator interaction |
 | `site/assets/employer.css` | High-contrast employer workspace, large controls, responsive layouts, larger-text mode and print styling |
 | `site/assets/employer.mjs` | Four-step form, optional local persistence, text/JSON export, printing and console handoff |
 | `site/assets/employer-model.mjs` | Pure draft validation, exact amounts, serialization and console draft conversion |
 | `site/assets/payments.mjs` | BigInt USDC amounts, whole-percent rates and six-decimal formatting |
 | `scripts/site/build.mjs` | Dependency-free static build into ignored `build/pages/` |
 | `scripts/site/check.mjs` | Local paths, fragments, copy identity, invalid inputs and allocation checks |
-| `scripts/site/browser-test.mjs` | English/French interaction checks at 390, 768 and 1440 pixels, plus no-JavaScript content |
+| `scripts/site/browser-test.mjs` | English/French onboarding entry points, larger text, keyboard access and interactions at 320, 390, 768 and 1440 pixels, plus no-JavaScript content |
 | `scripts/site/employer-model.test.mjs` | Employer examples, staged validation, exact amounts and safe console draft conversion |
 | `scripts/site/employer-browser-test.mjs` | Employer form, exports, browser storage, accessibility controls and protected console handoff |
 | `config/usdc-deployment.json` | Registry status and payment assumptions; no default manager is injected into the console |
@@ -68,7 +72,7 @@ node scripts/site/browser-test.mjs
 node scripts/site/employer-browser-test.mjs
 ```
 
-The browser suites serve only the generated directory under the real `/AGIJobManager/` base path. Homepage checks cover role selection, calculator errors and six-decimal values, search results, FAQs, language switching, console navigation, JavaScript exceptions and horizontal overflow. Employer checks cover both languages, template selection, form validation, draft persistence, consent, exports, storage denial, safe rendering and protected console transfer. The no-JavaScript view retains guides and all role instructions; interactive controls start disabled or hidden.
+The browser suites serve only the generated directory under the real `/AGIJobManager/` base path. Homepage checks cover the featured onboarding links and their target language, enlarged text, keyboard access, role selection, calculator errors and six-decimal values, search results, FAQs, language switching, advanced console navigation, JavaScript exceptions and horizontal overflow. Employer checks cover both languages, template selection, form validation, draft persistence, consent, exports, storage denial, safe rendering and protected console transfer. The no-JavaScript view retains the onboarding links, guides and all role instructions; interactive controls start disabled or hidden.
 
 Before approving an employer UI change, also inspect narrow screens and enlarged text, keyboard focus and progression, the readable download and printed page, and the full French journey. Keep essential explanations visible before payment. Example requests must remain clearly labeled as examples; avoid invented customers, success rates, guaranteed turnaround or a claim that wallet funding is a simple card payment. Automated checks establish specific behavior, not general usability or accessibility certification; invite representative users to try the flow as part of release qualification.
 

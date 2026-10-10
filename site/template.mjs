@@ -23,13 +23,13 @@ export function render(t, data) {
         i,
       ) => `<article class="role-panel" id="role-${r.id}" aria-labelledby="role-title-${r.id}">
     <div><p class="small-label">${e(r.name)}</p><h3 id="role-title-${r.id}">${e(r.title)}</h3><p>${e(r.text)}</p>
-    <ol class="role-steps">${r.steps.map((s) => `<li>${e(s)}</li>`).join("")}</ol>${r.id === "employer" ? link("./employers/", fr ? "Préparer mon premier mandat" : "Prepare my first job", "button") + " " : ""}${link(doc(r.path), r.link)}</div>
+    <ol class="role-steps">${r.steps.map((s) => `<li>${e(s)}</li>`).join("")}</ol>${r.id === "employer" ? link("./employers/", t.easyStart.cta, "button") + " " : ""}${link(doc(r.path), r.link)}</div>
     <aside class="role-aside"><span class="role-number" aria-hidden="true">0${i + 1}</span><h4>${e(r.asideTitle)}</h4><p>${e(r.aside)}</p>${link(doc("docs/START_HERE.md"), t.nav[1])}</aside>
   </article>`,
     )
     .join("");
   return `<!doctype html>
-<html lang="${t.lang}">
+<html class="home-html" lang="${t.lang}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -49,27 +49,33 @@ export function render(t, data) {
   <meta property="og:locale" content="${fr ? "fr_CA" : "en_CA"}">
   <link rel="icon" href="${base}assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="${base}assets/style.css">
+  <link rel="stylesheet" href="${base}assets/home.css">
   <script type="module" src="${base}assets/app.mjs"></script>
 </head>
-<body>
+<body class="home-page">
   <a class="skip" href="#main">${e(t.skip)}</a>
   <header class="header"><div class="nav-wrap">
-    <a class="brand" href="${fr ? "./" : "./"}" aria-label="AGI Jobs"><img src="${base}assets/mark.svg" alt="" width="36" height="36"><span>AGI Jobs<small>AGIJobManager</small></span></a>
-    <nav aria-label="${fr ? "Navigation principale" : "Main navigation"}">${["how-it-works", "get-started", "payments", "resources"].map((id, i) => `<a href="#${id}">${e(t.nav[i])}</a>`).join("")}</nav>
-    <div class="nav-actions"><a class="language" href="${fr ? "../" : "./fr/"}" lang="${fr ? "en" : "fr"}" hreflang="${fr ? "en" : "fr"}">${e(t.language)}</a><a class="button button-small" href="${consoleUrl}">${e(t.console)} <span aria-hidden="true">↗</span></a></div>
+    <a class="brand" href="${fr ? "./" : "./"}" aria-label="AGI Jobs"><img src="${base}assets/mark.svg" alt="" width="36" height="36"><span>AGI Jobs<small>${fr ? "Faisons avancer vos idées" : "Let’s make it happen"}</small></span></a>
+    <nav aria-label="${fr ? "Navigation principale" : "Main navigation"}">${[["employer-welcome", t.easyStart.navLabel], ["how-it-works", t.nav[0]], ["resources", t.nav[3]]].map(([id, label]) => `<a href="#${id}">${e(label)}</a>`).join("")}</nav>
+    <div class="nav-actions"><button id="home-larger-text" type="button" disabled hidden aria-pressed="false"><span aria-hidden="true">Aa</span> ${e(t.easyStart.largerText)}</button><a class="language" href="${fr ? "../" : "./fr/"}" lang="${fr ? "en" : "fr"}" hreflang="${fr ? "en" : "fr"}">${e(t.language)}</a><a class="button button-small" data-employer-entry="header" href="./employers/">${e(t.easyStart.cta)} <span aria-hidden="true">→</span></a></div>
   </div></header>
   <main id="main">
-    <section class="hero container" aria-labelledby="hero-title">
+    <section class="home-hero-shell" aria-labelledby="hero-title"><div class="hero container">
       <div class="hero-copy"><p class="eyebrow"><span class="spark" aria-hidden="true">✦</span> ${e(t.eyebrow)}</p>
-        <h1 id="hero-title">${e(t.hero[0])}<br><span>${e(t.hero[1])}</span><br>${e(t.hero[2])}</h1>
+        <h1 id="hero-title">${e(t.hero[0])}<br><span>${e(t.hero[1])}</span>${t.hero[2] ? `<br>${e(t.hero[2])}` : ""}</h1>
         <p class="hero-intro">${e(t.intro)}</p>
-        <div class="actions"><a class="button" href="./employers/">${fr ? "Confier un mandat à l’AGI" : "Hire AGI for a job"} <span aria-hidden="true">→</span></a><a class="button button-quiet" href="#get-started">${e(t.start)} <span aria-hidden="true">→</span></a></div>
+        <div class="actions"><a class="button" data-employer-entry="hero" href="./employers/">${e(t.easyStart.cta)} <span aria-hidden="true">→</span></a><a class="button button-quiet" href="#employer-welcome">${e(t.start)} <span aria-hidden="true">↓</span></a></div>
         <p class="hero-note">${e(t.heroNote)}</p>
       </div>
-      <figure class="orbit-figure"><div class="orbit-scene" aria-hidden="true"><div class="orbit-ring ring-one"></div><div class="orbit-ring ring-two"></div><div class="orbit-ring ring-three"></div><div class="orbit-cross"></div><div class="orbit-core"><img src="${base}assets/mark.svg" alt="" width="74" height="74"><strong>AGI JOBS</strong><span>USDC</span></div>${t.orbit.map((s, i) => `<div class="orbit-label orbit-label-${i}"><span>0${i + 1}</span>${e(s)}</div>`).join("")}<span class="star star-one">✧</span><span class="star star-two">✦</span><span class="star star-three">✧</span></div><figcaption>${e(t.orbitCaption)}</figcaption></figure>
+      <aside class="home-preview" aria-label="${e(t.heroPreview.label)}"><p class="preview-label"><span aria-hidden="true">✦</span> ${e(t.heroPreview.label)}</p><blockquote>${e(t.heroPreview.quote)}</blockquote><ol class="preview-points">${t.heroPreview.points.map(([title, text], i) => `<li><span class="number" aria-hidden="true">${i + 1}</span><div><h3>${e(title)}</h3><p>${e(text)}</p></div></li>`).join("")}</ol><p class="preview-note">${e(t.heroPreview.note)}</p></aside>
+    </div>
     </section>
-    <div class="container fact-strip">${t.facts.map((s) => `<span><i aria-hidden="true"></i>${e(s)}</span>`).join("")}<span class="version">${e(t.releaseLabel)} <strong>v${e(data.version)}</strong></span></div>
-    <div class="release-strip container"><p>${e(t.releaseNote)}</p>${link(repo + "/releases/latest", t.releaseLink)}</div>
+    <section id="employer-welcome" class="section container" aria-labelledby="welcome-title">
+      <div class="welcome-heading"><p class="eyebrow">${e(t.easyStart.eyebrow)}</p><h2 id="welcome-title">${e(t.easyStart.title)}</h2><p class="section-intro">${e(t.easyStart.intro)}</p></div>
+      <div class="welcome-examples">${t.easyStart.examples.map(([title, text], i) => `<article><span class="welcome-icon" aria-hidden="true">${["↗", "⇄", "▤", "≡", "▥", "+"][i]}</span><h3>${e(title)}</h3><p>${e(text)}</p></article>`).join("")}</div>
+      <ol class="welcome-steps">${t.easyStart.steps.map(([title, text], i) => `<li><span aria-hidden="true">${i + 1}</span><h3>${e(title)}</h3><p>${e(text)}</p></li>`).join("")}</ol>
+      <div class="welcome-actions"><a class="button" data-employer-entry="welcome" href="./employers/">${e(t.easyStart.cta)} <span aria-hidden="true">→</span></a><p class="reassurance">${e(t.easyStart.reassurance)}</p></div><p class="welcome-payment">${e(t.easyStart.paymentNote)}</p>
+    </section>
     <noscript><p class="container notice">${e(t.noscript)}</p></noscript>
     <section id="get-started" class="section container">
       <p class="eyebrow">${e(t.roleEyebrow)}</p><h2>${e(t.roleTitle)}</h2><p class="section-intro">${e(t.roleIntro)}</p>
@@ -80,6 +86,7 @@ export function render(t, data) {
       <p class="eyebrow">${e(t.flowEyebrow)}</p><h2>${e(t.flowTitle)}</h2><p class="section-intro">${e(t.flowIntro)}</p>
       <ol class="flow">${t.flow.map(([title, text], i) => `<li><span class="step-number">0${i + 1}</span><h3>${e(title)}</h3><p>${e(text)}</p></li>`).join("")}</ol>
       <div class="outcomes">${t.outcomes.map(([title, text]) => `<div><h4>${e(title)}</h4><p>${e(text)}</p></div>`).join("")}</div>
+      <div class="flow-visual"><figure class="orbit-figure"><div class="orbit-scene" aria-hidden="true"><div class="orbit-ring ring-one"></div><div class="orbit-ring ring-two"></div><div class="orbit-ring ring-three"></div><div class="orbit-cross"></div><div class="orbit-core"><img src="${base}assets/mark.svg" alt="" width="74" height="74"><strong>AGI JOBS</strong><span>USDC</span></div>${t.orbit.map((s, i) => `<div class="orbit-label orbit-label-${i}"><span>0${i + 1}</span>${e(s)}</div>`).join("")}<span class="star star-one">✧</span><span class="star star-two">✦</span><span class="star star-three">✧</span></div><figcaption>${e(t.orbitCaption)}</figcaption></figure></div>
       ${link(doc("docs/PROTOCOL_FLOW.md"), t.flowLink)}
     </div></section>
     <section class="section container work-section"><div class="section-heading"><h2>${e(t.workTitle)}</h2><p>${e(t.workIntro)}</p></div>
@@ -103,13 +110,17 @@ export function render(t, data) {
         <p>${e(t.evidenceState)}</p><div class="record-links">${link("https://etherscan.io/address/" + data.evidence.manager + "#code", t.explorer)}${link(doc(data.evidencePath), t.evidenceLink)}</div>
       </article><div class="evidence-secondary"><article><h3>${e(t.registryTitle)}</h3><p>${e(data.registry.managerAddress ? (fr ? "Un gestionnaire est consigné dans le registre. Vérifiez sa configuration et son état actuel avant toute transaction." : "A manager is recorded in the registry. Verify its configuration and current state before transacting.") : t.registryText)}</p>${link(doc("config/usdc-deployment.json"), t.registryLink)}<br>${link(doc("docs/MAINNET_READINESS.md"), t.readiness)}</article><article><h3>${e(t.ensTitle)}</h3><p>${e(t.ensText)}</p>${link(doc("docs/ens-job-pages.md"), t.ensLink)}</article></div></div>
     </div></section>
+    <section id="technical-access" class="section container"><div class="technical-heading"><h2>${e(t.easyStart.toolsTitle)}</h2><p>${e(t.easyStart.toolsText)}</p></div><div class="technical-links"><a id="advanced-console-link" class="button button-quiet" href="${consoleUrl}">${e(t.easyStart.consoleLink)} <span aria-hidden="true">↗</span></a>${link(repo, t.source)}</div>
+    <div class="fact-strip">${t.facts.map((s) => `<span><i aria-hidden="true"></i>${e(s)}</span>`).join("")}<span class="version">${e(t.releaseLabel)} <strong>v${e(data.version)}</strong></span></div>
+    <div class="release-strip"><p>${e(t.releaseNote)}</p>${link(repo + "/releases/latest", t.releaseLink)}</div>
+    </section>
     <section id="resources" class="section container"><p class="eyebrow">${e(t.docsEyebrow)}</p><h2>${e(t.docsTitle)}</h2><p class="section-intro">${e(t.docsIntro)}</p>
       <div class="search-wrap" hidden><label for="guide-search">${e(t.searchLabel)}</label><input id="guide-search" type="search" placeholder="${e(t.searchPlaceholder)}" autocomplete="off" aria-controls="resource-grid"><span id="search-count" class="small" role="status"></span></div>
       <div id="resource-grid" class="resources">${t.resources.map(([title, desc, p, keywords]) => `<a class="resource" href="${doc(p)}" data-search="${e(title + " " + desc + " " + keywords)}"><div><h3>${e(title)}</h3><p>${e(desc)}</p></div><span aria-hidden="true">↗</span></a>`).join("")}</div>
       <p id="no-results" hidden>${e(t.noResults)}</p>${link(doc("docs/README.md"), t.docsAll)}
     </section>
     <section class="section container faq-section"><h2>${e(t.faqTitle)}</h2><div class="faq-list">${t.faqs.map(([q, a]) => `<details><summary>${e(q)}</summary><p>${e(a)}</p></details>`).join("")}</div></section>
-    <section class="end-section container"><div><p class="eyebrow">AGI JOBS</p><h2>${e(t.endTitle)}</h2><p>${e(t.endText)}</p></div><a class="button" href="${consoleUrl}">${e(t.console)} <span aria-hidden="true">↗</span></a></section>
+    <section class="end-section container"><div><p class="eyebrow">AGI JOBS</p><h2>${e(t.endTitle)}</h2><p>${e(t.endText)}</p></div><a class="button" data-employer-entry="footer" href="./employers/">${e(t.easyStart.cta)} <span aria-hidden="true">→</span></a></section>
   </main>
   <footer class="footer container"><div><a class="brand" href="${base}"><img src="${base}assets/mark.svg" alt="" width="32" height="32"><span>AGI Jobs</span></a><p>${e(t.footer)}</p></div><div class="footer-right"><nav aria-label="${fr ? "Liens de pied de page" : "Footer links"}">${[repo, repo + "/releases", doc("SECURITY.md"), doc("docs/LEGAL/README.md")].map((href, i) => `<a href="${href}">${e(t.footerLinks[i])}</a>`).join("")}</nav><p>${e(t.built)} <a href="${repo}/commit/${data.commit}"><code>${data.commit.slice(0, 8)}</code></a> · v${e(data.version)}</p></div></footer>
 </body></html>`;

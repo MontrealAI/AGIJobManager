@@ -1,5 +1,15 @@
 # Start here — AGIJobManager v1.14.0
 
+## Have an idea? Start with a simple request
+
+**[Start my request — English →](https://montrealai.github.io/AGIJobManager/employers/)** · **[Commencer ma demande — français →](https://montrealai.github.io/AGIJobManager/fr/employers/)**
+
+Want a website, a presentation, a report or help comparing your options? Choose an example, describe what you need, then save, download or print your request. The page uses everyday words, large buttons and a **Larger text / Texte agrandi** option. You can take your time and return to a request saved in the same browser.
+
+**Preparation is free, with no sign-up or wallet required.** Posting and payment are a separate, advanced step that currently needs a digital wallet, USDC and ETH for network fees. Nothing is posted or paid for on the preparation page. [Read the employer guide](ui/EMPLOYER_ONBOARDING.md) when you are ready for the next step.
+
+## For participants and operators
+
 AGI Jobs covers work a person or team can do using a keyboard, mouse and screen. New automated work uses [operator-budget admission without retainers](OPERATIONS/NO_RETAINERS.md): schema 6 for Agents/Nodes and schema 7 for employers. Preserve existing escrow credits, refunds and journals. Read [computer work and present runtime coverage](OPERATIONS/GENERAL_COMPUTER_WORK.md).
 
 **Deployment entrypoint:** [release identity and checked commands](RELEASE_GUIDE.md).
@@ -19,6 +29,7 @@ AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent
 
 | Your goal | Start with | What you need |
 | --- | --- | --- |
+| Prepare your first request | [English guided page](https://montrealai.github.io/AGIJobManager/employers/) or [page guidée en français](https://montrealai.github.io/AGIJobManager/fr/employers/) | An idea and a browser; no wallet or software installation to prepare |
 | Post, perform or validate a job | [USDC console guide](ui/GENESIS_JOB_MAINNET_HTML_UI.md), then [participant guide](USERS.md) | A verified deployed manager, the correct wallet, USDC and ETH for gas |
 | See how a real job would proceed | [Genesis artwork worked example](examples/GENESIS_JOB_TODAY.md) | Read the participant steps, cost tables, review timing and recovery branches |
 | Deploy the software | [Launch checklist](LAUNCH_CHECKLIST.md), then [Hardhat guide](../hardhat/README.md) | Reviewed configuration, both recipients, intended owner and a testnet rehearsal |

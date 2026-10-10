@@ -86,7 +86,18 @@ for (const file of ["index.html", "fr/index.html", "employers/index.html", "fr/e
     assert.ok(fs.existsSync(dest), `Missing Pages asset: ${url}`);
   }
   assert.ok(html.includes("connect-src 'none'"));
-  if (!file.includes("employers/")) assert.equal((html.match(/class="resource"/g) || []).length, 12);
+  if (!file.includes("employers/")) {
+    assert.equal((html.match(/class="resource"/g) || []).length, 12);
+    for (const placement of ['header', 'hero', 'welcome', 'footer']) {
+      const entries = [...html.matchAll(new RegExp(`<a\\b[^>]*\\bdata-employer-entry="${placement}"[^>]*>`, 'g'))];
+      assert.equal(entries.length, 1, `${file}: one ${placement} employer entry`);
+      assert.equal(entries[0][0].match(/\bhref="([^"]+)"/)?.[1], './employers/', `${file}: ${placement} employer entry keeps the selected language`);
+    }
+    for (const id of ['employer-welcome', 'home-larger-text', 'advanced-console-link'])
+      assert.ok(ids.includes(id), `${file}: missing newcomer navigation ${id}`);
+    assert.ok(html.includes('href="#employer-welcome"'), `${file}: navigation reaches the newcomer welcome`);
+    assert.ok(html.includes('id="home-larger-text" aria-pressed="false"') || /id="home-larger-text"[^>]*aria-pressed="false"/.test(html), `${file}: text size control declares its initial state`);
+  }
   else {
     assert.ok(html.includes('id="employer-form"'));
     assert.ok(html.includes('Load saved draft'));
@@ -108,5 +119,5 @@ assert.ok(
     !fs.existsSync(path.join(out, ".git")),
 );
 console.log(
-  "Pages checks passed: bilingual pages, navigation, guide paths, exact USDC allocations, invalid inputs and byte-identical console aliases.",
+  "Pages checks passed: bilingual pages, prominent locale-preserving employer routes, newcomer navigation, guide paths, exact USDC allocations, invalid inputs and byte-identical console aliases.",
 );

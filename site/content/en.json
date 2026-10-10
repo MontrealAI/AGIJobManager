@@ -1,17 +1,17 @@
 {
   "lang": "en",
-  "title": "AGI Jobs — Useful work. Clear outcomes. USDC settlement.",
-  "description": "Understand AGIJobManager, choose your role, explore USDC payments, and open the current console. Practical guides for employers, agents, validators and operators.",
+  "title": "AGI Jobs — Your next idea starts here.",
+  "description": "Prepare a clear request for a website, presentation, research or other digital work. Simple examples, step-by-step guidance and a free draft before any publishing or payment.",
   "skip": "Skip to content",
   "nav": ["How it works", "Get started", "Payments", "Resources"],
   "console": "Open USDC console",
   "language": "Français",
-  "eyebrow": "A protocol for work that can be verified",
-  "hero": ["Useful work.", "Clear outcomes.", "USDC settlement."],
-  "intro": "From a well-defined job to a reviewable result. AGIJobManager coordinates employers, AGI Agents and independent validators through on-chain escrow, evidence and settlement.",
-  "start": "Find your starting point",
+  "eyebrow": "Good ideas deserve a place to begin",
+  "hero": ["Your next idea.", "Starts here.", ""],
+  "intro": "Need a website, a presentation or clear research? Describe what you want AI workers to help create. We’ll guide you through your request, one simple step at a time.",
+  "start": "Show me how it works",
   "source": "Explore the source",
-  "heroNote": "Work happens off-chain. Escrow and settlement happen on Ethereum.",
+  "heroNote": "Free to prepare. No sign-up. No payment at this stage.",
   "orbit": [
     "Define the result",
     "Do the work",
@@ -24,24 +24,24 @@
   "releaseLink": "Releases & verified downloads",
   "releaseNote": "The console opens without a preselected manager. Use your operator’s verified deployment.",
   "roleEyebrow": "01 / YOUR STARTING POINT",
-  "roleTitle": "What would you like to do?",
-  "roleIntro": "A clear route for every participant, from the first specification to the final receipt.",
+  "roleTitle": "A place for everyone involved.",
+  "roleIntro": "Have something you need done? Start by preparing your request. There are also guides for the people and systems that perform, review and organize the work.",
   "roles": [
     {
       "id": "employer",
-      "label": "Post work",
-      "name": "For employers",
-      "title": "Buy a defined result.",
-      "text": "Start with a deliverable that someone else can inspect and accept. Fund the agreed job cost in USDC.",
+      "label": "Request work",
+      "name": "For people with a project",
+      "title": "Tell us what you need.",
+      "text": "Start with a useful example or write your own request. A few plain-language questions help you explain the result you want.",
       "steps": [
-        "Write the scope, public inputs, deadline and measurable acceptance criteria.",
-        "Verify the manager, payment split and participants. Approve the required USDC, then post the job.",
-        "Review the delivered evidence. Follow acceptance, dispute or settlement steps for the job’s actual state."
+        "Describe what you want to receive, how you will check it, your budget and your time frame.",
+        "Review your request, make changes and download or print a copy. Nothing is published or paid at this stage.",
+        "If you decide to publish, use the separate advanced screen to check the live setup, payment terms and wallet requirements first."
       ],
       "link": "Employer & participant guide",
       "path": "docs/USERS.md",
-      "asideTitle": "Before you post",
-      "aside": "Approval alone does not create a job. Save the job ID and transaction receipt after posting."
+      "asideTitle": "Your request, at your pace",
+      "aside": "You can prepare a request without an account or a wallet. Publishing and funding a job are separate steps; a saved draft is not a posted job."
     },
     {
       "id": "agent",
@@ -279,7 +279,7 @@
     ],
     [
       "Can I start immediately from this website?",
-      "You can explore the guides and open the current console. Transacting requires a verified, configured manager, eligible participants where required, USDC and ETH for gas. The landing page does not connect a wallet or send transactions."
+      "Yes. You can prepare your request for free, without an account, a wallet or a payment. Choose an example and follow the simple questions. Publishing and funding happen later in the separate console. They require a verified, configured manager, eligible participants where required, USDC for the job and ETH for network fees. Preparing a draft does not post a job."
     ],
     [
       "Does the Agent receive the full posted budget?",
@@ -298,10 +298,73 @@
       "Public submissions must not contain personal information, confidential material, credentials or private access links. Use public, licensed or synthetic inputs. Computer execution happens outside the contract and must be commissioned for the intended workload."
     ]
   ],
-  "endTitle": "Start with a clear specification.",
-  "endText": "Choose your role. Understand the terms. Verify the result.",
+  "endTitle": "What would you like to create?",
+  "endText": "Choose an example, tell us what matters and take the first step. You can edit, save or print your request before deciding whether to publish it.",
   "footer": "Useful work. Planetary ambition.",
   "footerLinks": ["GitHub", "Releases", "Security", "Legal & privacy"],
   "built": "Built from commit",
-  "noscript": "The guides and console links work without JavaScript. Enable JavaScript for role selection, guide filtering and the payment calculator."
+  "noscript": "The guides and console links work without JavaScript. Enable JavaScript for role selection, guide filtering and the payment calculator.",
+  "easyStart": {
+    "navLabel": "Start here",
+    "largerText": "Larger text",
+    "eyebrow": "A SIMPLE FIRST STEP",
+    "title": "Tell us what you have in mind.",
+    "intro": "You do not need technical words to explain your idea. Choose an example for inspiration, then make the request your own.",
+    "examples": [
+      [
+        "A simple website",
+        "A welcoming page for your project, group or organization."
+      ],
+      [
+        "Compare my options",
+        "A clear comparison of products or services you are considering."
+      ],
+      ["A presentation", "Attractive slides to help explain your idea."],
+      [
+        "Research a topic",
+        "A useful report with clear answers and public sources."
+      ],
+      [
+        "Make data easy to read",
+        "Charts that help explain public information."
+      ],
+      ["Something else", "Describe your idea in your own words."]
+    ],
+    "cta": "Start my request",
+    "steps": [
+      [
+        "Choose an example",
+        "Start with something familiar, or describe your own idea."
+      ],
+      [
+        "Make it yours",
+        "Tell us what you want to receive, your budget and your time frame."
+      ],
+      [
+        "Read it over",
+        "Change anything you like, then download or print a copy."
+      ]
+    ],
+    "reassurance": "Take your time. Preparing a request is free and does not publish a job or authorize a payment.",
+    "paymentNote": "Publishing comes later, on a separate screen. It requires a verified setup, an Ethereum wallet, USDC for the job and ETH for network fees. Check the terms and current availability before paying.",
+    "toolsTitle": "Looking for the technical tools?",
+    "toolsText": "The guides below explain the roles, job process, deployment checks and payment rules. The advanced console is for publishing and managing funded work.",
+    "consoleLink": "Publishing and payments · advanced"
+  },
+  "heroPreview": {
+    "label": "Example request",
+    "quote": "I’d like a simple website for our community group.",
+    "note": "Example only. Choose and edit your own request.",
+    "points": [
+      [
+        "My idea",
+        "A welcoming page with our activities and public information."
+      ],
+      [
+        "What I’ll receive",
+        "Website files and simple instructions for putting them online."
+      ],
+      ["How I’ll check it", "Easy to read on a phone, with links that work."]
+    ]
+  }
 }

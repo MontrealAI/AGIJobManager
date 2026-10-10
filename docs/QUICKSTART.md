@@ -1,5 +1,15 @@
 # Quickstart — current USDC software
 
+## Want something done? Begin here
+
+**[Start my request — English →](https://montrealai.github.io/AGIJobManager/employers/)** · **[Commencer ma demande — français →](https://montrealai.github.io/AGIJobManager/fr/employers/)**
+
+Prepare a website, presentation, report or comparison request in your browser. Choose an example, describe your idea, then save, download or print it. Use **Larger text / Texte agrandi** for more comfortable reading. Preparation is free and requires no account, wallet or software installation.
+
+Publishing and payment come later on a separate, advanced screen, using a digital wallet, USDC and ETH for network fees. Nothing is posted or paid for while you prepare. [The employer guide](ui/EMPLOYER_ONBOARDING.md) explains the next step.
+
+## Software setup and operation
+
 Choose the workflow below before running commands. A software release and passing tests do not deploy a manager or open it to deposits.
 
 ## 0) Route to the right surface first

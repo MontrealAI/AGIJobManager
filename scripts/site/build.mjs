@@ -47,7 +47,7 @@ if (
   );
 fs.rmSync(output, { recursive: true, force: true });
 fs.mkdirSync(path.join(output, "assets"), { recursive: true });
-for (const name of ["app.mjs", "payments.mjs", "style.css", "mark.svg", "employer.mjs", "employer-model.mjs", "employer.css"])
+for (const name of ["app.mjs", "payments.mjs", "style.css", "home.css", "mark.svg", "employer.mjs", "employer-model.mjs", "employer.css"])
   fs.copyFileSync(
     path.join(root, "site/assets", name),
     path.join(output, "assets", name),
