@@ -5,6 +5,7 @@ import {
   DRAFT_SCHEMA,
   LIMITS,
   TEMPLATES,
+  PRIMARY_TEMPLATE_IDS,
   emptyDraft,
   templateFields,
   normalizeBudget,
@@ -14,6 +15,8 @@ import {
   validateDraft,
   toMetadata,
   toConsoleDraft,
+  toReadableBrief,
+  draftTitle,
 } from "../../site/assets/employer-model.mjs";
 function complete() {
   const draft = emptyDraft();
@@ -24,17 +27,45 @@ function complete() {
   });
   return draft;
 }
-test("all ten templates have useful bilingual brief fields", () => {
-  assert.equal(TEMPLATES.length, 10);
-  assert.equal(new Set(TEMPLATES.map(({ id }) => id)).size, 10);
+test("fourteen templates retain legacy IDs and offer six simple starting points", () => {
+  assert.equal(TEMPLATES.length, 14);
+  assert.equal(new Set(TEMPLATES.map(({ id }) => id)).size, 14);
+  assert.deepEqual(PRIMARY_TEMPLATE_IDS, [
+    "website",
+    "intelligence",
+    "presentation",
+    "report",
+    "dashboard",
+    "custom",
+  ]);
+  for (const id of [
+    "performance",
+    "feature",
+    "sdk",
+    "tests",
+    "evals",
+    "dashboard",
+    "demo",
+    "intelligence",
+    "docs",
+    "reproduction",
+  ])
+    assert.ok(TEMPLATES.some((item) => item.id === id));
   for (const item of TEMPLATES)
     for (const lang of ["en", "fr"]) {
       const draft = complete();
       draft.template = item.id;
       Object.assign(draft.fields, templateFields(item.id, lang));
-      assert.deepEqual(validateDraft(draft), []);
-      for (const key of ["title", "summary", "deliverables", "acceptance"])
-        assert.ok(draft.fields[key].length > 10);
+      if (item.id === "custom") {
+        assert.deepEqual(
+          validateDraft(draft).map(({ field }) => field),
+          ["summary", "deliverables", "acceptance"],
+        );
+      } else {
+        assert.deepEqual(validateDraft(draft), []);
+        for (const key of ["title", "summary", "deliverables", "acceptance"])
+          assert.ok(draft.fields[key].length > 10);
+      }
     }
 });
 test("empty draft blocks selection and later stages while allowing incomplete saves", () => {
@@ -42,7 +73,12 @@ test("empty draft blocks selection and later stages while allowing incomplete sa
   assert.deepEqual(validateDraft(draft, 0), [
     { field: "template", code: "template" },
   ]);
-  assert.ok(validateDraft(draft, 1).some(({ field }) => field === "inputs"));
+  assert.ok(validateDraft(draft, 1).some(({ field }) => field === "summary"));
+  assert.ok(
+    !validateDraft(draft, 1).some(({ field }) =>
+      ["inputs", "title"].includes(field),
+    ),
+  );
   assert.deepEqual(parseDraft(JSON.stringify(draft)), draft);
 });
 test("decimal amounts remain exact beyond JavaScript's safe integer range", () => {
@@ -97,7 +133,6 @@ test("input URLs allow public HTTPS domains without fetching them", () => {
 });
 test("input URLs reject private-looking endpoints, credentials and active schemes", () => {
   for (const value of [
-    "",
     "http://example.org",
     "javascript:alert(1)",
     "data:text/html,hello",
@@ -262,4 +297,63 @@ test("console transaction details stay below the contract UTF-8 limit", () => {
   assert.ok(
     Buffer.byteLength(toConsoleDraft(draft).jobDetails, "utf8") <= 2048,
   );
+});
+
+test("self-contained requests need no links or separate title", () => {
+  const draft = complete();
+  draft.fields.inputs = " \n ";
+  draft.fields.title = "";
+  assert.deepEqual(publicInputURLs(draft.fields.inputs), []);
+  assert.deepEqual(validateDraft(draft), []);
+  const metadata = toMetadata(draft),
+    mapped = toConsoleDraft(draft);
+  assert.ok(!Object.hasOwn(metadata, "external_url"));
+  assert.deepEqual(metadata.properties.inputURLs, []);
+  assert.equal(mapped.jobExternalURI, "");
+  assert.equal(mapped.jobSummaryBuilder, draft.fields.summary);
+  assert.equal(mapped.jobTitle, draftTitle(draft.fields));
+  assert.ok(
+    mapped.jobTitle.length > 0 && mapped.jobTitle.length <= LIMITS.title,
+  );
+  assert.equal(metadata.properties.title, mapped.jobTitle);
+  draft.fields.summary = "🌌".repeat(100);
+  assert.equal(draftTitle(draft.fields), "🌌".repeat(60));
+  assert.ok(
+    Buffer.byteLength(toConsoleDraft(draft).jobDetails, "utf8") <= 2048,
+  );
+});
+test("readable copies include the complete request and state the payment boundary in both languages", () => {
+  const draft = complete();
+  draft.fields.requirements = "Use a readable typeface.";
+  for (const lang of ["en", "fr"]) {
+    const brief = toReadableBrief(draft, lang);
+    for (const field of [
+      "title",
+      "summary",
+      "inputs",
+      "deliverables",
+      "acceptance",
+      "requirements",
+    ])
+      assert.ok(brief.includes(draft.fields[field]), field);
+    assert.ok(brief.includes("1000 USDC"));
+    assert.ok(
+      brief.includes(
+        lang === "fr"
+          ? "7 jours après l’attribution"
+          : "7 days after assignment",
+      ),
+    );
+    assert.ok(
+      brief.includes(
+        lang === "fr"
+          ? "aucun paiement n’a été effectué"
+          : "no payment has been made",
+      ),
+    );
+  }
+  draft.fields.inputs = "";
+  assert.ok(!toReadableBrief(draft).includes("Public links"));
+  draft.fields.summary = "";
+  assert.throws(() => toReadableBrief(draft), /required/);
 });

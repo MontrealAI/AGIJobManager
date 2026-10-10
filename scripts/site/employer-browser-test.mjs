@@ -118,10 +118,51 @@ async function stage(page, index) {
   );
 }
 
+async function inspectLayout(page, label) {
+  const result = await page.evaluate(() => {
+    const visible = (element) => element.getClientRects().length > 0;
+    const targets = [...document.querySelectorAll(
+      '#employer-next, #employer-next-top, #employer-back, #employer-download-text, #employer-print, #employer-larger-text, #employer-templates button, #employer-more-templates button, [data-employer-step]',
+    )].filter(visible);
+    return {
+      overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+      smallTargets: targets.filter((element) => {
+        const box = element.getBoundingClientRect();
+        return box.width < 48 || box.height < 48;
+      }).map((element) => element.id || element.dataset.template),
+      clippedTargets: targets.filter((element) =>
+        element.scrollWidth > element.clientWidth + 1 ||
+        element.scrollHeight > element.clientHeight + 1,
+      ).map((element) => element.id || element.dataset.template),
+      smallInputText: [...document.querySelectorAll('#employer-form textarea, #employer-form input:not([type="checkbox"])')]
+        .filter(visible).filter((element) => parseFloat(getComputedStyle(element).fontSize) < 18)
+        .map((element) => element.id),
+      hiddenFocus: document.activeElement !== document.body &&
+        (!visible(document.activeElement) || !!document.activeElement.closest('[hidden]')),
+    };
+  });
+  assert.equal(result.overflow, false, `No horizontal page overflow: ${label}`);
+  assert.deepEqual(result.smallTargets, [], `Primary controls are at least 48 × 48 px: ${label}`);
+  assert.deepEqual(result.clippedTargets, [], `Primary control text is not clipped: ${label}`);
+  assert.deepEqual(result.smallInputText, [], `Editable text is at least 18px: ${label}`);
+  assert.equal(result.hiddenFocus, false, `Focus stays in visible content: ${label}`);
+}
+
+async function reveal(page, selector) {
+  await page.locator(selector).evaluate((element) => {
+    let parent = element.parentElement;
+    while (parent) {
+      if (parent instanceof HTMLDetailsElement) parent.open = true;
+      parent = parent.parentElement;
+    }
+  });
+}
+
 async function describeJob(page, overrides = {}) {
-  await page.locator('[data-template="performance"]').click();
-  await page.locator("#employer-next").click();
+  await page.locator('[data-template="website"]').click();
+  await page.locator("#employer-next-top").click();
   await stage(page, 1);
+  await page.locator("#employer-extra-details > summary").click();
   for (const [name, value] of Object.entries({ ...fields, ...overrides })) {
     await page.locator(`#employer-${name}`).fill(value);
   }
@@ -138,6 +179,7 @@ async function reviewJob(page, overrides = {}) {
 }
 
 async function downloadJSON(page) {
+  await reveal(page, '#employer-export');
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     page.locator("#employer-export").click(),
@@ -147,6 +189,17 @@ async function downloadJSON(page) {
     chunks = [];
   for await (const chunk of stream) chunks.push(chunk);
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+}
+
+async function downloadText(page) {
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.locator("#employer-download-text").click(),
+  ]);
+  assert.match(download.suggestedFilename(), /\.txt$/);
+  const stream = await download.createReadStream(), chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  return Buffer.concat(chunks).toString("utf8");
 }
 
 async function closeChecked(page) {
@@ -174,7 +227,7 @@ try {
   });
 
   for (const language of ["", "fr/"]) {
-    for (const width of [390, 768, 1440]) {
+    for (const width of [320, 390, 768, 1440]) {
       const page = await openPage(language, {
         viewport: { width, height: 1000 },
       });
@@ -182,8 +235,17 @@ try {
       assert.equal(await page.locator("h1").count(), 1);
       assert.equal(
         await page.locator("#employer-templates button[data-template]").count(),
-        10,
+        6,
       );
+      assert.deepEqual(
+        await page.locator('#employer-templates button[data-template]').evaluateAll(
+          (buttons) => buttons.map((button) => button.dataset.template),
+        ),
+        ['website', 'intelligence', 'presentation', 'report', 'dashboard', 'custom'],
+        'Everyday examples are shown first',
+      );
+      assert.equal(await page.locator('#employer-more-templates button[data-template]').count(), 8);
+      assert.equal(await page.locator('#more-examples').getAttribute('open'), null);
       assert.equal(
         await page.locator('#employer-errors[role="alert"]').count(),
         1,
@@ -192,11 +254,26 @@ try {
         await page.locator('#employer-status[role="status"]').count(),
         1,
       );
+      assert.equal(await page.locator('#employer-step-status[role="status"]').count(), 1);
       await stage(page, 0);
+      await inspectLayout(page, `${language || 'en'} ${width}px examples`);
+      await page.locator('#more-examples > summary').click();
+      assert.equal(await page.locator('[data-template="performance"]').isVisible(), true);
+      await inspectLayout(page, `${language || 'en'} ${width}px extra examples`);
+      await page.locator('#more-examples > summary').click();
       await page.locator("#employer-next").click();
       await stage(page, 0);
       assert.ok((await page.locator("#employer-errors").textContent()).trim());
-      await reviewJob(page);
+      await describeJob(page);
+      await inspectLayout(page, `${language || 'en'} ${width}px description`);
+      await page.locator('#employer-next').click();
+      await stage(page, 2);
+      await inspectLayout(page, `${language || 'en'} ${width}px budget`);
+      await page.locator('#employer-budget').fill('1500.123456');
+      await page.locator('#employer-days').fill('7');
+      await page.locator('#employer-next').click();
+      await stage(page, 3);
+      await inspectLayout(page, `${language || 'en'} ${width}px review`);
       assert.ok(
         (await page.locator("#employer-review").textContent()).includes(
           fields.title,
@@ -249,16 +326,20 @@ try {
       "Step navigation cannot bypass validation",
     );
     await describeJob(page);
-    await page.locator("#employer-title").fill("");
+    await page.locator("#employer-summary").fill("");
     await page.locator("#employer-next").click();
     await stage(page, 1);
     assert.ok((await page.locator("#employer-errors").textContent()).trim());
-    await page.locator("#employer-title").fill(fields.title);
+    await page.locator("#employer-summary").fill(fields.summary);
     await page
       .locator("#employer-inputs")
       .fill("https://user:password@example.com/public");
+    await page.locator('#employer-extra-details > summary').click();
     await page.locator("#employer-next").click();
     await stage(page, 1);
+    await page.locator('#employer-errors a[href="#employer-inputs"]').click();
+    assert.equal(await page.locator('#employer-extra-details').evaluate((details) => details.open), true, 'An error link opens the affected optional field');
+    assert.equal(await page.locator('#employer-inputs').evaluate((field) => document.activeElement === field), true, 'The error link focuses the field to correct');
     await page.locator("#employer-inputs").fill(fields.inputs);
     await page.locator("#employer-next").click();
     await stage(page, 2);
@@ -278,6 +359,91 @@ try {
       await page.locator("#employer-next").click();
       await stage(page, 2);
     }
+    await closeChecked(page);
+  }
+
+  for (const language of ['', 'fr/']) {
+    const page = await openPage(language, { viewport: { width: 720, height: 1000 } });
+    await visit(page, language);
+    await page.locator('#employer-larger-text').click();
+    assert.equal(await page.locator('#employer-larger-text').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('body').evaluate((body) => body.classList.contains('large-text')), true);
+    await inspectLayout(page, `${language || 'en'} larger text`);
+    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    await inspectLayout(page, `${language || 'en'} 200% text, examples`);
+    await describeJob(page);
+    await inspectLayout(page, `${language || 'en'} 200% text, description`);
+    await page.locator('#employer-larger-text').click();
+    assert.equal(await page.locator('#employer-larger-text').getAttribute('aria-pressed'), 'false');
+    assert.equal(await page.locator('#employer-summary').inputValue(), fields.summary, 'Text size changes preserve work');
+    await page.locator('#employer-next').click();
+    await stage(page, 2);
+    await inspectLayout(page, `${language || 'en'} 200% text, budget`);
+    await page.locator('#employer-budget').fill('100');
+    await page.locator('#employer-days').fill('7');
+    await page.locator('#employer-next').click();
+    await stage(page, 3);
+    await inspectLayout(page, `${language || 'en'} 200% text, review`);
+    await closeChecked(page);
+  }
+
+  {
+    const page = await openPage();
+    await visit(page);
+    await page.locator('[data-template="website"]').focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('[data-template="website"]').getAttribute('aria-pressed'), 'true');
+    assert.ok((await page.locator('#employer-selection').textContent()).trim(), 'Selection is announced');
+    await page.locator('#employer-next-top').focus();
+    await page.keyboard.press('Enter');
+    await stage(page, 1);
+    assert.ok(await page.evaluate(() => !!document.activeElement.closest('[data-employer-panel="1"]')), 'Keyboard progression focuses the new panel');
+    assert.ok((await page.locator('#employer-step-status').textContent()).trim(), 'Step progression is announced');
+    for (let index = 0; index < 18; index++) {
+      await page.keyboard.press('Tab');
+      assert.equal(await page.evaluate(() => !!document.activeElement.closest('[hidden]') || document.activeElement.getClientRects().length === 0), false, 'Tab never lands in hidden content');
+    }
+    await page.locator('#employer-summary').fill(fields.summary);
+    await page.locator('#employer-deliverables').fill(fields.deliverables);
+    await page.locator('#employer-acceptance').fill(fields.acceptance);
+    await reveal(page, '#employer-title');
+    await page.locator('#employer-title').fill('');
+    await page.locator('#employer-inputs').fill('');
+    await page.locator('#employer-extra-details > summary').click();
+    await page.locator('#employer-next').click();
+    await stage(page, 2);
+    await page.locator('#employer-budget').fill('100');
+    await page.locator('#employer-days').fill('7');
+    await page.locator('#employer-next').click();
+    await stage(page, 3);
+    await page.locator('#employer-public').check();
+    const spec = await downloadJSON(page);
+    assert.ok(spec.properties.title.trim(), 'A missing optional title gets a usable title');
+    assert.deepEqual(spec.properties.inputURLs, [], 'A job can start without public source links');
+    await closeChecked(page);
+  }
+
+  for (const language of ['', 'fr/']) {
+    const page = await openPage(language);
+    await page.addInitScript(() => { window.__printCalls = 0; window.print = () => { window.__printCalls++; }; });
+    await visit(page, language);
+    await reviewJob(page);
+    let count = 0;
+    page.on('download', () => count++);
+    await page.locator('#employer-download-text').click();
+    assert.equal(count, 0, 'Text export requires review consent');
+    await page.locator('#employer-print').click();
+    assert.equal(await page.evaluate(() => window.__printCalls), 0, 'Printing requires review consent');
+    await page.locator('#employer-public').check();
+    const text = await downloadText(page);
+    for (const value of [fields.title, fields.summary, fields.deliverables, fields.acceptance, fields.inputs, '1500.123456'])
+      assert.ok(text.includes(value), `Plain-text brief preserves ${value}`);
+    assert.ok(text.includes(language ? 'Aucune demande n’a été publiée et aucun paiement n’a été effectué.' : 'No request has been published and no payment has been made.'), 'The downloaded copy clearly states that nothing was published or paid');
+    await page.locator('#employer-print').click();
+    assert.equal(await page.evaluate(() => window.__printCalls), 1, 'The reviewed brief can be printed');
+    await page.emulateMedia({ media: 'print' });
+    assert.equal(await page.locator('#employer-review').isVisible(), true, 'Print retains the complete brief');
+    assert.equal(await page.locator('#employer-next').isVisible(), false, 'Print omits navigation');
     await closeChecked(page);
   }
 
@@ -301,6 +467,7 @@ try {
     );
     let downloadCount = 0;
     page.on("download", () => downloadCount++);
+    await reveal(page, '#employer-export');
     await page.locator("#employer-export").click();
     assert.ok((await page.locator("#employer-errors").textContent()).trim());
     assert.equal(
@@ -338,6 +505,7 @@ try {
     const page = await openPage();
     await visit(page);
     await describeJob(page);
+    await reveal(page, "#employer-save");
     await page.locator("#employer-save").click();
     const saved = await page.evaluate(
       (key) => localStorage.getItem(key),
@@ -351,13 +519,16 @@ try {
       "",
       "Saved content is restored only by explicit action",
     );
+    await reveal(page, "#employer-restore");
     await page.locator("#employer-restore").click();
     assert.equal(
       await page.locator("#employer-title").inputValue(),
       fields.title,
     );
+    await reveal(page, '#employer-title');
     await page.locator("#employer-title").fill("Unsaved change");
     page.once("dialog", (dialog) => dialog.dismiss());
+    await reveal(page, "#employer-restore");
     await page.locator("#employer-restore").click();
     assert.equal(
       await page.locator("#employer-title").inputValue(),
@@ -365,6 +536,7 @@ try {
       "Canceled restore preserves unsaved work",
     );
     page.once("dialog", (dialog) => dialog.accept());
+    await reveal(page, "#employer-restore");
     await page.locator("#employer-restore").click();
     assert.equal(
       await page.locator("#employer-title").inputValue(),
@@ -375,6 +547,7 @@ try {
       localStorage.setItem("employer-test-unrelated", "preserve");
     }, consoleKey);
     page.once("dialog", (dialog) => dialog.dismiss());
+    await reveal(page, "#employer-clear");
     await page.locator("#employer-clear").click();
     assert.equal(
       await page.locator("#employer-title").inputValue(),
@@ -382,6 +555,7 @@ try {
       "Canceled clear preserves the brief",
     );
     page.once("dialog", (dialog) => dialog.accept());
+    await reveal(page, "#employer-clear");
     await page.locator("#employer-clear").click();
     assert.equal(
       await page.evaluate((key) => localStorage.getItem(key), draftKey),
@@ -405,6 +579,7 @@ try {
       (key) => localStorage.setItem(key, "{malformed"),
       draftKey,
     );
+    await reveal(page, "#employer-restore");
     await page.locator("#employer-restore").click();
     assert.ok(
       (await page.locator("#employer-status").textContent()).trim() ||
@@ -451,6 +626,7 @@ try {
     );
     await visit(page);
     await reviewJob(page);
+    await reveal(page, "#employer-save");
     await page.locator("#employer-save").click();
     assert.ok(
       (await page.locator("#employer-status").textContent()).trim() ||
@@ -458,6 +634,7 @@ try {
     );
     await page.locator("#employer-public").check();
     const before = page.url();
+    await reveal(page, '#employer-handoff');
     await page.locator("#employer-handoff").click();
     assert.equal(
       page.url(),
@@ -483,6 +660,7 @@ try {
     });
     await reviewJob(page);
     await page.locator("#employer-public").check();
+    await reveal(page, '#employer-handoff');
     await page.locator("#employer-handoff").click();
     assert.ok(page.url().endsWith("/employers/"));
     assert.equal(
@@ -553,7 +731,7 @@ try {
     await page.close();
   }
   console.log(
-    "Employer browser checks passed: EN/FR, 390/768/1440 widths, labels, validation, safe rendering, exact JSON, draft lifecycle, language transfer, denied storage, conflict-protected console handoff, no wallet/external traffic and no-JS guide.",
+    "Employer browser checks passed: EN/FR, 320/390/768/1440 widths, 200% text, larger-text controls, 48px primary targets, keyboard focus, labels, six everyday + eight technical examples, optional title/links, validation, text/print/JSON exports, safe rendering, draft lifecycle, language transfer, denied storage, protected console handoff, no wallet/external traffic and no-JS guide.",
   );
 } finally {
   if (browser) await browser.close();

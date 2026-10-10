@@ -22,7 +22,69 @@ const content = (
   acceptance,
   requirements = "",
 ) => ({ title, summary, deliverables, acceptance, requirements });
+export const PRIMARY_TEMPLATE_IDS = Object.freeze([
+  "website",
+  "intelligence",
+  "presentation",
+  "report",
+  "dashboard",
+  "custom",
+]);
 export const TEMPLATES = [
+  template(
+    "website",
+    "Website design",
+    content(
+      "Create a simple website",
+      "Create a welcoming one-page website for my project. I will describe who it is for, what it should say and the style I like.",
+      "A finished website I can preview in my browser\nThe website files\nSimple instructions for putting it online",
+      "The agreed words and sections are included.\nThe page is easy to read on a phone and a computer.\nLinks and buttons work, and the page can be used with a keyboard.",
+    ),
+    content(
+      "Créer un site simple",
+      "Créer un site accueillant d’une page pour mon projet. Je préciserai à qui il s’adresse, ce qu’il doit dire et le style que j’aime.",
+      "Un site terminé que je peux voir dans mon navigateur\nLes fichiers du site\nDes instructions simples pour le mettre en ligne",
+      "Les textes et les sections convenus sont présents.\nLa page est facile à lire sur téléphone et ordinateur.\nLes liens et les boutons fonctionnent, et la page est utilisable au clavier.",
+    ),
+  ),
+  template(
+    "presentation",
+    "Presentation design",
+    content(
+      "Prepare a presentation",
+      "Prepare a clear, attractive presentation about my topic. I will specify the audience, the main message and the number of slides.",
+      "An editable presentation\nA PDF copy that is easy to share\nShort notes to help me present each slide",
+      "The presentation covers the agreed points in the agreed number of slides.\nText is easy to read and the visual style is consistent.\nFactual claims include public sources where needed.",
+    ),
+    content(
+      "Préparer une présentation",
+      "Préparer une présentation claire et attrayante sur mon sujet. Je préciserai le public, le message principal et le nombre de diapositives.",
+      "Une présentation modifiable\nUne copie PDF facile à partager\nDe courtes notes pour présenter chaque diapositive",
+      "La présentation couvre les points convenus avec le nombre de diapositives demandé.\nLe texte est facile à lire et le style est cohérent.\nLes faits sont accompagnés de sources publiques au besoin.",
+    ),
+  ),
+  template(
+    "report",
+    "Public research report",
+    content(
+      "Research a topic",
+      "Research a topic using public information and explain the findings in plain language. I will specify my questions and the length of the report.",
+      "A clearly written report\nA short summary of the most useful findings\nLinks to the public sources used",
+      "The report answers each agreed question.\nImportant facts link to their sources and show the research date.\nUncertainty and missing information are clearly explained.",
+    ),
+    content(
+      "Faire une recherche",
+      "Étudier un sujet à partir d’informations publiques et expliquer les résultats simplement. Je préciserai mes questions et la longueur du rapport.",
+      "Un rapport clair\nUn court résumé des résultats les plus utiles\nLes liens vers les sources publiques utilisées",
+      "Le rapport répond à chaque question convenue.\nLes faits importants renvoient à leurs sources et indiquent la date de recherche.\nLes incertitudes et les informations manquantes sont clairement expliquées.",
+    ),
+  ),
+  template(
+    "custom",
+    "Custom digital work",
+    content("My own request", "", "", ""),
+    content("Ma propre demande", "", "", ""),
+  ),
   template(
     "performance",
     "Performance optimization",
@@ -107,16 +169,16 @@ export const TEMPLATES = [
     "dashboard",
     "Public-data dashboard",
     content(
-      "Create a public-data dashboard",
-      "Build an accessible dashboard from a specified public non-personal dataset, with transparent calculations and source attribution.",
-      "Dashboard source and preview\nData preparation code\nSource, update and calculation notes",
-      "Every displayed metric can be traced to its source.\nThe layout works on desktop and mobile.\nDocument missing values, update dates and limitations.",
+      "Turn data into a dashboard",
+      "Turn public information into a clear dashboard with useful charts. I will name the information to use and the questions I want the charts to answer.",
+      "A working dashboard I can preview\nThe files and simple instructions for using it\nLinks to the data and notes explaining the numbers",
+      "Every number can be checked against its source.\nThe charts are easy to read on a phone and a computer.\nShow when the data was updated and explain any missing information.",
     ),
     content(
-      "Créer un tableau de données publiques",
-      "Construire un tableau de bord accessible à partir de données publiques non personnelles, avec des calculs transparents et des sources citées.",
-      "Code et aperçu du tableau de bord\nCode de préparation des données\nNotes sur les sources, les mises à jour et les calculs",
-      "Chaque indicateur affiché peut être relié à sa source.\nLa présentation fonctionne sur ordinateur et mobile.\nDocumenter les valeurs manquantes, les dates et les limites.",
+      "Présenter des données clairement",
+      "Présenter des informations publiques dans un tableau de bord avec des graphiques clairs. Je préciserai les données à utiliser et les questions auxquelles les graphiques doivent répondre.",
+      "Un tableau de bord que je peux consulter\nLes fichiers et des instructions simples\nLes liens vers les données et une explication des chiffres",
+      "Chaque chiffre peut être vérifié dans sa source.\nLes graphiques sont faciles à lire sur téléphone et ordinateur.\nIndiquer la date des données et expliquer les informations manquantes.",
     ),
   ),
   template(
@@ -139,16 +201,16 @@ export const TEMPLATES = [
     "intelligence",
     "Public product research",
     content(
-      "Compare public products or tools",
-      "Prepare a decision-ready comparison of specified products using public first-party documentation and reproducible criteria.",
-      "Comparison table with source links\nEvidence-backed findings\nAssumptions and research date",
-      "Cite a public source for each material factual claim.\nSeparate observed facts from estimates and judgments.\nIdentify gaps and use the agreed comparison criteria.",
+      "Compare products or services",
+      "Compare the products or services I name using their official public information. I will explain which differences matter most to my decision.",
+      "An easy-to-read comparison table\nThe main advantages and limitations of each option\nLinks to sources and the date of the comparison",
+      "Compare every option on the points we agree on.\nLink important facts to their public sources.\nClearly explain opinions, estimates and missing information.",
     ),
     content(
-      "Comparer des produits ou outils publics",
-      "Préparer une comparaison exploitable des produits définis à partir de leur documentation publique officielle et de critères reproductibles.",
-      "Tableau comparatif avec liens sources\nConclusions fondées sur des preuves\nHypothèses et date de recherche",
-      "Citer une source publique pour chaque affirmation factuelle importante.\nDistinguer les faits observés, les estimations et les jugements.\nIdentifier les lacunes et utiliser les critères convenus.",
+      "Comparer des produits ou services",
+      "Comparer les produits ou services que je nomme à partir de leurs informations publiques officielles. Je préciserai les différences qui comptent le plus pour mon choix.",
+      "Un tableau comparatif facile à lire\nLes principaux avantages et limites de chaque option\nLes liens vers les sources et la date de la comparaison",
+      "Comparer chaque option sur les points convenus.\nRelier les faits importants à leurs sources publiques.\nExpliquer clairement les opinions, les estimations et les informations manquantes.",
     ),
   ),
   template(
@@ -232,7 +294,7 @@ export function lines(value) {
 }
 export function publicInputURLs(value) {
   const urls = lines(value);
-  if (!urls.length || urls.length > 10) throw Error("inputs");
+  if (urls.length > 10) throw Error("inputs");
   for (const raw of urls) {
     if (raw.length > 2048 || /\s/.test(raw)) throw Error("inputs");
     let url;
@@ -314,7 +376,7 @@ export function validateDraft(draft, throughStage = 2) {
   if (!TEMPLATES.some((item) => item.id === draft.template))
     errors.push({ field: "template", code: "template" });
   if (throughStage >= 1) {
-    for (const key of ["title", "summary", "deliverables", "acceptance"])
+    for (const key of ["summary", "deliverables", "acceptance"])
       if (!draft.fields[key].trim())
         errors.push({ field: key, code: "required" });
     for (const key of ["deliverables", "acceptance", "requirements"])
@@ -343,6 +405,12 @@ export function validateDraft(draft, throughStage = 2) {
   }
   return errors;
 }
+export function draftTitle(fields) {
+  return (
+    fields.title.trim() ||
+    Array.from(fields.summary.trim().replace(/\s+/g, " ")).slice(0, 60).join("")
+  );
+}
 function validated(draft) {
   const errors = validateDraft(draft);
   if (errors.length) throw Error(errors[0].code);
@@ -360,9 +428,9 @@ export function toMetadata(
     duration = durationSeconds(fields.days),
     locale = lang === "fr" ? "fr-CA" : "en-CA";
   return {
-    name: `AGI Job · ${fields.title.trim()}`,
+    name: `AGI Job · ${draftTitle(fields)}`,
     description: fields.summary.trim(),
-    external_url: inputURLs[0],
+    ...(inputURLs.length ? { external_url: inputURLs[0] } : {}),
     attributes: [
       { trait_type: "Category", value: selected.category },
       { trait_type: "Payout (USDC)", value: payout },
@@ -378,10 +446,10 @@ export function toMetadata(
       kind: "job-spec",
       version: "1.0.1",
       locale,
-      title: fields.title.trim(),
+      title: draftTitle(fields),
       category: selected.category,
       summary: fields.summary.trim(),
-      details: fields.title.trim(),
+      details: draftTitle(fields),
       tags: [draft.template],
       inputURLs,
       deliverables: lines(fields.deliverables),
@@ -404,9 +472,13 @@ export function toConsoleDraft(draft, lang = "en") {
   const fields = validated(draft),
     selected = TEMPLATES.find((item) => item.id === draft.template),
     urls = publicInputURLs(fields.inputs),
-    summary = `${fields.summary.trim()}\n\n${lang === "fr" ? "Sources publiques" : "Public inputs"}:\n${urls.join("\n")}`;
+    summary =
+      fields.summary.trim() +
+      (urls.length
+        ? `\n\n${lang === "fr" ? "Sources publiques" : "Public inputs"}:\n${urls.join("\n")}`
+        : "");
   return {
-    jobTitle: fields.title.trim(),
+    jobTitle: draftTitle(fields),
     jobCategory: selected.category,
     jobTags: draft.template,
     jobSummaryBuilder: summary,
@@ -414,12 +486,54 @@ export function toConsoleDraft(draft, lang = "en") {
     jobAcceptance: lines(fields.acceptance).join("\n"),
     jobRequirements: lines(fields.requirements).join("\n"),
     jobImageURI: "",
-    jobExternalURI: urls[0],
+    jobExternalURI: urls[0] || "",
     jobSpecVersion: "agijobmanager/job-spec/v1",
     jobLocale: lang === "fr" ? "fr-CA" : "en-CA",
     jobPayout: normalizeBudget(fields.budget),
     jobDuration: String(durationSeconds(fields.days)),
-    jobDetails: fields.title.trim(),
+    jobDetails: draftTitle(fields),
     jobSpecURI: "",
   };
+}
+
+export function toReadableBrief(draft, lang = "en") {
+  const fields = validated(draft),
+    fr = lang === "fr",
+    sections = [
+      [fr ? "MA DEMANDE AGI JOBS" : "MY AGI JOBS REQUEST", draftTitle(fields)],
+      [fr ? "Ce que je souhaite" : "What I would like", fields.summary.trim()],
+      [
+        fr ? "Ce que je souhaite recevoir" : "What I would like to receive",
+        fields.deliverables.trim(),
+      ],
+      [
+        fr ? "Comment vérifier le résultat" : "How to check the result",
+        fields.acceptance.trim(),
+      ],
+      [fr ? "Budget" : "Budget", normalizeBudget(fields.budget) + " USDC"],
+      [
+        fr ? "Délai" : "Time allowed",
+        fields.days +
+          (fr ? " jours après l’attribution" : " days after assignment"),
+      ],
+    ];
+  if (fields.inputs.trim())
+    sections.push([
+      fr ? "Liens publics" : "Public links",
+      publicInputURLs(fields.inputs).join("\n"),
+    ]);
+  if (fields.requirements.trim())
+    sections.push([
+      fr ? "Autres précisions" : "Other details",
+      fields.requirements.trim(),
+    ]);
+  sections.push([
+    fr ? "À retenir" : "Please remember",
+    fr
+      ? "Ceci est un brouillon. Aucune demande n’a été publiée et aucun paiement n’a été effectué. Les frais de réseau s’ajoutent au budget. La publication et le paiement se font ensuite dans la console, où les frais et les conditions doivent être vérifiés."
+      : "This is a draft. No request has been published and no payment has been made. Network fees are extra. Publishing and payment happen later in the console, where you must check the fees and terms.",
+  ]);
+  return (
+    sections.map(([label, value]) => label + "\n" + value).join("\n\n") + "\n"
+  );
 }
