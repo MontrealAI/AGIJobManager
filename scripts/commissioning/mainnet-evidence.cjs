@@ -4,6 +4,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const C = require('../../hardhat/scripts/check-ens-usdc-connection.cjs');
 const RECORD = path.resolve(__dirname, '../../config/mainnet/agi-jobs-usdc.json');
+// Historical identities at sourceRef; do not compare against a later checkout's Solidity.
+const SOURCE_BLOBS = Object.freeze({
+  'contracts/AGIJobManager.sol': 'a91536b8ae237c24f8e90eceedd17e5f3e6e14b6',
+  'contracts/ens/ENSJobPages.sol': 'b07166f6bec3115bc3e5d4c47cec36861d26f847',
+});
 const isHash = x => typeof x === 'string' && /^0x[0-9a-fA-F]{64}$/.test(x);
 const decimal = x => typeof x === 'string' && /^(0|[1-9][0-9]*)$/.test(x);
 function check(ok, code) { if (!ok) throw new Error(code); }
@@ -13,6 +18,10 @@ function validate(record) {
   check(record.recordType === 'operator-evidence-projection' && record.notLiveState === true &&
     record.notDefaultConfiguration === true, 'RECORD_NOT_LIVE_OR_DEFAULT');
   check(record.sourceRef === '47abe97bfc7fbd502482e92e71ba558a9668ccab', 'RECORD_SOURCE_REF');
+  check(record.sourceBlobs && typeof record.sourceBlobs === 'object' &&
+    !Array.isArray(record.sourceBlobs) && Object.keys(record.sourceBlobs).length === 2 &&
+    Object.entries(SOURCE_BLOBS).every(([file, blob]) => Object.hasOwn(record.sourceBlobs, file) &&
+      record.sourceBlobs[file] === blob), 'RECORD_SOURCE_BLOBS');
   for (const key of ['manager', 'helper', 'administrator', 'rootOwner'])
     check(C.eq(record[key], C.P[key]), 'RECORD_ROLE_' + key);
   check(record.jobsRootName === C.P.root && record.jobLabelPrefix === 'job-' &&
