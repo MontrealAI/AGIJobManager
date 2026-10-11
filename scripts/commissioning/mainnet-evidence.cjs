@@ -3,7 +3,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const {createHash} = require('node:crypto');
-const C = require('../../hardhat/scripts/check-ens-usdc-connection.cjs');
 const RECORD = path.resolve(__dirname, '../../config/mainnet/agi-jobs-usdc.json');
 // Historical identities at sourceRef; do not compare against a later checkout's Solidity.
 const SOURCE_BLOBS = Object.freeze({
@@ -38,6 +37,9 @@ function canonical(value, depth = 0) {
     JSON.stringify(key) + ':' + canonical(value[key], depth + 1)).join(',') + '}';
 }
 function validate(record) {
+  let C;
+  try { C = require('../../hardhat/scripts/check-ens-usdc-connection.cjs'); }
+  catch { throw new Error('RECORD_CONNECTION_CHECKER_UNAVAILABLE'); }
   check(record && record.schema === 'agijobmanager-recorded-mainnet-instance-v1', 'RECORD_SCHEMA');
   check(record.chainId === 1 && record.recordDate === '2026-10-10', 'RECORD_CHAIN_DATE');
   check(record.recordType === 'operator-evidence-projection' && record.notLiveState === true &&
@@ -165,7 +167,7 @@ if (require.main === module) {
     check(process.argv.length === 2, 'USAGE_node_scripts/commissioning/mainnet-evidence.cjs');
     console.log(JSON.stringify(validate(load()), null, 2));
   } catch (error) {
-    const code = typeof error.message === 'string' && (/^RECORD_[A-Za-z0-9_]+$/.test(error.message) ||
+    const code = typeof error?.message === 'string' && (/^RECORD_[A-Za-z0-9_]+$/.test(error.message) ||
       error.message === 'USAGE_node_scripts/commissioning/mainnet-evidence.cjs') ?
       error.message : 'RECORD_LOCAL_READ_OR_VALIDATION_FAILURE';
     console.error('STOP: ' + code); process.exitCode = 1;
