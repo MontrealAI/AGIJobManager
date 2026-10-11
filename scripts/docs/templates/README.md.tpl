@@ -24,6 +24,14 @@ Use **Larger text** if that makes reading more comfortable. The guided page has 
 
 [Explore the AGI Jobs website](https://montrealai.github.io/AGIJobManager/) · [Site en français](https://montrealai.github.io/AGIJobManager/fr/) · [Participant and operator guides](docs/START_HERE.md) · [Current USDC console](https://montrealai.github.io/AGIJobManager/agijobmanager-usdc.html)
 
+## Recorded mainnet instance — ENS connected, activation on HOLD
+
+The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_USDC_2026-10-10.md) reports the verified helper at `0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC` connected to manager `0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7`, using **`job-<jobId>.usdc.jobs.agi.eth`**. At the recorded block **26,165,026**, intake was paused and no job had been posted. This is dated operator evidence, not a live status indicator or permission to fund jobs.
+
+**Production activation remains on HOLD.** The [activation review and five closeout gates](docs/OPERATIONS/PRODUCTION_ACTIVATION.md) are separate from successful deployment. The proposed 100-USDC commissioning ceiling is a draft, not an applied setting. Default console/deployment addresses remain blank; no automatic connection, approval, funding or unpause is introduced.
+
+**En français :** l’intégration ENS est vérifiée dans le relevé daté, mais l’ouverture des travaux payants reste suspendue. Ce relevé ne constitue ni un état en temps réel ni une autorisation de paiement.
+
 ## For developers, operators and release reviewers
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
@@ -81,13 +89,15 @@ Read [buyer protection](docs/BUYER_PROTECTION.md), the [participant guide](docs/
 
 ## Payments and identity
 
-Successful jobs pay the validator allocation first (**8% default**), then **30% of the original job cost to wallet one**, **10% to wallet two**, and the remainder to the Agent. With the default rate, a 100 USDC job pays 8 / 30 / 10 / 52. The validator percentage is fixed when each job is posted. Bonds, slashing and refunds are separate; [the payout specification](docs/USDC_PAYOUT_SPLIT.md) defines rounding and all branches.
+Successful jobs pay the validator allocation first (**8% default**), then **30% of the original job cost to wallet one**, **10% to wallet two**, and the remainder to the Agent. When the full default reviewer allocation is paid, a 100 USDC job pays 8 / 30 / 10 / 52. Buyer acceptance with zero validators instead pays 0 / 30 / 10 / 60, excluding separate bond returns; the reviewer budget is shared, not paid once per reviewer. The validator percentage is fixed when each job is posted. Bonds, slashing and refunds are separate; [the payout specification](docs/USDC_PAYOUT_SPLIT.md) defines rounding and all branches.
 
 Agents normally use `*.agent.agi.eth` or `*.alpha.agent.agi.eth`; Nodes use `*.club.agi.eth` or `*.alpha.club.agi.eth`. Configured allowlist/Merkle exceptions also exist. **NFT eligibility is disabled by default** on fresh managers and is separate from role membership. Read [identity and proofs](docs/guides/IDENTITY_AND_PROOFS.md) and [NFT policy](docs/NFT_POLICY.md).
 
-Optional ENS job pages use `job-<jobId>.usdc-<chainId>-<manager40>.alpha.jobs.agi.eth` for fresh scripted deployments. Existing managers preserve their recorded namespace and labels. [ENS naming policy](docs/ENS_DEPLOYMENT_NAMESPACES.md) describes ownership and wiring.
+The generic fresh-deployment script uses `job-<jobId>.usdc-<chainId>-<manager40>.alpha.jobs.agi.eth`; this is a tooling policy, not a required contract suffix. The separately commissioned instance uses `job-<jobId>.usdc.jobs.agi.eth`. Existing managers preserve their recorded namespace and labels. [ENS naming policy](docs/ENS_DEPLOYMENT_NAMESPACES.md) describes ownership and wiring.
 
 ## Install and verify the public source
+
+**Existing production checkout:** preserve its saved artifacts, original receipts and working patches. Use the [read-only connection command](docs/deployments/MAINNET_USDC_2026-10-10.md#read-only-commands); do not pull, reinstall, compile or redeploy there merely to consume this documentation update. The installation commands below are for a separate development checkout.
 
 Use Node.js {{PUBLIC_NODE}} and the committed lockfiles. From the repository root:
 
@@ -100,7 +110,7 @@ npm test
 npm run docs:check
 ```
 
-For deployment, first run `npm --prefix hardhat run setup`, review the private configuration, then use the [Hardhat procedure](hardhat/README.md). New managers start with intake paused. The [deployment registry](config/usdc-deployment.json) records **no live manager**. Publishing this software does not deploy contracts or open intake.
+For deployment, first run `npm --prefix hardhat run setup`, review the private configuration, then use the [Hardhat procedure](hardhat/README.md). New managers start with intake paused. The [default configuration](config/usdc-deployment.json) still auto-selects **no live manager**. The separate [recorded instance](config/mainnet/agi-jobs-usdc.json) is historical evidence, not a replacement default or an activation grant. Publishing this software does not deploy contracts or open intake.
 
 The current manager uses eight fixed linked libraries. Solidity, existing payout rules and historical deployment records are preserved in this release. A verified compatible manager needs no redeployment for this off-chain workforce release. Preserve original jobs on their original contracts; see [compatibility](docs/V1_RELEASE_SCOPE.md#compatibility).
 
