@@ -7,7 +7,7 @@ candidate manifest; a document cannot self-embed its own final commit hash.
 | Gate | Preparation result | Evidence / command |
 | --- | --- | --- |
 | Historical commissioning regressions | 167 PASS, no skips, Node 22.23.2 | Four existing historical test files |
-| Full deployment preflight, including new commands | 487 PASS, no skips | `npm --prefix hardhat run test:preflight` |
+| Full deployment preflight, including new commands | 489 PASS, no skips | `npm --prefix hardhat run test:preflight` |
 | Contract suite | 780 PASS | `npm run test:shard -- 0 1` |
 | Native compiler/NFT registry/runtime compatibility | 4 PASS | `npm --prefix hardhat run test:registry-native` |
 | Native deployment tests | 11 PASS | `npm --prefix hardhat run test:deployment` |

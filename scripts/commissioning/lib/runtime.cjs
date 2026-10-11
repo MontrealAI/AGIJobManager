@@ -2,8 +2,49 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const {createRequire} = require('node:module');
+const {createHash} = require('node:crypto');
 const {ensure, hash, compare} = require('./isolation.cjs');
 const NAMES = Object.freeze(['hardhat', '@nomicfoundation/hardhat-ethers', 'ethers', 'dotenv', 'solc']);
+
+// Fingerprint the complete installed trees, including transitive modules and
+// native binaries. Hashing just manifests/entrypoints misses secondary imports.
+// This detects drift from the reviewed installation, not package authenticity.
+function fingerprintInstallation(repo, {maxFiles=100000, maxBytes=2*1024*1024*1024}={}) {
+  const roots=[...new Set([path.join(repo,'node_modules'),path.join(repo,'hardhat/node_modules')]
+    .filter(present).map(p=>fs.realpathSync(p)))];
+  const inside=p=>roots.some(root=>p===root||p.startsWith(root+path.sep));
+  let fileCount=0, byteCount=0;
+  const buffer=Buffer.alloc(65536);
+  return roots.map(root=>{
+    const digest=createHash('sha256');let files=0,bytes=0;
+    const visit=directory=>{
+      for(const name of fs.readdirSync(directory).sort()){
+        const file=path.join(directory,name),stat=fs.lstatSync(file),relative=path.relative(root,file);
+        ensure(++fileCount<=maxFiles,'INSTALLED_RUNTIME_FILE_LIMIT');
+        digest.update(JSON.stringify([relative,stat.mode&0o777,stat.isDirectory()?'directory':stat.isSymbolicLink()?'link':'file'])+'\n');
+        if(stat.isDirectory()){visit(file);continue;}
+        if(stat.isSymbolicLink()){
+          ensure(inside(fs.realpathSync(file)),'INSTALLED_RUNTIME_LINK_OUTSIDE_TREES');
+          digest.update(JSON.stringify(fs.readlinkSync(file))+'\n');continue;
+        }
+        ensure(stat.isFile(),'INSTALLED_RUNTIME_SPECIAL_FILE_REFUSED');
+        byteCount+=stat.size;bytes+=stat.size;files++;
+        ensure(byteCount<=maxBytes,'INSTALLED_RUNTIME_BYTE_LIMIT');
+        digest.update(String(stat.size)+'\n');
+        const fd=fs.openSync(file,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW);
+        try{
+          const before=fs.fstatSync(fd);let count=0,n;
+          ensure(before.isFile()&&before.ino===stat.ino&&before.size===stat.size,'INSTALLED_RUNTIME_CHANGED_DURING_HASH');
+          while((n=fs.readSync(fd,buffer,0,buffer.length,null))>0){count+=n;ensure(count<=stat.size,'INSTALLED_RUNTIME_CHANGED_DURING_HASH');digest.update(buffer.subarray(0,n));}
+          const after=fs.fstatSync(fd);
+          ensure(count===stat.size&&after.size===before.size&&after.mtimeMs===before.mtimeMs,'INSTALLED_RUNTIME_CHANGED_DURING_HASH');
+        }finally{fs.closeSync(fd);}
+        digest.update('\n');
+      }
+    };
+    visit(root);return {root,sha256:digest.digest('hex'),files,bytes};
+  });
+}
 
 function present(file) {
   try { fs.lstatSync(file); return true; } catch (e) { if (e.code === 'ENOENT') return false; throw e; }
@@ -53,9 +94,11 @@ function inspectInstalled(repo) {
   const peerRequire = createRequire(plugin.entry);
   ensure(fs.realpathSync(peerRequire.resolve('hardhat')) === entries.hardhat, 'PLUGIN_HARDHAT_PEER_INSTANCE_MISMATCH');
   ensure(fs.realpathSync(peerRequire.resolve('ethers')) === entries.ethers, 'PLUGIN_ETHERS_PEER_INSTANCE_MISMATCH');
+  const dependencyTrees=fingerprintInstallation(root);
+  ensure(Object.values(packages).every(p=>dependencyTrees.some(t=>p.directory.startsWith(t.root+path.sep))), 'INSTALLED_PACKAGE_OUTSIDE_REVIEWED_TREES');
   return {repo:root, origin, originSha256:hash(originBytes), layout:origin === subManifest ? 'hardhat-subproject' : 'repository-root',
     hardhatJson:hh.packageJson, version:hh.version, cli, cliSha256:hash(fs.readFileSync(cli)), entries, packages,
-    peerInstancesMatched:true};
+    dependencyTrees,peerInstancesMatched:true};
 }
 function assertSameRuntime(installed, work) {
   const config = path.join(work, 'hardhat.config.mjs');
@@ -99,4 +142,4 @@ function requireWorkspaceRuntime(repo, work) {
   assertSameRuntime(installed, work);
   return {installed, local:createRequire(path.join(work, 'hardhat.config.mjs'))};
 }
-module.exports = {NAMES, dependencyPackageJson, inspectInstalled, assertSameRuntime, linkInstalledDependencies, requireWorkspaceRuntime};
+module.exports = {NAMES, dependencyPackageJson, fingerprintInstallation, inspectInstalled, assertSameRuntime, linkInstalledDependencies, requireWorkspaceRuntime};

@@ -127,3 +127,20 @@ test('recorded runtime fingerprint cannot select another project or package afte
   linked.installedFingerprint.version='3.17.99';write(path.join(f.work,'LOCAL_RUNTIME.json'),JSON.stringify(linked));
   assert.throws(()=>L.requireWorkspaceRuntime(f.repo,f.work),/WORKSPACE_RUNTIME_SELECTION_CHANGED/);
 }));
+test('secondary and transitive dependency changes invalidate an otherwise identical runtime',()=>useLayout('split',f=>{
+ const secondary=path.join(f.repo,'hardhat/node_modules/hardhat/dist/secondary.js');
+ const transitive=path.join(f.repo,'node_modules/transitive-runtime/index.js');
+ write(secondary,'export const value=1;');write(transitive,'module.exports=1;');
+ const h=L.inspectInstalled(f.repo);L.linkInstalledDependencies(h,f.work);
+ write(secondary,'export const value=2;');assert.throws(()=>L.assertSameRuntime(h,f.work),/INSTALLED_RUNTIME_CHANGED/);
+ write(secondary,'export const value=1;');write(transitive,'module.exports=2;');assert.throws(()=>L.assertSameRuntime(h,f.work),/INSTALLED_RUNTIME_CHANGED/);
+}));
+test('dependency deletion, external links and excessive inventories stop fingerprinting',()=>use(f=>{
+ const h=L.inspectInstalled(f.repo);L.linkInstalledDependencies(h,f.work);
+ fs.unlinkSync(path.join(f.repo,'node_modules/dotenv/index.cjs'));assert.throws(()=>L.assertSameRuntime(h,f.work));
+ write(path.join(f.base,'outside.js'),'module.exports=1;');fs.symlinkSync(path.join(f.base,'outside.js'),path.join(f.repo,'node_modules/outside.js'));
+ assert.throws(()=>L.fingerprintInstallation(f.repo),/LINK_OUTSIDE_TREES/);
+ fs.unlinkSync(path.join(f.repo,'node_modules/outside.js'));
+ assert.throws(()=>L.fingerprintInstallation(f.repo,{maxFiles:1}),/FILE_LIMIT/);
+ assert.throws(()=>L.fingerprintInstallation(f.repo,{maxBytes:1}),/BYTE_LIMIT/);
+}));

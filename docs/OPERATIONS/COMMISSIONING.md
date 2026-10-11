@@ -187,6 +187,12 @@ mode-700 owned directory. Do not upload original private reports or the handoff 
 wholesale. Public summaries should contain safe status, source/block identities and
 reviewed input hashes. Re-running changes neither history nor wallet authority.
 
+The rehearsal fingerprints complete installed root and Hardhat-subproject dependency
+trees, including secondary modules and native binaries, before and after execution.
+External package-file symlinks and oversized inventories stop the check; symlinked
+installation roots are supported. This proves continuity with the initial installed
+bytes, not their authenticity: use the pinned lockfiles in a fresh engineering checkout.
+
 The same aliases exist from `hardhat/` (for example `npm run ens:inspect -- ...`).
 Use absolute private paths when using `npm --prefix hardhat`, whose process directory
 is the subproject. `--help` needs neither credentials nor a wallet.

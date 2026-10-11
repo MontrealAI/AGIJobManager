@@ -24,6 +24,9 @@ async function rehearse({root,input,url}){
   const transport=T.makeTransport(url,{limit:64*1024*1024,maxRequests:30000}),route='/readonly-'+randomUUID();let server;
   const report={schema:'agijobmanager-rehearsal-v1',status:'FAIL',launcher:'STOPPED',source:identity,snapshot:o.snapshot,simulationChainId:31337,
     reviewedObservationSha256:reviewed.sha256,child:null,childSha256:null,transport:transport.audit,
+    runtime:{versions:Object.fromEntries(Object.entries(installed.packages).map(([name,p])=>[name,p.version])),
+      dependencyTrees:installed.dependencyTrees.map(({sha256,files,bytes})=>({sha256,files,bytes})),
+      scope:'Complete root/subproject installed trees checked before and after execution; identity continuity is not package authenticity.'},
     intakeActivationAuthorized:false,productionReadinessCertified:false,publicTransactionsBroadcast:0,
     limitations:['Impersonation, local minting and allowlist fixtures do not establish real participant signing, eligibility or independence.','Fork results do not authorize intake. Original compiler/explorer evidence remains separate.']};
   try{
@@ -51,6 +54,7 @@ async function rehearse({root,input,url}){
       XDG_CACHE_HOME:path.join(work,'user-cache'),XDG_CONFIG_HOME:path.join(work,'user-config'),XDG_DATA_HOME:path.join(work,'user-data')};
     L.assertSameRuntime(installed,work);
     report.outcome=await runChild({args:[installed.cli,'--config',path.join(work,'hardhat.config.mjs'),'run','--no-compile',path.join(root,'scripts/commissioning/rehearsal.mjs'),'--network','ensRehearsal'],cwd:work,env});
+    L.assertSameRuntime(installed,work);
     I.ensure(fs.existsSync(path.join(work,'RESULT.json')),'REHEARSAL_CHILD_RESULT_MISSING');
     const child=I.read(path.join(work,'RESULT.json'),4*1024*1024);report.child=child.value;report.childSha256=child.sha256;
     const after=await transport.rpc('eth_getBlockByNumber',[o.snapshot.tag,false]);I.ensure(C.eq(after?.hash,o.snapshot.hash),'REHEARSAL_PIN_REORG');
