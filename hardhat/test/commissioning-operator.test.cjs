@@ -60,6 +60,10 @@ test('source changes during observation or rehearsal cannot acquire the original
  assert.equal(I.sameSource(source,{...source}),true);
  for(const change of [{commit:'c'.repeat(40)},{tree:'d'.repeat(40)},{worktreeChanged:true}])assert.equal(I.sameSource(source,{...source,...change}),false);
 });
+test('custody comparison handles native bigint fuses and expiry without masking drift',()=>{
+ S.compare(['holder',0n,1791725015n],['holder',0n,1791725015n],'CUSTODY_CHANGED');
+ assert.throws(()=>S.compare(['holder',0n,1791725015n],['holder',1n,1791725015n],'CUSTODY_CHANGED'),{code:'CUSTODY_CHANGED'});
+});
 test('resolved Hardhat URL uses original receiver and awaits getUrl',async()=>{
  const value={_type:'ResolvedConfigurationVariable',secret:'http://127.0.0.1:1234/readonly-test',async getUrl(){assert.equal(this,value);return this.secret;}};
  assert.equal((await S.resolveForkUrl(value)).url,value.secret);

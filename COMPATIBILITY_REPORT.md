@@ -5,6 +5,9 @@ The update changes off-chain tooling, tests, documentation and interfaces.
 Solidity sources, ABI, fixed library links, Hardhat compiler configuration and
 Foundry configuration remain unchanged. Package versions change together; dependency
 resolutions and reviewed OpenZeppelin compiler patches remain unchanged.
+The Slither review manifest's root lockfile hash follows the version-only metadata
+change; every detector identity, severity and finding disposition is retained.
+The full analyzer and source/hash verification rerun on the candidate.
 
 The public historical record and frozen connection checker retain their original
 bytes and validator guarantees. Their source/blob and transaction identities are

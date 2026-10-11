@@ -62,12 +62,14 @@ try{
   I.ensure(await resolver.text(node,'agijobs.completion.public')===completion,'ENS_COMPLETION_MISSING');
   const agentBefore=await token.balanceOf(agent.address),wallet30=await manager.wallet30(),wallet10=await manager.wallet10();
   const b30=await token.balanceOf(wallet30),b10=await token.balanceOf(wallet10);
+  const bondBefore=await manager.lockedAgentBonds(),completionToken=await manager.nextTokenId();
   hook(await send('Local buyer acceptance',manager.connect(employer).acceptJob(id,{gasLimit:2000000})),4,id);
   I.ensure((await token.balanceOf(wallet30))-b30===30000000n&&(await token.balanceOf(wallet10))-b10===10000000n,'ZERO_VALIDATOR_RECIPIENT_PAYOUT');
-  I.ensure((await token.balanceOf(agent.address))-agentBefore>=60000000n,'ZERO_VALIDATOR_AGENT_PAYOUT_AND_BOND');
+  I.ensure((await token.balanceOf(agent.address))-agentBefore===60000000n+bondBefore,'ZERO_VALIDATOR_AGENT_PAYOUT_AND_BOND');
+  I.ensure(C.eq(await manager.ownerOf(completionToken),employer.address)&&await manager.nextTokenId()===completionToken+1n,'COMPLETION_NFT_MISSING');
   for(const person of [employer,agent]){I.ensure(!await resolver.isApprovedFor(C.P.helper,node,person.address),'TERMINAL_DELEGATION_RETAINED');await reject(()=>resolver.connect(person).setText.staticCall(node,'terminal','blocked'));}
   I.ensure((await manager.getJobCore(id))[5]===true,'COMPLETION_MISSING');
-  report.checks.push('Create, assignment, completion and buyer acceptance hooks; actual records and terminal permissions','Zero-validator 30/10/60 USDC transfer path and agent bond return');
+  report.checks.push('Create, assignment, completion and buyer acceptance hooks; actual records, completion NFT and terminal permissions','Zero-validator 30/10/60 USDC transfer path and exact agent bond return');
   phase='CANCELLATION';await send('Local intake open for cancellation',manager.connect(admin).unpauseIntake());
   const second=await manager.nextJobId();hook(await send('Local second creation',manager.connect(employer).createJob(spec,100000000n,3600n,'Cancellation fixture',{gasLimit:2000000})),1,second);
   hook(await send('Local unassigned cancellation',manager.connect(employer).cancelJob(second,{gasLimit:2000000})),4,second);

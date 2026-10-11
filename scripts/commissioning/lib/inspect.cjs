@@ -54,7 +54,7 @@ async function inspect({rpc,mode='mainnet',build,approvalStart,participants=[],n
     for(const a of new Set([C.P.manager,state.owner,state.wallet30,state.wallet10,...participants].map(a=>a.toLowerCase())))blacklisted[a]=await token.isBlacklisted(a);
     const tokenState={decimals:String(await token.decimals()),paused:await token.paused(),blacklisted,implementation,implementationCodeHash:E.keccak256(implCode),proxyCodeHash:E.keccak256(await reader.getCode(C.P.usdc)),issuerUpgradeAuthority:'NOT_ASSESSED'};
     const exceptions={};
-    for(const a of participants) exceptions[a]=Object.fromEntries(await Promise.all(['moderators','additionalValidators','additionalAgents','blacklistedAgents','blacklistedValidators'].map(async n=>[n,await manager[n](a)])));
+    for(const a of new Set(participants.map(a=>a.toLowerCase()))) exceptions[a]=Object.fromEntries(await Promise.all(['moderators','additionalValidators','additionalAgents','blacklistedAgents','blacklistedValidators'].map(async n=>[n,await manager[n](a)])));
     let nft={status:'NOT_RUN',code:'REVIEWED_MANAGER_ARTIFACT_AND_BUILD_REQUIRED'};
     if(build) {
       const input=read(build,64*1024*1024); inputs.push({role:'reviewed-manager-build',sha256:input.sha256,bytes:input.bytes});

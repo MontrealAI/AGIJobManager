@@ -161,4 +161,50 @@ contract('ensHooks.integration', (accounts) => {
     await expectEvent.inTransaction(applyTx.tx, pages, 'ENSHookBestEffortFailure', { hook: new BN(2) });
     await expectEvent.inTransaction(completionTx.tx, pages, 'ENSHookBestEffortFailure', { hook: new BN(3) });
   });
+
+  it('bounds maximum-length URI gas and exposes ENS degradation without losing escrow recovery', async () => {
+    const token = await MockERC20.new();
+    const ens = await MockENSRegistry.new();
+    const wrapper = await MockNameWrapper.new();
+    const resolver = await MockPublicResolver.new();
+    const rootName = 'jobs.alpha.agi.eth', node = namehash(rootName);
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address,
+      rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), mkTree([validator]).root, mkTree([agent]).root), { from: owner });
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, node, rootName, { from: owner });
+    await pages.setJobManager(manager.address, { from: owner });
+    await manager.setEnsJobPages(pages.address, { from: owner });
+    await ens.setOwner(node, pages.address);
+    const nft = await MockERC721.new();
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent);
+    const funds = new BN(parseUSDCAmount('1000')), payout = new BN(parseUSDCAmount('100'));
+    for (const person of [employer, agent]) {
+      await token.mint(person, funds);
+      await token.approve(manager.address, funds, { from: person });
+    }
+    const failedHook = async receipt => {
+      assert.equal(receipt.logs.find(log => log.event === 'EnsHookAttempted').args.success, true,
+        'successful outer call can conceal a failed best-effort resolver write');
+      await expectEvent.inTransaction(receipt.tx, pages, 'ENSHookBestEffortFailure');
+      assert(Number(receipt.receipt.gasUsed) < 3000000, 'URI fixture must fit the declared 3M transaction bound');
+    };
+    const initialBalance = await token.balanceOf(employer);
+    const longSpec = 'ipfs://' + 's'.repeat(2041);
+    await failedHook(await manager.createJob(longSpec, payout, 5000, 'bounded URI fixture', { from: employer, gas: 3000000 }));
+    assert.equal(await resolver.text(subnode(node, 'agijob0'), 'agijobs.spec.public'), '', 'failed hook leaves no mirrored long record');
+    await manager.cancelJob(0, { from: employer });
+    assert.equal((await token.balanceOf(employer)).toString(), initialBalance.toString(), 'cancel returns escrow despite failed ENS hook');
+
+    await manager.createJob('ipfs://short', payout, 5000, 'completion fixture', { from: employer });
+    await manager.applyForJob(1, 'agent', mkTree([agent]).proofFor(agent), { from: agent });
+    const longCompletion = 'ipfs://' + 'c'.repeat(1017);
+    await failedHook(await manager.requestJobCompletion(1, longCompletion, { from: agent, gas: 3000000 }));
+    assert.equal(await resolver.text(subnode(node, 'agijob1'), 'agijobs.completion.public'), '', 'failed hook is not a mirrored completion');
+    await manager.acceptJob(1, { from: employer, gas: 3000000 });
+    assert.equal(await manager.ownerOf(0), employer, 'completion NFT remains recoverable');
+    for (const reserve of ['lockedEscrow', 'lockedAgentBonds', 'lockedValidatorBonds', 'lockedDisputeBonds', 'lockedClaims']) {
+      assert.equal((await manager[reserve]()).toString(), '0', reserve);
+    }
+    assert.equal(await ens.owner(node), pages.address, 'shared root custody is unchanged');
+  });
 });

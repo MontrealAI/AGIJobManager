@@ -19,8 +19,8 @@ exclude direct callers. Posting does not reserve assignment for a nominated agen
 After a separately authorized opening, pause intake **after assignment**; other
 transactions may enter first. Settlement containment is a distinct decision.
 
-Unavailable original compiler inputs/build cache and archive RPC access block their
-specific evidence gates only. Do not reconstruct them and call them original.
+Missing original compiler inputs/build cache, or unavailable historical RPC coverage,
+block only their respective evidence gates. Do not reconstruct originals and call them original.
 The inspection exporter explains the exact four files needed; no seed words or
 private keys are needed for inspection or rehearsal.
 

@@ -1,6 +1,6 @@
 'use strict';
 const {ensure,Stop,sha256:hash}=require('./io.cjs');
-const canonical=x=>Array.isArray(x)?x.map(canonical):x&&typeof x==='object'?Object.fromEntries(Object.keys(x).sort().map(k=>[k,canonical(x[k])])):x;
+const canonical=x=>typeof x==='bigint'?x.toString():Array.isArray(x)?x.map(canonical):x&&typeof x==='object'?Object.fromEntries(Object.keys(x).sort().map(k=>[k,canonical(x[k])])):x;
 function compare(a,b,code){ensure(JSON.stringify(canonical(a))===JSON.stringify(canonical(b)),code);}
 function proxyUrl(value) {
   // Only a canonical URL for this process's loopback proxy can be trusted.

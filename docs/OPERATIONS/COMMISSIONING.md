@@ -169,6 +169,8 @@ npm's banner (use `bash scripts/commissioning/command.sh activation --template >
 Fill A1–A5 with actual decisions and safe private evidence references. Each reference
 has `reference`, `sha256` and `reviewer`; use identifiers, not secret material.
 Observation/rehearsal files must match their SHA-256 references and source identity.
+The rehearsal must reference that exact observation and block; collect a new pair
+if either is stale or has changed. A stopped child outcome overrides any PASS label.
 A complete collection still requires a **separate signed, versioned owner decision**
 with reviewer, scope, evidence and approval. The command never authorizes intake.
 See [the finite operator actions](../../OPERATOR_ACTIONS_REQUIRED.md).
@@ -192,3 +194,18 @@ is the subproject. `--help` needs neither credentials nor a wallet.
 ## New or replacement namespace planning
 
 From the repository root, `npm run ens:plan -- --input /private/namespace-plan.json --out /private/new-plan.json` performs read-only mainnet precondition checks. Use a mode-700 output directory and the same HTTPS RPC setting. The private JSON has `schema: "agijobmanager-ens-namespace-plan-v1"`, `mode` (`fresh`, `existing-root` or `replacement`) and an explicit `manager`. Existing-root mode additionally requires the normalized `rootName` and `rootOwner`. Replacement derives the current helper namespace and preserves its prefix; fresh mode reuses the maintained manager-specific namespace derivation. A plan cannot authorize deployment. The recorded commissioned instance uses `ens:inspect` instead.
+
+## URI length and ENS gas limits
+
+The native regression in `test/ensHooks.integration.test.js` exercises the permitted
+2,048-byte specification and 1,024-byte completion URI limits under a 3,000,000-gas
+transaction bound. With the test resolver, the manager's 500,000-gas ENS hook budget
+cannot mirror those long records: the outer hook reports success while the helper
+emits `ENSHookBestEffortFailure` and the resolver record remains empty. Cancellation,
+settlement, completion NFT issuance and zero final reserves are checked separately.
+
+This is a reproduced operating constraint, not a new contract change. The operator
+and reviewer should include actual URI lengths and resolver/gas behavior in the
+existing A3 success/adverse-path review. Rehearse that input profile and inspect both
+layers of events plus actual records. The connected-mainnet fork command uses short
+synthetic URIs; it does not certify every permitted URI length or resolver.

@@ -7,8 +7,8 @@ candidate manifest; a document cannot self-embed its own final commit hash.
 | Gate | Preparation result | Evidence / command |
 | --- | --- | --- |
 | Historical commissioning regressions | 167 PASS, no skips, Node 22.23.2 | Four existing historical test files |
-| Full deployment preflight, including new commands | 482 PASS, no skips | `npm --prefix hardhat run test:preflight` |
-| Contract suite | 779 PASS | `npm run test:shard -- 0 1` |
+| Full deployment preflight, including new commands | 487 PASS, no skips | `npm --prefix hardhat run test:preflight` |
+| Contract suite | 780 PASS | `npm run test:shard -- 0 1` |
 | Native compiler/NFT registry/runtime compatibility | 4 PASS | `npm --prefix hardhat run test:registry-native` |
 | Native deployment tests | 11 PASS | `npm --prefix hardhat run test:deployment` |
 | Native Circle USDC historical fork | 11 PASS at declared historical snapshot | `npm --prefix hardhat run test:mainnet-fork` |
@@ -37,10 +37,16 @@ existing reviewed dispositions; they are not described as absent.
 | Bounded approvals | Range inventory + active-state reconciliation | Gaps/reorg/malformed/duplicate/truncation cases | Silent provider omission remains a limitation |
 | A1–A5 collection | Versioned private input and referenced evidence | Missing/hash/stale/conflict/authority tests | Completeness, not authorization authenticity |
 | Runtime/isolation/transport | Supported launcher + strict shared transport | Real subprocess, HHE22, split/hoisted peers, URL and failure tests | Fork only; no upstream writes |
+| Maximum-length URI gas behavior | Native ENS integration regression | 2,048/1,024-byte URI tests within 3M gas, partial ENS failure, refund/settlement/NFT/reserves | Synthetic resolver; actual input profile remains A3 review |
 | Recovery | Exact original-journal reconciliation | Historical identities retained; read-only route | No deploy/sign/nonce allocation |
 | UI and docs | Historical display, explicit current unavailability, common operator guide | Generators, docs and UI checks | No automatic transaction-target selection |
 
 A read-only preparation inspection at block 26,169,445 verified the existing ENS connection (66 allowed RPC requests, zero writes). Read-only journal recovery at block 26,169,450 reconciled all four historical helper stages; saved-artifact creation comparison remains NOT_RUN. These preparation observations are not final-source or activation evidence.
+
+Real entrypoint rehearsal exposed and corrected two preparation defects: full-block
+fork reads were refused, and the final root comparison could not serialize native
+BigInt fuses/expiry. Their stopped reports remain failures, regardless of successful
+child stages. The external final-source record identifies the subsequent run.
 
 Merge: not performed. Release: candidate only, not published. Pages: source updated,
 production deployment not performed. Intake: not authorized or activated.

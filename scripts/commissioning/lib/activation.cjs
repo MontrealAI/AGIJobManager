@@ -32,6 +32,7 @@ function validateObservation(o,now) {
 }
 function validateLifecycle(r){
   ensure(r?.schema==='agijobmanager-rehearsal-v1' && r.status==='PASS' && r.launcher==='COMPLETED' && r.child?.status==='PASS' &&
+    r.outcome?.code===0 && r.outcome?.timedOut===false &&
     r.transport?.rejections===0 && r.transport?.upstreamFailures===0 && r.transport?.publicTransactionsBroadcast===0 &&
     r.intakeActivationAuthorized===false && r.productionReadinessCertified===false && r.simulationChainId===31337 && r.publicTransactionsBroadcast===0 &&
     Array.isArray(r.child.checks) && r.child.checks.length>=3 && r.child.isolation?.exactLauncherProxyMatched===true && r.child.fixtures?.realWalletOrIndependentParticipantEvidence===false &&
@@ -44,7 +45,10 @@ function review(input,{base=process.cwd(),now=Date.now()}={}){
   ensure(!input.intakeActivationAuthorized&&!input.productionReadinessCertified,'ACTIVATION_AUTHORITY_REFUSED');
   const inputs=[],o=evidence(input.observation,base,'current-observation',inputs),l=evidence(input.lifecycle,base,'isolated-lifecycle',inputs);
   if(o)validateObservation(o,now); if(l)validateLifecycle(l);
-  if(o&&l)ensure(o.source.commit===l.source.commit,'EVIDENCE_SOURCE_CONFLICT');
+  if(o&&l){
+    ensure(o.source.commit===l.source.commit,'EVIDENCE_SOURCE_CONFLICT');
+    ensure(l.reviewedObservationSha256===input.observation.sha256 && l.snapshot?.number===o.snapshot.number && l.snapshot?.hash===o.snapshot.hash,'LIFECYCLE_OBSERVATION_CONFLICT');
+  }
   const groups=[],add=(id,items)=>{const missing=items.filter(([,ok])=>!ok).map(([name])=>name);groups.push({id,status:missing.length?'NEEDS_OPERATOR_INPUT':'PASS',missing});};
   const a=input.A1||{},b=input.A2||{},c=input.A3||{},d=input.A4||{},e=input.A5||{};
   const start=Date.parse(a.windowStart),end=Date.parse(a.windowEnd);
@@ -58,10 +62,15 @@ function review(input,{base=process.cwd(),now=Date.now()}={}){
     ['reviewed recipients',Array.isArray(b.reviewedRecipients)&&b.reviewedRecipients.length===2&&!!o&&b.reviewedRecipients.every((v,i)=>C.eq(v,o.sections?.core?.observed?.[['wallet30','wallet10'][i]]))],
     ['reviewed issuer implementation',!!o&&C.eq(b.reviewedUsdcImplementation,o.sections?.core?.token?.implementation)],['complete NFT policy review',REF(b.nftPolicyReview)],['RPC witness limitations accepted',b.witnessRelianceAccepted===true]]);
   const addresses=[c.employer,c.agent,c.moderator];
+  const participantEvidence=Object.create(null);
+  for(const [address,flags] of Object.entries(o?.sections?.core?.participantExceptions||{})){
+    ensure(/^0x[0-9a-fA-F]{40}$/.test(address)&&!Object.hasOwn(participantEvidence,address.toLowerCase()),'PARTICIPANT_OBSERVATION_CONFLICT');
+    participantEvidence[address.toLowerCase()]=flags;
+  }
   add('A3',[
     ['three distinct paid-work participant addresses',addresses.every(x=>typeof x==='string'&&/^0x[0-9a-fA-F]{40}$/.test(x)&&!C.eq(x,C.ZERO))&&new Set(addresses.map(x=>x?.toLowerCase())).size===3],
-    ['participant observations at the review block',!!o&&addresses.every(x=>o.sections?.core?.participantExceptions?.[x])],
-    ['source-enforced moderator membership',!!o&&o.sections?.core?.participantExceptions?.[c.moderator]?.moderators===true],
+    ['participant observations at the review block',!!o&&addresses.every(x=>typeof x==='string'&&participantEvidence[x.toLowerCase()])],
+    ['source-enforced moderator membership',!!o&&participantEvidence[c.moderator?.toLowerCase()]?.moderators===true],
     ['funded/signing/eligibility review',REF(c.eligibilityFundsAndSignerReview)],['human independence and conflicts review',REF(c.independenceReview)],
     ['success, disputes, expiry, refunds and claims review',REF(c.successAndAdversePaths)],['isolated lifecycle evidence',!!l]]);
   add('A4',[

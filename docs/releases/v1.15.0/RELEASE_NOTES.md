@@ -14,6 +14,11 @@ explicit operator inputs and a recorded-instance interface. Deployed Solidity,
 compiler settings, payout semantics, dependencies and blank transaction defaults
 are unchanged. No contract migration is needed.
 
+Maximum-length URI regressions retain the fixed ENS gas boundary and demonstrate
+partial resolver failure despite a successful outer hook. Operators must review
+actual record state and the URI profile; maximum contract input length does not
+promise successful ENS mirroring.
+
 Use [the operator guide](../../OPERATIONS/COMMISSIONING.md). The historical ENS
 milestone remains completed; production intake remains on HOLD. Live archive access,
 original operator build artifacts, actual participants and private approvals are

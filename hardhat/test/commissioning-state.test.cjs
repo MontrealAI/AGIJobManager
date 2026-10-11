@@ -71,3 +71,46 @@ test('generic namespace planning reuses fresh derivation and refuses an attached
  const r=await plan({rpc,config});assert.equal(r.root,deriveJobsRootName(1,C.P.manager));assert.equal(r.helperDeploymentAuthorized,false);
  f.values.ensJobPages=C.P.helper;await assert.rejects(plan({rpc,config}),{code:'EXISTING_INSTANCE_USE_INSPECTION_OR_REPLACEMENT'});
 });
+
+function activationFixture() {
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'agi-activation-'));fs.chmodSync(dir,0o700);
+ const source={commit:'a'.repeat(40),tree:'b'.repeat(40),worktreeChanged:false};
+ const x=A.template(), ref={reference:'SYNTHETIC-TEST-ONLY',sha256:'c'.repeat(64),reviewer:'fixture'};
+ const people=[C.P.administrator,C.P.rootOwner,C.P.helper];
+ const policy=Object.fromEntries(require('../../scripts/commissioning/lib/inspect.cjs').POLICY.map(k=>[k,'1']));
+ const o={schema:'agijobmanager-current-observation-v1',chainId:1,manager:C.P.manager,helper:C.P.helper,namespace:C.P.root,snapshot,source,
+  intakeActivationAuthorized:false,productionReadinessCertified:false,publicTransactionsBroadcast:0,
+  sections:{ens:{status:'PASS',historicalSchemaReport:{snapshot}},approvals:{status:'PASS',coverageContiguous:true},
+   core:{status:'PASS',observed:{...policy,wallet30:people[0],wallet10:people[1]},token:{implementation:people[2]},
+    participantExceptions:Object.fromEntries(people.map(p=>[p,{moderators:p===people[2]}]))}}};
+ I.write(path.join(dir,'observation.json'),o);x.observation={file:'observation.json',sha256:I.read(path.join(dir,'observation.json')).sha256};
+ const child={status:'PASS',checks:['one','two','three'],isolation:{exactLauncherProxyMatched:true},fixtures:{realWalletOrIndependentParticipantEvidence:false}};
+ const l={schema:'agijobmanager-rehearsal-v1',status:'PASS',launcher:'COMPLETED',source,snapshot,child,childSha256:I.sha256(I.stringify(child)),
+  outcome:{code:0,timedOut:false},transport:{rejections:0,upstreamFailures:0,publicTransactionsBroadcast:0},simulationChainId:31337,
+  reviewedObservationSha256:x.observation.sha256,intakeActivationAuthorized:false,productionReadinessCertified:false,publicTransactionsBroadcast:0};
+ Object.assign(x.A1,{publicAdmissionAccepted:true,noGlobalCapAcknowledged:true,pauseAfterAssignmentAcknowledged:true,
+  windowStart:new Date(Number(snapshot.timestampSeconds)*1000).toISOString(),windowEnd:new Date(Number(snapshot.timestampSeconds)*1000+60000).toISOString(),policy,acceptance:ref});
+ Object.assign(x.A2,{review:ref,reviewedRecipients:people.slice(0,2),reviewedUsdcImplementation:people[2],nftPolicyReview:ref,witnessRelianceAccepted:true});
+ Object.assign(x.A3,{employer:people[0],agent:people[1],moderator:people[2],successAndAdversePaths:ref,eligibilityFundsAndSignerReview:ref,independenceReview:ref});
+ for(const g of ['A4','A5'])for(const k of Object.keys(x[g]))x[g][k]=ref;
+ const run=()=>{const file='lifecycle-'+fs.readdirSync(dir).length+'.json';I.write(path.join(dir,file),l);x.lifecycle={file,sha256:I.read(path.join(dir,file)).sha256};return A.review(x,{base:dir,now:Number(snapshot.timestampSeconds)*1000});};
+ return {dir,x,l,o,run};
+}
+test('complete A1–A5 collection remains a separate review, never an activation approval',()=>{
+ const f=activationFixture();try{const r=f.run();assert.equal(r.status,'COLLECTION_COMPLETE_REVIEW_REQUIRED');assert(r.groups.every(g=>g.status==='PASS'));assert.equal(r.intakeActivationAuthorized,false);assert.equal(r.productionReadinessCertified,false);}finally{fs.rmSync(f.dir,{recursive:true});}
+});
+test('stopped outcomes, changed children and unrelated observation snapshots cannot qualify lifecycle',()=>{
+ for(const change of [l=>l.outcome.code=1,l=>l.outcome.timedOut=true,l=>l.child.checks.push('changed'),l=>l.reviewedObservationSha256='f'.repeat(64),l=>l.snapshot={...snapshot,hash:otherHash}]){
+  const f=activationFixture();try{change(f.l);assert.throws(()=>f.run());}finally{fs.rmSync(f.dir,{recursive:true});}
+ }
+});
+test('participant observations match equivalent checksummed and lowercase activation addresses',()=>{
+ const f=activationFixture();try{for(const k of ['employer','agent','moderator'])f.x.A3[k]=f.x.A3[k].toLowerCase();assert.equal(f.run().status,'COLLECTION_COMPLETE_REVIEW_REQUIRED');}finally{fs.rmSync(f.dir,{recursive:true});}
+});
+test('duplicate participant observations with alternate casing are rejected',()=>{
+ const f=activationFixture();try{
+  const address=f.x.A3.moderator;f.o.sections.core.participantExceptions[address.toLowerCase()]={moderators:false};
+  I.write(path.join(f.dir,'conflict.json'),f.o);f.x.observation={file:'conflict.json',sha256:I.read(path.join(f.dir,'conflict.json')).sha256};f.l.reviewedObservationSha256=f.x.observation.sha256;
+  assert.throws(()=>f.run(),{code:'PARTICIPANT_OBSERVATION_CONFLICT'});
+ }finally{fs.rmSync(f.dir,{recursive:true});}
+});
