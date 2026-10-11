@@ -1,5 +1,7 @@
 # Launch checklist
 
+For the already commissioned instance, start with the [supported inspection and recovery workflow](OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
+
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 Use this checklist for the actual instance before opening paid intake. The release contains tested software; it supplies no production manager, owner, payment recipients, reviewer service or independent audit. Every item below starts unconfirmed. Record the evidence beside each completed item in your deployment record.

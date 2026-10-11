@@ -63,3 +63,7 @@ Owner recipient rotation requires paused intake and zero outstanding job escrow 
 - Have the authorized owner review the recovery evidence and monitoring plan before reopening any path.
 
 When safe, clear `settlementPaused` **while keeping intake paused** so existing jobs can complete or be refunded. Verify the resulting transfers and reserves before separately calling `unpauseIntake()` to admit new work. Avoid `unpauseAll()` during a staged recovery because it opens both paths together. Do not clear a containment pause merely to perform a withdrawal.
+
+## Recorded-instance commissioning and response
+
+Use [the supported commands](COMMISSIONING.md) for canonical-block current observations and bounded wallet approval history. Preserve historical reports and append new observations. Rehearse an alert through the actual funded response signer; record detection time, decision, response and recovery evidence privately. A stopped launcher overrides a passing child. Review root operators and child resolver delegates separately. `pauseIntake()` contains new creation/assignment; `pauseAll()` also stops settlement paths including refunds/claims and affects lifecycle-clock handling. Configuration locking is not incident response.

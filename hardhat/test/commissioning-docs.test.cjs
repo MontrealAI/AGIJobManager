@@ -17,9 +17,9 @@ function temporary(t) {
 }
 function registryFixture(t) {
   const dir = temporary(t);
-  for (const name of ['config', 'ui/src/generated', 'docs/ui'])
+  for (const name of ['config/mainnet', 'ui/src/generated', 'docs/ui'])
     fs.mkdirSync(path.join(dir, name), {recursive: true});
-  for (const name of ['config/usdc-deployment.json', 'ui/src/generated/deployments.ts'])
+  for (const name of ['config/usdc-deployment.json', 'config/mainnet/agi-jobs-usdc.json', 'ui/src/generated/deployments.ts'])
     fs.copyFileSync(path.join(root, name), path.join(dir, name));
   return dir;
 }

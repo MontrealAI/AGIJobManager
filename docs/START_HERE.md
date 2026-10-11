@@ -1,4 +1,6 @@
-# Start here — AGIJobManager v1.14.0
+# Start here — AGIJobManager v1.15.0
+
+For the already commissioned instance, start with the [supported inspection and recovery workflow](OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
 
 ## Have an idea? Start with a simple request
 

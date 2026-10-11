@@ -36,9 +36,13 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Source edition: v1.14.0 — Ethereum Mainnet Verification & Readiness.** [Release status and exact-source qualification](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.14.0) · [Existing-deployment recovery](docs/releases/v1.14.0/RECOVERY_GUIDE.md) · [Start here](docs/START_HERE.md).
+**Source candidate: v1.15.0 — Mainnet Commissioning & Operator Readiness.**
+[Operate the already deployed instance](docs/OPERATIONS/COMMISSIONING.md) ·
+[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Candidate notes](docs/releases/v1.15.0/RELEASE_NOTES.md).
 
-**[Download the published v1.14.0 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.14.0/AGIJobManager-v1.14.0-COMPLETE.zip)** · [Qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.14.0/QUALIFICATION.json) · [SHA-256 checksums](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.14.0/SHA256SUMS.txt). Release assets are bound to the recorded tagged source; subsequent `main` changes require their own qualification. The [previously published v1.13.0 package](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.13.0/AGIJobManager-v1.13.0-COMPLETE.zip) remains available for historical comparison. Software publication and intake activation are separate decisions.
+**[previously published v1.14.0 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.14.0/AGIJobManager-v1.14.0-COMPLETE.zip)** · [previously published v1.14.0 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.14.0/QUALIFICATION.json).
+The source candidate is not yet published and does not inherit the prior release's qualification.
+Software publication and intake activation are separate decisions.
 
 AGI Jobs covers work a person or team can do using a keyboard, mouse and screen. Employers define the result and acceptance criteria; AGI Agents perform the work; AGI Nodes independently validate the delivered result. AGIJobManager provides the on-chain job lifecycle, USDC escrow, bonded voting, dispute outcomes and payment recovery. Computer execution and judging the work happen outside the contract.
 

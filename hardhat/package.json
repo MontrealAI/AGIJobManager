@@ -1,7 +1,7 @@
 {
   "name": "agijobmanager-hardhat",
   "private": true,
-  "version": "1.14.0",
+  "version": "1.15.0",
   "description": "Official Hardhat deployment + verification workflow for AGIJobManager",
   "scripts": {
     "clean": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs clean",
@@ -24,7 +24,14 @@
     "check:config:sepolia": "node scripts/check-config.cjs sepolia",
     "recover:review-escrow:mainnet": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-review-escrow.js --network mainnet",
     "recover:review-escrow:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-review-escrow.js --network sepolia",
-    "test:registry-native": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs test test/nft-registry-native.test.js"
+    "test:registry-native": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs test test/nft-registry-native.test.js",
+    "mainnet:evidence": "bash ../scripts/commissioning/command.sh evidence",
+    "mainnet:inspect": "bash ../scripts/commissioning/command.sh inspect",
+    "ens:inspect": "bash ../scripts/commissioning/command.sh ens",
+    "ens:rehearse": "bash ../scripts/commissioning/command.sh rehearse",
+    "ens:recover": "bash ../scripts/commissioning/command.sh recover",
+    "activation:review": "bash ../scripts/commissioning/command.sh activation",
+    "ens:plan": "bash ../scripts/commissioning/command.sh plan"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "4.1.0",

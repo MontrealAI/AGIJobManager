@@ -107,7 +107,7 @@ class PublicationIntegrationTests(ReleaseGateTests):
         super().setUp()
         directory=tempfile.TemporaryDirectory();self.addCleanup(directory.cleanup);self.root=Path(directory.name)
         self.script=self.root/'scripts/release/publish-release.py';self.script.parent.mkdir(parents=True);self.script.write_text(PUBLISHER.read_text())
-        meta=self.root/'docs/releases/v1.14.0';meta.mkdir(parents=True);(meta/'RELEASE_NOTES.md').write_text('Reviewed release notes')
+        meta=self.root/'docs/releases'/TAG;meta.mkdir(parents=True);(meta/'RELEASE_NOTES.md').write_text('Reviewed release notes')
         self.out=self.root/'assets';self.out.mkdir()
         (self.out/f'AGIJobManager-{TAG}-COMPLETE.zip').write_bytes(b'mocked qualified package')
         (self.out/'agijobmanager-usdc.html').write_text('mocked console')
@@ -118,7 +118,7 @@ class PublicationIntegrationTests(ReleaseGateTests):
         self.responses['actions/artifacts/77']={**self.config['candidateArtifact'],'expired':False,'workflow_run':{'id':6,'head_sha':SOURCE}}
         self.original_assets={p.name:p.read_bytes() for p in self.out.iterdir()}
         self.mutations=[]
-        self.env={'GITHUB_REPOSITORY':REPOSITORY,'GITHUB_EVENT_NAME':'workflow_dispatch','GITHUB_REF':'refs/heads/main','RELEASE_PUBLISH_CONFIRMATION':'PUBLISH_v1.14.0'}
+        self.env={'GITHUB_REPOSITORY':REPOSITORY,'GITHUB_EVENT_NAME':'workflow_dispatch','GITHUB_REF':'refs/heads/main','RELEASE_PUBLISH_CONFIRMATION':'PUBLISH_'+TAG}
     def fake_run(self,command,**kwargs):
         if command[:2]==['python3','scripts/release/package-release.py']:
             target=Path(command[3]);target.mkdir()

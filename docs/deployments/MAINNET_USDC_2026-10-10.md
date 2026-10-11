@@ -1,5 +1,7 @@
 # Ethereum mainnet USDC instance — 10 October 2026
 
+For the already commissioned instance, start with the [supported inspection and recovery workflow](../OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
+
 **ENS deployed, verified, authorized, attached and connection-checked. Production activation: HOLD.**
 
 This is a dated projection of operator-supplied evidence, not a live RPC result or a production certification. The connected-state snapshot is block **26,165,026**, hash `0x6d9d1af91485b6e1567cea4f905087051b3beb921024e90b4573b5361d814fa3`. Later transactions may change the state. The [machine-readable public record](../../config/mainnet/agi-jobs-usdc.json) retains the observation scope, evidence digests and unresolved activation gates. Original operator records remain unchanged and are not uploaded wholesale.

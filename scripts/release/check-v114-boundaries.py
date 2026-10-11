@@ -15,7 +15,7 @@ actual_vendor={str(p.relative_to(ROOT)) for p in (ROOT/'ui/vendor/braces').rglob
 if actual_vendor!=set(repairs['vendoredFiles']): raise AssertionError('Reviewed vendored repair inventory changed')
 for directory in ('','hardhat/','ui/'):
     pkg=read(directory+'package.json'); old=original(directory+'package.json')
-    if not (pkg['version']=='1.14.0'): raise AssertionError('Release invariant failed')
+    if not (pkg['version']==read('package.json')['version']): raise AssertionError('Release invariant failed')
     if directory=='ui/':
         old['dependencies']['next']='15.5.27'
         old['devDependencies'].update({'eslint-config-next':'15.5.27','braces':'file:vendor/braces'})
@@ -23,7 +23,7 @@ for directory in ('','hardhat/','ui/'):
     for field in ('dependencies','devDependencies','optionalDependencies','peerDependencies','overrides','engines'):
         if not (pkg.get(field)==old.get(field)): raise AssertionError(f'Dependency/toolchain field changed: {directory}{field}')
     lock=read(directory+'package-lock.json'); prior=original(directory+'package-lock.json')
-    if not (lock['version']==lock['packages']['']['version']=='1.14.0'): raise AssertionError('Release invariant failed')
+    if not (lock['version']==lock['packages']['']['version']==read('package.json')['version']): raise AssertionError('Release invariant failed')
     lock['version']=prior['version'];lock['packages']['']['version']=prior['packages']['']['version']
     if directory=='ui/':
         for field in ('dependencies','devDependencies'):
@@ -38,7 +38,7 @@ for directory in ('','hardhat/','ui/'):
         if name in prior['packages']: lock['packages'][name]=prior['packages'][name]
         else: lock['packages'].pop(name)
     if not (lock==prior): raise AssertionError(f'Dependency resolution changed: {directory}')
-if not (read('config/usdc-deployment.json')['version']=='1.14.0'): raise AssertionError('Release invariant failed')
+if not (read('config/usdc-deployment.json')['version']==read('package.json')['version']): raise AssertionError('Release invariant failed')
 protected=['contracts','hardhat.config.mjs','hardhat/hardhat.config.js','foundry.toml','remappings.txt']
 if not (not git('diff','--name-only',BASE,'--',*protected).strip()): raise AssertionError('Contract or compiler configuration changed')
 pkg=read('hardhat/package.json')
@@ -47,4 +47,4 @@ for name in ('reverify:mainnet','reverify:sepolia','check:readiness','check:read
 text=(ROOT/'hardhat/scripts/check-readiness.cjs').read_text()
 if not ('readRegistrySnapshot' in text and 'await checkNftPolicy(' not in text): raise AssertionError('Release invariant failed')
 if not (not list(ROOT.glob('.v114-bootstrap*'))): raise AssertionError('Bootstrap material must not ship')
-print('v1.14.0 BOUNDARIES PASSED: contracts/compiler unchanged; only reviewed, authorized security dependency repairs; standard commands integrated.')
+print('COMPATIBILITY BOUNDARIES PASSED: contracts/compiler unchanged; only reviewed, authorized security dependency repairs; standard commands integrated.')

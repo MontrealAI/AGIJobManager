@@ -1,6 +1,6 @@
 // Generated from config/usdc-deployment.json. Never infer deployment from historical receipts.
 export const OFFICIAL_DEPLOYMENTS = {
-  "version": "1.14.0",
+  "version": "1.15.0",
   "status": "deployment-required",
   "chainId": 1,
   "explorerBaseUrl": "https://etherscan.io",
@@ -14,7 +14,7 @@ export const OFFICIAL_DEPLOYMENTS = {
     "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
   },
   "addressSource": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
-  "note": "Software release only; no live USDC manager is configured by default. v1.14.0 integrates read-only explorer verification, compiler-derived NFT readiness and reviewed security dependency repairs. New work still uses operator budgets with no new review retainers. Existing escrow credits and refunds remain recoverable. Existing manager behavior, ABI, payout rules and eight fixed library links remain unchanged. Complete independent contract review, observed economic evidence and deployment-specific commissioning before authorizing intake. The manual console does not enforce private pre-funding or economic admission policies.",
+  "note": "Candidate software; no transaction target is selected by default. The separately recorded mainnet instance was deployed and ENS-connected at block 26165026. Activation remains held pending separate review. Use the recorded-instance inspection workflow for fresh state. Public-input work, no new review retainers, existing credits/claims and deployed contract behavior remain unchanged.",
   "settlementWallets": {
     "wallet30": "",
     "wallet10": ""
@@ -32,4 +32,16 @@ export const OFFICIAL_DEPLOYMENTS = {
     "collectionChanges": "zero outstanding escrow and bonds",
     "payoutEffect": "none"
   }
+} as const;
+
+// Historical display only; never a transaction default.
+export const RECORDED_MAINNET_INSTANCE = {
+  "chainId": 1,
+  "manager": "0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7",
+  "helper": "0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC",
+  "namespace": "usdc.jobs.agi.eth",
+  "block": 26165026,
+  "blockHash": "0x6d9d1af91485b6e1567cea4f905087051b3beb921024e90b4573b5361d814fa3",
+  "recordDate": "2026-10-10",
+  "activation": "HOLD_INTAKE_ACTIVATION"
 } as const;

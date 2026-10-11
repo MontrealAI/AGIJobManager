@@ -199,3 +199,6 @@ If another document conflicts with these in an operational detail, follow the ca
 - Dedicated-root setup and the new manager pointer switch require the respective authorized owners. Same-manager page migration is a separate procedure, not a fresh-USDC step.
 
 **Retained admission tools:** [Lifecycle economics and qualified admission](OPERATIONS/QUALIFIED_ADMISSION.md) provide signed, scoped, expiring qualification verification and read-only canonical economic snapshots. The contract and payout rules are unchanged.
+
+- [Supported commissioning workflow](OPERATIONS/COMMISSIONING.md)
+- [Finite activation closeout](../OPERATOR_ACTIONS_REQUIRED.md)

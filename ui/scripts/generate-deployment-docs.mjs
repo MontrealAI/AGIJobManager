@@ -2,7 +2,7 @@ import fs from 'node:fs';
 const c = JSON.parse(fs.readFileSync('../config/usdc-deployment.json', 'utf8'));
 fs.writeFileSync('../docs/ui/DEPLOYMENT_MAINNET.md', `# USDC deployment registry
 
-## Official release
+## Software candidate
 
 AGIJobManager v${c.version}. Status: **${c.status}**.
 
@@ -26,5 +26,5 @@ AGI Agents use agent.agi.eth or alpha.agent.agi.eth subnames; AGI Club validator
 
 ## Verification
 
-Compile with pinned solc 0.8.37 and the repository settings in hardhat/hardhat.config.js (via IR, optimizer 40 runs, Shanghai target). Verify the exact source and linked libraries, constructor arguments, chain ID, owner, USDC address and decimals before configuring any UI. Record the actual deployment receipt and update config/usdc-deployment.json only after verification. This software release does not assert a live USDC deployment.
+Compile with pinned solc 0.8.37 and the repository settings in hardhat/hardhat.config.js (via IR, optimizer 40 runs, Shanghai target). Verify the exact source and linked libraries, constructor arguments, chain ID, owner, USDC address and decimals before configuring any UI. Record the actual deployment receipt and update config/usdc-deployment.json only after verification. Blank defaults do not mean no instance was deployed. The [recorded instance](../deployments/MAINNET_USDC_2026-10-10.md) was deployed and ENS-connected at its recorded block; use [current inspection](../OPERATIONS/COMMISSIONING.md). Its activation remains held pending separate review.
 `);

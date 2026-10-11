@@ -1,4 +1,6 @@
-# v1.14.0 mainnet qualification
+# v1.15.0 mainnet qualification
+
+For the already commissioned instance, start with the [supported inspection and recovery workflow](OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
 
 Current automated work uses [operator-budget admission without retainers](OPERATIONS/NO_RETAINERS.md), with schema 6 participant and schema 7 employer policies. Existing credits, refunds and journals remain recoverable. See [general computer work and actual adapter coverage](OPERATIONS/GENERAL_COMPUTER_WORK.md).
 

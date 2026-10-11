@@ -1,5 +1,7 @@
 # Hardhat deployment guide
 
+For the already commissioned instance, start with the [supported inspection and recovery workflow](../docs/OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
+
 Current automated work uses [schema 6/7 operator-budget admission without retainers](../docs/OPERATIONS/NO_RETAINERS.md). Existing escrow credits and refunds remain recoverable. Fresh review-escrow deployment is disabled; use [existing-escrow recovery](../docs/OPERATIONS/REVIEW_PROTECTION.md) for verification and legacy obligations.
 
 **Optional reviewer companion:** [deployment, recovery and commissioning](../docs/OPERATIONS/REVIEW_PROTECTION.md).
