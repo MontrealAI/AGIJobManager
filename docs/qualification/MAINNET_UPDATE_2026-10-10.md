@@ -39,3 +39,27 @@ See [instance record](../deployments/MAINNET_USDC_2026-10-10.md), [activation re
 ## Maintenance
 
 Edit the README template and regenerate its output together. Keep the dated historical record immutable in meaning; a later live state or activation decision needs a new versioned record with its own evidence. A passing offline validator only establishes internal consistency and always retains the HOLD flags. Neither docs nor CI enforce a new on-chain admission control.
+
+## Merge repair and regression coverage
+
+PR **#1567** is the accessible pull request for this branch. Its initial exact-head run `38098083421` failed in `ui/scripts/sync-deployments.mjs --check`; automated review also identified the stale generated deployment guide. The previously reported PR number #1593 and script-catalogue diagnosis were not the confirmed repository state.
+
+The repair restores `config/usdc-deployment.json` to the exact base-branch blob `2ca13f8f451f5170d6b23208f570132e887b9e64`. The original note accurately says that no live manager is configured **by default**. Dated commissioning evidence belongs in the separate `config/mainnet/agi-jobs-usdc.json` record and its linked README/runbooks, not in the runtime default. Regenerating both deployment consumers from the restored registry reproduces their existing committed blobs exactly:
+
+| Consumer | Git blob |
+| --- | --- |
+| `ui/src/generated/deployments.ts` | `5a030689130036b6d00b57f10220a5557385f52a` |
+| `docs/ui/DEPLOYMENT_MAINNET.md` | `c0ef6cdceafe1b10e4cf073af171bc6819233d8b` |
+
+No UI bundle rebuild or changed runtime default is needed for this evidence-only integration. The real generators and their existing checks are retained, not disabled. Eight added regressions execute both generators, reproduce a note-only synchronization failure, verify recovery in a disposable fixture, check environment-reference coverage and exercise the actual connection CLI with inherited Node startup overrides.
+
+The unchanged connection checker also reads `NODE_OPTIONS` and `NODE_PATH` to reject inherited startup overrides. Both are now documented as reserved, empty controls in the example and configuration reference, satisfying the existing environment-documentation check without weakening it. The documentation explicitly explains that an empty `.env` entry cannot clear a shell value or undo preloaded code. No operator's private `.env` or deployment checkout is modified.
+
+Local repair validation, Node **22.16.0**:
+
+```bash
+node --test hardhat/test/ens-usdc-connection.test.cjs hardhat/test/mainnet-evidence.test.cjs hardhat/test/commissioning-docs.test.cjs
+node scripts/commissioning/mainnet-evidence.cjs
+```
+
+**102 tests passed; zero failures, skips or cancelled tests.** The original 94 cases are retained. Both deployment consumers were regenerated locally and matched the remote Git blob identities above. Full repository qualification under pinned Node 22.23.2 must be taken from the final PR-head workflow runs and the merge discussion; this local result alone does not establish that qualification. Mainnet activation remains HOLD throughout.
