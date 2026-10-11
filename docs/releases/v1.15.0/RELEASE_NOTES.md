@@ -1,6 +1,6 @@
 # v1.15.0 — Mainnet Commissioning & Operator Readiness
 
-Candidate preparation; not a published release or intake authorization.
+Software release qualification is separate from production intake authorization.
 
 Adds maintained historical evidence, coherent current inspection, ENS inspection,
 isolated connected-helper rehearsal, read-only journal recovery and A1–A5 evidence
@@ -19,7 +19,7 @@ partial resolver failure despite a successful outer hook. Operators must review
 actual record state and the URI profile; maximum contract input length does not
 promise successful ENS mirroring.
 
-Use [the operator guide](../../OPERATIONS/COMMISSIONING.md). The historical ENS
+Use [the operator guide](https://github.com/MontrealAI/AGIJobManager/blob/v1.15.0/docs/OPERATIONS/COMMISSIONING.md). The historical ENS
 milestone remains completed; production intake remains on HOLD. Live archive access,
 original operator build artifacts, actual participants and private approvals are
 separate qualification inputs. Missing gates must remain explicit in the exact-source
