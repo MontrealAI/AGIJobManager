@@ -109,3 +109,76 @@ test('activation guide preserves public-admission and assignment-before-pause li
   assert(text.includes('not an atomic contract-enforced cap'));
   assert(text.includes('not approved or applied'));
 });
+
+for (const [role, fields] of [
+  ['manager', ['usdcToken', 'ens', 'nameWrapper']],
+  ['helper', ['ens', 'nameWrapper', 'publicResolver']],
+]) for (const field of fields) test('dependency identity rejects substituted ' + role + '.' + field, () => {
+  const x = structuredClone(original);
+  x.connection.observed[role][field] = x.manager;
+  assert.throws(() => E.validate(x), {message: 'RECORD_DEPENDENCY_' + role + '_' + field});
+});
+for (let i = 0; i < 6; i++) for (const field of ['hash', 'blockNumber', 'blockHash'])
+  test('exact historical transaction ' + i + ' rejects substituted ' + field, () => {
+    const x = structuredClone(original), tx = x.connection.transactions[i];
+    tx[field] = field === 'blockNumber' ? tx[field] + 1 : '0x' + '9'.repeat(64);
+    assert.throws(() => E.validate(x), {message: 'RECORD_TRANSACTION_IDENTITY_' + i});
+  });
+test('the entire historical projection has a separately pinned canonical fingerprint', () => {
+  const result = E.validate(original);
+  assert.equal(result.historySha256, '000945c8869f1e6015ba817ce58f8f975c0206deaef6ef9965629091f0f2bb8d');
+  assert.equal(result.intakeActivationAuthorized, false);
+  assert.equal(result.productionReadinessCertified, false);
+  assert.equal(result.liveRpcQueries, 0);
+});
+test('formatting and recursive object-key order do not alter historical identity', () => {
+  const reorder = value => Array.isArray(value) ? value.map(reorder) :
+    value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).reverse()
+      .map(([key, item]) => [key, reorder(item)])) : value;
+  const reordered = JSON.parse(JSON.stringify(reorder(original), null, 4));
+  assert.deepEqual(E.validate(reordered), E.validate(original));
+});
+test('every historical scalar is bound, not only fields selected for diagnostic checks', t => {
+  const paths = [];
+  const walk = (value, keys = []) => {
+    if (value !== null && typeof value === 'object') {
+      for (const key of Object.keys(value)) walk(value[key], [...keys, key]);
+    } else paths.push(keys);
+  };
+  walk(original);
+  for (const keys of paths) {
+    const x = structuredClone(original), parent = keys.slice(0, -1).reduce((v, k) => v[k], x);
+    const key = keys.at(-1), value = parent[key];
+    parent[key] = value === null ? 'CHANGED' : typeof value === 'boolean' ? !value :
+      typeof value === 'number' ? value + 1 : value + 'CHANGED';
+    assert.throws(() => E.validate(x), 'Undetected historical change: ' + keys.join('.'));
+  }
+  t.diagnostic('Mutated and rejected ' + paths.length + ' historical scalar values.');
+});
+test('well-formed evidence digest replacements and coherent fee edits cannot rewrite history', () => {
+  for (const mutate of [
+    x => x.sourceEvidence[0].sha256 = '9'.repeat(64),
+    x => { x.deployment.build.inputSha256 = '9'.repeat(64); x.rehearsal.compilerReplay.inputSha256 = '9'.repeat(64); },
+    x => { x.connection.transactions[0].actualFeeWei = String(BigInt(x.connection.transactions[0].actualFeeWei) + 1n);
+      x.totalSixTransactionFeesWei = String(BigInt(x.totalSixTransactionFeesWei) + 1n); },
+    x => x.rehearsal.snapshot.hash = '0x' + '9'.repeat(64),
+    x => x.connection.observed.names['jobs.agi.eth'].expiry = '2007731865',
+  ]) {
+    const x = structuredClone(original); mutate(x);
+    assert.throws(() => E.validate(x), {message: 'RECORD_HISTORY_FINGERPRINT'});
+  }
+});
+test('new fields, deleted limitations, non-JSON values and cycles are not historical records', () => {
+  for (const mutate of [
+    x => x.annotation = 'not in the reviewed projection',
+    x => x.connection.annotation = 'not in the reviewed projection',
+    x => delete x.limitations,
+    x => x.limitations.reverse(),
+    x => x.unserializable = undefined,
+    x => x.unserializable = Number.NaN,
+    x => x.circular = x,
+  ]) {
+    const x = structuredClone(original); mutate(x);
+    assert.throws(() => E.validate(x));
+  }
+});

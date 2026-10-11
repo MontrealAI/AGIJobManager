@@ -1,65 +1,69 @@
 # Mainnet ENS record and activation-guidance update
 
-## Scope
+## Scope and preservation
 
-This source update integrates a curated historical deployment/connection record, the unchanged operator-tested read-only checker, offline record validation, and the separate activation HOLD. It does not change Solidity, linked libraries, compiler configuration, lockfiles, payment rules, deployer behavior, chain state or the existing release tag/assets. The generic deployment/console configuration still has blank manager/helper/owner/recipient fields.
+This update integrates the completed ENS commissioning as dated public evidence, the unchanged operator-tested read-only connection checker, offline record validation, and a separate production-activation HOLD. Baseline: `47abe97bfc7fbd502482e92e71ba558a9668ccab`. The accessible review is [PR #1567](https://github.com/MontrealAI/AGIJobManager/pull/1567).
 
-Baseline inspected: `47abe97bfc7fbd502482e92e71ba558a9668ccab`. Original manager and helper Git blobs are recorded in `config/mainnet/agi-jobs-usdc.json`. Raw operator journals and internal transcripts are not committed; only selected public fields and SHA-256 references are published. The successful ENS milestone is not reset to unproven, and the five activation gates are not promoted to approved.
+No Solidity, ABI, linked libraries, compiler settings, dependencies/lockfiles, workflows, runtime defaults, UI artifacts, release tags/assets or on-chain state are changed relative to the baseline. The generic manager/helper/owner/payment-recipient fields remain blank. Original operator journals and private files are not modified or published wholesale. The successful ENS milestone is not reset to unproven, and production-activation gates are not promoted to approved.
 
-## New source-update validation
+## Local validation
 
-Executed locally with Node **22.16.0**, without installing dependencies or using an RPC:
-
-```bash
-node --test hardhat/test/ens-usdc-connection.test.cjs hardhat/test/mainnet-evidence.test.cjs
-node scripts/commissioning/mainnet-evidence.cjs
-```
-
-**94 tests passed; zero failures, skips or cancelled tests.** This consists of 44 connection-checker tests and 50 record, CLI, preservation and documentation/default regressions. These are not a claim that the full repository suite or the repository-pinned Node 22.23.2 run has completed in this editing environment. The existing Security Verification workflow runs `npm run test:preflight` from `hardhat/`, which discovers both added `.test.cjs` files; its results must be checked on the exact PR head.
-
-The connection positive tests use synthetic ABI/hash fixtures and mocked RPC responses. They test receipt/calldata/event mismatches, runtime/configuration drift, custody/expiry/approval changes, canonical-block rechecks, restricted RPC methods, credential-redacted failures and private report writes. The added record tests use the curated projection of actual supplied evidence, then mutate fields to ensure inconsistent records, invented participants/caps, promoted activation, altered transaction histories and raw/private payloads are rejected. They do not verify mainnet independently.
-
-The connection checker is byte-identical to the operator-run packet:
-
-```text
-ee05e43469e62e9de35ce07f96909e17f4f086eaa2f1781930912eaecdeecdc2
-```
-
-Only its repository filename and the test import paths change. The private report name and schema remain compatible. No signer or mainnet-write interface is introduced.
-
-## Preserved operator evidence, not newly rerun here
-
-- v1.5 operator rehearsal: exact compiler replay and 18 selected local-fork lifecycle/permission checks; transport completed with zero rejections. Local minting, impersonation and an agent allowlist were fixtures.
-- Actual helper deployment: four confirmed mainnet transactions and reported exact explorer verification.
-- Actual connection: two later owner transactions and ten connected-state checks at block 26,165,026; zero public transactions sent by that checker.
-- Production-activation review: completed evidence/source review with decision HOLD and five open closeout groups.
-
-See [instance record](../deployments/MAINNET_USDC_2026-10-10.md), [activation review](../OPERATIONS/PRODUCTION_ACTIVATION.md) and [public JSON](../../config/mainnet/agi-jobs-usdc.json) for exact addresses, hashes and limits. Historical packaged-test counts are not added together and presented as a single independent audit. Frozen release qualification and new source-update CI remain separate.
-
-## Maintenance
-
-Edit the README template and regenerate its output together. Keep the dated historical record immutable in meaning; a later live state or activation decision needs a new versioned record with its own evidence. A passing offline validator only establishes internal consistency and always retains the HOLD flags. Neither docs nor CI enforce a new on-chain admission control.
-
-## Merge repair and regression coverage
-
-PR **#1567** is the accessible pull request for this branch. Its initial exact-head run `38098083421` failed in `ui/scripts/sync-deployments.mjs --check`; automated review also identified the stale generated deployment guide. The previously reported PR number #1593 and script-catalogue diagnosis were not the confirmed repository state.
-
-The repair restores `config/usdc-deployment.json` to the exact base-branch blob `2ca13f8f451f5170d6b23208f570132e887b9e64`. The original note accurately says that no live manager is configured **by default**. Dated commissioning evidence belongs in the separate `config/mainnet/agi-jobs-usdc.json` record and its linked README/runbooks, not in the runtime default. Regenerating both deployment consumers from the restored registry reproduces their existing committed blobs exactly:
-
-| Consumer | Git blob |
-| --- | --- |
-| `ui/src/generated/deployments.ts` | `5a030689130036b6d00b57f10220a5557385f52a` |
-| `docs/ui/DEPLOYMENT_MAINNET.md` | `c0ef6cdceafe1b10e4cf073af171bc6819233d8b` |
-
-No UI bundle rebuild or changed runtime default is needed for this evidence-only integration. The real generators and their existing checks are retained, not disabled. Eight added regressions execute both generators, reproduce a note-only synchronization failure, verify recovery in a disposable fixture, check environment-reference coverage and exercise the actual connection CLI with inherited Node startup overrides.
-
-The unchanged connection checker also reads `NODE_OPTIONS` and `NODE_PATH` to reject inherited startup overrides. Both are now documented as reserved, empty controls in the example and configuration reference, satisfying the existing environment-documentation check without weakening it. The documentation explicitly explains that an empty `.env` entry cannot clear a shell value or undo preloaded code. No operator's private `.env` or deployment checkout is modified.
-
-Local repair validation, Node **22.16.0**:
+Run from a separate source checkout; these commands do not use RPC, a signer, Hardhat startup or a compiler:
 
 ```bash
 node --test hardhat/test/ens-usdc-connection.test.cjs hardhat/test/mainnet-evidence.test.cjs hardhat/test/commissioning-docs.test.cjs
 node scripts/commissioning/mainnet-evidence.cjs
 ```
 
-**102 tests passed; zero failures, skips or cancelled tests.** The original 94 cases are retained. Both deployment consumers were regenerated locally and matched the remote Git blob identities above. Full repository qualification under pinned Node 22.23.2 must be taken from the final PR-head workflow runs and the merge discussion; this local result alone does not establish that qualification. Mainnet activation remains HOLD throughout.
+Final local result with **Node 22.16.0: 138 passed; zero failures, skips or cancellations**. This comprises 44 connection-checker tests, 86 evidence-record tests and eight generator/environment/CLI regressions. One evidence-record test individually mutates and rejects **all 267 scalar values** in the historical projection; those mutations are not counted as 267 additional test cases.
+
+Connection positives use synthetic ABI/hash fixtures and mocked RPC responses. Filesystem, subprocess and deployment-generator tests execute the actual scripts. These local results are not a fresh mainnet verification or an independent audit. The existing Security Verification workflow discovers all three `.test.cjs` files through the complete Hardhat `test:preflight` suite. Use the final exact-head CI and review results in PR #1567 for qualification under the repository-pinned Node 22.23.2; passing runs on earlier heads do not qualify later changes.
+
+## Review and repair history
+
+| Stage | Local targeted result | Change |
+| --- | --- | --- |
+| Initial `b32625a2` update | 94 passed | Curated record, connection checker, initial offline validator and guides |
+| `f33d3974` integration repair | 102 passed | Restore default-registry consistency; document reserved Node controls; eight real generator/CLI regressions |
+| `b0c6afd2` source-identity repair | 109 passed | Bind both historical Solidity source blobs; seven rejection regressions |
+| Complete historical-record validation | 138 passed | Pin dependency addresses, all six transaction/block identities and the entire canonical public projection |
+
+The initial Docs Integrity run `38098083421` failed in `ui/scripts/sync-deployments.mjs --check`. Automated review also identified the stale generated deployment guide. The previously reported PR #1593 and script-catalogue diagnosis were not the confirmed repository state.
+
+The repair restores `config/usdc-deployment.json` to base blob `2ca13f8f451f5170d6b23208f570132e887b9e64`. Its original note correctly says that no live manager is configured **by default**. Completed commissioning is separately recorded and prominently linked, not injected into runtime defaults. Both actual deployment generators were executed locally and reproduced their existing committed outputs:
+
+| Consumer | Git blob |
+| --- | --- |
+| `ui/src/generated/deployments.ts` | `5a030689130036b6d00b57f10220a5557385f52a` |
+| `docs/ui/DEPLOYMENT_MAINNET.md` | `c0ef6cdceafe1b10e4cf073af171bc6819233d8b` |
+
+No consumer replacement or UI rebuild is needed. Existing synchronization checks remain enabled. Regressions reproduce note-only drift and verify regeneration in a disposable fixture.
+
+The connection checker's `NODE_OPTIONS` and `NODE_PATH` reads are documented as reserved empty controls. Empty `.env` entries do not clear inherited shell values or undo preloaded code; the launch environment must be reviewed before Node starts. No private operator configuration is edited.
+
+## Complete historical record binding
+
+The read-only [offline validator](../../scripts/commissioning/mainnet-evidence.cjs) accepts one reviewed historical projection, not arbitrary current or newly approved states. Diagnostic checks explicitly bind the manager/helper source blobs, their USDC/ENS dependency addresses, and every transaction hash, block number and block hash. The source blobs were checked against the pinned historical GitHub ref, not against a future checkout's Solidity.
+
+A separately fixed SHA-256 also binds the **entire** parsed public record, including evidence digests, individual fees, timestamps, custody, limitations and activation findings. This catches coordinated edits that would remain internally consistent under selected field checks. Canonicalization sorts object keys while preserving array order and exact scalar values; whitespace and object-key order may change without changing identity.
+
+```text
+Original public JSON Git blob: b78082669538f8dd319a3f19f4341dba90c2aaef
+Canonical historical SHA-256: 000945c8869f1e6015ba817ce58f8f975c0206deaef6ef9965629091f0f2bb8d
+```
+
+The expected digest is a literal in reviewed code, not recomputed from the currently loaded record as its own trust anchor. A mismatch fails closed. Future observations, corrections or activation decisions need a separately reviewed versioned record; do not replace this historical fingerprint simply to force a pass. Hashes preserve the reviewed projection but do not establish the truth of an RPC response, prevent malicious modification of both code and data, or enforce an on-chain gate.
+
+The connection checker itself remains byte-identical to the operator-run packet:
+
+```text
+ee05e43469e62e9de35ce07f96909e17f4f086eaa2f1781930912eaecdeecdc2
+```
+
+Its private report name/schema and read-only scope are preserved. No signer or mainnet-write interface is added.
+
+## Preserved operator evidence, not newly rerun locally
+
+The v1.5 operator rehearsal records exact compiler replay and 18 selected local-fork lifecycle/permission checks with zero transport rejections; local minting, impersonation and an agent allowlist were fixtures. The actual helper deployment records four confirmed mainnet transactions and reported exact explorer verification. Two later owner transactions and ten connected-state checks establish the recorded ENS integration at block 26,165,026. Production activation remains HOLD with five open closeout groups.
+
+See the [instance record](../deployments/MAINNET_USDC_2026-10-10.md), [activation review](../OPERATIONS/PRODUCTION_ACTIVATION.md) and [public JSON](../../config/mainnet/agi-jobs-usdc.json) for addresses, hashes and limitations. Historical test counts are not added together and called an independent audit. No software merge or CI result authorizes intake activation.

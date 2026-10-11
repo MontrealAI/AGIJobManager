@@ -2,6 +2,7 @@
 // Offline consistency checks for one dated public record, never an activation gate on-chain.
 const fs = require('node:fs');
 const path = require('node:path');
+const {createHash} = require('node:crypto');
 const C = require('../../hardhat/scripts/check-ens-usdc-connection.cjs');
 const RECORD = path.resolve(__dirname, '../../config/mainnet/agi-jobs-usdc.json');
 // Historical identities at sourceRef; do not compare against a later checkout's Solidity.
@@ -9,9 +10,33 @@ const SOURCE_BLOBS = Object.freeze({
   'contracts/AGIJobManager.sol': 'a91536b8ae237c24f8e90eceedd17e5f3e6e14b6',
   'contracts/ens/ENSJobPages.sol': 'b07166f6bec3115bc3e5d4c47cec36861d26f847',
 });
+// Fixed public projection from Git blob b78082669538f8dd319a3f19f4341dba90c2aaef.
+// Canonicalization sorts object keys, preserves array order and exact scalar values.
+const HISTORY_SHA256 = '000945c8869f1e6015ba817ce58f8f975c0206deaef6ef9965629091f0f2bb8d';
+const TRANSACTION_IDENTITIES = Object.freeze([
+  Object.freeze(['0x8a1f7365dca44e6a4259f1df5dece65459e094c77cc9f031f89287aa5cb03d26', 26164090, '0x306494742e356a0254f5927460ff5a73dc6794871f2ce4d6383726884c5bc6ee']),
+  Object.freeze(['0x581d3382fa062016d7a16babe9134a6f78e3a7d1b40c104a0ce4b2f71fe182ee', 26164095, '0xc2e5920ade111972bd59d13ac2f4c71427ef2d3dd28a1c73fa3b25afe49cacf9']),
+  Object.freeze(['0x57e9a172a024765ed5fb0c8bb1a65df58de3bb5d7aa1cbd0faf2c0424d462f55', 26164101, '0xd9acd978f7dd7b6368659afb817c80eacf6f4b92760264a7da9022cc8d1c34a5']),
+  Object.freeze(['0x6378b640f04e39f5091ee6cfed8c51233cf31b70bb363a124fac834c51bec793', 26164104, '0x5c95613f9da2bce90a9db87602e2b77169d85db898c349df82a3b4de85b576d6']),
+  Object.freeze(['0x3f154072b5c6ec87452e8f36911be6e7b3e1168c6752eafb06d8fe413e82a224', 26164361, '0xead0ac709bb8d4317a73a47a0e900db79177da64657ba96d89dd8333d83cf465']),
+  Object.freeze(['0x6b520363b39c0cd54b1aa99ec6037e2561e18baee76c7274d308880b4b6a21f1', 26164391, '0x96df5e056a36830ebfb3b0437bcacdcc06f412fbbff12b21336d46d92e69d35e']),
+]);
 const isHash = x => typeof x === 'string' && /^0x[0-9a-fA-F]{64}$/.test(x);
 const decimal = x => typeof x === 'string' && /^(0|[1-9][0-9]*)$/.test(x);
 function check(ok, code) { if (!ok) throw new Error(code); }
+function canonical(value, depth = 0) {
+  check(depth <= 32, 'RECORD_JSON_DEPTH');
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') return JSON.stringify(value);
+  if (typeof value === 'number') {
+    check(Number.isFinite(value), 'RECORD_JSON_NUMBER');
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) return '[' + value.map(item => canonical(item, depth + 1)).join(',') + ']';
+  check(value && typeof value === 'object' &&
+    [Object.prototype, null].includes(Object.getPrototypeOf(value)), 'RECORD_JSON_OBJECT');
+  return '{' + Object.keys(value).sort().map(key =>
+    JSON.stringify(key) + ':' + canonical(value[key], depth + 1)).join(',') + '}';
+}
 function validate(record) {
   check(record && record.schema === 'agijobmanager-recorded-mainnet-instance-v1', 'RECORD_SCHEMA');
   check(record.chainId === 1 && record.recordDate === '2026-10-10', 'RECORD_CHAIN_DATE');
@@ -34,6 +59,11 @@ function validate(record) {
     check(C.eq(c.observed?.runtimeCodeHashes?.[key], value), 'RECORD_CODE_' + key);
   const m = c.observed?.manager, h = c.observed?.helper;
   check(C.eq(m?.ensJobPages, record.helper) && C.eq(h?.jobManager, record.manager), 'RECORD_POINTERS');
+  for (const [role, values, fields] of [
+    ['manager', m, {usdcToken: C.P.usdc, ens: C.P.registry, nameWrapper: C.P.wrapper}],
+    ['helper', h, {ens: C.P.registry, nameWrapper: C.P.wrapper, publicResolver: C.P.resolver}],
+  ]) for (const [field, expected] of Object.entries(fields))
+    check(C.eq(values[field], expected), 'RECORD_DEPENDENCY_' + role + '_' + field);
   check(C.eq(m.owner, record.administrator) && C.eq(h.owner, record.administrator) &&
     C.eq(m.pendingOwner, C.ZERO), 'RECORD_OWNERS');
   check(m.paused === true && m.settlementPaused === false && m.nextJobId === '0', 'RECORD_PAUSE_AND_JOBS');
@@ -83,6 +113,9 @@ function validate(record) {
     check(t.action === names[i] && isHash(t.hash) && isHash(t.blockHash) &&
       Number.isSafeInteger(t.blockNumber) && t.blockNumber > block && t.blockNumber <= c.snapshot.number &&
       t.status === (i < 4 ? 'CONFIRMED' : 'SUCCESS') && decimal(t.actualFeeWei), 'RECORD_TRANSACTION_' + i);
+    const [txHash, blockNumber, blockHash] = TRANSACTION_IDENTITIES[i];
+    check(C.eq(t.hash, txHash) && t.blockNumber === blockNumber && C.eq(t.blockHash, blockHash),
+      'RECORD_TRANSACTION_IDENTITY_' + i);
     if (i < 4) check(C.eq(t.from, record.deployer) && t.nonce === 233 + i &&
       (i === 0 ? t.to === null : C.eq(t.to, record.helper)), 'RECORD_DEPLOYMENT_TX_ROLE');
     else check(C.eq(t.hash, C.TX[i - 4].hash) && C.eq(t.from, C.TX[i - 4].from) &&
@@ -97,9 +130,11 @@ function validate(record) {
   }), 'RECORD_PROVENANCE');
   const text = JSON.stringify(record);
   check(!/\/home\/|\/Users\/|sandbox:|PRIVATE_KEY|MAINNET_RPC_URL|ETHERSCAN_API_KEY|"request"\s*:|"data"\s*:|"repository"\s*:/.test(text), 'RECORD_PRIVATE_OR_RAW_PAYLOAD');
+  const historySha256 = createHash('sha256').update(canonical(record)).digest('hex');
+  check(historySha256 === HISTORY_SHA256, 'RECORD_HISTORY_FINGERPRINT');
   return { recordConsistent: true, recordDate: record.recordDate, snapshotBlock: c.snapshot.number,
     activationDecision: a.decision, intakeActivationAuthorized: false, productionReadinessCertified: false,
-    liveRpcQueries: 0, scope: 'Offline public-record consistency only; not current state or independent verification.' };
+    liveRpcQueries: 0, historySha256, scope: 'Offline public-record consistency only; not current state or independent verification.' };
 }
 function load() { return JSON.parse(fs.readFileSync(RECORD, 'utf8')); }
 module.exports = { validate, load, RECORD };
