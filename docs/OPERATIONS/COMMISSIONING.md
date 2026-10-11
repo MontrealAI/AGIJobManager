@@ -25,6 +25,12 @@ flowchart TD
 
 ## Roles and authority
 
+A merge validates the website without publishing it. Production Pages requires a
+separate manual GitHub Pages dispatch with `publish: true` and `source_commit` set
+to the exact reviewed main SHA. Review that revision's applicable checks first.
+The default dispatch only validates. Release publication and intake authority are
+separate from both operations.
+
 | Role | Recorded address / responsibility |
 | --- | --- |
 | Manager and helper administrator | `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201`; manager uses transfer **and acceptance**, helper uses one-step transfer |

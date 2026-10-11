@@ -15,6 +15,8 @@
 
 Checksums bind content; they do not establish GitHub-enforced immutability. Maintainers should [enable release immutability](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes) before future releases and verify `immutable: true` in the published release metadata. Existing releases are not retroactively protected.
 
+Merging runs website validation but does not publish Pages. After reviewing the applicable checks on the exact main revision, a maintainer must separately dispatch the GitHub Pages workflow with `publish: true` and `source_commit` equal to that revision's full SHA. A mismatched SHA stops the workflow. Release publication and intake activation remain separate decisions.
+
 ## Prepare once
 
 Use Node 22.23.2 for the public qualification/deployment workflow and the committed lockfiles. From the source root:

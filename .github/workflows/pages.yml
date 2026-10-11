@@ -2,6 +2,17 @@ name: GitHub Pages
 
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish the separately reviewed main revision to production Pages'
+        type: boolean
+        required: true
+        default: false
+      source_commit:
+        description: 'Exact reviewed main commit SHA; required when publish is true'
+        type: string
+        required: false
+        default: ''
   push:
     branches: [main]
     paths:
@@ -46,6 +57,17 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+      - name: Verify qualified source checkout
+        env:
+          QUALIFICATION_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          EXPECTED_PAGES_SOURCE: ${{ inputs.source_commit }}
+          PUBLISH_REQUESTED: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$QUALIFICATION_SOURCE"
+          printf 'QUALIFIED_SOURCE_COMMIT=%s\n' "$QUALIFICATION_SOURCE"
+          if [ "$PUBLISH_REQUESTED" = true ]; then
+            test "$EXPECTED_PAGES_SOURCE" = "$QUALIFICATION_SOURCE"
+          fi
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 22.23.2
@@ -66,14 +88,14 @@ jobs:
           node scripts/site/browser-test.mjs
           node scripts/site/employer-browser-test.mjs
       - name: Upload Pages artifact
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
           path: build/pages
 
   deploy:
     name: Publish GitHub Pages
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
