@@ -117,3 +117,14 @@ Read [the deployment troubleshooting guide](TROUBLESHOOTING_DEPLOYMENT_AND_ENS.m
 ## Existing review escrow
 
 Use [existing review-escrow recovery](OPERATIONS/REVIEW_PROTECTION.md). New companion deployments are disabled. `REVIEW_ESCROW_ADDRESS` is mandatory and must match the original journal. `JOB_MANAGER_CODE_HASH` pins the manager runtime. `VERIFY_RPC_URL` supplies an independent witness for actual verification recovery; `DRY_RUN=1` produces a read-only recovery plan. `DRY_RUN=0` verifies the original receipt, runtime, immutable manager/token and explorer source without sending a blockchain transaction. Network RPC, `JOB_MANAGER`, `CONFIRMATIONS` and explorer settings apply. A deployer signer, `MAX_REVIEW_DEPLOY_ETH` and deployment-confirmation phrase are not used by this recovery command. Keep endpoint credentials private.
+
+## Read-only ENS connection checker and Node startup controls
+
+For the [already-connected USDC instance](deployments/MAINNET_USDC_2026-10-10.md#read-only-commands), use the instance-specific connection checker, not another deployment. It starts directly with Node, resolves installed dependencies from the explicit `--repo` checkout, and reads only `MAINNET_RPC_URL` from that checkout's `hardhat/.env` when the shell does not supply it. It does not load the environment file into `process.env`, start Hardhat, compile, install dependencies or sign transactions.
+
+| Reserved control | Requirement and meaning |
+| --- | --- |
+| `NODE_OPTIONS` | Must be absent or empty in the launch environment; the checker refuses nonempty inherited values before loading dependencies. This is not a supported deployment or RPC setting. |
+| `NODE_PATH` | Must be absent or empty in the launch environment; the checker refuses inherited module-search overrides. This is not a supported deployment or RPC setting. |
+
+Both entries are deliberately empty in `hardhat/.env.example`. They document prohibited startup overrides, not permission to add them. Empty `.env` entries do not clear inherited shell values. Node may process preload options before the checker starts, so the check cannot undo a preload that already ran: review the shell, service launcher and command-line options **before starting Node**. Do not erase unfamiliar values merely to force a pass, and do not edit the preserved operator checkout for this documentation update.

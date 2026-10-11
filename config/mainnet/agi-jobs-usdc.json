@@ -1,0 +1,363 @@
+{
+  "schema": "agijobmanager-recorded-mainnet-instance-v1",
+  "recordDate": "2026-10-10",
+  "chainId": 1,
+  "recordType": "operator-evidence-projection",
+  "notLiveState": true,
+  "notDefaultConfiguration": true,
+  "sourceRef": "47abe97bfc7fbd502482e92e71ba558a9668ccab",
+  "sourceBlobs": {
+    "contracts/AGIJobManager.sol": "a91536b8ae237c24f8e90eceedd17e5f3e6e14b6",
+    "contracts/ens/ENSJobPages.sol": "b07166f6bec3115bc3e5d4c47cec36861d26f847"
+  },
+  "manager": "0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7",
+  "helper": "0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC",
+  "administrator": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+  "deployer": "0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E",
+  "rootOwner": "0xd57243B80FBc5CFB2560E5a644651FEcd7Dc2512",
+  "jobsRootName": "usdc.jobs.agi.eth",
+  "jobLabelPrefix": "job-",
+  "jobsRootNode": "0x22a145a61e88901e934c12ecdf9cd0601884940492d9c8dbb60cb3abc0bab455",
+  "jobZeroPreview": "job-0.usdc.jobs.agi.eth",
+  "connection": {
+    "status": "ENS_CONNECTION_CHECK_PASSED_INTAKE_PAUSED",
+    "snapshot": {
+      "number": 26165026,
+      "hash": "0x6d9d1af91485b6e1567cea4f905087051b3beb921024e90b4573b5361d814fa3",
+      "timestampSeconds": "1791671315",
+      "tag": "0x18f3f22"
+    },
+    "checksPassed": 10,
+    "observed": {
+      "runtimeCodeHashes": {
+        "helper": "0x6e557d25a905d945c5cf1123715b98ec8522e5fda0678e0ecf0a7b7ec3f5299e",
+        "manager": "0x346ae8bb4bc480db5f8ed9e53a878162d859cae2345eaba8408929f70f23ea5a",
+        "registry": "0xd6bfd5d6f1384a1f6ea57b8a8412de5552f138d42021cf7c4941e33206f529e4",
+        "wrapper": "0xb2d3098f0579718d88a04ee65d3c6827a76823316ceed387945ad993fc6dbb6c",
+        "resolver": "0x186d03e26f6e0224269c8f7f13a6334d625f1b83812db2045ac7de4f292e9336",
+        "registrar": "0x15557327bea19f454db3ec207da1a440b6d9318af56e52e2a3eba440d4b62e0a"
+      },
+      "manager": {
+        "owner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+        "pendingOwner": "0x0000000000000000000000000000000000000000",
+        "paused": true,
+        "settlementPaused": false,
+        "lockIdentityConfig": false,
+        "ensJobPages": "0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC",
+        "nextJobId": "0",
+        "usdcToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "ens": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+        "nameWrapper": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401"
+      },
+      "helper": {
+        "owner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+        "ens": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+        "nameWrapper": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+        "publicResolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+        "jobsRootName": "usdc.jobs.agi.eth",
+        "jobsRootNode": "0x22a145a61e88901e934c12ecdf9cd0601884940492d9c8dbb60cb3abc0bab455",
+        "jobManager": "0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7",
+        "jobLabelPrefix": "job-",
+        "configLocked": false,
+        "useEnsJobTokenURI": false
+      },
+      "names": {
+        "jobs.agi.eth": {
+          "namehash": "0x0bbbdd86892a79192ce05bee7164a1f353a3337ca5a9630f3d7b0ec6f7e2fd8f",
+          "registryOwner": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+          "resolver": "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63",
+          "ttl": "0",
+          "owner": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+          "fuses": "327681",
+          "expiry": "2007731864"
+        },
+        "usdc.jobs.agi.eth": {
+          "namehash": "0x22a145a61e88901e934c12ecdf9cd0601884940492d9c8dbb60cb3abc0bab455",
+          "registryOwner": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+          "resolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+          "ttl": "0",
+          "owner": "0xd57243B80FBc5CFB2560E5a644651FEcd7Dc2512",
+          "fuses": "327681",
+          "expiry": "2007731864"
+        },
+        "alpha.jobs.agi.eth": {
+          "namehash": "0xc164c9558a3c429519a9b2eba9f650025731fccc46b3a5664283bcab84f7e690",
+          "registryOwner": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+          "resolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+          "ttl": "0",
+          "owner": "0xd57243B80FBc5CFB2560E5a644651FEcd7Dc2512",
+          "fuses": "327681",
+          "expiry": "2007731864"
+        }
+      },
+      "agiRegistrationExpiry": "1999955864",
+      "newHelperOperatorApproval": true,
+      "knownOperators": [
+        {
+          "label": "Genesis",
+          "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+          "approved": true,
+          "codeHash": "0x878a8048ecb251e0ef835b1d19dbecdb838f97476d36307b5fa510f0919b62ed"
+        },
+        {
+          "label": "Prime",
+          "address": "0x703011EF1C6E4277587eFe150e6cd74cA18F0069",
+          "approved": true,
+          "codeHash": "0x45a7e3f459e21940f636f3e5546983b8d4e8bd5331e71b4e57bc7073022709e0"
+        },
+        {
+          "label": "Employer Burn",
+          "address": "0xFC1EE3B7DCD3B8643295CaC3150aA630c31190E5",
+          "approved": true,
+          "codeHash": "0x02d0ef972aa3487404236d05dcf9af61f9d7ac4f1ae12b0e2e1836182daf0e56"
+        }
+      ],
+      "jobZero": {
+        "name": "job-0.usdc.jobs.agi.eth",
+        "node": "0x95d0a7f74c9c0715c911b92e085f2bcce09a689d25567f50ec9020b2ab9d9193",
+        "snapshot": [
+          false,
+          ""
+        ],
+        "registryOwner": "0x0000000000000000000000000000000000000000",
+        "resolver": "0x0000000000000000000000000000000000000000"
+      }
+    },
+    "transactions": [
+      {
+        "action": "deploy",
+        "hash": "0x8a1f7365dca44e6a4259f1df5dece65459e094c77cc9f031f89287aa5cb03d26",
+        "from": "0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E",
+        "to": null,
+        "nonce": 233,
+        "blockNumber": 26164090,
+        "blockHash": "0x306494742e356a0254f5927460ff5a73dc6794871f2ce4d6383726884c5bc6ee",
+        "status": "CONFIRMED",
+        "actualFeeWei": "231074976427128"
+      },
+      {
+        "action": "setJobManager",
+        "hash": "0x581d3382fa062016d7a16babe9134a6f78e3a7d1b40c104a0ce4b2f71fe182ee",
+        "from": "0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E",
+        "to": "0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC",
+        "nonce": 234,
+        "blockNumber": 26164095,
+        "blockHash": "0xc2e5920ade111972bd59d13ac2f4c71427ef2d3dd28a1c73fa3b25afe49cacf9",
+        "status": "CONFIRMED",
+        "actualFeeWei": "3145798672380"
+      },
+      {
+        "action": "setJobLabelPrefix",
+        "hash": "0x57e9a172a024765ed5fb0c8bb1a65df58de3bb5d7aa1cbd0faf2c0424d462f55",
+        "from": "0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E",
+        "to": "0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC",
+        "nonce": 235,
+        "blockNumber": 26164101,
+        "blockHash": "0xd9acd978f7dd7b6368659afb817c80eacf6f4b92760264a7da9022cc8d1c34a5",
+        "status": "CONFIRMED",
+        "actualFeeWei": "2449917659160"
+      },
+      {
+        "action": "transferOwnership",
+        "hash": "0x6378b640f04e39f5091ee6cfed8c51233cf31b70bb363a124fac834c51bec793",
+        "from": "0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E",
+        "to": "0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC",
+        "nonce": 236,
+        "blockNumber": 26164104,
+        "blockHash": "0x5c95613f9da2bce90a9db87602e2b77169d85db898c349df82a3b4de85b576d6",
+        "status": "CONFIRMED",
+        "actualFeeWei": "1910534631966"
+      },
+      {
+        "action": "NameWrapper approval",
+        "hash": "0x3f154072b5c6ec87452e8f36911be6e7b3e1168c6752eafb06d8fe413e82a224",
+        "from": "0xd57243B80FBc5CFB2560E5a644651FEcd7Dc2512",
+        "to": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+        "blockNumber": 26164361,
+        "blockHash": "0xead0ac709bb8d4317a73a47a0e900db79177da64657ba96d89dd8333d83cf465",
+        "status": "SUCCESS",
+        "actualFeeWei": "95581481745984"
+      },
+      {
+        "action": "Manager attachment",
+        "hash": "0x6b520363b39c0cd54b1aa99ec6037e2561e18baee76c7274d308880b4b6a21f1",
+        "from": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+        "to": "0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7",
+        "blockNumber": 26164391,
+        "blockHash": "0x96df5e056a36830ebfb3b0437bcacdcc06f412fbbff12b21336d46d92e69d35e",
+        "status": "SUCCESS",
+        "actualFeeWei": "107865554144160"
+      }
+    ]
+  },
+  "deployment": {
+    "statusAtDeployment": "DEPLOYED_VERIFIED_CONFIGURED_NOT_APPROVED_NOT_ATTACHED",
+    "finalBlock": {
+      "number": 26164106,
+      "hash": "0x5a8b5356b450f5ebee97edfe6946a385933b25f2d83737456459ceea9985f4d7",
+      "timestampSeconds": "1791660263"
+    },
+    "verificationStatus": "VERIFIED",
+    "verificationScope": "Reported exact Etherscan verification in operator receipt; not repeated by this repository update.",
+    "constructorArguments": [
+      "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+      "0xF29100983E058B709F3D539b0c765937B804AC15",
+      "0x22a145a61e88901e934c12ecdf9cd0601884940492d9c8dbb60cb3abc0bab455",
+      "usdc.jobs.agi.eth"
+    ],
+    "build": {
+      "source": "project/contracts/ens/ENSJobPages.sol",
+      "solcVersion": "0.8.37",
+      "solcLongVersion": "0.8.37+commit.f401782d",
+      "runtimeBytes": 15344,
+      "inputSha256": "34ba5d0665454490fdb8f04a81a1e590d5abc8685b0e23eca0bcc751611f5292",
+      "artifactSha256": "e873b89e1e8ec1e107d56dbe2e41b2ae4f11d5364625a5cc0d3a136fd4655e82"
+    },
+    "runtimeCodeHash": "0x6e557d25a905d945c5cf1123715b98ec8522e5fda0678e0ecf0a7b7ec3f5299e"
+  },
+  "rehearsal": {
+    "overallStatus": "REHEARSAL_AND_TRANSPORT_COMPLETED_REVIEW_REQUIRED",
+    "snapshot": {
+      "number": 26163162,
+      "hash": "0x2fa7499fd34cf898de510740594bcc281ea94e966a5282c5fb706faa1e3bd199",
+      "timestampSeconds": "1791648911"
+    },
+    "simulationChainId": 31337,
+    "checksPassed": 18,
+    "compilerReplay": {
+      "passed": true,
+      "solcVersion": "0.8.37+commit.f401782d.Emscripten.clang",
+      "elapsedMs": 51583,
+      "inputSha256": "34ba5d0665454490fdb8f04a81a1e590d5abc8685b0e23eca0bcc751611f5292",
+      "artifactSha256": "e873b89e1e8ec1e107d56dbe2e41b2ae4f11d5364625a5cc0d3a136fd4655e82",
+      "runtimeCodeHash": "0x6e557d25a905d945c5cf1123715b98ec8522e5fda0678e0ecf0a7b7ec3f5299e",
+      "runtimeBytes": 15344,
+      "librarySourceTrust": "All saved input contents are bound by the uploaded input hash; compiler version checked; compiler distribution is not independently audited here."
+    },
+    "upstreamReadRequests": 386,
+    "blockedRequests": 0,
+    "publicTransactionsBroadcast": 0,
+    "scope": "One exact helper build; wallet-held root; create/assign/submit/buyer-accept/cancel hooks; permissions and revocation on an isolated fork. Not every economic/dispute path.",
+    "limitations": [
+      "This run used a fixed historical mainnet snapshot, not current deployment approval.",
+      "Fork-only USDC mint and participant allowlist are test fixtures.",
+      "Only sampled alpha records and three known operator approvals were compared.",
+      "No full wallet-approval history or independent operator audit.",
+      "Small public URI fixtures only; no worst-case URI/gas qualification.",
+      "No dispute/validator-vote or real-wallet signing qualification.",
+      "The new helper address and every transaction in this report exist only on the disposable fork."
+    ]
+  },
+  "activation": {
+    "decision": "HOLD_INTAKE_ACTIVATION",
+    "reviewCompleted": true,
+    "intakeActivationAuthorized": false,
+    "productionReadinessCertified": false,
+    "historicalCoreReadinessBlock": 26161848,
+    "gates": [
+      {
+        "id": "A1",
+        "title": "Launch scope and actual admission limits",
+        "status": "OPEN_POLICY_DECISION",
+        "finding": "unpauseIntake opens public creation and applications; there is no employer allowlist or aggregate/one-job cap in the reviewed createJob path.",
+        "closure": "Approve the attended canary profile and its public-admission window, or qualify a different design if strict single-job/private admission is mandatory. Read back the chosen per-job and per-agent limits; do not treat a UI restriction as an on-chain limit."
+      },
+      {
+        "id": "A2",
+        "title": "Fresh financial, issuer, and mutable-policy evidence",
+        "status": "OPEN_EVIDENCE",
+        "finding": "The latest connected-state report does not reread reserves, complete NFT registry, fee recipients, issuer restrictions, or most mutable operating policy. The earlier full core check is at block 26161848.",
+        "closure": "Before opening intake, capture a coherent-block core financial/NFT/identity/policy readback and preferably corroborate critical values through a second independently operated RPC. Require all five initial reserve counters zero and balance >= their sum; preserve donation/surplus distinction."
+      },
+      {
+        "id": "A3",
+        "title": "Real participants, review and adverse-outcome coverage",
+        "status": "OPEN_EVIDENCE_AND_OPERATOR_INPUT",
+        "finding": "The ENS rehearsal used locally minted funds, impersonated accounts and an explicit agent allowlist. It did not qualify actual agent/validator admission or dispute/vote/issuer-failure execution for this launch.",
+        "closure": "Provide the proposed employer, agent wallet and actual credential, selected review route and non-conflicted dispute resolver/backstop. Verify funding, real admission and signer availability; obtain source-bound execution evidence for adverse paths before public paid use."
+      },
+      {
+        "id": "A4",
+        "title": "Privileged authority, operator inventory and response readiness",
+        "status": "OPEN_EVIDENCE",
+        "finding": "Shared root custody is an accepted user choice, but only three legacy operators were checked and the complete approval history was not reviewed. Owner controls remain mutable and locks remain false.",
+        "closure": "Reconstruct/reconcile the full wallet operator history and review each currently approved operator and its control. Document signer recovery and demonstrate an alert-to-human pause/claims response. Record retained mutable powers; do not lock or revoke automatically."
+      },
+      {
+        "id": "A5",
+        "title": "Deployment-specific user-facing operating basis",
+        "status": "OPEN_OPERATOR_INPUT",
+        "finding": "Repository notices and tests are not evidence that this instance has adopted operator terms, fee-beneficiary disclosure, data/IP rules, support arrangements, or a reviewed production UI/runtime.",
+        "closure": "Complete and adopt the deployment-specific notice and scope, identify operator/fee beneficiaries and contacts, verify the actual user interface/admission route and its review requirements, and retain applicable review conclusions privately. This review does not determine legal classification or authorizations."
+      }
+    ],
+    "proposedCanary": {
+      "status": "DRAFT_NOT_USER_APPROVED_NOT_APPLIED",
+      "publicAdmissionWindowAcknowledgementRequired": true,
+      "payoutLimitUSDC": "100",
+      "payoutLimitBaseUnits": "100000000",
+      "intendedConcurrentJobs": 1,
+      "aggregateOrSingleJobLimitEnforcedByExistingContract": false,
+      "maxActiveJobsPerAgentProposal": 1,
+      "employer": null,
+      "agent": null,
+      "agentCredential": null,
+      "jobDurationSeconds": null,
+      "moderator": null,
+      "incidentResponder": null,
+      "operatorLegalIdentity": null,
+      "proposal": "One attended, explicitly scoped public-input job; existing gates must close first. Buyer acceptance is a possible success path but not a substitute for a funded, conflict-free fallback.",
+      "pauseOrdering": "Pause intake after intended assignment, not immediately after posting; applyForJob requires unpaused intake. Other public transactions may enter before the pause is included.",
+      "unchangedDuringCanary": [
+        "Root custody",
+        "Existing ENS roots",
+        "Helper root and job- prefix",
+        "Identity/configuration locks",
+        "NFT requirement unless separately reviewed",
+        "ENS token-URI settings"
+      ],
+      "expansionCondition": "Review actual USDC transfers and the five reserves, job/NFT state, ENS records and delegate revocation, and documented handling of any claims before increasing scope."
+    }
+  },
+  "approvalScope": "Wallet-wide NameWrapper authority; not restricted to the USDC root.",
+  "fullOperatorHistoryReviewed": false,
+  "totalSixTransactionFeesWei": "442028263280778",
+  "sourceEvidence": [
+    {
+      "kind": "connection",
+      "sha256": "44460af43f9ce7d2775338278cec39e8bb36d5adea648c3ef9e5574930801507",
+      "bytes": 7929,
+      "custody": "Original retained by operator; not copied into this repository."
+    },
+    {
+      "kind": "deployment",
+      "sha256": "6579eb93128ff7a14b96f3fda77ed6fb272a91b8e1c8a686556708c712c9019b",
+      "bytes": 47213,
+      "custody": "Original retained by operator; not copied into this repository."
+    },
+    {
+      "kind": "rehearsal",
+      "sha256": "afd84087b0ed2effdf6e3120fff2673f46077ef85fe96b7cfaaf6a7fdb588e4b",
+      "bytes": 25327,
+      "custody": "Original retained by operator; not copied into this repository."
+    },
+    {
+      "kind": "activation-review",
+      "sha256": "955eae572a8d7b7a283d662215d9d41fbc8a52403c20f54aa62889e368f61082",
+      "bytes": 10035,
+      "custody": "Original retained by operator; not copied into this repository."
+    }
+  ],
+  "publicationScope": "Curated public addresses, hashes, receipts and scope findings only. No raw operator journal, host paths, credentials, signed payloads, identity documents or privileged advice are included.",
+  "limitations": [
+    "One operator-configured RPC supplies the observations; this is not an independent consensus or operator audit.",
+    "No live job is created, no lifecycle is rerun, and no full manager financial/NFT/participant qualification is performed.",
+    "The three known legacy operators are checked, not the full wallet approval history.",
+    "Explorer verification is not repeated here; prior deployment evidence is preserved separately.",
+    "The manager token-URI flag is private and is not read by this getter-only checker.",
+    "State is checked at the recorded block; later owner transactions can change it.",
+    "Repository records and passing offline tests cannot authorize or enforce on-chain activation.",
+    "The earlier deployment not-approved/not-attached status is historical; later receipts supplement rather than rewrite it."
+  ]
+}
