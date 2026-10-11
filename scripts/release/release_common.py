@@ -6,8 +6,8 @@ import re
 import stat
 
 REPOSITORY = 'MontrealAI/AGIJobManager'
-TAG = 'v1.14.0'
-TITLE = TAG + ' — Ethereum Mainnet Verification & Readiness'
+TAG = 'v' + json.loads((pathlib.Path(__file__).resolve().parents[2] / 'package.json').read_text())['version']
+TITLE = TAG + ' — Mainnet Commissioning & Operator Readiness'
 LIMIT = 450_000_000
 BASE = '191cf3590e5cdc08df1bb0af500ee28a91c8b010'
 WORKFLOWS = {

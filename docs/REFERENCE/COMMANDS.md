@@ -8,6 +8,7 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 
 | Command from repository root | Exact configured implementation |
 | --- | --- |
+| `npm run activation:review` | `bash scripts/commissioning/command.sh activation` |
 | `npm run advisor:job` | `node scripts/advisor/state_advisor.js` |
 | `npm run build` | `npm --prefix hardhat run compile && node scripts/export-contract-artifacts.js` |
 | `npm run check:no-binaries` | `node scripts/check-no-binaries.mjs` |
@@ -28,11 +29,17 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 | `npm run economics:funding` | `node scripts/economics/admission.cjs` |
 | `npm run economics:lifecycle` | `node scripts/economics/lifecycle.cjs` |
 | `npm run economics:screen` | `node scripts/economics/screen.cjs` |
+| `npm run ens:inspect` | `bash scripts/commissioning/command.sh ens` |
+| `npm run ens:plan` | `bash scripts/commissioning/command.sh plan` |
+| `npm run ens:recover` | `bash scripts/commissioning/command.sh recover` |
+| `npm run ens:rehearse` | `bash scripts/commissioning/command.sh rehearse` |
 | `npm run etherscan:prep` | `node scripts/etherscan/prepare_inputs.js` |
 | `npm run forge:build` | `forge build --deny warnings` |
 | `npm run forge:invariant` | `FOUNDRY_PROFILE=ci forge test --match-path forge-test/invariant/*.t.sol` |
 | `npm run forge:test` | `forge test` |
 | `npm run lint` | `solhint --max-warnings 0 "contracts/**/*.sol"` |
+| `npm run mainnet:evidence` | `bash scripts/commissioning/command.sh evidence` |
+| `npm run mainnet:inspect` | `bash scripts/commissioning/command.sh inspect` |
 | `npm run merkle:export` | `node scripts/merkle/export_merkle_proofs.js` |
 | `npm run merkle:proof` | `node scripts/merkle/generate_merkle_proof.js` |
 | `npm run postinstall` | `node scripts/security/patch-openzeppelin-compiler.cjs` |
@@ -59,6 +66,7 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 
 | Command from repository root | Exact configured implementation |
 | --- | --- |
+| `npm --prefix hardhat run activation:review` | `bash ../scripts/commissioning/command.sh activation` |
 | `npm --prefix hardhat run check:config:mainnet` | `node scripts/check-config.cjs mainnet` |
 | `npm --prefix hardhat run check:config:sepolia` | `node scripts/check-config.cjs sepolia` |
 | `npm --prefix hardhat run check:readiness` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run --no-compile scripts/check-readiness.js --network mainnet` |
@@ -69,6 +77,12 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 | `npm --prefix hardhat run deploy:ens-job-pages:sepolia` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-ens-job-pages.js --network sepolia` |
 | `npm --prefix hardhat run deploy:mainnet` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy.js --network mainnet` |
 | `npm --prefix hardhat run deploy:sepolia` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy.js --network sepolia` |
+| `npm --prefix hardhat run ens:inspect` | `bash ../scripts/commissioning/command.sh ens` |
+| `npm --prefix hardhat run ens:plan` | `bash ../scripts/commissioning/command.sh plan` |
+| `npm --prefix hardhat run ens:recover` | `bash ../scripts/commissioning/command.sh recover` |
+| `npm --prefix hardhat run ens:rehearse` | `bash ../scripts/commissioning/command.sh rehearse` |
+| `npm --prefix hardhat run mainnet:evidence` | `bash ../scripts/commissioning/command.sh evidence` |
+| `npm --prefix hardhat run mainnet:inspect` | `bash ../scripts/commissioning/command.sh inspect` |
 | `npm --prefix hardhat run postinstall` | `node ../scripts/security/patch-openzeppelin-compiler.cjs` |
 | `npm --prefix hardhat run recover:review-escrow:mainnet` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-review-escrow.js --network mainnet` |
 | `npm --prefix hardhat run recover:review-escrow:sepolia` | `node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-review-escrow.js --network sepolia` |

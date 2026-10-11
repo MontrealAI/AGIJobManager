@@ -1,8 +1,8 @@
 {
-  "public": "1.14.0",
+  "public": "1.15.0",
   "fleet": "1.10.0",
   "agent": "1.16.0",
   "node": "2.17.0",
-  "scope": "Ethereum mainnet verification and bounded compiler-derived NFT readiness; private companion editions and production contracts are unchanged.",
-  "previousPublished": "1.13.0"
+  "scope": "Supported mainnet inspection, isolated ENS rehearsal, recovery and A1\u2013A5 evidence collection. Candidate only; intake authorization remains separate.",
+  "previousPublished": "1.14.0"
 }

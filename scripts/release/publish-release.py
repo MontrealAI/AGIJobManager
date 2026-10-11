@@ -12,7 +12,7 @@ from urllib.parse import quote
 from release_common import REPOSITORY, TAG, TITLE, require, validate_qualification, verify_assets
 
 root = pathlib.Path(__file__).resolve().parents[2]
-meta = root / 'docs/releases/v1.14.0'
+meta = root / 'docs/releases' / TAG
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--qualification', type=pathlib.Path, required=True)
 parser.add_argument('--assets', type=pathlib.Path, required=True)
@@ -174,7 +174,7 @@ with tempfile.TemporaryDirectory(prefix='v114-publication-rebuild-') as temp:
 if not args.publish:
     raise SystemExit(0)
 require(os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' and os.environ.get('GITHUB_REF') == 'refs/heads/main', 'Publication requires an explicitly authorized main-branch dispatch')
-require(os.environ.get('RELEASE_PUBLISH_CONFIRMATION') == 'PUBLISH_v1.14.0', 'Explicit v1.14.0 publication confirmation is required')
+require(os.environ.get('RELEASE_PUBLISH_CONFIRMATION') == 'PUBLISH_' + TAG, 'Explicit current-version publication confirmation is required')
 require(config.get('publicationAuthorized') is True, 'Publication authorization is missing')
 require(api('git/ref/heads/main')['object']['sha'] == source, 'Main advanced since qualification; requalify before publishing')
 matches = []

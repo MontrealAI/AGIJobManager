@@ -1,4 +1,4 @@
-name: v1.14.0 Release Preparation
+name: Release Candidate Preparation
 on:
   pull_request:
     branches: [main]
@@ -9,7 +9,7 @@ permissions:
   contents: read
   actions: read
 concurrency:
-  group: v114-preparation-${{ github.event.pull_request.number || github.ref }}
+  group: candidate-preparation-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
   qualify:
@@ -52,15 +52,15 @@ jobs:
       - name: Build and independently rebuild candidate assets
         run: |
           python3 scripts/release/package-release.py
-          python3 scripts/release/package-release.py --out /tmp/v114-candidate-rebuild
-          diff -r build/release/v1.14.0-candidate /tmp/v114-candidate-rebuild
+          python3 scripts/release/package-release.py --out /tmp/agi-candidate-rebuild
+          diff -r build/release/v1.15.0-candidate /tmp/agi-candidate-rebuild
       - name: Clean extraction and offline smoke test
-        run: python3 scripts/release/verify-package.py build/release/v1.14.0-candidate
+        run: python3 scripts/release/verify-package.py build/release/v1.15.0-candidate
       - name: Retain source-pinned candidate assets
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: AGIJobManager-v1.14.0-candidate-${{ github.event.pull_request.head.sha || github.sha }}
-          path: build/release/v1.14.0-candidate/
+          name: AGIJobManager-v1.15.0-candidate-${{ github.event.pull_request.head.sha || github.sha }}
+          path: build/release/v1.15.0-candidate/
           if-no-files-found: error
 # Deliberately no publish job and no contents:write permission.
 # Publication needs separately reviewed final-source CI metadata and authorization.

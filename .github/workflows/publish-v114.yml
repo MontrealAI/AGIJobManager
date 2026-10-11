@@ -1,20 +1,20 @@
-name: Publish v1.14.0 after final-source qualification
+name: Publish reviewed release after final-source qualification
 on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Enter PUBLISH_v1.14.0 after reviewing completed final-source qualification'
+        description: 'Enter PUBLISH_v1.15.0 after reviewing completed final-source qualification'
         required: true
         type: string
 permissions:
   contents: read
   actions: read
 concurrency:
-  group: publish-v1.14.0
+  group: publish-v1.15.0
   cancel-in-progress: false
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH_v1.14.0'
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH_v1.15.0'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -34,9 +34,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PUBLISH_CONFIRMATION: ${{ inputs.confirmation }}
           SOURCE_COMMIT: ${{ github.sha }}
-        run: python3 scripts/release/collect-qualification.py --source "$SOURCE_COMMIT" --out build/release/v1.14.0
+        run: python3 scripts/release/collect-qualification.py --source "$SOURCE_COMMIT" --out build/release/v1.15.0
       - name: Validate evidence, create draft, verify assets, then publish
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PUBLISH_CONFIRMATION: ${{ inputs.confirmation }}
-        run: python3 scripts/release/publish-release.py --qualification build/release/v1.14.0/QUALIFICATION.json --assets build/release/v1.14.0 --publish
+        run: python3 scripts/release/publish-release.py --qualification build/release/v1.15.0/QUALIFICATION.json --assets build/release/v1.15.0 --publish

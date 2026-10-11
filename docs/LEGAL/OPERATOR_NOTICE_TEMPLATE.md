@@ -60,3 +60,7 @@ Adapt the [privacy notice](PRIVACY.md) to actual hosts, RPCs, wallets, metadata,
 Keep privately with the deployment record: the public notice/version/hash; roles and fee-beneficiary evidence; relevant jurisdictions and review conclusion; required authorizations or an evidenced basis for not requiring them; translations/acceptance process; operating and privacy arrangements; reviewer, date and reassessment triggers. No item is pre-approved by this release. Do not publish privileged advice or identity documents.
 
 Keep intake paused until the operator approves its actual operational and applicable legal requirements. Preserve accrued rights and code-supported exits. Amend terms prospectively through a valid process; a release does not amend existing agreements automatically.
+
+## Recorded-instance A5 collection
+
+Use the [commissioning input template](../OPERATIONS/COMMISSIONING.md) to reference the actual adopted notice, beneficiaries, public-input data/IP terms, response contacts and admission interface by safe identifier, digest and reviewer. Keep private identity and privileged material outside public reports. Completing this template alone is not A5 approval.

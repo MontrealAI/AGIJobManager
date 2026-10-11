@@ -1,0 +1,83 @@
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+import I from './lib/io.cjs';
+import L from './lib/runtime.cjs';
+import S from './lib/isolation.cjs';
+import C from '../../hardhat/scripts/check-ens-usdc-connection.cjs';
+const work=process.env.ENS_REHEARSAL_WORK,repo=process.env.ENS_REHEARSAL_REPO;
+let connection,phase='ISOLATION',report={status:'FAIL',checks:[],transactions:[],intakeActivationAuthorized:false,productionReadinessCertified:false,publicTransactionsBroadcast:0};
+try{
+  I.ensure(work&&repo&&process.env.PRIVATE_KEY===''&&process.env.DEPLOY_CONFIRM_MAINNET==='','ISOLATED_LAUNCHER_REQUIRED');
+  const input=I.read(path.join(work,'INPUT.json')).value,{local}=L.requireWorkspaceRuntime(repo,work);
+  const {default:hre}=await import(pathToFileURL(local.resolve('hardhat')).href);
+  await S.assertLocal({networkName:'ensRehearsal',networkConfig:hre.config.networks.ensRehearsal},31337,{block:input.snapshot},process.env.ENS_REHEARSAL_PROXY);
+  connection=await hre.network.create('ensRehearsal');const E=connection.ethers,p=E.provider,rpc=(method,params=[])=>connection.provider.request({method,params});
+  report.isolation=await S.assertLocal(connection,await rpc('eth_chainId'),{block:input.snapshot},process.env.ENS_REHEARSAL_PROXY);
+  I.ensure((await p.getBlock(input.snapshot.number))?.hash.toLowerCase()===input.snapshot.hash,'FORK_SNAPSHOT_CHANGED');
+  phase='REVIEWED_BUILD';
+  const managerArtifact=await hre.artifacts.readArtifact('AGIJobManager'),helperArtifact=await hre.artifacts.readArtifact('ENSJobPages');
+  const buildId=await hre.artifacts.getBuildInfoId('ENSJobPages');I.ensure(buildId,'HELPER_BUILD_REQUIRED');
+  const saved=I.read(await hre.artifacts.getBuildInfoPath(buildId),64*1024*1024).value;
+  const output=I.read(await hre.artifacts.getBuildInfoOutputPath(buildId),64*1024*1024).value;
+  const compiler=local('solc');I.ensure(/^0\.8\.37\+commit\.f401782d/.test(compiler.version()),'COMPILER_IDENTITY_CHANGED');
+  const compiled=JSON.parse(compiler.compile(JSON.stringify(saved.input)));
+  I.ensure(!compiled.errors?.some(e=>e.severity==='error'),'COMPILER_REPLAY_FAILED');
+  const name=helperArtifact.inputSourceName||helperArtifact.sourceName,target=compiled.contracts?.[name]?.ENSJobPages;
+  I.ensure(target&&'0x'+target.evm.bytecode.object===helperArtifact.bytecode&&'0x'+target.evm.deployedBytecode.object===helperArtifact.deployedBytecode,'HELPER_BUILD_REPLAY_CHANGED');
+  S.compare(target.abi,helperArtifact.abi,'HELPER_ABI_CHANGED');S.compare(target.evm,output.output.contracts[name].ENSJobPages.evm,'HELPER_COMPILER_OUTPUT_CHANGED');
+  I.ensure(E.keccak256(await p.getCode(C.P.helper))===C.CODE_HASHES.helper&&E.keccak256(helperArtifact.deployedBytecode)===C.CODE_HASHES.helper,'HELPER_RUNTIME_CHANGED');
+  I.ensure(E.keccak256(await p.getCode(C.P.manager))===C.CODE_HASHES.manager,'MANAGER_RUNTIME_CHANGED');
+  report.build={compiler:compiler.version(),savedInputSha256:I.sha256(JSON.stringify(saved.input)),helperArtifactSha256:I.sha256(I.stringify(helperArtifact)),
+    replay:'Current installed build reproduced exactly',originalOperatorCacheReplay:'NOT_ASSESSED'};
+  const manager=new E.Contract(C.P.manager,managerArtifact.abi,p),pages=new E.Contract(C.P.helper,helperArtifact.abi,p);
+  I.ensure(C.eq(await manager.ensJobPages(),C.P.helper)&&C.eq(await pages.jobManager(),C.P.manager),'EXISTING_CONNECTION_CHANGED');
+  report.checks.push('Existing commissioned helper reused; no helper deployment, attachment or owner transfer');
+  phase='LOCAL_FIXTURES';
+  const signer=async address=>{await rpc('hardhat_impersonateAccount',[address]);await rpc('hardhat_setBalance',[address,'0x8ac7230489e80000']);return E.getSigner(address);};
+  const fixture=label=>E.getAddress('0x'+I.sha256('commissioning-fixture/'+label).slice(0,40));
+  const admin=await signer(C.P.administrator),employer=await signer(fixture('employer')),agent=await signer(fixture('agent')),outsider=await signer(fixture('outsider'));
+  const send=async(label,promise)=>{const tx=await promise,r=await tx.wait();I.ensure(Number(r.status)===1,'LOCAL_TRANSACTION_FAILED');report.transactions.push({label,hash:r.hash,gasUsed:String(r.gasUsed),simulationOnly:true});return r;};
+  const token=new E.Contract(C.P.usdc,['function masterMinter() view returns(address)','function configureMinter(address,uint256) returns(bool)','function mint(address,uint256) returns(bool)','function approve(address,uint256) returns(bool)','function balanceOf(address) view returns(uint256)'],p);
+  const minter=await signer(await token.masterMinter());await send('Local test minter',token.connect(minter).configureMinter(outsider.address,10000000000n));
+  for(const person of [employer,agent]){await send('Local USDC fixture',token.connect(outsider).mint(person.address,2000000000n));await send('Local allowance',token.connect(person).approve(C.P.manager,2000000000n));}
+  await send('Local eligibility fixture',manager.connect(admin).addAdditionalAgent(agent.address));
+  report.fixtures={impersonated:true,localMint:true,agentAllowlist:true,realWalletOrIndependentParticipantEvidence:false};
+  const resolver=new E.Contract(C.P.resolver,['function text(bytes32,string) view returns(string)','function isApprovedFor(address,bytes32,address) view returns(bool)','function setText(bytes32,string,string)'],p);
+  const wrapper=new E.Contract(C.P.wrapper,['function getData(uint256) view returns(address,uint32,uint64)'],p);
+  const rootBefore=Array.from(await wrapper.getData(BigInt(C.P.rootNode)));
+  const events=(r,c)=>r.logs.filter(l=>C.eq(l.address,c.target)).flatMap(l=>{try{return[c.interface.parseLog(l)].filter(Boolean);}catch{return[];}});
+  const hook=(r,n,id)=>{const es=events(r,pages),ms=events(r,manager);
+    I.ensure(!es.some(e=>['ENSHookSkipped','ENSHookBestEffortFailure'].includes(e.name))&&es.some(e=>e.name==='ENSHookProcessed'&&e.args[0]===BigInt(n)&&e.args[1]===id&&e.args[2]&&e.args[3])&&ms.some(e=>e.name==='EnsHookAttempted'&&e.args[0]===BigInt(n)&&e.args[1]===id&&e.args[3]),'ENS_HOOK_NOT_COMPLETELY_SUCCESSFUL');};
+  const reject=async fn=>{let denied=false;try{await fn();}catch(e){if(e.code!=='CALL_EXCEPTION'&&e.code!==3)throw e;denied=true;}I.ensure(denied,'UNAUTHORIZED_WRITE_SUCCEEDED');};
+  phase='CREATE_ASSIGN_AND_ACCEPT';
+  await send('Local intake open',manager.connect(admin).unpauseIntake());
+  const id=await manager.nextJobId(),spec='ipfs://synthetic-public-spec',completion='ipfs://synthetic-public-completion';
+  hook(await send('Local job creation',manager.connect(employer).createJob(spec,100000000n,3600n,'Fork-only job',{gasLimit:2000000})),1,id);
+  const node=await pages.jobEnsNode(id),jobName=await pages.jobEnsName(id);
+  I.ensure(await resolver.text(node,'agijobs.spec.public')===spec,'ENS_SPEC_MISSING');
+  await reject(()=>resolver.connect(outsider).setText.staticCall(node,'unauthorized','blocked'));
+  hook(await send('Local eligible assignment',manager.connect(agent).applyForJob(id,'',[],{gasLimit:2000000})),2,id);
+  await send('Local pause AFTER assignment',manager.connect(admin).pauseIntake());
+  hook(await send('Local completion',manager.connect(agent).requestJobCompletion(id,completion,{gasLimit:2000000})),3,id);
+  I.ensure(await resolver.text(node,'agijobs.completion.public')===completion,'ENS_COMPLETION_MISSING');
+  const agentBefore=await token.balanceOf(agent.address),wallet30=await manager.wallet30(),wallet10=await manager.wallet10();
+  const b30=await token.balanceOf(wallet30),b10=await token.balanceOf(wallet10);
+  hook(await send('Local buyer acceptance',manager.connect(employer).acceptJob(id,{gasLimit:2000000})),4,id);
+  I.ensure((await token.balanceOf(wallet30))-b30===30000000n&&(await token.balanceOf(wallet10))-b10===10000000n,'ZERO_VALIDATOR_RECIPIENT_PAYOUT');
+  I.ensure((await token.balanceOf(agent.address))-agentBefore>=60000000n,'ZERO_VALIDATOR_AGENT_PAYOUT_AND_BOND');
+  for(const person of [employer,agent]){I.ensure(!await resolver.isApprovedFor(C.P.helper,node,person.address),'TERMINAL_DELEGATION_RETAINED');await reject(()=>resolver.connect(person).setText.staticCall(node,'terminal','blocked'));}
+  I.ensure((await manager.getJobCore(id))[5]===true,'COMPLETION_MISSING');
+  report.checks.push('Create, assignment, completion and buyer acceptance hooks; actual records and terminal permissions','Zero-validator 30/10/60 USDC transfer path and agent bond return');
+  phase='CANCELLATION';await send('Local intake open for cancellation',manager.connect(admin).unpauseIntake());
+  const second=await manager.nextJobId();hook(await send('Local second creation',manager.connect(employer).createJob(spec,100000000n,3600n,'Cancellation fixture',{gasLimit:2000000})),1,second);
+  hook(await send('Local unassigned cancellation',manager.connect(employer).cancelJob(second,{gasLimit:2000000})),4,second);
+  I.ensure(!await resolver.isApprovedFor(C.P.helper,await pages.jobEnsNode(second),employer.address),'CANCEL_DELEGATION_RETAINED');
+  await send('Local restore pause',manager.connect(admin).pauseIntake());
+  for(const n of ['lockedEscrow','lockedAgentBonds','lockedValidatorBonds','lockedDisputeBonds','lockedClaims'])I.ensure(await manager[n]()===0n,'RESIDUAL_LOCAL_RESERVE');
+  S.compare(Array.from(await wrapper.getData(BigInt(C.P.rootNode))),rootBefore,'SHARED_ROOT_CUSTODY_CHANGED');
+  I.ensure(await pages.jobEnsName(id)===jobName,'HISTORICAL_LABEL_CHANGED');
+  report.checks.push('Cancellation refunds and terminal delegation; all five reserves zero; shared root preserved');
+  report.status='PASS';report.coverage={buyerAcceptance:true,cancellation:true,unauthorizedWrites:true,terminalRevocation:true,
+    disputeExpiryDeferredClaims:'Covered by native contract suite separately; not asserted by this narrow fork run',longUriGas:'NOT_ASSESSED'};
+}catch(e){report.code=I.failure(e);report.phase=phase;process.exitCode=1;}
+finally{if(work)I.write(path.join(work,'RESULT.json'),report);if(connection?.close)await connection.close();}

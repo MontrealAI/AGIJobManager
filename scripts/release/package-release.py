@@ -69,5 +69,5 @@ def package(out):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--out', type=pathlib.Path, default=root / 'build/release/v1.14.0-candidate')
+    parser.add_argument('--out', type=pathlib.Path, default=root / ('build/release/' + TAG + '-candidate'))
     package(parser.parse_args().out)

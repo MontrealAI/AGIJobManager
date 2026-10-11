@@ -1,5 +1,7 @@
 # Deployment configuration
 
+For the already commissioned instance, start with the [supported inspection and recovery workflow](OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
+
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 Start with the [Hardhat guide](../hardhat/README.md). This reference answers which file to edit, which command to run, and whether it sends a transaction. Ethereum mainnet is chain **1**; Sepolia is **11155111**. No production owner, payment recipients or manager address is supplied.

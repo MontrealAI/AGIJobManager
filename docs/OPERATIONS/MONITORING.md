@@ -25,3 +25,7 @@
 
 Capture revert/error frequencies from RPC traces for:
 `InvalidState`, `SettlementPaused`, `ValidatorLimitReached`, and `InsufficientWithdrawableBalance`.
+
+## Recorded-instance commissioning and response
+
+Use [the supported commands](COMMISSIONING.md) for canonical-block current observations and bounded wallet approval history. Preserve historical reports and append new observations. Rehearse an alert through the actual funded response signer; record detection time, decision, response and recovery evidence privately. A stopped launcher overrides a passing child. Review root operators and child resolver delegates separately. `pauseIntake()` contains new creation/assignment; `pauseAll()` also stops settlement paths including refunds/claims and affects lifecycle-clock handling. Configuration locking is not incident response.

@@ -116,7 +116,7 @@ if (normalize(deploymentBefore) !== normalize(deploymentAfter)) {
   throw new Error('docs/ui/DEPLOYMENT_MAINNET.md is stale compared with config/usdc-deployment.json. Run npm run docs:deployment and commit the result.');
 }
 
-for (const section of ['## Official release', '## Constructor arguments', '## Verification']) {
+for (const section of ['## Software candidate', '## Constructor arguments', '## Verification']) {
   if (!deploymentAfter.includes(section)) {
     throw new Error(`DEPLOYMENT_MAINNET.md missing section: ${section}`);
   }

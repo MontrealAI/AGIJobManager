@@ -17,7 +17,7 @@ parser.add_argument('--out', type=pathlib.Path, required=True)
 args = parser.parse_args()
 require(valid_sha(args.source), 'Source must be a full commit SHA')
 require(os.environ.get('GITHUB_REPOSITORY') == REPOSITORY, 'Repository identity differs')
-require(os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' and os.environ.get('GITHUB_REF') == 'refs/heads/main' and os.environ.get('RELEASE_PUBLISH_CONFIRMATION') == 'PUBLISH_v1.14.0', 'An authorized main publication dispatch is required')
+require(os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' and os.environ.get('GITHUB_REF') == 'refs/heads/main' and os.environ.get('RELEASE_PUBLISH_CONFIRMATION') == 'PUBLISH_' + TAG, 'An authorized main publication dispatch is required')
 
 def gh(*command):
     result = subprocess.run(['gh', *command], cwd=root, text=True, capture_output=True, timeout=180)

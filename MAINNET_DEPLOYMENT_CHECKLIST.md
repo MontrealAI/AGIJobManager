@@ -1,5 +1,7 @@
 # Mainnet deployment and activation checklist
 
+For the already commissioned instance, start with the [supported inspection and recovery workflow](docs/OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
+
 Use the complete [launch checklist](docs/LAUNCH_CHECKLIST.md) and [Hardhat guide](hardhat/README.md) for a new instance. For the already-deployed USDC manager, start with the [10 October 2026 deployment-and-connection record](docs/deployments/MAINNET_USDC_2026-10-10.md), not another deployment command.
 
 **Recorded instance: ENS connected; production activation on HOLD.** The [five activation closeout groups](docs/OPERATIONS/PRODUCTION_ACTIVATION.md) are separate from source verification and ENS wiring. A passing read-only script does not enforce an on-chain launch gate.

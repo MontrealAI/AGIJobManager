@@ -1,5 +1,7 @@
 # Scripts and Automation Reference
 
+For the already commissioned instance, start with the [supported inspection and recovery workflow](OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
+
 > Current workflow: Operator scripts use ethers 6 and the compiled Hardhat artifacts. The post-deploy configuration script only writes to disposable local chains. Use [Hardhat](../hardhat/README.md) for public deployments and the [owner console](OWNER_CONTROLS.md) for live configuration.
 
 This catalog documents operator and maintainer scripts across deployment, operations, security, docs, and UI maintenance.

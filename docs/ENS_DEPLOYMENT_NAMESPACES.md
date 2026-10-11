@@ -1,5 +1,7 @@
 # ENS job names
 
+For the already commissioned instance, start with the [supported inspection and recovery workflow](OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
+
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 The generic fresh-deployment script gives each new USDC manager a distinct namespace automatically. Users see **AGI Job #0**; its full ENS name also identifies the deployment.
