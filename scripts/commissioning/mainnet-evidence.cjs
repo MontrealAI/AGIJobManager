@@ -136,11 +136,38 @@ function validate(record) {
     activationDecision: a.decision, intakeActivationAuthorized: false, productionReadinessCertified: false,
     liveRpcQueries: 0, historySha256, scope: 'Offline public-record consistency only; not current state or independent verification.' };
 }
-function load() { return JSON.parse(fs.readFileSync(RECORD, 'utf8')); }
-module.exports = { validate, load, RECORD };
+// JSON.parse alone discards duplicate names before the historical fingerprint sees them.
+// Validate syntax first, then scan raw tokens so escaped-equivalent keys cannot hide.
+function parseRecord(text) {
+  check(typeof text === 'string' && Buffer.byteLength(text, 'utf8') <= 262144, 'RECORD_JSON_SIZE');
+  let record;
+  try { record = JSON.parse(text); } catch { throw new Error('RECORD_JSON_INVALID'); }
+  const stack = [];
+  for (const match of text.matchAll(/"(?:\\[\s\S]|[^"\\])*"|[{}\[\],:]|[^\s{}\[\],:"]+/g)) {
+    const token = match[0], parent = stack.at(-1);
+    if (token === '{' || token === '[') {
+      check(stack.length < 32, 'RECORD_JSON_DEPTH');
+      stack.push(token === '{' ? {keys: new Set(), expectKey: true} : {});
+    } else if (token === '}' || token === ']') stack.pop();
+    else if (token === ',' && parent?.keys) parent.expectKey = true;
+    else if (token[0] === '"' && parent?.keys && parent.expectKey) {
+      const key = JSON.parse(token);
+      check(!parent.keys.has(key), 'RECORD_JSON_DUPLICATE_KEY');
+      parent.keys.add(key); parent.expectKey = false;
+    }
+  }
+  return record;
+}
+function load() { return parseRecord(fs.readFileSync(RECORD, 'utf8')); }
+module.exports = { validate, load, RECORD, parseRecord };
 if (require.main === module) {
   try {
     check(process.argv.length === 2, 'USAGE_node_scripts/commissioning/mainnet-evidence.cjs');
     console.log(JSON.stringify(validate(load()), null, 2));
-  } catch (error) { console.error('STOP: ' + error.message); process.exitCode = 1; }
+  } catch (error) {
+    const code = typeof error.message === 'string' && (/^RECORD_[A-Za-z0-9_]+$/.test(error.message) ||
+      error.message === 'USAGE_node_scripts/commissioning/mainnet-evidence.cjs') ?
+      error.message : 'RECORD_LOCAL_READ_OR_VALIDATION_FAILURE';
+    console.error('STOP: ' + code); process.exitCode = 1;
+  }
 }
