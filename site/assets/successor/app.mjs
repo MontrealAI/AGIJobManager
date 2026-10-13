@@ -1,13 +1,13 @@
 import { fail, canonical, LIMITS } from './safe.mjs';
 import { defaultMission } from './missions.mjs';
-import { recordPlan, createSystem, chooseCandidate, compareCandidates, exportCapsule, restoreCapsule, readableSummary, STORAGE_KEY } from './model.mjs';
+import { recordPlan, createSystem, chooseCandidate, compareCandidates, exportCapsule, readableSummary, STORAGE_KEY } from './model.mjs';
 import { planAlternatives } from './jobs.mjs';
 import { CONSOLE_DRAFT_KEY } from '../employer-model.mjs';
 import { formatUSDC } from '../payments.mjs';
 import { sourceZip } from './archive.mjs';
 
 export function initialize() {
-  let lang = document.documentElement.lang, state = null, candidate = null, plan = null, inspected = null, previewURL = null, currentWorker = null, rejectWork = null, runNumber = 0, backupRaw = null;
+  let lang = document.documentElement.lang, state = null, candidate = null, plan = null, inspected = null, previewURL = null, currentWorker = null, rejectWork = null, runNumber = 0, backupRaw = null, actionBusy = false;
   const pristine = '<!doctype html>\n' + document.documentElement.outerHTML;
   const source = JSON.parse(document.querySelector('#successor-source').textContent);
   const sources = JSON.parse(document.querySelector('#successor-sources').textContent);
@@ -29,7 +29,13 @@ export function initialize() {
     if (code === 'PUBLIC_CONSENT') $('public-consent').setAttribute('aria-invalid', 'true');
     if (code === 'NEW_MISSION') $('new-mission-wrap').hidden = false;
   }
-  function bind(id, action, event = 'click') { $(id).addEventListener(event, async e => { e.preventDefault(); $('error').hidden = true; document.querySelectorAll('.field-error').forEach(el => el.remove()); document.querySelectorAll('[aria-invalid]').forEach(el => { el.removeAttribute('aria-invalid'); if (el.getAttribute('aria-describedby')?.endsWith('-error')) el.removeAttribute('aria-describedby'); }); try { await action(e); } catch (error) { report(error); } }); }
+  function bind(id, action, event = 'click') { $(id).addEventListener(event, async e => {
+    e.preventDefault();
+    if ((actionBusy || currentWorker) && id !== 'stop') { say(t('Please wait for this action to finish, or choose Stop.', 'Attendez la fin de cette action, ou choisissez Arrêter.')); return; }
+    const ownsAction = !actionBusy; if (ownsAction) actionBusy = true;
+    $('error').hidden = true; document.querySelectorAll('.field-error').forEach(el => el.remove()); document.querySelectorAll('[aria-invalid]').forEach(el => { el.removeAttribute('aria-invalid'); if (el.getAttribute('aria-describedby')?.endsWith('-error')) el.removeAttribute('aria-describedby'); });
+    try { await action(e); } catch (error) { report(error); } finally { if (ownsAction) actionBusy = false; }
+  }); }
   function download(name, content, mediaType = 'application/json') {
     const blob = new Blob([content], { type: mediaType }), url = URL.createObjectURL(blob), link = document.createElement('a'); link.href = url; link.download = name; document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 30000);
     say(t('Download requested. Check your Downloads folder. If your browser blocks it, allow this download or use Print for the summary.', 'Téléchargement demandé. Consultez votre dossier Téléchargements. S’il est bloqué, autorisez-le ou utilisez Imprimer pour le résumé.'));
@@ -38,14 +44,22 @@ export function initialize() {
     fail(!currentWorker, 'BUSY'); fail(typeof Worker !== 'undefined', 'WORKER_UNAVAILABLE');
     const blobURL = URL.createObjectURL(new Blob([workerSource], { type: 'text/javascript' }));
     try { currentWorker = new Worker(blobURL); } catch { URL.revokeObjectURL(blobURL); fail(false, 'WORKER_UNAVAILABLE'); }
-    const worker = currentWorker; $('stop').disabled = false; $('run').disabled = true; $('improve-local').disabled = true;
+    const worker = currentWorker, controls = [...document.querySelectorAll('#interface button,#interface input,#interface textarea')].map(element => [element, element.disabled]);
+    for (const [element] of controls) element.disabled = true;
+    $('stop').disabled = false; $('results').setAttribute('aria-busy', 'true');
     return new Promise((resolve, reject) => {
-      let timer;
-      const finish = (error, result) => { clearTimeout(timer); worker.terminate(); URL.revokeObjectURL(blobURL); if (currentWorker === worker) { currentWorker = null; rejectWork = null; $('stop').disabled = true; $('run').disabled = false; $('improve-local').disabled = !state?.active || state.mission.kind === 'custom'; } error ? reject(error) : resolve(result); };
+      let timer, settled = false;
+      const finish = (error, result) => {
+        if (settled) return; settled = true;
+        clearTimeout(timer); worker.terminate(); URL.revokeObjectURL(blobURL);
+        if (currentWorker === worker) { currentWorker = null; rejectWork = null; for (const [element, disabled] of controls) element.disabled = disabled; $('results').setAttribute('aria-busy', 'false'); }
+        error ? reject(error) : resolve(result);
+      };
       rejectWork = () => finish(Object.assign(new Error('STOPPED'), { code: 'STOPPED' }));
       timer = setTimeout(() => finish(Object.assign(new Error('TIME_LIMIT'), { code: 'TIME_LIMIT' })), 10000);
       worker.onmessage = ({ data }) => data.error ? finish(Object.assign(new Error(data.error), { code: data.code, failureState: data.failureState })) : finish(null, data.result);
-      worker.onerror = () => finish(Object.assign(new Error('WORKER_UNAVAILABLE'), { code: 'WORKER_UNAVAILABLE' })); worker.postMessage({ operation, payload });
+      worker.onerror = () => finish(Object.assign(new Error('WORKER_UNAVAILABLE'), { code: 'WORKER_UNAVAILABLE' }));
+      try { worker.postMessage({ operation, payload }); } catch { finish(Object.assign(new Error('WORKER_UNAVAILABLE'), { code: 'WORKER_UNAVAILABLE' })); }
     });
   }
   function addSection(section = { heading: '', body: '' }) {
@@ -71,12 +85,13 @@ export function initialize() {
     if (kind === 'custom') { mission.outputs = $('custom-outputs').value; mission.success = $('custom-success').value; mission.tools = $('custom-tools').value; }
     return mission;
   }
+  function previousSelection() { return state && [...state.chronicle].reverse().find(e => ['keep', 'replace', 'rollback'].includes(e.action) && e.subject !== state.active); }
   function redraw() {
     const active = state?.candidates.find(c => c.id === state.active);
     for (const id of ['download-html', 'download-capsule', 'download-brief', 'download-source', 'save', 'print', 'prepare-job']) $(id).disabled = !state;
     $('empty-results').hidden = Boolean(candidate); $('result-content').hidden = !candidate;
     $('improve-local').disabled = !active || state.mission.kind === 'custom' || Boolean(currentWorker); $('retain').disabled = !active;
-    $('rollback').disabled = !state || state.candidates.filter(c => c.id !== state.active && c.checker.passed).length === 0;
+    $('rollback').disabled = !previousSelection();
     if (candidate) {
       $('result-summary').textContent = (candidate.checker.passed ? t('Checks passed', 'Vérifications réussies') : t('Checks failed — keep the current version', 'Échec des vérifications — gardez la version actuelle')) + ' · ' + t('Local measurement', 'Mesure locale') + ' · ' + (candidate.manifest.variant === 'baseline' ? t('Original version', 'Version initiale') : t('Improved candidate', 'Candidat amélioré'));
       if (previewURL) URL.revokeObjectURL(previewURL); previewURL = URL.createObjectURL(new Blob([candidate.files.find(f => f.name.endsWith('.html')).content], { type: 'text/html' })); $('preview').src = previewURL;
@@ -84,22 +99,25 @@ export function initialize() {
       for (const file of candidate.files) { const button = document.createElement('button'); button.type = 'button'; button.textContent = t('Download ', 'Télécharger ') + file.name; button.onclick = () => download(file.name, file.content, file.mediaType); $('artifact-downloads').append(button); }
       $('checks').replaceChildren(); for (const check of candidate.checker.checks) { const li = document.createElement('li'); li.textContent = (check.passed ? '✓ ' : '✕ ') + check.id; if (!check.passed) li.className = 'checks-fail'; $('checks').append(li); }
       $('file-manifest').textContent = JSON.stringify(candidate.files.map(({ content, ...file }) => file), null, 2);
-      $('keep-version').disabled = !candidate.checker.passed || state.active === candidate.id;
+      $('keep-version').disabled = !candidate.checker.passed || state.active === candidate.id || Boolean(active && compareCandidates(active, candidate).outcome !== 'improvement');
     }
     $('gap').textContent = active ? active.gaps.length ? (state.mission.kind === 'analyst' ? t('Some IDs repeat. The original report counts every row accurately. Try counting identical repeats once; conflicting duplicates will be rejected.', 'Certains identifiants se répètent. Le rapport initial compte exactement chaque ligne. Essayez de compter une seule fois les répétitions identiques; les doublons contradictoires seront refusés.') : t('The site is usable; visitors can scroll through it. Add direct links so they can jump to each section.', 'Le site est utilisable et se parcourt par défilement. Ajoutez des liens directs vers chaque section.')) : t('No supported gap remains in this input. You can rerun a comparison; a tie keeps the incumbent. Or prepare your own request.', 'Aucune limite prise en charge ne subsiste. Vous pouvez relancer la comparaison; une égalité conserve la version actuelle. Ou préparez votre propre demande.') : t('Run a mission and keep a version to see the next opportunity.', 'Exécutez une mission et conservez une version pour voir la prochaine possibilité.');
     $('chronicle').textContent = state ? readableSummary(state) : '';
     $('alternatives').replaceChildren(); if (state) for (const option of planAlternatives(state)) { const li = document.createElement('li'); const french = { retain: ['Conserver', 'Garder la version choisie et ses limites.'], repair: ['Améliorer', 'Appliquer l’amélioration locale vérifiée et comparer les fichiers.'], build: ['Construire', 'Créer un candidat borné à partir du modèle fourni.'], rent: ['Louer', 'Aucun devis de fournisseur ni environnement validé n’est connecté.'], partner: ['Collaborer', 'Aucune capacité partenaire ni revue indépendante n’est confirmée.'], reserve: ['Réserver', 'Un budget proposé ne réserve ni exécutants ni fonds.'], stop: ['Arrêter', 'Conserver les fichiers sans nouvelle exécution ni dépense.'] }; li.textContent = (lang === 'fr' ? french[option.id][0] : option.id) + ' — ' + (option.available ? t('available', 'disponible') : t('unavailable', 'indisponible')) + ': ' + (lang === 'fr' ? french[option.id][1] : option.reason); $('alternatives').append(li); }
   }
+  function clearInspection() { inspected = null; $('restore-preview').hidden = true; $('restore-consent').checked = false; $('restore-summary').textContent = ''; }
   async function inspect(raw) {
+    clearInspection();
     inspected = await work('inspect', { raw }); $('restore-summary').textContent = (inspected.summary.name || 'SUCCESSOR Ω') + ' · ' + inspected.summary.kind + ' · ' + inspected.summary.candidates + t(' saved candidates. Historical local checks only; no authority or payments.', ' candidats enregistrés. Vérifications locales historiques; aucune autorité ni transaction.'); $('restore-preview').hidden = false; $('restore-preview').closest('details').open = true; $('restore-consent').checked = false; $('restore-preview').scrollIntoView({ block: 'center' });
   }
-  function clearPlan() { plan = null; $('job-results').hidden = true; $('replace-console').hidden = true; backupRaw = null; $('comparison').textContent = ''; }
+  function clearPlan() { plan = null; $('job-results').hidden = true; $('replace-console').hidden = true; $('handoff-consent').checked = false; $('replace-consent').checked = false; $('console-link').replaceChildren(); backupRaw = null; $('comparison').textContent = ''; }
   function attach() {
     if (location.protocol === 'file:') for (const link of document.querySelectorAll('#interface a[href]')) { const href = link.getAttribute('href'); if (href.startsWith('./') || href.startsWith('../')) link.href = new URL(href, 'https://montrealai.github.io/AGIJobManager/' + (lang === 'fr' ? 'fr/' : '') + 'successor/').href; }
     document.querySelectorAll('button:disabled,input:disabled').forEach(el => { el.disabled = false; }); $('stop').disabled = true;
+    $('larger').setAttribute('aria-pressed', String(document.documentElement.classList.contains('large-text')));
     bind('larger', () => { const enabled = document.documentElement.classList.toggle('large-text'); $('larger').setAttribute('aria-pressed', String(enabled)); });
     bind('language', () => { fail(!currentWorker, 'BUSY'); const mission = formMission(), consent = $('public-consent').checked; lang = lang === 'en' ? 'fr' : 'en'; document.documentElement.lang = lang; $('interface').innerHTML = layouts[lang]; attach(); showMission(mission); $('public-consent').checked = consent; clearPlan(); redraw(); say(t('Interface language changed. Your own text is unchanged.', 'La langue de l’interface a changé. Votre texte reste inchangé.')); });
-    for (const input of document.querySelectorAll('[name="kind"]')) input.addEventListener('change', () => { showMission(defaultMission(input.value, lang)); $('public-consent').checked = false; $('new-mission-wrap').hidden = !state; });
+    for (const input of document.querySelectorAll('[name="kind"]')) input.addEventListener('change', () => { if (actionBusy || currentWorker) return; showMission(defaultMission(input.value, lang)); $('public-consent').checked = false; $('new-mission-wrap').hidden = !state; });
     bind('example', () => { showMission(defaultMission(document.querySelector('[name="kind"]:checked').value, lang)); $('public-consent').checked = true; $('new-mission-wrap').hidden = !state; });
     bind('add-section', () => addSection());
     bind('data-file', async () => { const file = $('data-file').files[0]; fail(file && file.size <= LIMITS.input, 'INPUT_SIZE'); $('data').value = await file.text(); $('rights').value = ''; $('public-consent').checked = false; }, 'change');
@@ -118,8 +136,8 @@ export function initialize() {
     bind('keep-version', async () => { fail(state && candidate, 'CANDIDATE_REQUIRED'); const active = state.candidates.find(c => c.id === state.active); state = await chooseCandidate(state, candidate.id, active && candidate.id !== active.id ? 'replace' : 'keep'); clearPlan(); redraw(); say(t('Version kept locally. No operating permission was granted.', 'Version conservée localement. Aucune autorisation opérationnelle n’a été accordée.')); });
     bind('improve-local', async () => { fail(state?.active, 'SELECT_VERSION'); const active = state.candidates.find(c => c.id === state.active), result = await work('run', { state, variant: 'improved', sourceIdentity: source.engineSha256 }); state = result.state; candidate = result.candidate; const comparison = compareCandidates(active, candidate); redraw(); $('comparison').textContent = comparison.outcome === 'improvement' ? t('A measured gap was resolved and the separate checks passed. Compare the new files, then explicitly keep this version.', 'Une limite mesurée est résolue et les vérifications distinctes réussissent. Comparez les nouveaux fichiers, puis choisissez explicitement cette version.') : t('Tie or regression: the incumbent stays selected. There is no automatic promotion.', 'Égalité ou régression : la version actuelle reste sélectionnée. Aucune promotion automatique.'); if (comparison.outcome !== 'improvement') $('keep-version').disabled = true; });
     bind('retain', () => { candidate = state.candidates.find(c => c.id === state.active); redraw(); say(t('Your current version is retained.', 'Votre version actuelle est conservée.')); });
-    bind('rollback', async () => { const previous = [...state.chronicle].reverse().find(e => ['keep', 'replace', 'rollback'].includes(e.action) && e.subject !== state.active); fail(previous, 'NO_PREVIOUS_VERSION'); state = await chooseCandidate(state, previous.subject, 'rollback'); candidate = state.candidates.find(c => c.id === state.active); clearPlan(); redraw(); say(t('Previous local version restored. External effects, if any, are not undone.', 'Version locale précédente restaurée. Les éventuels effets externes ne sont pas annulés.')); });
-    bind('prepare-job', async () => { fail(state, 'SELECT_VERSION'); fail($('budget').value.trim(), 'USDC_PRICE_REQUIRED'); plan = await work('plan', { state, options: { budget: $('budget').value, repairReserve: $('reserve').value, days: $('days').value, inputURLs: $('public-urls').value, requested: $('request-goal').value } }); state = await recordPlan(state, plan); $('chronicle').textContent = readableSummary(state); $('job-preview').textContent = JSON.stringify(plan, null, 2); $('job-results').hidden = false; $('handoff-consent').checked = false; $('economics').textContent = t('Hypothetical employer allowance: ', 'Budget employeur hypothétique : ') + formatUSDC(BigInt(plan.pricing.totalPlanBaseUnits), lang) + '. ' + t('At the default shared 8% review allocation: Agent ', 'Avec la part de revue partagée de 8 % : Agent ') + formatUSDC(BigInt(plan.successfulIllustration.agent), lang) + '; ' + t('all reviewers ', 'ensemble des évaluateurs ') + formatUSDC(BigInt(plan.successfulIllustration.sharedReviewers), lang) + '; wallet30 ' + formatUSDC(BigInt(plan.successfulIllustration.wallet30), lang) + '; wallet10 ' + formatUSDC(BigInt(plan.successfulIllustration.wallet10), lang) + '. ' + t('With zero validators, the buyer-acceptance Agent share is ', 'Avec zéro validateur, l’acceptation par l’acheteur donne à l’Agent ') + formatUSDC(BigInt(plan.successfulIllustration.zeroValidatorAgent), lang) + '.'; });
+    bind('rollback', async () => { const previous = previousSelection(); fail(previous, 'NO_PREVIOUS_VERSION'); state = await chooseCandidate(state, previous.subject, 'rollback'); candidate = state.candidates.find(c => c.id === state.active); clearPlan(); redraw(); say(t('Previous local version restored. External effects, if any, are not undone.', 'Version locale précédente restaurée. Les éventuels effets externes ne sont pas annulés.')); });
+    bind('prepare-job', async () => { clearPlan(); fail(state, 'SELECT_VERSION'); fail($('budget').value.trim(), 'USDC_PRICE_REQUIRED'); plan = await work('plan', { state, options: { budget: $('budget').value, repairReserve: $('reserve').value, days: $('days').value, inputURLs: $('public-urls').value, requested: $('request-goal').value } }); state = await recordPlan(state, plan); $('chronicle').textContent = readableSummary(state); $('job-preview').textContent = JSON.stringify(plan, null, 2); $('job-results').hidden = false; $('handoff-consent').checked = false; $('economics').textContent = t('Hypothetical employer allowance: ', 'Budget employeur hypothétique : ') + formatUSDC(BigInt(plan.pricing.totalPlanBaseUnits), lang) + '. ' + t('At the default shared 8% review allocation: Agent ', 'Avec la part de revue partagée de 8 % : Agent ') + formatUSDC(BigInt(plan.successfulIllustration.agent), lang) + '; ' + t('all reviewers ', 'ensemble des évaluateurs ') + formatUSDC(BigInt(plan.successfulIllustration.sharedReviewers), lang) + '; wallet30 ' + formatUSDC(BigInt(plan.successfulIllustration.wallet30), lang) + '; wallet10 ' + formatUSDC(BigInt(plan.successfulIllustration.wallet10), lang) + '. ' + t('With zero validators, the buyer-acceptance Agent share is ', 'Avec zéro validateur, l’acceptation par l’acheteur donne à l’Agent ') + formatUSDC(BigInt(plan.successfulIllustration.zeroValidatorAgent), lang) + '.'; });
     bind('download-job', () => { fail(plan, 'PLAN'); download('successor-improvement-draft.json', JSON.stringify(plan, null, 2)); });
     bind('backup-console', () => { let raw; try { raw = localStorage.getItem(CONSOLE_DRAFT_KEY); } catch { fail(false, 'STORAGE'); } fail(raw, 'CONSOLE_CONFLICT'); download('existing-console-draft.json', raw); backupRaw = raw; });
     bind('handoff', () => { fail(plan && $('handoff-consent').checked, 'HANDOFF_CONSENT'); fail(/^https?:$/.test(location.protocol), 'OFFLINE_HANDOFF'); let existing; try { existing = localStorage.getItem(CONSOLE_DRAFT_KEY); } catch { fail(false, 'STORAGE'); } if (existing && !(backupRaw === existing && $('replace-consent').checked)) { $('replace-console').hidden = false; fail(false, 'CONSOLE_CONFLICT'); } try { localStorage.setItem(CONSOLE_DRAFT_KEY, JSON.stringify(plan.consoleDraft)); } catch { fail(false, 'STORAGE'); } const link = document.createElement('a'); link.href = '/AGIJobManager/agijobmanager-usdc.html'; link.textContent = t('Open the advanced console, then use “Load saved draft”', 'Ouvrir la console avancée, puis utiliser « Load saved draft »'); $('console-link').replaceChildren(link); say(t('Draft copied. Nothing was published or paid.', 'Brouillon copié. Rien n’a été publié ni payé.')); });
@@ -128,12 +146,12 @@ export function initialize() {
     bind('download-source', () => { fail(sources?.length, 'SOURCE_FILES'); download('SUCCESSOR-Omega-editable-source.zip', sourceZip(sources), 'application/zip'); });
     bind('download-html', async () => { const capsule = await exportCapsule(state, source); const html = pristine.replace(/(<script id="successor-capsule" type="application\/json">)[\s\S]*?(<\/script>)/, (_, start, end) => start + capsule.replace(/</g, '\\u003c') + end); download('My-SUCCESSOR-Omega.html', html, 'text/html'); });
     bind('save', async () => { const capsule = await exportCapsule(state, source); try { localStorage.setItem(STORAGE_KEY, capsule); } catch { fail(false, 'STORAGE'); } say(t('Saved only in this browser. Download a durable copy too.', 'Enregistré uniquement dans ce navigateur. Téléchargez aussi une copie durable.')); });
-    bind('load', async () => { let raw; try { raw = localStorage.getItem(STORAGE_KEY); } catch { fail(false, 'STORAGE'); } fail(raw, 'STORAGE'); await inspect(raw); });
+    bind('load', async () => { clearInspection(); let raw; try { raw = localStorage.getItem(STORAGE_KEY); } catch { fail(false, 'STORAGE'); } fail(raw, 'STORAGE'); await inspect(raw); });
     bind('clear', () => { try { localStorage.removeItem(STORAGE_KEY); } catch { fail(false, 'STORAGE'); } say(t('Saved browser copy cleared. Your open workspace and downloaded copies remain.', 'Copie enregistrée effacée. L’espace ouvert et les téléchargements sont conservés.')); });
     bind('print', () => window.print());
-    bind('import-file', async () => { const file = $('import-file').files[0]; fail(file && file.size <= LIMITS.capsule, 'INPUT_SIZE'); await inspect(await file.text()); }, 'change');
-    bind('restore', async () => { state = await restoreCapsule(inspected, $('restore-consent').checked); candidate = state.candidates.find(c => c.id === state.active) || state.candidates.at(-1) || null; showMission(state.mission); $('public-consent').checked = false; $('restore-preview').hidden = true; clearPlan(); redraw(); say(t('Restored as historical local work. Review the inputs and rerun for fresh measurements.', 'Restauré comme travail local historique. Vérifiez les données et relancez pour obtenir de nouvelles mesures.')); });
-    bind('cancel-restore', () => { inspected = null; $('restore-preview').hidden = true; });
+    bind('import-file', async () => { clearInspection(); const file = $('import-file').files[0]; fail(file && file.size <= LIMITS.capsule, 'INPUT_SIZE'); await inspect(await file.text()); }, 'change');
+    bind('restore', async () => { fail(inspected && $('restore-consent').checked, 'RESTORE_CONFIRMATION'); state = await work('restore', { inspected, confirmed: true }); candidate = state.candidates.find(c => c.id === state.active) || state.candidates.at(-1) || null; showMission(state.mission); $('public-consent').checked = false; clearInspection(); clearPlan(); redraw(); say(t('Restored as historical local work. Review the inputs and rerun for fresh measurements.', 'Restauré comme travail local historique. Vérifiez les données et relancez pour obtenir de nouvelles mesures.')); });
+    bind('cancel-restore', clearInspection);
   }
   attach(); showMission(defaultMission('analyst', lang)); redraw();
   const saved = $('successor-capsule').textContent.trim();

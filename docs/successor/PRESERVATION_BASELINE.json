@@ -375,7 +375,9 @@
     "ui/dist-ipfs/agijobmanager.html": "cd237a1c154db249c5c31ce1110fc98086b6a067ec0c35fbcb4bf9fe9c522dc4",
     "agijobmanager.html": "cd237a1c154db249c5c31ce1110fc98086b6a067ec0c35fbcb4bf9fe9c522dc4",
     "scripts/security/slither-reviewed-findings.json": "13ef0884a308a8e74f79d1f09ec2286930ee828468d9033ec83b2578e1d2f0b3",
-    "docs/qualification/mainnet-cutover.json": "68554e5516898bf1767d864438aa6d3cf85644d09ec65d21c77ba19562862cec"
+    "docs/qualification/mainnet-cutover.json": "68554e5516898bf1767d864438aa6d3cf85644d09ec65d21c77ba19562862cec",
+    "scripts/security/slither-reviewed-findings-v1.16.0.json": "b0c12f2dc90f1ac02a771a28050d9d72b696422e1866705a68196d6dd9180228",
+    "docs/qualification/mainnet-cutover-v1.16.0.json": "9ebcd1283a75a1c5bfaf1c9370880d3c445d00e35553071d1e6631baa92bb6a0"
   },
   "mermaidBlocks": {
     "docs/AGIJOBMANAGER.md": [

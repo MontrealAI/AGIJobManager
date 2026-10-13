@@ -65,6 +65,8 @@ Initial local environment: Linux, Node 24.19.0; existing locked root Playwright 
 
 ## Finite external gates
 
+The v1.16.1 recovery regressions add held real-worker responses in both languages. They verify that pending execution disables conflicting actions, Stop preserves the complete chosen state despite a late response, rejected replacement imports revoke old restore consent, rollback requires a previously chosen version, and larger-text state survives language changes. Published-package checks now cover the exact nine-file inventory, qualification/asset/source bindings and bounded archive extraction. These checks extend the matrix above; the human and operational boundaries remain.
+
 | Owner | Required evidence | Next action |
 | --- | --- | --- |
 | Repository reviewer/maintainer | Independent source/security review and all applicable exact-head checks | Review the PR; resolve findings; merge only through existing controls |

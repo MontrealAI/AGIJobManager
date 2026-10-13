@@ -29,14 +29,14 @@ test('all existing hosted routes survive, and Builder editions have exact source
 
 test('candidate qualification rebinds only metadata and retains every historical finding/outcome', () => {
   const read = name => JSON.parse(fs.readFileSync(name));
-  const oldReview = read('scripts/security/slither-reviewed-findings.json'), newReview = read('scripts/security/slither-reviewed-findings-v1.16.0.json');
+  const oldReview = read('scripts/security/slither-reviewed-findings.json'), newReview = read('scripts/security/slither-reviewed-findings-v1.16.1.json');
   assert.deepEqual(newReview.reports, oldReview.reports);
   assert.deepEqual(Object.keys(newReview.source_sha256).sort(), Object.keys(oldReview.source_sha256).sort());
   for (const [file, hash] of Object.entries(newReview.source_sha256)) {
     assert.equal(digest(fs.readFileSync(file)), hash, file);
     if (file !== 'package-lock.json') assert.equal(hash, oldReview.source_sha256[file]);
   }
-  const oldFork = read('docs/qualification/mainnet-cutover.json'), newFork = read('docs/qualification/mainnet-cutover-v1.16.0.json');
+  const oldFork = read('docs/qualification/mainnet-cutover.json'), newFork = read('docs/qualification/mainnet-cutover-v1.16.1.json');
   const { sourceSha256: oldHashes, ...oldOutcomes } = oldFork, { sourceSha256: newHashes, ...newOutcomes } = newFork;
   assert.deepEqual(newOutcomes, oldOutcomes);
   assert.deepEqual(Object.keys(newHashes), Object.keys(oldHashes));

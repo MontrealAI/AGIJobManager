@@ -43,8 +43,8 @@ try {
     await page.locator('#rollback').click(); await page.frameLocator('#preview').getByText(/every-row/).waitFor();
     await page.locator('#larger').click(); await reflow(page, `${lang} ${width} enlarged`); assert.equal(await page.locator('#larger').getAttribute('aria-pressed'), 'true');
     for (const id of ['run', 'download-html']) { const box = await page.locator('#' + id).boundingBox(); assert.ok(box.width >= 44 && box.height >= 44); }
+    const before = await page.locator('#purpose').inputValue(); await page.locator('#language').click(); assert.equal(await page.locator('#purpose').inputValue(), before); assert.equal(await page.locator('#larger').getAttribute('aria-pressed'), 'true'); await page.locator('#language').click();
     await page.locator('#larger').click();
-    const before = await page.locator('#purpose').inputValue(); await page.locator('#language').click(); assert.equal(await page.locator('#purpose').inputValue(), before); await page.locator('#language').click();
     const accessible = await page.locator('#create').ariaSnapshot(); assert.ok(accessible.includes('textbox') && accessible.includes('radio'));
     results.push({ lang, width, keyboardLabels: true, enlargedReflow: true, analyst: true, improved: true, rollback: true, languageKeepsInput: true });
     if (width === 1440) {
@@ -81,6 +81,52 @@ try {
   await run(noStorage); await noStorage.locator('#save').locator('..').locator('..').evaluate(element => element.open = true); await noStorage.locator('#save').click(); assert.ok((await noStorage.locator('#error').textContent()).includes('STORAGE'));
   const noJS = await open(`${origin}/AGIJobManager/fr/successor/`, { javaScriptEnabled: false }); assert.ok(await noJS.locator('noscript').isVisible()); assert.equal(await noJS.locator('#run').isDisabled(), true);
   const hostile = await open(`${origin}/AGIJobManager/successor/`); await hostile.locator('[name=kind][value=website]').check(); await hostile.locator('#example').click(); await hostile.locator('#site-title').fill('<img src=x onerror=alert(1)>'); await hostile.locator('#run').click(); await hostile.frameLocator('#preview').locator('h1').waitFor(); assert.equal(await hostile.frameLocator('#preview').locator('img').count(), 0);
+  for (const lang of ['en', 'fr']) {
+    const page = await open(`${origin}/AGIJobManager/${lang === 'fr' ? 'fr/' : ''}successor/`);
+    await run(page); await page.locator('#keep-version').click();
+    const before = JSON.parse(await download(page, 'download-capsule', path.join(evidenceDir, `before-recovery-${lang}.json`)));
+    await page.locator('#import-file').locator('..').evaluate(element => element.open = true);
+    await page.locator('#import-file').setInputFiles({ name: 'valid.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(before)) });
+    await page.locator('#restore-preview').waitFor({ state: 'visible' }); await page.locator('#restore-consent').check();
+    await page.locator('#import-file').setInputFiles({ name: 'invalid.json', mimeType: 'application/json', buffer: Buffer.from('{invalid') });
+    await page.locator('#error').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#restore-preview').isVisible(), false, 'failed inspection must revoke the old restore preview');
+    assert.equal(await page.locator('#restore-consent').isChecked(), false, 'old restore consent must not survive a new import');
+    // Hold a real worker response to exercise a user interaction during computation,
+    // then deliver it after Stop to cover a late completion without timing guesses.
+    await page.evaluate(() => {
+      const NativeWorker = window.Worker; window.__nativeWorker = NativeWorker;
+      window.Worker = class extends NativeWorker {
+        set onmessage(callback) { super.onmessage = event => { window.__deliverWorker = () => callback(event); }; }
+      };
+    });
+    await page.locator('#improve-local').click(); await page.waitForFunction(() => typeof window.__deliverWorker === 'function');
+    for (const id of ['run', 'keep-version', 'rollback', 'retain', 'prepare-job', 'restore', 'load', 'import-file', 'language', 'data']) {
+      assert.equal(await page.locator('#' + id).isDisabled(), true, `${id} cannot race a pending worker`);
+    }
+    assert.equal(await page.locator('#stop').isEnabled(), true);
+    await page.locator('#stop').click(); await page.locator('#error').waitFor({ state: 'visible' });
+    await page.evaluate(() => { window.__deliverWorker(); delete window.__deliverWorker; });
+    const after = JSON.parse(await download(page, 'download-capsule', path.join(evidenceDir, `after-stop-${lang}.json`)));
+    assert.deepEqual(after.payload.state, before.payload.state, 'stop and late completion preserve the chosen version and history');
+    assert.equal(await page.locator('#data').isEnabled(), true);
+    await page.locator('#improve-local').click(); await page.waitForFunction(() => typeof window.__deliverWorker === 'function');
+    await page.evaluate(() => { window.__deliverWorker(); delete window.__deliverWorker; });
+    await page.waitForFunction(() => document.querySelector('#comparison').textContent.length > 0);
+    assert.equal(await page.locator('#rollback').isDisabled(), true, 'an unchosen candidate is not a previous version');
+    await page.locator('#keep-version').click(); assert.equal(await page.locator('#rollback').isEnabled(), true);
+    await page.locator('#rollback').click();
+    const recovered = JSON.parse(await download(page, 'download-capsule', path.join(evidenceDir, `recovered-${lang}.json`)));
+    assert.equal(recovered.payload.state.active, before.payload.state.active);
+    await page.evaluate(() => { window.Worker = window.__nativeWorker; });
+    await page.locator('#prepare-job').locator('..').evaluate(element => element.open = true);
+    await page.locator('#budget').fill('100'); await page.locator('#prepare-job').click(); await page.locator('#job-results').waitFor({ state: 'visible' });
+    await page.locator('#handoff-consent').check();
+    await page.locator('#budget').fill(''); await page.locator('#prepare-job').click(); await page.locator('#error').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#job-results').isVisible(), false, 'a rejected new request must revoke the old handoff preview');
+    assert.equal(await page.locator('#handoff-consent').isChecked(), false);
+    results.push({ lang, failedImportRevokesPreview: true, failedPlanRevokesHandoff: true, pendingWorkerSerialized: true, stoppedWorkPreserved: true, lateCompletionIgnored: true, rollbackOnlyToChosenVersion: true });
+  }
   for (const { page, errors, network } of pages) { assert.deepEqual(errors, [], 'No browser errors or CSP violations'); assert.deepEqual(network, [], 'No external network requests'); if (page !== noJS) assert.equal(await page.evaluate(() => window.__walletCalls), 0); }
   fs.writeFileSync(path.join(evidenceDir, 'evidence.json'), JSON.stringify({ browser: browser.version(), platform: process.platform, provider: 'none', results, realUserSessions: 'NOT_RUN', assistiveTechnologyUserSessions: 'NOT_RUN', conformanceCertification: false }, null, 2) + '\n');
   console.log(`SUCCESSOR browser checks passed: ${results.length} scenarios; actual Chromium ${browser.version()}; real-user/assistive-technology sessions not claimed.`);

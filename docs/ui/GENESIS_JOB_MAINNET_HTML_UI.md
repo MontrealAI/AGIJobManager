@@ -1,4 +1,4 @@
-# USDC standalone console v1.16.0
+# USDC standalone console v1.16.1
 
 v1.13.0 retains the v1.0.5 protocol notices unchanged and links the [legal center](../LEGAL/README.md). Acknowledgement starts unchecked, is never restored from browser storage, and must be renewed after account/network/manager changes or page restoration. Withdrawing acknowledgement also cancels a pending transaction review. This is a local safeguard; the operator must supply its own legally appropriate service terms and acceptance process. The console retains the v1.0.5 separate public-content check for publishing text/links and IPFS uploads. It does not scan for every personal detail or restrict direct contract calls.
 

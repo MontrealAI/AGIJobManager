@@ -46,6 +46,7 @@ export function builderArtifacts({ commit, version } = {}) {
   const workerSource = "'use strict';\n" + worker.code + `\nself.onmessage = async ({data}) => { try { let result; const p = data.payload;
     if (data.operation === 'run') result = await ${worker.names[0]}.runCandidate(p.state, p.variant, p.sourceIdentity);
     else if (data.operation === 'inspect') result = await ${worker.names[0]}.inspectCapsule(p.raw);
+    else if (data.operation === 'restore') result = await ${worker.names[0]}.restoreCapsule(p.inspected, p.confirmed);
     else if (data.operation === 'plan') result = await ${worker.names[1]}.prepareImprovement(p.state, p.options);
     else throw Error('OPERATION');
     self.postMessage({result}); } catch (error) { self.postMessage({error:error.message, code:error.code || error.message, failureState:error.failureState || null}); } };`;
