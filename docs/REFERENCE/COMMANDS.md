@@ -49,6 +49,11 @@ Use [the script guide](../SCRIPTS_REFERENCE.md) for purpose and authority and [t
 | `npm run size` | `node scripts/check-bytecode-size.js` |
 | `npm run slither` | `./scripts/security/run-slither.sh` |
 | `npm run slither:extended` | `bash scripts/security/run-slither-extended.sh` |
+| `npm run successor` | `node scripts/successor/cli.mjs` |
+| `npm run successor:browser` | `node scripts/successor/browser-test.mjs` |
+| `npm run successor:build` | `node scripts/successor/build.mjs` |
+| `npm run successor:rehearse` | `node scripts/successor/rehearse.mjs` |
+| `npm run successor:test` | `node --test scripts/successor/core.test.mjs scripts/successor/portable.test.mjs scripts/successor/worker.test.mjs` |
 | `npm run test` | `npm run build && node scripts/test-contract-shard.js 0 1` |
 | `npm run test:shard` | `node scripts/test-contract-shard.js` |
 | `npm run test:simulation` | `python3 experiments/workforce-10000/test_simulation.py` |

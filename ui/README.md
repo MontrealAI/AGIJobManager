@@ -1,4 +1,4 @@
-# AGIJobManager UI — v1.15.0
+# AGIJobManager UI — v1.16.0
 
 Use the [release status and verified assets](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.14.0), matching [repository artifact](agijobmanager-usdc.html), and [operator guide](../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). Verified v0.9.6 and v1.13.0 managers share the required ABI and deployed runtime bytecode; v1.13.0 construction initializes NFT admission as disabled. Existing manager settings and job snapshots are unchanged. This console retains the v0.9.6 saved-context namespace, rechecking wallet, chain and manager before writes. v0.9.5 and older managers lack getJobBonds; keep their jobs on their original interfaces. See [compatibility](../docs/qualification/OPERATIONS_V097.md). No live manager, recipient wallets or production owner is supplied by default.
 

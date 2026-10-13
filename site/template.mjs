@@ -56,7 +56,7 @@ export function render(t, data) {
   <a class="skip" href="#main">${e(t.skip)}</a>
   <header class="header"><div class="nav-wrap">
     <a class="brand" href="${fr ? "./" : "./"}" aria-label="AGI Jobs"><img src="${base}assets/mark.svg" alt="" width="36" height="36"><span>AGI Jobs<small>${fr ? "Faisons avancer vos idées" : "Let’s make it happen"}</small></span></a>
-    <nav aria-label="${fr ? "Navigation principale" : "Main navigation"}">${[["employer-welcome", t.easyStart.navLabel], ["how-it-works", t.nav[0]], ["resources", t.nav[3]]].map(([id, label]) => `<a href="#${id}">${e(label)}</a>`).join("")}</nav>
+    <nav aria-label="${fr ? "Navigation principale" : "Main navigation"}">${[["employer-welcome", t.easyStart.navLabel], ["how-it-works", t.nav[0]], ["resources", t.nav[3]]].map(([id, label]) => `<a href="#${id}">${e(label)}</a>`).join("")}<a href="./successor/">${e(t.successor.nav)}</a></nav>
     <div class="nav-actions"><button id="home-larger-text" type="button" disabled hidden aria-pressed="false"><span aria-hidden="true">Aa</span> ${e(t.easyStart.largerText)}</button><a class="language" href="${fr ? "../" : "./fr/"}" lang="${fr ? "en" : "fr"}" hreflang="${fr ? "en" : "fr"}">${e(t.language)}</a><a class="button button-small" data-employer-entry="header" href="./employers/">${e(t.easyStart.cta)} <span aria-hidden="true">→</span></a></div>
   </div></header>
   <main id="main">
@@ -70,6 +70,7 @@ export function render(t, data) {
       <aside class="home-preview" aria-label="${e(t.heroPreview.label)}"><p class="preview-label"><span aria-hidden="true">✦</span> ${e(t.heroPreview.label)}</p><blockquote>${e(t.heroPreview.quote)}</blockquote><ol class="preview-points">${t.heroPreview.points.map(([title, text], i) => `<li><span class="number" aria-hidden="true">${i + 1}</span><div><h3>${e(title)}</h3><p>${e(text)}</p></div></li>`).join("")}</ol><p class="preview-note">${e(t.heroPreview.note)}</p></aside>
     </div>
     </section>
+    <section id="successor-welcome" class="section container" aria-labelledby="successor-title"><p class="eyebrow">SUCCESSOR Ω</p><h2 id="successor-title">${e(t.successor.title)}</h2><p class="section-intro">${e(t.successor.description)}</p><div class="actions"><a class="button" data-successor-entry="home" href="./successor/">${e(t.successor.cta)} <span aria-hidden="true">→</span></a><span class="reassurance">${e(t.successor.note)}</span></div></section>
     <section id="employer-welcome" class="section container" aria-labelledby="welcome-title">
       <div class="welcome-heading"><p class="eyebrow">${e(t.easyStart.eyebrow)}</p><h2 id="welcome-title">${e(t.easyStart.title)}</h2><p class="section-intro">${e(t.easyStart.intro)}</p></div>
       <div class="welcome-examples">${t.easyStart.examples.map(([title, text], i) => `<article><span class="welcome-icon" aria-hidden="true">${["↗", "⇄", "▤", "≡", "▥", "+"][i]}</span><h3>${e(title)}</h3><p>${e(text)}</p></article>`).join("")}</div>

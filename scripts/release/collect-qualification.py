@@ -8,7 +8,7 @@ import re
 import subprocess
 import tempfile
 import zipfile
-from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, require, valid_sha, validate_qualification, verify_assets, sha
+from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, BUILDER_ASSETS, require, valid_sha, validate_qualification, verify_assets, sha
 
 root = pathlib.Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser(description=__doc__)
@@ -60,13 +60,13 @@ with tempfile.TemporaryDirectory(prefix='v114-artifact-') as temp:
         result = subprocess.run(['gh', 'api', f'repos/{REPOSITORY}/actions/artifacts/{artifact["id"]}/zip'], cwd=root, stdout=stream, stderr=subprocess.PIPE, timeout=180)
     require(result.returncode == 0 and 'sha256:' + sha(downloaded.read_bytes()) == artifact['digest'], 'Candidate artifact download/digest mismatch')
     with zipfile.ZipFile(downloaded) as archive:
-        allowed = {f'AGIJobManager-{TAG}-COMPLETE.zip', 'agijobmanager-usdc.html', 'RELEASE_MANIFEST.json', 'SHA256SUMS.txt'}
+        allowed = {f'AGIJobManager-{TAG}-COMPLETE.zip', 'agijobmanager-usdc.html', 'RELEASE_MANIFEST.json', 'SHA256SUMS.txt'} | BUILDER_ASSETS
         require(set(archive.namelist()) == allowed and len(archive.infolist()) == len(allowed), 'Unexpected artifact contents')
         for name in allowed:
             (args.out / name).write_bytes(archive.read(name))
 config['candidateArtifact'] = {k: artifact[k] for k in ['id', 'name', 'digest', 'size_in_bytes']}
 digests = verify_assets(args.out)
-config['artifactDigests'] = {n: d for n, d in digests.items() if n != 'SHA256SUMS.txt'}
+config['artifactDigests'] = {n: d for n, d in digests.items() if n != 'SHA256SUMS.txt'} | BUILDER_ASSETS
 manifest = json.loads((args.out / 'RELEASE_MANIFEST.json').read_text())
 require(manifest['sourceCommit'] == args.source and manifest['sourceTree'] == config['sourceTree'], 'Candidate manifest source differs')
 subprocess.run(['python3', 'scripts/release/verify-package.py', str(args.out.resolve())], cwd=root, check=True)

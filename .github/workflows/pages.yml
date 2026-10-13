@@ -18,6 +18,7 @@ on:
     paths:
       - 'site/**'
       - 'scripts/site/**'
+      - 'scripts/successor/**'
       - 'ui/agijobmanager-usdc.html'
       - 'ui/dist-ipfs/agijobmanager.html'
       - 'config/usdc-deployment.json'
@@ -31,6 +32,7 @@ on:
     paths:
       - 'site/**'
       - 'scripts/site/**'
+      - 'scripts/successor/**'
       - 'ui/agijobmanager-usdc.html'
       - 'ui/dist-ipfs/agijobmanager.html'
       - 'config/usdc-deployment.json'
@@ -51,7 +53,7 @@ jobs:
   build:
     name: Build and check website
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
@@ -79,14 +81,33 @@ jobs:
           node --check site/assets/app.mjs
           node --check site/assets/employer.mjs
           node --test scripts/site/employer-model.test.mjs
+      - name: SUCCESSOR local and adversarial checks
+        run: |
+          npm run successor:test
+          node --test scripts/successor/preservation.test.mjs
       - name: Install browser test dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm --prefix ui ci --ignore-scripts
       - name: Install test browser
         run: npx playwright install --with-deps chromium
       - name: Verify mobile, desktop and bilingual interactions
         run: |
           node scripts/site/browser-test.mjs
           node scripts/site/employer-browser-test.mjs
+      - name: SUCCESSOR browser, accessibility and isolated worker rehearsal
+        run: |
+          npm run successor:browser
+          npm run successor:rehearse
+      - name: Retain SUCCESSOR checks and screenshots
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SUCCESSOR-evidence-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            build/successor-browser/
+            build/successor-rehearsal/
+          if-no-files-found: error
       - name: Upload Pages artifact
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4

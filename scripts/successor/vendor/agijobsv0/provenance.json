@@ -1,0 +1,47 @@
+{
+  "repository": "https://github.com/MontrealAI/AGIJobsv0",
+  "revision": "9ea22d49414751a49f7f8cd9d9e65c26e8317570",
+  "scope": "Unmodified historical workshop verifier and transitive source dependencies; browser runtime does not include this Node-only verifier. Apache-2.0 Alpha code retains its SPDX and license.",
+  "files": [
+    {
+      "path": "scripts/pages/verify-successor-build.mjs",
+      "sha256": "0fee93b642f9c692e5be6f41c4f005b83238b8f3af622b7e2acbacd464d27099"
+    },
+    {
+      "path": "scripts/pages/vendor/alpha-successor/engine.mjs",
+      "sha256": "38c4f38978bf9fc29f207bae3adee0755bc6530d04502a36c491cc430787e488"
+    },
+    {
+      "path": "scripts/pages/vendor/alpha-successor/model.mjs",
+      "sha256": "e5368e8f44c05e33a92a8f6bd6cd37583e121d07119dde39c71f1484798bbf5b"
+    },
+    {
+      "path": "scripts/pages/vendor/alpha-successor/provenance.json",
+      "sha256": "4700dba7a51534de4f729dc32499215d520b464e971962257f57f933dc81520e"
+    },
+    {
+      "path": "packages/successor-core/src/integrity.mjs",
+      "sha256": "164000134cc9c8b54209c420a348e3e5c324ebf7ff8f71fc84dc44812345c428"
+    },
+    {
+      "path": "packages/successor-core/src/domain.mjs",
+      "sha256": "2869bb750a408e12ada19f6d0b216d47c3b9f67fc66039db4372dae8430e47a3"
+    },
+    {
+      "path": "packages/successor-core/src/templates.mjs",
+      "sha256": "bc035b1c38b36d2db24031ac92fb193946df9cf4f180120394506a8802be2b31"
+    },
+    {
+      "path": "packages/successor-core/src/compiler.mjs",
+      "sha256": "5e4fc86d78af7a22e915d8b19803fc219cb68b9b73201f47cf1f643f19380762"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "70842e0e7ae73b3ce65baa06a1c62b466bdb694570301969031cc48d9ac705d1"
+    },
+    {
+      "path": "ALPHA-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    }
+  ]
+}

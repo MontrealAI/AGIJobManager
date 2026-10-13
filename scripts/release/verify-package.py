@@ -6,7 +6,7 @@ import stat
 import subprocess
 import tempfile
 import zipfile
-from release_common import TAG, LIMIT, require, sha, verify_assets, source_path
+from release_common import TAG, LIMIT, BUILDER_ASSETS, require, sha, verify_assets, source_path
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('assets', type=pathlib.Path)
@@ -44,6 +44,13 @@ with tempfile.TemporaryDirectory(prefix='agijobmanager-package-smoke-') as temp,
             target.write_bytes(data)
             target.chmod(mode & 0o777)
     require((pathlib.Path(temp) / 'agijobmanager-usdc.html').read_bytes() == (args.assets / 'agijobmanager-usdc.html').read_bytes(), 'Standalone console differs')
+    source_dir = pathlib.Path(temp) / 'source'
+    (source_dir / 'SOURCE.json').write_text(json.dumps({'commit': manifest['sourceCommit'], 'version': TAG[1:]}))
+    regenerated = pathlib.Path(temp) / 'rebuilt'
+    subprocess.run(['node', 'scripts/successor/build.mjs', '--out', str(regenerated)], cwd=source_dir, check=True)
+    for name in BUILDER_ASSETS:
+        require((regenerated / name).read_bytes() == (args.assets / name).read_bytes() == (pathlib.Path(temp) / name).read_bytes(), 'Clean Builder rebuild differs: ' + name)
+    subprocess.run(['node', '--test', 'scripts/successor/portable.test.mjs'], cwd=source_dir, check=True)
     subprocess.run(['node', 'scripts/release/verify-usdc-ui.mjs', '.'], cwd=pathlib.Path(temp) / 'source', check=True)
     subprocess.run(['python3', 'scripts/release/test-release-gates.py'], cwd=pathlib.Path(temp) / 'source', check=True)
 print('Verified complete inventory and clean-extraction offline smoke checks. No wallet, credentials or network required.')

@@ -7,8 +7,9 @@ import pathlib
 import stat
 import subprocess
 import tarfile
+import tempfile
 import zipfile
-from release_common import TAG, TITLE, LIMIT, REPOSITORY, sha, require, source_path
+from release_common import TAG, TITLE, LIMIT, BUILDER_ASSETS, REPOSITORY, sha, require, source_path
 
 root = pathlib.Path(__file__).resolve().parents[2]
 
@@ -37,6 +38,20 @@ def package(out):
         payload[name] = (payload[f'source/docs/releases/{TAG}/{name}'][0], stat.S_IFREG | 0o644)
     for name, source_name in [('agijobmanager-usdc.html', 'ui/agijobmanager-usdc.html'), ('LICENSE', 'LICENSE')]:
         payload[name] = payload['source/' + source_name]
+    # Build solely from the archived commit, never untracked working-tree inputs.
+    with tempfile.TemporaryDirectory(prefix='successor-release-build-') as temp:
+        extracted = pathlib.Path(temp) / 'source'
+        for name, (data, mode) in payload.items():
+            if name.startswith('source/') and stat.S_ISREG(mode):
+                target = pathlib.Path(temp) / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(data)
+        (extracted / 'SOURCE.json').write_text(json.dumps({'commit': source, 'version': TAG[1:]}))
+        generated = pathlib.Path(temp) / 'builder'
+        subprocess.run(['node', 'scripts/successor/build.mjs', '--out', str(generated)], cwd=extracted, check=True)
+        require({f.name for f in generated.iterdir()} == BUILDER_ASSETS, 'Builder release inventory differs')
+        for name in BUILDER_ASSETS:
+            payload[name] = ((generated / name).read_bytes(), stat.S_IFREG | 0o644)
     manifest = {'schemaVersion': 2, 'repository': REPOSITORY, 'tag': TAG, 'name': TITLE,
         'sourceCommit': source, 'sourceTree': tree, 'stage': 'source-package',
         'qualification': 'See the external QUALIFICATION.json accompanying an approved published release. This manifest alone is byte identity, not qualification.',
@@ -62,6 +77,8 @@ def package(out):
             archive.writestr(info, data, compresslevel=9)
     (out / 'agijobmanager-usdc.html').write_bytes(payload['agijobmanager-usdc.html'][0])
     (out / 'RELEASE_MANIFEST.json').write_bytes(manifest_bytes)
+    for name in BUILDER_ASSETS:
+        (out / name).write_bytes(payload[name][0])
     for file in out.iterdir():
         require(file.stat().st_size < LIMIT, 'Asset exceeds 450 MB')
     (out / 'SHA256SUMS.txt').write_text(''.join(f'{sha(f.read_bytes())}  {f.name}\n' for f in sorted(out.iterdir())))

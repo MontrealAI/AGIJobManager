@@ -1,0 +1,21 @@
+{
+  "schema": "successor-mission/v1",
+  "principal": "local-user-unverified",
+  "forbidden": "Private/personal data, unreviewed code, transactions and unsupported authority claims.",
+  "recovery": "Keep original files; roll back to a previously chosen version; never restore permissions.",
+  "kind": "analyst",
+  "language": "en",
+  "name": "",
+  "purpose": "Summarize public data with checkable totals.",
+  "rights": "Supplied synthetic example, MIT licensed.",
+  "input": "id,category,value\na1,Solar,12.50\na2,Wind,8.25\na3,Solar,3.75\na2,Wind,8.25\na4,Hydro,6.10",
+  "outputs": "report.html; result.json; method.json",
+  "success": "Exact category totals; identify repeated IDs; preserve source records",
+  "tools": "Reviewed local deterministic engine; no model/provider",
+  "limits": {
+    "network": false,
+    "spendUSDC": "0",
+    "maxRows": 1000,
+    "maxSeconds": 10
+  }
+}
