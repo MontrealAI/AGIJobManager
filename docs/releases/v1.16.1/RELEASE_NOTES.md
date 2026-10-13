@@ -1,0 +1,9 @@
+# SUCCESSOR Ω recovery and release verification
+
+This patch addresses recovery defects found in the v1.16.0 Builder. Worker execution now temporarily disables conflicting controls and serializes actions. Stop preserves the selected version and history even if a completion arrives late. Restore validation runs within the same cancellable time limit. A failed or cancelled import clears its preview and consent, so an older file cannot accidentally be restored. Rollback is offered only for a previously chosen version. Switching English/French retains the correct larger-text toggle state.
+
+The package verifier now accepts the complete published download set through explicit `--published` mode. It verifies qualification identity, source and asset bindings, then performs the same clean extraction and offline rebuild. Archive inventory and total expansion are checked before decompression; duplicate paths, path aliases and traversal through the retained contracts symlink are rejected. The publication workflow exercises this path before attestation and publication.
+
+Regression evidence includes a browser test that failed against v1.16.0, EN/FR held-worker and late-completion checks, fresh offline restore, and adversarial package checks. The existing contract, security, fork, UI and website gates remain mandatory for the exact PR and final main commits. Versioned security/fork source bindings retain previous reports unchanged and require fresh execution.
+
+Both useful local mission families, USDC draft integration, portable source and fixture worker remain available. No production contract, payment authority or A1–A5 intake HOLD changes. Real usability/assistive-technology sessions, independent organizational qualification and live-provider commissioning remain separate, unperformed external gates. A local test pass is not a universal quality or accessibility certification.

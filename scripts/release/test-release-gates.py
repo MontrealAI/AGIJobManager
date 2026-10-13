@@ -16,7 +16,7 @@ import unittest
 import zipfile
 from unittest.mock import Mock, patch
 from urllib.parse import quote
-from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, source_path, validate_qualification, verify_assets, sha
+from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, LIMIT, source_path, validate_qualification, verify_assets, sha
 
 PUBLISHER = Path(__file__).with_name('publish-release.py')
 SOURCE = 'a' * 40
@@ -447,6 +447,74 @@ class ReleaseUploadTests(unittest.TestCase):
         self.assertEqual([call.args for call in api.call_args_list],
                          [('releases/123/assets?per_page=100&page=1',),
                           ('releases/123/assets?per_page=100&page=2',)])
+
+
+class PackageVerificationTests(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory(); self.addCleanup(directory.cleanup)
+        self.out = Path(directory.name)
+        self.verifier = runpy.run_path(str(PUBLISHER.with_name('verify-package.py')))
+        self.manifest = {'sourceCommit': SOURCE, 'sourceTree': TREE, 'files': {}}
+        for name in {f'AGIJobManager-{TAG}-COMPLETE.zip', 'agijobmanager-usdc.html'} | BUILDER_ASSETS:
+            (self.out / name).write_bytes(('fixture ' + name).encode())
+        (self.out / 'RELEASE_MANIFEST.json').write_text(json.dumps(self.manifest))
+        self.config = {'repository': REPOSITORY, 'tag': TAG, 'name': TITLE, 'status': 'qualified',
+                       'sourceCommit': SOURCE, 'sourceTree': TREE, 'checkoutCommit': SOURCE,
+                       'requiredSourceRuns': {name: {} for name in WORKFLOWS},
+                       'artifactDigests': {p.name: sha(p.read_bytes()) for p in self.out.iterdir()}}
+        self.checksums()
+
+    def checksums(self):
+        (self.out / 'SHA256SUMS.txt').write_text(''.join(
+            f'{sha(p.read_bytes())}  {p.name}\n' for p in sorted(self.out.iterdir()) if p.name != 'SHA256SUMS.txt'))
+
+    def published(self):
+        (self.out / 'QUALIFICATION.json').write_text(json.dumps(self.config)); self.checksums()
+
+    def test_candidate_and_published_inventory_require_their_exact_mode(self):
+        verify = self.verifier['package_inventory']
+        self.assertEqual(verify(self.out)[0], self.manifest)
+        with self.assertRaises(ValueError): verify(self.out, published=True)
+        self.published()
+        with self.assertRaises(ValueError): verify(self.out)
+        self.assertEqual(verify(self.out, published=True)[0], self.manifest)
+
+    def test_published_identity_source_and_workflow_bindings(self):
+        for key, value in [('tag', 'v0.0.0'), ('repository', 'other/repo'), ('status', 'prepared'),
+                           ('sourceCommit', 'c' * 40), ('sourceTree', 'c' * 40), ('checkoutCommit', 'c' * 40),
+                           ('requiredSourceRuns', {})]:
+            original = self.config[key]; self.config[key] = value; self.published()
+            with self.subTest(key=key), self.assertRaises(ValueError): self.verifier['package_inventory'](self.out, published=True)
+            self.config[key] = original
+
+    def test_recomputed_checksums_do_not_override_qualified_asset_bindings(self):
+        self.published(); (self.out / 'My-SUCCESSOR-Omega-en.html').write_text('substituted'); self.checksums()
+        with self.assertRaisesRegex(ValueError, 'Qualification asset binding'): self.verifier['package_inventory'](self.out, published=True)
+
+    def test_qualification_symlink_is_rejected(self):
+        target = self.out / 'outside.json'; target.write_text(json.dumps(self.config))
+        (self.out / 'QUALIFICATION.json').symlink_to(target)
+        with self.assertRaises(ValueError): self.verifier['package_inventory'](self.out, published=True)
+
+    def test_zip_expansion_is_bounded_before_any_entry_is_read(self):
+        manifest = {'files': {'source/README.md': {}, 'source/LICENSE': {}}}
+        entries = []
+        for name in [*manifest['files'], 'RELEASE_MANIFEST.json']:
+            item = zipfile.ZipInfo(f'AGIJobManager-{TAG}/' + name)
+            item.external_attr = (stat.S_IFREG | 0o644) << 16
+            item.file_size = LIMIT // 2
+            entries.append(item)
+        archive = Mock(); archive.infolist.return_value = entries
+        with self.assertRaisesRegex(ValueError, 'expanded size'): self.verifier['archive_inventory'](archive, manifest)
+        archive.read.assert_not_called()
+
+    def test_duplicate_or_unsafe_zip_entries_are_rejected_before_read(self):
+        for name in ['source/../outside', 'source/hardhat/contracts/AGIJobManager.sol', 'README.md/', 'source/README.md']:
+            item = zipfile.ZipInfo(f'AGIJobManager-{TAG}/' + name); item.external_attr = (stat.S_IFREG | 0o644) << 16
+            embedded = zipfile.ZipInfo(f'AGIJobManager-{TAG}/RELEASE_MANIFEST.json'); embedded.external_attr = item.external_attr
+            archive = Mock(); archive.infolist.return_value = [item, embedded] + ([item] if name.endswith('README.md') else [])
+            with self.subTest(name=name), self.assertRaises(ValueError): self.verifier['archive_inventory'](archive, {'files': {name: {}}})
+            archive.read.assert_not_called()
 
 
 if __name__ == '__main__':
