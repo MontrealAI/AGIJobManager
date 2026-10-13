@@ -373,7 +373,9 @@
     "scripts/economics/workforce.cjs": "ae2393a86dd395431ec8311acc8fcaedc3be30ec9d0561bb082256941170006f",
     "ui/agijobmanager-usdc.html": "2dc7e7cf4be00bc40868a242e6279755932fdf737d9df9185bcd0a257baa649f",
     "ui/dist-ipfs/agijobmanager.html": "cd237a1c154db249c5c31ce1110fc98086b6a067ec0c35fbcb4bf9fe9c522dc4",
-    "agijobmanager.html": "cd237a1c154db249c5c31ce1110fc98086b6a067ec0c35fbcb4bf9fe9c522dc4"
+    "agijobmanager.html": "cd237a1c154db249c5c31ce1110fc98086b6a067ec0c35fbcb4bf9fe9c522dc4",
+    "scripts/security/slither-reviewed-findings.json": "13ef0884a308a8e74f79d1f09ec2286930ee828468d9033ec83b2578e1d2f0b3",
+    "docs/qualification/mainnet-cutover.json": "68554e5516898bf1767d864438aa6d3cf85644d09ec65d21c77ba19562862cec"
   },
   "mermaidBlocks": {
     "docs/AGIJOBMANAGER.md": [
