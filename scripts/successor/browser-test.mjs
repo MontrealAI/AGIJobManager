@@ -95,7 +95,7 @@ try {
     // Hold a real worker response to exercise a user interaction during computation,
     // then deliver it after Stop to cover a late completion without timing guesses.
     await page.evaluate(() => {
-      const NativeWorker = window.Worker;
+      const NativeWorker = window.Worker; window.__nativeWorker = NativeWorker;
       window.Worker = class extends NativeWorker {
         set onmessage(callback) { super.onmessage = event => { window.__deliverWorker = () => callback(event); }; }
       };
@@ -118,7 +118,14 @@ try {
     await page.locator('#rollback').click();
     const recovered = JSON.parse(await download(page, 'download-capsule', path.join(evidenceDir, `recovered-${lang}.json`)));
     assert.equal(recovered.payload.state.active, before.payload.state.active);
-    results.push({ lang, failedImportRevokesPreview: true, pendingWorkerSerialized: true, stoppedWorkPreserved: true, lateCompletionIgnored: true, rollbackOnlyToChosenVersion: true });
+    await page.evaluate(() => { window.Worker = window.__nativeWorker; });
+    await page.locator('#prepare-job').locator('..').evaluate(element => element.open = true);
+    await page.locator('#budget').fill('100'); await page.locator('#prepare-job').click(); await page.locator('#job-results').waitFor({ state: 'visible' });
+    await page.locator('#handoff-consent').check();
+    await page.locator('#budget').fill(''); await page.locator('#prepare-job').click(); await page.locator('#error').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#job-results').isVisible(), false, 'a rejected new request must revoke the old handoff preview');
+    assert.equal(await page.locator('#handoff-consent').isChecked(), false);
+    results.push({ lang, failedImportRevokesPreview: true, failedPlanRevokesHandoff: true, pendingWorkerSerialized: true, stoppedWorkPreserved: true, lateCompletionIgnored: true, rollbackOnlyToChosenVersion: true });
   }
   for (const { page, errors, network } of pages) { assert.deepEqual(errors, [], 'No browser errors or CSP violations'); assert.deepEqual(network, [], 'No external network requests'); if (page !== noJS) assert.equal(await page.evaluate(() => window.__walletCalls), 0); }
   fs.writeFileSync(path.join(evidenceDir, 'evidence.json'), JSON.stringify({ browser: browser.version(), platform: process.platform, provider: 'none', results, realUserSessions: 'NOT_RUN', assistiveTechnologyUserSessions: 'NOT_RUN', conformanceCertification: false }, null, 2) + '\n');
