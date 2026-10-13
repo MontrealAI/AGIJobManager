@@ -66,7 +66,7 @@ with tempfile.TemporaryDirectory(prefix='v114-artifact-') as temp:
             (args.out / name).write_bytes(archive.read(name))
 config['candidateArtifact'] = {k: artifact[k] for k in ['id', 'name', 'digest', 'size_in_bytes']}
 digests = verify_assets(args.out)
-config['artifactDigests'] = {n: d for n, d in digests.items() if n != 'SHA256SUMS.txt'} | BUILDER_ASSETS
+config['artifactDigests'] = {n: d for n, d in digests.items() if n != 'SHA256SUMS.txt'}
 manifest = json.loads((args.out / 'RELEASE_MANIFEST.json').read_text())
 require(manifest['sourceCommit'] == args.source and manifest['sourceTree'] == config['sourceTree'], 'Candidate manifest source differs')
 subprocess.run(['python3', 'scripts/release/verify-package.py', str(args.out.resolve())], cwd=root, check=True)

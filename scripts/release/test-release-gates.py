@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import Mock, patch
 from urllib.parse import quote
 from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, source_path, validate_qualification, verify_assets, sha
@@ -163,6 +164,52 @@ class PublicationIntegrationTests(ReleaseGateTests):
     def test_successful_explicit_publication_path(self):
         self.publish();self.assertFalse(self.release['draft']);self.assertEqual(len(self.release['assets']),9)
         self.assertEqual(self.responses['git/ref/tags/'+TAG]['object']['sha'],SOURCE)
+    def test_collect_candidate_then_publish_preserves_every_asset_digest(self):
+        collector = self.script.with_name('collect-qualification.py')
+        collector.write_text(PUBLISHER.with_name('collect-qualification.py').read_text())
+        candidate_files = dict(self.original_assets)
+        candidate_files['SHA256SUMS.txt'] = ''.join(
+            f'{sha(data)}  {name}\n' for name, data in sorted(self.original_assets.items())).encode()
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, 'w') as archive:
+            for name, data in candidate_files.items():
+                archive.writestr(name, data)
+        artifact_bytes = buffer.getvalue()
+        artifact = self.responses['actions/artifacts/77']
+        artifact.update(digest='sha256:' + sha(artifact_bytes), size_in_bytes=len(artifact_bytes))
+        self.responses['actions/runs/6/artifacts?per_page=100&page=1'] = {'artifacts': [artifact]}
+        for index, workflow in enumerate(WORKFLOWS, 1):
+            self.responses[f'actions/workflows/{workflow}'] = self.responses[f'actions/workflows/{index+100}']
+            self.responses[f'actions/workflows/{index+100}/runs?head_sha={SOURCE}&event=push&per_page=100'] = {
+                'workflow_runs': [self.responses[f'actions/runs/{index}']]}
+        collected = self.root / 'collected'
+        package_checks = []
+        def collect_run(command, **kwargs):
+            if command == ['gh', 'api', f'repos/{REPOSITORY}/actions/artifacts/77/zip']:
+                kwargs['stdout'].write(artifact_bytes)
+                return subprocess.CompletedProcess(command, 0)
+            if command[:2] == ['python3', 'scripts/release/verify-package.py']:
+                self.assertEqual(command[2], str(collected.resolve()))
+                verify_assets(collected)
+                package_checks.append(command[2])
+                return subprocess.CompletedProcess(command, 0)
+            return self.fake_run(command, **kwargs)
+        argv = [str(collector), '--source', SOURCE, '--out', str(collected)]
+        with patch.dict(os.environ, self.env, clear=True), patch.object(sys, 'argv', argv), \
+                patch('subprocess.run', side_effect=collect_run), contextlib.redirect_stdout(io.StringIO()):
+            runpy.run_path(str(collector), run_name='__main__')
+        self.assertEqual(package_checks, [str(collected.resolve())])
+        self.assertEqual(self.mutations, [])
+        self.config = json.loads((collected / 'QUALIFICATION.json').read_text())
+        self.assertEqual(self.config['artifactDigests'], {
+            name: sha(data) for name, data in self.original_assets.items()})
+        self.assertEqual(set(verify_assets(collected, self.config)),
+                         set(candidate_files) | {'QUALIFICATION.json'})
+        self.out = collected
+        self.publish()
+        self.assertFalse(self.release['draft'])
+        self.assertEqual({asset['name'] for asset in self.release['assets']},
+                         set(candidate_files) | {'QUALIFICATION.json'})
     def test_dry_run_cannot_mutate(self):
         with self.assertRaises(SystemExit) as result:self.publish(False)
         self.assertEqual(result.exception.code,0);self.assertEqual(self.mutations,[])
