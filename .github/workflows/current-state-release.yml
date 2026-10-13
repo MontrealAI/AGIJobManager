@@ -49,18 +49,30 @@ jobs:
         run: |
           python3 scripts/release/test-release-gates.py
           python3 scripts/release/test-dependency-boundaries.py
+      - name: Resolve candidate identity from package metadata
+        id: candidate
+        run: |
+          python3 - <<'PY'
+          import os, re, sys
+          sys.path.insert(0, 'scripts/release')
+          from release_common import TAG
+          if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+', TAG):
+              raise ValueError('Unsupported release tag')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'tag={TAG}\n')
+          PY
       - name: Build and independently rebuild candidate assets
         run: |
           python3 scripts/release/package-release.py
           python3 scripts/release/package-release.py --out /tmp/agi-candidate-rebuild
-          diff -r build/release/v1.16.0-candidate /tmp/agi-candidate-rebuild
+          diff -r "build/release/${{ steps.candidate.outputs.tag }}-candidate" /tmp/agi-candidate-rebuild
       - name: Clean extraction and offline smoke test
-        run: python3 scripts/release/verify-package.py build/release/v1.16.0-candidate
+        run: python3 scripts/release/verify-package.py "build/release/${{ steps.candidate.outputs.tag }}-candidate"
       - name: Retain source-pinned candidate assets
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: AGIJobManager-v1.16.0-candidate-${{ github.event.pull_request.head.sha || github.sha }}
-          path: build/release/v1.16.0-candidate/
+          name: AGIJobManager-${{ steps.candidate.outputs.tag }}-candidate-${{ github.event.pull_request.head.sha || github.sha }}
+          path: build/release/${{ steps.candidate.outputs.tag }}-candidate/
           if-no-files-found: error
 # Deliberately no publish job and no contents:write permission.
 # Publication needs separately reviewed final-source CI metadata and authorization.
