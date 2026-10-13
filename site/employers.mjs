@@ -32,7 +32,7 @@ export function renderEmployer(lang, data) {
 <a class="skip" href="#main">${t('Skip to content', 'Aller au contenu')}</a>
 <header class="header"><div class="nav-wrap">
 <a class="brand" href="${home}"><span class="brand-mark"><img src="${base}assets/mark.svg" alt="" width="34" height="34"></span><span>AGI Jobs<small>${t('Let’s make it happen', 'Faisons avancer vos idées')}</small></span></a>
-<nav aria-label="${t('Main navigation', 'Navigation principale')}"><a href="#how">${t('How it works', 'Comment ça marche')}</a><a href="#questions">${t('Your questions', 'Vos questions')}</a></nav>
+<nav aria-label="${t('Main navigation', 'Navigation principale')}"><a href="#how">${t('How it works', 'Comment ça marche')}</a><a href="#questions">${t('Your questions', 'Vos questions')}</a><a href="../successor/">${t('Build my Ω', 'Créer mon Ω')}</a></nav>
 <div class="nav-actions"><button type="button" id="employer-larger-text" aria-pressed="false" disabled><span aria-hidden="true">Aa</span> ${t('Larger text', 'Texte agrandi')}</button><a class="language" data-employer-language="${fr ? 'en' : 'fr'}" href="${fr ? '../../employers/' : '../fr/employers/'}" lang="${fr ? 'en' : 'fr'}" hreflang="${fr ? 'en' : 'fr'}">${fr ? 'English' : 'Français'}</a></div>
 </div></header>
 <main id="main">

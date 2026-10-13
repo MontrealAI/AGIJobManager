@@ -24,6 +24,16 @@ Use **Larger text** if that makes reading more comfortable. The guided page has 
 
 [Explore the AGI Jobs website](https://montrealai.github.io/AGIJobManager/) · [Site en français](https://montrealai.github.io/AGIJobManager/fr/) · [Participant and operator guides](docs/START_HERE.md) · [Current USDC console](https://montrealai.github.io/AGIJobManager/agijobmanager-usdc.html)
 
+## SUCCESSOR Ω Builder for everyone
+
+Create a small working system, inspect its files, try a measured improvement, choose the version you want and download a copy you can restore. The free local path runs in your browser without an account, installation, wallet or provider key.
+
+**[Open the Builder](https://montrealai.github.io/AGIJobManager/successor/)** · **[Ouvrir le Créateur](https://montrealai.github.io/AGIJobManager/fr/successor/)** · [Guide and reproducible walkthrough](docs/successor/README.md).
+
+Two bounded local engines produce real editable artifacts: a public-data report with exact decimal totals, and a static website with semantic structure and optional section navigation. They use reviewed deterministic code. Custom missions can be specified and exported; their execution remains unavailable until a suitable runtime is commissioned. Local checks, independent qualification, payment and permission remain separate.
+
+**En français :** créez un rapport de données publiques ou un site simple, vérifiez le résultat, choisissez une amélioration et téléchargez votre système. Le parcours local fonctionne sans compte, portefeuille ni clé de fournisseur. [Guide français](docs/successor/GUIDE_FR.md).
+
 ## Recorded mainnet instance — ENS connected, activation on HOLD
 
 The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_USDC_2026-10-10.md) reports the verified helper at `0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC` connected to manager `0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7`, using **`job-<jobId>.usdc.jobs.agi.eth`**. At the recorded block **26,165,026**, intake was paused and no job had been posted. This is dated operator evidence, not a live status indicator or permission to fund jobs.
@@ -36,9 +46,9 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Source candidate: {{TAG}} — Mainnet Commissioning & Operator Readiness.**
+**Source candidate: {{TAG}} — SUCCESSOR Ω Builder for Everyone.**
 [Operate the already deployed instance](docs/OPERATIONS/COMMISSIONING.md) ·
-[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Candidate notes](docs/releases/v1.15.0/RELEASE_NOTES.md).
+[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Candidate notes](docs/releases/{{TAG}}/RELEASE_NOTES.md).
 
 **[previously published {{PREVIOUS_TAG}} COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/{{PREVIOUS_TAG}}/AGIJobManager-{{PREVIOUS_TAG}}-COMPLETE.zip)** · [previously published {{PREVIOUS_TAG}} qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/{{PREVIOUS_TAG}}/QUALIFICATION.json).
 The source candidate is not yet published and does not inherit the prior release's qualification.

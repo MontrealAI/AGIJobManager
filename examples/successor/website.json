@@ -1,0 +1,21 @@
+{
+  "schema": "successor-mission/v1",
+  "principal": "local-user-unverified",
+  "forbidden": "Private/personal data, unreviewed code, transactions and unsupported authority claims.",
+  "recovery": "Keep original files; roll back to a previously chosen version; never restore permissions.",
+  "kind": "website",
+  "language": "en",
+  "name": "",
+  "purpose": "Create a clear website for my public project.",
+  "rights": "Supplied synthetic example, MIT licensed.",
+  "input": "{\n  \"title\": \"A brighter neighbourhood\",\n  \"intro\": \"A public guide to sharing ideas, learning together and making our neighbourhood more welcoming.\",\n  \"sections\": [\n    {\n      \"heading\": \"Our idea\",\n      \"body\": \"Small practical projects can make a visible difference. Start with one useful improvement.\"\n    },\n    {\n      \"heading\": \"How to take part\",\n      \"body\": \"Choose a project, agree on a clear result and share what you learn.\"\n    },\n    {\n      \"heading\": \"What comes next\",\n      \"body\": \"Review the results together and choose the next improvement.\"\n    }\n  ]\n}",
+  "outputs": "index.html; editable source",
+  "success": "Readable content, semantic headings, keyboard navigation, no network",
+  "tools": "Reviewed local deterministic engine; no model/provider",
+  "limits": {
+    "network": false,
+    "spendUSDC": "0",
+    "maxRows": 1000,
+    "maxSeconds": 10
+  }
+}

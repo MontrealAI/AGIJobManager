@@ -3,11 +3,20 @@
   "title": "AGI Jobs — Votre prochain projet commence ici.",
   "description": "Préparez une demande claire pour un site, une présentation, une recherche ou un autre travail numérique. Des exemples simples et un brouillon gratuit avant toute publication ou tout paiement.",
   "skip": "Aller au contenu",
-  "nav": ["Fonctionnement", "Pour commencer", "Paiements", "Ressources"],
+  "nav": [
+    "Fonctionnement",
+    "Pour commencer",
+    "Paiements",
+    "Ressources"
+  ],
   "console": "Ouvrir la console USDC",
   "language": "English",
   "eyebrow": "Chaque bonne idée mérite un point de départ",
-  "hero": ["Votre prochain projet.", "Commence ici.", ""],
+  "hero": [
+    "Votre prochain projet.",
+    "Commence ici.",
+    ""
+  ],
   "intro": "Besoin d’un site, d’une présentation ou d’une recherche claire ? Décrivez ce que vous souhaitez faire réaliser avec l’aide d’agents IA. Nous vous guidons dans votre demande, une étape à la fois.",
   "start": "Montrez-moi comment ça marche",
   "source": "Explorer le code source",
@@ -19,7 +28,11 @@
     "Régler en USDC"
   ],
   "orbitCaption": "Un même mandat. Des responsabilités distinctes.",
-  "facts": ["USDC natif", "Ethereum · chaîne 1", "Code ouvert · MIT"],
+  "facts": [
+    "USDC natif",
+    "Ethereum · chaîne 1",
+    "Code ouvert · MIT"
+  ],
   "releaseLabel": "Version du code",
   "releaseLink": "Versions et téléchargements vérifiés",
   "releaseNote": "La console s’ouvre sans gestionnaire présélectionné. Utilisez le déploiement vérifié de votre opérateur.",
@@ -104,15 +117,24 @@
       "Attribuer",
       "Un Agent admissible prend le mandat et verse le dépôt requis."
     ],
-    ["Livrer", "L’Agent soumet le résultat et les preuves correspondantes."],
-    ["Valider", "Les validateurs admissibles examinent le travail et votent."],
+    [
+      "Livrer",
+      "L’Agent soumet le résultat et les preuves correspondantes."
+    ],
+    [
+      "Valider",
+      "Les validateurs admissibles examinent le travail et votent."
+    ],
     [
       "Régler",
       "Une transaction applique l’issue et enregistre paiements ou créances."
     ]
   ],
   "outcomes": [
-    ["Avant attribution", "L’employeur peut annuler."],
+    [
+      "Avant attribution",
+      "L’employeur peut annuler."
+    ],
     [
       "Sans demande de validation du travail livré",
       "Après l’échéance du mandat attribué, l’expiration peut être invoquée."
@@ -304,7 +326,12 @@
   "endTitle": "Que souhaitez-vous créer ?",
   "endText": "Choisissez un exemple, dites-nous ce qui compte et faites le premier pas. Vous pouvez modifier, enregistrer ou imprimer votre demande avant de décider de la publier.",
   "footer": "Travail utile. Ambition planétaire.",
-  "footerLinks": ["GitHub", "Versions", "Sécurité", "Droit et confidentialité"],
+  "footerLinks": [
+    "GitHub",
+    "Versions",
+    "Sécurité",
+    "Droit et confidentialité"
+  ],
   "built": "Généré à partir du commit",
   "noscript": "Les guides et les liens vers la console fonctionnent sans JavaScript. Activez-le pour choisir un rôle, filtrer les guides et utiliser le calculateur.",
   "easyStart": {
@@ -334,7 +361,10 @@
         "Mieux lire les données",
         "Des graphiques pour comprendre des informations publiques."
       ],
-      ["Autre chose", "Décrivez votre idée avec vos propres mots."]
+      [
+        "Autre chose",
+        "Décrivez votre idée avec vos propres mots."
+      ]
     ],
     "cta": "Préparer ma demande",
     "steps": [
@@ -375,5 +405,12 @@
         "Une page facile à lire sur téléphone, avec des liens qui fonctionnent."
       ]
     ]
+  },
+  "successor": {
+    "nav": "Créer mon Ω",
+    "title": "Créez quelque chose d’utile. Gardez votre Ω.",
+    "description": "Analysez des données publiques ou créez un site modifiable dans votre navigateur. Vérifiez un résultat concret, choisissez une amélioration et conservez une copie fonctionnelle.",
+    "cta": "Créer mon SUCCESSOR Ω",
+    "note": "Gratuit en local. Sans compte, portefeuille ni clé fournisseur."
   }
 }

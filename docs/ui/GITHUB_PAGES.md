@@ -18,11 +18,11 @@ The [GitHub Pages workflow](../../.github/workflows/pages.yml) builds, validates
 
 1. Edit the source files below on a branch.
 2. Open a pull request and wait for its checks, including **GitHub Pages / Build and check website**.
-3. Merge the reviewed change into `main`. Changes to website sources, published consoles, documentation, registry, package metadata or the workflow trigger publication.
-4. Open **Actions → GitHub Pages**, select the matching commit, and confirm that **Publish GitHub Pages** succeeds.
+3. Merge the reviewed change into `main`. Changes trigger validation, not publication.
+4. After reviewing the exact main SHA, use **Actions → GitHub Pages → Run workflow → main**, set `publish: true` and `source_commit` to that full SHA. Confirm that **Publish GitHub Pages** succeeds.
 5. Open the website and [build-info.json](https://montrealai.github.io/AGIJobManager/build-info.json). Its `sourceCommit` must match the deployed commit.
 
-To republish without editing, use **Actions → GitHub Pages → Run workflow → main**. Pull requests validate but never deploy. Manual runs on other branches do not deploy. Publishing the website does not publish a GitHub release, configure a live manager or activate intake.
+To republish without editing, use that same explicitly authorized dispatch with the exact current main SHA. Pull requests validate but never deploy. Manual runs on other branches do not deploy. Publishing the website does not publish a GitHub release, configure a live manager or activate intake.
 
 ## Source map
 
@@ -102,6 +102,10 @@ Optional AEP-002 publication uses the same complete-site builder and deployment 
 - **Build or browser check fails:** inspect the named step and fix the content, path or interaction before publishing. The failed build does not replace the published site.
 - **Deployment awaits an environment approval:** complete the repository’s existing `github-pages` approval policy; do not weaken it.
 - **The page looks old:** compare `build-info.json` with the successful deployment commit and reload without cached assets.
-- **Need to undo a website change:** revert its commit through a reviewed pull request and let the main workflow redeploy. Do not rewrite source history or force-push a deployment branch.
+- **Need to undo a website change:** revert its commit through a reviewed pull request and review the resulting main checks and explicitly dispatch that reverted SHA. Do not rewrite source history or force-push a deployment branch.
 
 Root-domain aliases outside this repository’s project path are managed separately.
+
+## SUCCESSOR Ω additions
+
+`successor/` and `fr/successor/` host the local Builder. `scripts/successor/build.mjs` generates both standalone editions and editable source under `successor/downloads/`. Build metadata binds source and artifact digests. Pages also requires local/adversarial, preservation, bilingual browser/axe and actual isolated-worker rehearsal checks. It retains synthetic screenshots/JSON as exact-source workflow artifacts. See [Builder instructions](../successor/README.md) and [acceptance limits](../successor/ACCEPTANCE.md). Existing routes and all employer actions remain.

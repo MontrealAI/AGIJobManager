@@ -1,4 +1,4 @@
-"""Exact-source v1.14.0 qualification and archive policy; no network or writes on import."""
+"""Exact-source qualification and archive policy; no network or writes on import."""
 import hashlib
 import json
 import pathlib
@@ -7,7 +7,8 @@ import stat
 
 REPOSITORY = 'MontrealAI/AGIJobManager'
 TAG = 'v' + json.loads((pathlib.Path(__file__).resolve().parents[2] / 'package.json').read_text())['version']
-TITLE = TAG + ' — Mainnet Commissioning & Operator Readiness'
+TITLE = TAG + ' — SUCCESSOR Ω Builder for Everyone'
+BUILDER_ASSETS = {'My-SUCCESSOR-Omega-en.html', 'My-SUCCESSOR-Omega-fr.html', 'SUCCESSOR-Omega-editable-source.zip', 'SOURCE_MANIFEST.json'}
 LIMIT = 450_000_000
 BASE = '191cf3590e5cdc08df1bb0af500ee28a91c8b010'
 WORKFLOWS = {
@@ -17,8 +18,10 @@ WORKFLOWS = {
     'security-verification.yml': ['security-verification'],
     'mainnet-fork.yml': ['mainnet-usdc'],
     'current-state-release.yml': ['qualify'],
+    'pages.yml': ['Build and check website'],
 }
 REQUIRED_STEPS = {
+    'pages.yml': ['Build and verify static pages', 'SUCCESSOR local and adversarial checks', 'Verify mobile, desktop and bilingual interactions', 'SUCCESSOR browser, accessibility and isolated worker rehearsal'],
     'ci.yml': ['Lint', 'Build', 'Bytecode size check', 'Test'],
     'ui.yml': ['Run npm audit --audit-level=low', 'Run npm run lint', 'Run npm run typecheck', 'Run npm run test', 'Run npm run test:e2e', 'Run npm run test:a11y', 'Run npm run verify:deterministic'],
     'docs.yml': ['Check docs freshness/integrity', 'ENS docs integrity'],
@@ -73,6 +76,10 @@ def validate_run(api, logs, workflow, item, source, *, publication=False):
     identity = api(f'actions/workflows/{item["workflowId"]}')
     require(identity['id'] == item['workflowId'] and identity['path'] == '.github/workflows/' + workflow, 'Workflow ID/path differs')
     jobs = run_jobs(api, item['id'], item['attempt'])
+    if workflow == 'pages.yml':
+        deployment = [j for j in jobs if j['name'] == 'Publish GitHub Pages']
+        require(len(deployment) == 1 and deployment[0]['status'] == 'completed' and deployment[0]['conclusion'] == 'skipped', 'Qualification must not publish Pages')
+        jobs = [j for j in jobs if j['name'] != 'Publish GitHub Pages']
     require(sorted(j['name'] for j in jobs) == sorted(WORKFLOWS[workflow]), 'Required jobs differ or are duplicated')
     for job in jobs:
         require(job['status'] == 'completed' and job['conclusion'] == 'success' and job.get('head_sha') == source and job.get('run_id') == item['id'], 'Required source job did not succeed on source')
@@ -92,7 +99,7 @@ def validate_qualification(config, api, logs, *, publication=False):
     source = config['sourceCommit']
     require(config.get('checkoutCommit') == source, 'Qualification did not check out exact source')
     require(api(f'git/commits/{source}')['tree']['sha'] == config['sourceTree'], 'Source tree differs')
-    require(set(config.get('requiredSourceRuns', {})) == set(WORKFLOWS), 'All six qualification workflows are required')
+    require(set(config.get('requiredSourceRuns', {})) == set(WORKFLOWS), 'All seven qualification workflows are required')
     for workflow, item in config['requiredSourceRuns'].items():
         validate_run(api, logs, workflow, item, source, publication=publication)
     return source
@@ -106,7 +113,7 @@ def verify_assets(out, config=None):
         f = out / name
         require(f.is_file() and not f.is_symlink() and f.stat().st_size < LIMIT and sha(f.read_bytes()) == digest, 'Asset digest/size differs: ' + name)
         expected[name] = digest
-    names = {f'AGIJobManager-{TAG}-COMPLETE.zip', 'agijobmanager-usdc.html', 'RELEASE_MANIFEST.json'}
+    names = {f'AGIJobManager-{TAG}-COMPLETE.zip', 'agijobmanager-usdc.html', 'RELEASE_MANIFEST.json'} | BUILDER_ASSETS
     if config is not None:
         names.add('QUALIFICATION.json')
     require(set(expected) == names and {p.name for p in out.iterdir()} == names | {'SHA256SUMS.txt'}, 'Unexpected or missing assets')

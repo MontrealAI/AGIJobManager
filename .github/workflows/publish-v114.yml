@@ -3,23 +3,25 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Enter PUBLISH_v1.15.0 after reviewing completed final-source qualification'
+        description: 'Enter PUBLISH_v1.16.0 after reviewing completed final-source qualification'
         required: true
         type: string
 permissions:
   contents: read
   actions: read
 concurrency:
-  group: publish-v1.15.0
+  group: publish-v1.16.0
   cancel-in-progress: false
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH_v1.15.0'
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH_v1.16.0'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: write
       actions: read
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
@@ -34,9 +36,20 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PUBLISH_CONFIRMATION: ${{ inputs.confirmation }}
           SOURCE_COMMIT: ${{ github.sha }}
-        run: python3 scripts/release/collect-qualification.py --source "$SOURCE_COMMIT" --out build/release/v1.15.0
+        run: python3 scripts/release/collect-qualification.py --source "$SOURCE_COMMIT" --out build/release/v1.16.0
+      - name: Attest exact-source release assembly
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: build/release/v1.16.0/*
+      - name: Verify artifact, repository, workflow and source attestation bindings
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for asset in build/release/v1.16.0/*; do
+            gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY" --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/publish-v114.yml" --signer-digest "$GITHUB_SHA" --source-digest "$GITHUB_SHA" --source-ref refs/heads/main --deny-self-hosted-runners
+          done
       - name: Validate evidence, create draft, verify assets, then publish
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PUBLISH_CONFIRMATION: ${{ inputs.confirmation }}
-        run: python3 scripts/release/publish-release.py --qualification build/release/v1.15.0/QUALIFICATION.json --assets build/release/v1.15.0 --publish
+        run: python3 scripts/release/publish-release.py --qualification build/release/v1.16.0/QUALIFICATION.json --assets build/release/v1.16.0 --publish

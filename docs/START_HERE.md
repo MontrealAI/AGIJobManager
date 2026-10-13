@@ -1,4 +1,6 @@
-# Start here — AGIJobManager v1.15.0
+# Start here — AGIJobManager v1.16.0
+
+**[SUCCESSOR Ω Builder for everyone](successor/README.md)** · [Guide français](successor/GUIDE_FR.md): run two useful local missions, improve, download, restore and rerun without a wallet.
 
 For the already commissioned instance, start with the [supported inspection and recovery workflow](OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
 

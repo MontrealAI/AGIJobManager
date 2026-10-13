@@ -1,6 +1,6 @@
 # AGIJobManager release scope
 
-**Current edition: v1.15.0.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
+**Current edition: v1.16.0.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
 
 ## Included in this edition
 
@@ -14,13 +14,13 @@ The public archive contains no private Fleet/Agent/Node application, production 
 
 ## Published download versus current source
 
-**v1.15.0 integrates strict explorer-input comparison and compiler-derived NFT registry readiness into standard read-only commands.** Production contracts, compiler settings, dependency resolutions, ABI and settlement rules are preserved. Private Fleet 1.10.0, Agent 1.16.0 and Node 2.17.0 are separate unchanged companion editions; this release does not qualify their hardware or execution.
+**v1.16.0 integrates strict explorer-input comparison and compiler-derived NFT registry readiness into standard read-only commands.** Production contracts, compiler settings, dependency resolutions, ABI and settlement rules are preserved. Private Fleet 1.10.0, Agent 1.16.0 and Node 2.17.0 are separate unchanged companion editions; this release does not qualify their hardware or execution.
 
 Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md` and `RELEASE_MANIFEST.json`, plus the published external `QUALIFICATION.json`, identify the qualified source and publication evidence. Main may contain later work; never combine its scripts with an older release's instructions or attestations. Current guides apply to their checkout. Historical releases, dated qualification records and legal notices retain their original versions.
 
 | Edition | Change introduced |
 | --- | --- |
-| [v1.15.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.15.0) | Strict Etherscan comparison, compiler-derived bounded NFT readiness and exact-source publication |
+| [v1.16.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.16.0) | Strict Etherscan comparison, compiler-derived bounded NFT readiness and exact-source publication |
 | [v1.13.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.13.0) | Reviewer-window reservations and separate pilot quality/economics targets |
 | [v1.12.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.12.0) | Participant project cash scenarios, cohort loss/supervision gates and private stale-observation rejection |
 | [v1.11.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.11.0) | Workforce policy V2, capacity planning and dependent-review time admission |

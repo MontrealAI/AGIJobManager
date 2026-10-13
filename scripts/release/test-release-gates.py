@@ -13,9 +13,10 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import Mock, patch
 from urllib.parse import quote
-from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, source_path, validate_qualification, verify_assets, sha
+from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, source_path, validate_qualification, verify_assets, sha
 
 PUBLISHER = Path(__file__).with_name('publish-release.py')
 SOURCE = 'a' * 40
@@ -40,12 +41,14 @@ class ReleaseGateTests(unittest.TestCase):
                     steps += ['Released USDC console browser checks', 'Simulation accounting regression checks', 'UI smoke test']
                 jobs.append({'id': job_id, 'name': name, 'head_sha': SOURCE, 'run_id': index, 'status': 'completed', 'conclusion': 'success', 'steps': [{'name': n, 'status': 'completed', 'conclusion': 'success'} for n in steps]})
                 self.logs[job_id] = f'2026-10-10T12:00:00Z QUALIFIED_SOURCE_COMMIT={SOURCE}\n'
+            if workflow == 'pages.yml':
+                jobs.append({'id': index*100+1, 'name': 'Publish GitHub Pages', 'status': 'completed', 'conclusion': 'skipped', 'steps': []})
             self.responses[f'actions/runs/{index}/attempts/1/jobs?per_page=100&page=1'] = {'jobs': jobs}
     def api(self, endpoint):
         return self.responses[endpoint]
     def verify(self):
         return validate_qualification(self.config, self.api, lambda job: self.logs[job], publication=True)
-    def test_complete_six_workflow_success(self):
+    def test_complete_seven_workflow_success(self):
         self.assertEqual(self.verify(), SOURCE)
     def test_missing_workflow(self):
         for workflow in WORKFLOWS:
@@ -58,7 +61,7 @@ class ReleaseGateTests(unittest.TestCase):
             with self.assertRaises(ValueError): self.verify()
             self.config[key]=previous
     def test_wrong_stale_incomplete_failed_or_skipped_runs(self):
-        for i in range(1,7):
+        for i in range(1,len(WORKFLOWS)+1):
             run=self.responses[f'actions/runs/{i}']
             for key,value in [('head_sha','c'*40),('event','workflow_dispatch'),('event','pull_request'),('head_branch','bootstrap/transport'),('path','.github/workflows/other.yml'),('workflow_id',999),('run_attempt',2),('status','in_progress'),('conclusion','failure'),('conclusion','cancelled'),('conclusion','skipped'),('repository',{'full_name':'wrong/repo'}),('head_repository',{'full_name':'wrong/repo'})]:
                 previous=run[key];run[key]=value
@@ -68,14 +71,14 @@ class ReleaseGateTests(unittest.TestCase):
         self.responses['actions/workflows/101']['path']='.github/workflows/other.yml'
         with self.assertRaises(ValueError):self.verify()
     def test_required_job_failures_and_duplicates(self):
-        for i in range(1,7):
+        for i in range(1,len(WORKFLOWS)+1):
             endpoint=f'actions/runs/{i}/attempts/1/jobs?per_page=100&page=1';original=self.responses[endpoint]['jobs']
             for altered in [[],original+original,[dict(j,conclusion='skipped') for j in original],[dict(j,status='in_progress') for j in original],[dict(j,head_sha='c'*40) for j in original],[dict(j,name='renamed') for j in original]]:
                 self.responses[endpoint]['jobs']=altered
                 with self.assertRaises(ValueError):self.verify()
             self.responses[endpoint]['jobs']=original
     def test_each_required_step_must_execute(self):
-        for i in range(1,7):
+        for i in range(1,len(WORKFLOWS)+1):
             for job in self.responses[f'actions/runs/{i}/attempts/1/jobs?per_page=100&page=1']['jobs']:
                 for step in job['steps']:
                     step['conclusion']='skipped'
@@ -112,6 +115,7 @@ class PublicationIntegrationTests(ReleaseGateTests):
         (self.out/f'AGIJobManager-{TAG}-COMPLETE.zip').write_bytes(b'mocked qualified package')
         (self.out/'agijobmanager-usdc.html').write_text('mocked console')
         (self.out/'RELEASE_MANIFEST.json').write_text(json.dumps({'sourceCommit':SOURCE,'sourceTree':TREE}))
+        for name in BUILDER_ASSETS: (self.out/name).write_bytes(('mocked builder '+name).encode())
         self.config['artifactDigests']={p.name:sha(p.read_bytes()) for p in self.out.iterdir()}
         self.release={'id':999,'draft':True,'tag_name':TAG,'target_commitish':SOURCE,'name':TITLE,'body':'Reviewed release notes','assets':[],'prerelease':False,'html_url':'https://github.invalid/release','upload_url':f'https://uploads.github.com/repos/{REPOSITORY}/releases/999/assets{{?name,label}}'}
         self.config['candidateArtifact']={'id':77,'name':f'AGIJobManager-{TAG}-candidate-{SOURCE}','digest':'sha256:'+'e'*64,'size_in_bytes':123}
@@ -158,8 +162,54 @@ class PublicationIntegrationTests(ReleaseGateTests):
         with patch.dict(os.environ,self.env,clear=True),patch.object(sys,'argv',argv),patch('subprocess.run',side_effect=self.fake_run),patch('subprocess.check_output',side_effect=self.local_read),contextlib.redirect_stdout(io.StringIO()):
             runpy.run_path(str(self.script),run_name='__main__')
     def test_successful_explicit_publication_path(self):
-        self.publish();self.assertFalse(self.release['draft']);self.assertEqual(len(self.release['assets']),5)
+        self.publish();self.assertFalse(self.release['draft']);self.assertEqual(len(self.release['assets']),9)
         self.assertEqual(self.responses['git/ref/tags/'+TAG]['object']['sha'],SOURCE)
+    def test_collect_candidate_then_publish_preserves_every_asset_digest(self):
+        collector = self.script.with_name('collect-qualification.py')
+        collector.write_text(PUBLISHER.with_name('collect-qualification.py').read_text())
+        candidate_files = dict(self.original_assets)
+        candidate_files['SHA256SUMS.txt'] = ''.join(
+            f'{sha(data)}  {name}\n' for name, data in sorted(self.original_assets.items())).encode()
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, 'w') as archive:
+            for name, data in candidate_files.items():
+                archive.writestr(name, data)
+        artifact_bytes = buffer.getvalue()
+        artifact = self.responses['actions/artifacts/77']
+        artifact.update(digest='sha256:' + sha(artifact_bytes), size_in_bytes=len(artifact_bytes))
+        self.responses['actions/runs/6/artifacts?per_page=100&page=1'] = {'artifacts': [artifact]}
+        for index, workflow in enumerate(WORKFLOWS, 1):
+            self.responses[f'actions/workflows/{workflow}'] = self.responses[f'actions/workflows/{index+100}']
+            self.responses[f'actions/workflows/{index+100}/runs?head_sha={SOURCE}&event=push&per_page=100'] = {
+                'workflow_runs': [self.responses[f'actions/runs/{index}']]}
+        collected = self.root / 'collected'
+        package_checks = []
+        def collect_run(command, **kwargs):
+            if command == ['gh', 'api', f'repos/{REPOSITORY}/actions/artifacts/77/zip']:
+                kwargs['stdout'].write(artifact_bytes)
+                return subprocess.CompletedProcess(command, 0)
+            if command[:2] == ['python3', 'scripts/release/verify-package.py']:
+                self.assertEqual(command[2], str(collected.resolve()))
+                verify_assets(collected)
+                package_checks.append(command[2])
+                return subprocess.CompletedProcess(command, 0)
+            return self.fake_run(command, **kwargs)
+        argv = [str(collector), '--source', SOURCE, '--out', str(collected)]
+        with patch.dict(os.environ, self.env, clear=True), patch.object(sys, 'argv', argv), \
+                patch('subprocess.run', side_effect=collect_run), contextlib.redirect_stdout(io.StringIO()):
+            runpy.run_path(str(collector), run_name='__main__')
+        self.assertEqual(package_checks, [str(collected.resolve())])
+        self.assertEqual(self.mutations, [])
+        self.config = json.loads((collected / 'QUALIFICATION.json').read_text())
+        self.assertEqual(self.config['artifactDigests'], {
+            name: sha(data) for name, data in self.original_assets.items()})
+        self.assertEqual(set(verify_assets(collected, self.config)),
+                         set(candidate_files) | {'QUALIFICATION.json'})
+        self.out = collected
+        self.publish()
+        self.assertFalse(self.release['draft'])
+        self.assertEqual({asset['name'] for asset in self.release['assets']},
+                         set(candidate_files) | {'QUALIFICATION.json'})
     def test_dry_run_cannot_mutate(self):
         with self.assertRaises(SystemExit) as result:self.publish(False)
         self.assertEqual(result.exception.code,0);self.assertEqual(self.mutations,[])

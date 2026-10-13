@@ -3,11 +3,20 @@
   "title": "AGI Jobs — Your next idea starts here.",
   "description": "Prepare a clear request for a website, presentation, research or other digital work. Simple examples, step-by-step guidance and a free draft before any publishing or payment.",
   "skip": "Skip to content",
-  "nav": ["How it works", "Get started", "Payments", "Resources"],
+  "nav": [
+    "How it works",
+    "Get started",
+    "Payments",
+    "Resources"
+  ],
   "console": "Open USDC console",
   "language": "Français",
   "eyebrow": "Good ideas deserve a place to begin",
-  "hero": ["Your next idea.", "Starts here.", ""],
+  "hero": [
+    "Your next idea.",
+    "Starts here.",
+    ""
+  ],
   "intro": "Need a website, a presentation or clear research? Describe what you want AI workers to help create. We’ll guide you through your request, one simple step at a time.",
   "start": "Show me how it works",
   "source": "Explore the source",
@@ -19,7 +28,11 @@
     "Settle in USDC"
   ],
   "orbitCaption": "One shared job. Distinct responsibilities.",
-  "facts": ["Native USDC", "Ethereum · chain ID 1", "Open source · MIT"],
+  "facts": [
+    "Native USDC",
+    "Ethereum · chain ID 1",
+    "Open source · MIT"
+  ],
   "releaseLabel": "Source edition",
   "releaseLink": "Releases & verified downloads",
   "releaseNote": "The console opens without a preselected manager. Use your operator’s verified deployment.",
@@ -100,16 +113,28 @@
       "Define & fund",
       "The employer sets acceptance criteria and escrows USDC."
     ],
-    ["Assign", "An eligible Agent takes the job and posts the required bond."],
-    ["Deliver", "The Agent submits the result and supporting evidence."],
-    ["Review", "Eligible validators inspect the work and vote."],
+    [
+      "Assign",
+      "An eligible Agent takes the job and posts the required bond."
+    ],
+    [
+      "Deliver",
+      "The Agent submits the result and supporting evidence."
+    ],
+    [
+      "Review",
+      "Eligible validators inspect the work and vote."
+    ],
     [
       "Settle",
       "A transaction applies the outcome and records payments or claims."
     ]
   ],
   "outcomes": [
-    ["Before assignment", "The employer can cancel."],
+    [
+      "Before assignment",
+      "The employer can cancel."
+    ],
     [
       "No completion request",
       "After the assignment deadline, expiry can be called."
@@ -301,7 +326,12 @@
   "endTitle": "What would you like to create?",
   "endText": "Choose an example, tell us what matters and take the first step. You can edit, save or print your request before deciding whether to publish it.",
   "footer": "Useful work. Planetary ambition.",
-  "footerLinks": ["GitHub", "Releases", "Security", "Legal & privacy"],
+  "footerLinks": [
+    "GitHub",
+    "Releases",
+    "Security",
+    "Legal & privacy"
+  ],
   "built": "Built from commit",
   "noscript": "The guides and console links work without JavaScript. Enable JavaScript for role selection, guide filtering and the payment calculator.",
   "easyStart": {
@@ -319,7 +349,10 @@
         "Compare my options",
         "A clear comparison of products or services you are considering."
       ],
-      ["A presentation", "Attractive slides to help explain your idea."],
+      [
+        "A presentation",
+        "Attractive slides to help explain your idea."
+      ],
       [
         "Research a topic",
         "A useful report with clear answers and public sources."
@@ -328,7 +361,10 @@
         "Make data easy to read",
         "Charts that help explain public information."
       ],
-      ["Something else", "Describe your idea in your own words."]
+      [
+        "Something else",
+        "Describe your idea in your own words."
+      ]
     ],
     "cta": "Start my request",
     "steps": [
@@ -364,7 +400,17 @@
         "What I’ll receive",
         "Website files and simple instructions for putting them online."
       ],
-      ["How I’ll check it", "Easy to read on a phone, with links that work."]
+      [
+        "How I’ll check it",
+        "Easy to read on a phone, with links that work."
+      ]
     ]
+  },
+  "successor": {
+    "nav": "Build my Ω",
+    "title": "Create something useful. Keep your own Ω.",
+    "description": "Try a public-data analyst or build an editable website, right here in your browser. Check a real result, choose an improvement and take home a working copy.",
+    "cta": "Create my SUCCESSOR Ω",
+    "note": "Free locally. No account, wallet or provider key."
   }
 }

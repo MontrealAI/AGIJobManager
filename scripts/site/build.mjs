@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { render } from "../../site/template.mjs";
 import { renderEmployer } from "../../site/employers.mjs";
+import { buildSuccessor } from "../successor/build.mjs";
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -47,6 +48,7 @@ if (
   );
 fs.rmSync(output, { recursive: true, force: true });
 fs.mkdirSync(path.join(output, "assets"), { recursive: true });
+const successor = buildSuccessor(path.join(output, 'successor/downloads'), { commit, version: pkg.version });
 for (const name of ["app.mjs", "payments.mjs", "style.css", "home.css", "mark.svg", "employer.mjs", "employer-model.mjs", "employer.css"])
   fs.copyFileSync(
     path.join(root, "site/assets", name),
@@ -68,6 +70,9 @@ for (const lang of ["en", "fr"]) {
   const employerDirectory = path.join(directory, "employers");
   fs.mkdirSync(employerDirectory, { recursive: true });
   fs.writeFileSync(path.join(employerDirectory, "index.html"), renderEmployer(lang, { commit, version: pkg.version }));
+  const successorDirectory = path.join(directory, 'successor');
+  fs.mkdirSync(successorDirectory, { recursive: true });
+  fs.writeFileSync(path.join(successorDirectory, 'index.html'), successor.pages[lang]);
 }
 const consoleHtml = read("ui/agijobmanager-usdc.html");
 for (const name of ["agijobmanager-usdc.html", "agijobmanagerv0.html"])
@@ -90,7 +95,7 @@ fs.writeFileSync(
 );
 fs.writeFileSync(
   path.join(output, "sitemap.xml"),
-  '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://montrealai.github.io/AGIJobManager/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/employers/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/employers/</loc></url></urlset>',
+  '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://montrealai.github.io/AGIJobManager/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/employers/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/employers/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/successor/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/successor/</loc></url></urlset>',
 );
 const files = {};
 function inventory(dir) {
@@ -117,6 +122,7 @@ fs.writeFileSync(
       sourceVersion: pkg.version,
       historicalEvidence: evidencePath,
       consoleSource: "ui/agijobmanager-usdc.html",
+      successorSource: successor.sourceManifest,
       files,
     },
     null,
