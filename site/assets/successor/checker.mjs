@@ -40,7 +40,7 @@ function closedMarkup(html, mission) {
   const tokens=html.match(/<[^>]*>|[^<]+/g)||[];
   if(tokens.join('')!==html || tokens[0]!=='<!doctype html>')return false;
   for(const token of tokens.slice(1)) {
-    if(!token.startsWith('<')) {if(token.trim() && !['title','style','h1','h2','p','a','caption','th','td'].includes(stack.at(-1)))return false;continue;}
+    if(!token.startsWith('<')) {if(!/^[\t\n\f\r ]*$/.test(token) && !['title','style','h1','h2','p','a','caption','th','td'].includes(stack.at(-1)))return false;continue;}
     const closing=token.match(/^<\/([a-z][a-z0-9]*)>$/);
     if(closing){if(stack.pop()!==closing[1])return false;continue;}
     const opening=token.match(/^<([a-z][a-z0-9]*)([^>]*)>$/);
