@@ -1,4 +1,4 @@
-# v1.16.1 mainnet qualification
+# v1.17.0 mainnet qualification
 
 **Unreleased source qualification remains pending.** The [ENS membership correction](qualification/ENS_MEMBERSHIP_REVOCATION.md) changes linked library bytecode. Historical qualification below does not qualify this change. Complete the [second-deployment release checklist](DEPLOYMENT/SECOND_MAINNET_RELEASE.md), full exact-source tests and independent final-source review before deployment.
 

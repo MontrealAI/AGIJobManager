@@ -46,7 +46,7 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Source candidate: {{TAG}} — SUCCESSOR Ω Builder for Everyone.**
+**Source candidate: {{TAG}} — ENS admission and deployment hardening.**
 [Operate the already deployed instance](docs/OPERATIONS/COMMISSIONING.md) ·
 [Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Candidate notes](docs/releases/{{TAG}}/RELEASE_NOTES.md).
 
