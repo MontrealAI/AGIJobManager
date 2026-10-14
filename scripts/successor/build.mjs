@@ -11,7 +11,7 @@ import { STYLE } from '../../site/assets/successor/missions.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const hash = (value, encoding = 'hex') => createHash('sha256').update(value).digest(encoding);
-export const SOURCE_FILES = ['site/assets/payments.mjs', 'site/assets/employer-model.mjs', ...['safe', 'missions', 'checker', 'model', 'jobs', 'archive', 'app'].map(name => `site/assets/successor/${name}.mjs`), 'site/assets/successor/style.css', 'site/successor.mjs', 'scripts/successor/build.mjs', 'scripts/successor/portable.test.mjs'];
+export const SOURCE_FILES = ['site/assets/payments.mjs', 'site/assets/employer-model.mjs', ...['safe', 'legacy-missions', 'legacy-checker', 'mapping', 'missions', 'checker', 'model', 'jobs', 'archive', 'app'].map(name => `site/assets/successor/${name}.mjs`), 'site/assets/successor/style.css', 'site/successor.mjs', 'scripts/successor/build.mjs', 'scripts/successor/portable.test.mjs'];
 
 // A deliberately small closed-module bundler for reviewed repository source.
 // It never processes imported capsules or downloaded source text.

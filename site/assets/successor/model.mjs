@@ -1,5 +1,7 @@
 import { fail, keys, text, canonical, clone, sha256, isHash, parseStrict, LIMITS, safePath, publicOnly } from './safe.mjs';
 import { ENGINE, validateMission, executeMission } from './missions.mjs';
+import { executeMission as executeLegacy } from './legacy-missions.mjs';
+import { checkArtifacts as checkLegacy } from './legacy-checker.mjs';
 import { checkArtifacts } from './checker.mjs';
 import { validateImprovement } from './jobs.mjs';
 
@@ -16,21 +18,21 @@ export async function createSystem(mission) {
   const state = { schema: SCHEMA, engine: ENGINE, mission: clone(mission), candidates: [], plans: [], active: null, chronicle: [], ...EVIDENCE_BOUNDARY };
   await appendEvent(state, 'mission-defined', await sha256(mission)); return state;
 }
-export async function freezeCandidate(mission, variant, sourceIdentity) {
+export async function freezeCandidate(mission, variant, sourceIdentity, engine = ENGINE) {
   validateMission(mission); fail(isHash(sourceIdentity), 'SOURCE_IDENTITY');
   const specification = clone(mission), specificationSha256 = await sha256(specification);
   // The specification/configuration is frozen before execution/checking.
-  const manifest = { engine: ENGINE, sourceSha256: sourceIdentity, specificationSha256, variant, tools: ['local-code'], permissions: [], provider: null };
-  const { files, gaps } = executeMission(specification, variant);
+  const manifest = { engine, sourceSha256: sourceIdentity, specificationSha256, variant, tools: ['local-code'], permissions: [], provider: null };
+  const { files, gaps } = (engine === 'successor-local/1' ? executeLegacy : executeMission)(specification, variant);
   const artifacts = await Promise.all(files.map(async f => ({ ...f, sha256: await sha256(f.content) })));
-  const result = { manifest, files: artifacts, gaps, checker: checkArtifacts(specification, variant, files) };
+  const result = { manifest, files: artifacts, gaps, checker: (engine === 'successor-local/1' ? checkLegacy : checkArtifacts)(specification, variant, files) };
   return { ...result, id: await sha256(result) };
 }
 export async function runCandidate(state, variant, sourceIdentity) {
   fail(state.candidates.length < LIMITS.candidates, 'CANDIDATE_LIMIT');
   const next = clone(state);
   let candidate;
-  try { candidate = await freezeCandidate(next.mission, variant, sourceIdentity); }
+  try { candidate = await freezeCandidate(next.mission, variant, sourceIdentity, next.engine); }
   catch (error) {
     const code = /^[A-Z_]{1,80}$/.test(error.code || '') ? error.code : 'RUN_FAILED';
     await appendEvent(next, 'run-failed', code);
@@ -69,7 +71,7 @@ export async function chooseCandidate(state, id, decision) {
 }
 export async function validateState(value, { reproduce = true } = {}) {
   keys(value, ['schema', 'engine', 'mission', 'candidates', 'plans', 'active', 'chronicle', ...Object.keys(EVIDENCE_BOUNDARY)], 'CAPSULE_FIELDS');
-  fail(value.schema === SCHEMA && value.engine === ENGINE, 'VERSION'); validateMission(value.mission);
+  fail(value.schema === SCHEMA && [ENGINE, 'successor-local/1'].includes(value.engine), 'VERSION'); validateMission(value.mission);
   for (const [key, expected] of Object.entries(EVIDENCE_BOUNDARY)) fail(value[key] === expected, 'AUTHORITY_NONE');
   fail(Array.isArray(value.plans) && value.plans.length <= 12, 'PLANS');
   for (const plan of value.plans) { await validateImprovement(plan); fail(plan.missionSha256 === await sha256(value.mission), 'PLAN_MISSION'); }
@@ -77,7 +79,7 @@ export async function validateState(value, { reproduce = true } = {}) {
   for (const candidate of value.candidates) {
     keys(candidate, ['manifest', 'files', 'gaps', 'checker', 'id'], 'CANDIDATE_FIELDS');
     keys(candidate.manifest, ['engine', 'sourceSha256', 'specificationSha256', 'variant', 'tools', 'permissions', 'provider'], 'MANIFEST_FIELDS');
-    fail(isHash(candidate.manifest.sourceSha256) && candidate.manifest.engine === ENGINE && candidate.manifest.provider === null && canonical(candidate.manifest.permissions) === '[]' && canonical(candidate.manifest.tools) === '["local-code"]', 'AUTHORITY_NONE');
+    fail(isHash(candidate.manifest.sourceSha256) && candidate.manifest.engine === value.engine && candidate.manifest.provider === null && canonical(candidate.manifest.permissions) === '[]' && canonical(candidate.manifest.tools) === '["local-code"]', 'AUTHORITY_NONE');
     fail(candidate.manifest.specificationSha256 === await sha256(value.mission), 'SPECIFICATION_CHANGED');
     fail(['baseline', 'improved'].includes(candidate.manifest.variant), 'VARIANT');
     fail(Array.isArray(candidate.files) && candidate.files.length <= 3, 'FILES');
@@ -85,10 +87,10 @@ export async function validateState(value, { reproduce = true } = {}) {
       keys(file, ['name', 'mediaType', 'content', 'sha256'], 'FILE_FIELDS'); safePath(file.name); text(file.content, LIMITS.output); fail(['text/html', 'application/json'].includes(file.mediaType), 'MEDIA_TYPE'); fail(file.sha256 === await sha256(file.content), 'ARTIFACT_CHANGED');
     }
     const { id, ...body } = candidate; fail(id === await sha256(body), 'CANDIDATE_CHANGED');
-    const checked = checkArtifacts(value.mission, candidate.manifest.variant, candidate.files);
+    const checked = (value.engine === 'successor-local/1' ? checkLegacy : checkArtifacts)(value.mission, candidate.manifest.variant, candidate.files);
     fail(canonical(candidate.checker) === canonical(checked), 'EVIDENCE_CHANGED');
     if (reproduce) {
-      const actual = executeMission(value.mission, candidate.manifest.variant);
+      const actual = (value.engine === 'successor-local/1' ? executeLegacy : executeMission)(value.mission, candidate.manifest.variant);
       fail(canonical(actual.files) === canonical(candidate.files.map(({ sha256: hash, ...file }) => file)) && canonical(actual.gaps) === canonical(candidate.gaps), 'REBUILD_MISMATCH');
     }
   }
@@ -97,7 +99,7 @@ export async function validateState(value, { reproduce = true } = {}) {
   let selected = null; const checked = new Set(), previouslySelected = new Set();
   for (const [index, event] of value.chronicle.entries()) {
     keys(event, ['sequence', 'action', 'subject', 'previous', 'sha256'], 'EVENT_FIELDS');
-    fail(['mission-defined', 'candidate-checked', 'keep', 'replace', 'rollback', 'restored', 'plan-prepared', 'run-failed'].includes(event.action), 'EVENT_ACTION');
+    fail(['mission-defined', 'candidate-checked', 'keep', 'replace', 'rollback', 'restored', 'plan-prepared', 'run-failed', 'method-reused', 'input-mapped'].includes(event.action), 'EVENT_ACTION');
     fail(event.sequence === index && event.previous === (index ? value.chronicle[index - 1].sha256 : null), 'CHRONICLE_CHAIN');
     const { sha256: hash, ...record } = event; fail(hash === await sha256(record), 'CHRONICLE_CHANGED');
     if (!index) fail(event.action === 'mission-defined' && event.subject === await sha256(value.mission), 'CHRONICLE_MISSION');
@@ -105,6 +107,8 @@ export async function validateState(value, { reproduce = true } = {}) {
     if (['keep', 'replace', 'rollback', 'candidate-checked'].includes(event.action)) fail(value.candidates.some(c => c.id === event.subject), 'CHRONICLE_CANDIDATE');
     if (event.action === 'candidate-checked') checked.add(event.subject);
     if (event.action === 'plan-prepared') fail(value.plans.some(p => p.commitment === event.subject), 'CHRONICLE_PLAN');
+    if (event.action === 'method-reused') { const reuse = parseStrict(event.subject, 2000); keys(reuse, ['parentCapsuleSha256', 'parentMissionSha256', 'parentCandidate', 'kind', 'variant'], 'REUSE_FIELDS'); fail(index === 1 && [reuse.parentCapsuleSha256,reuse.parentMissionSha256,reuse.parentCandidate].every(isHash) && reuse.kind === value.mission.kind && ['baseline','improved'].includes(reuse.variant), 'REUSE_LINEAGE'); }
+    if (event.action === 'input-mapped') { const mapping = parseStrict(event.subject, 2000); keys(mapping, ['originalSha256','normalizedSha256','mapping','decimalFormat'], 'MAPPING_FIELDS'); fail(isHash(mapping.originalSha256) && mapping.normalizedSha256 === await sha256(value.mission.input) && mapping.decimalFormat === 'dot-decimal-text', 'MAPPING_BINDING'); keys(mapping.mapping, ['id','category','value'], 'MAPPING_FIELDS'); fail(Object.values(mapping.mapping).every(v=>typeof v === 'string' && v.length > 0 && v.length <= 80) && new Set(Object.values(mapping.mapping)).size === 3, 'MAPPING_FIELDS'); }
     if (event.action === 'run-failed') fail(/^[A-Z_]{1,80}$/.test(event.subject), 'FAILURE_CODE');
     if (['keep', 'replace', 'rollback'].includes(event.action)) {
       fail(checked.has(event.subject), 'CHRONICLE_ORDER');
@@ -145,4 +149,17 @@ export async function restoreCapsule(inspected, confirmed) {
 export function readableSummary(state) {
   const fr = state.mission.language === 'fr', selected = state.candidates.find(c => c.id === state.active);
   return [(state.mission.name || 'SUCCESSOR Ω'), state.mission.purpose, '', (fr ? 'Mission : ' : 'Mission: ') + state.mission.kind, (fr ? 'Droits : ' : 'Rights: ') + state.mission.rights, (fr ? 'Version choisie : ' : 'Selected version: ') + (selected?.manifest.variant || (fr ? 'aucune' : 'none')), (fr ? 'Vérifications locales : ' : 'Local checks: ') + (selected ? String(selected.checker.passed) : '—'), '', fr ? 'Mesures locales uniquement. Aucune qualification indépendante, autorité, publication ou transaction. Les résultats enregistrés sont historiques : relancez les vérifications.' : 'Local measurements only. No independent qualification, authority, publication or transaction. Saved measurements are historical: rerun the checks.', '', fr ? 'Conservez le HTML autonome, le fichier JSON, les sources et leurs licences. Enregistrez un nouveau fichier après chaque modification. Un fichier et son empreinte peuvent être modifiés ensemble : ce journal local ne prouve pas son auteur.' : 'Keep the offline HTML, JSON capsule, editable sources and licenses. Save a new file after each change. A file and its checksum can be changed together: the local Chronicle does not prove authorship.', '', 'Chronicle:', ...state.chronicle.map(e => `${e.sequence + 1}. ${e.action}: ${e.subject}`)].join('\n') + '\n';
+}
+
+export function selectedMethod(state) {
+  return state.candidates.find(c => c.id === state.active)?.manifest.variant || (state.chronicle.find(e => e.action === 'method-reused') ? parseStrict(state.chronicle.find(e => e.action === 'method-reused').subject).variant : 'baseline');
+}
+export async function reuseSystem(parent, mission, confirmed) {
+  fail(confirmed === true, 'REUSE_CONFIRMATION'); await validateState(parent); validateMission(mission);
+  const selected = parent.candidates.find(c => c.id === parent.active); fail(selected?.checker.passed, 'SELECT_VERSION');
+  fail(mission.kind === parent.mission.kind && mission.kind !== 'custom', 'REUSE_KIND');
+  fail(mission.input !== parent.mission.input, 'REUSE_INPUT');
+  const parentCapsule = await exportCapsule(parent), next = await createSystem(mission);
+  await appendEvent(next, 'method-reused', canonical({parentCapsuleSha256:JSON.parse(parentCapsule).sha256,parentMissionSha256:await sha256(parent.mission),parentCandidate:selected.id,kind:mission.kind,variant:selected.manifest.variant}));
+  return {state:next,parentCapsule,variant:selected.manifest.variant};
 }

@@ -42,3 +42,17 @@ If storage is denied, continue using downloads. If downloads are blocked, allow 
 Chromium desktop is exercised automatically. Responsive layouts are tested at 320, 390, 768 and 1440 CSS pixels; these are viewport tests, not real phone tests. Mobile file preview applications may not execute downloaded HTML. Firefox, Safari, actual low-end devices, screen-reader user sessions and representative older/nontechnical users require the separate validation in [acceptance evidence](ACCEPTANCE.md).
 
 Users keep their files and configuration subject to MIT and third-party licenses and commissioned-work terms. This does not transfer exclusive rights to hosted models, brands, company equity or tokens. See [architecture and adapters](ARCHITECTURE.md), [security](SECURITY.md), [compatibility](COMPATIBILITY.md), [French guide](GUIDE_FR.md) and [acceptance/external gates](ACCEPTANCE.md).
+
+## Checked reports and the next dataset (engine 2 preview)
+
+The data method computes every category’s count, total, minimum and maximum with exact decimal arithmetic. Original counts every row; improved counts identical IDs once and rejects conflicts. Purpose text does not implement filters or business acceptance. The checker binds each row to its category and columns, rejects extra/missing rows, and only admits its reviewed presentation. Rendering, business acceptance and separately controlled review are distinct and remain unmeasured by this component.
+
+On a narrow screen, focus the labelled table region and scroll with the arrow keys; amounts remain whole. Print retains all columns.
+
+Select a checked version, then choose **Use this method on new data**. Edit the inputs, confirm public-input rights and the new mission, and run. The parent capsule downloads before replacement; retain it beside the new capsule. The new history contains the parent capsule, mission and selected candidate hashes. Only the method variant transfers. Outputs, plans, approval, review and operating authority do not. Inspect the new result and explicitly keep it.
+
+For other CSV/JSON headings, expand **Map columns from another export**. Read the columns, choose three distinct fields, preview the decimal text and approve the mapping. Applying downloads the original bytes and transformation receipt. Numeric JSON values, ambiguous separators and unit/currency conversions are refused. No duplicate policy is guessed.
+
+Engine 1 capsules restore and reproduce using their unchanged legacy producer/checker. Their original presentation checks remain limited and are labelled historical. Explicit reuse on changed inputs creates engine 2 work; no prior archive is rewritten. This preview is component/browser-tested; live costs, user-effort savings, independent review and physical commissioning remain NOT_RUN.
+
+**Français.** Choisissez une version vérifiée, puis **Utiliser cette méthode sur de nouvelles données**. Modifiez les données, confirmez leurs droits et la nouvelle mission, puis exécutez. Conservez le fichier parent téléchargé et le nouveau fichier. Seule la méthode est transférée; chaque résultat exige de nouvelles vérifications et un choix explicite. Pour associer des colonnes, examinez et approuvez les trois champs texte; conservez les données originales et le reçu. Les critères métier, la revue indépendante, les coûts complets et les économies de temps restent non évalués.
