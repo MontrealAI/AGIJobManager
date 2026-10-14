@@ -48,7 +48,7 @@ export function initialize() {
     if ((actionBusy || currentWorker) && id !== 'stop') { say(t('Please wait for this action to finish, or choose Stop.', 'Attendez la fin de cette action, ou choisissez Arrêter.')); return; }
     const ownsAction = !actionBusy; if (ownsAction) actionBusy = true;
     $('error').hidden = true; document.querySelectorAll('.field-error').forEach(el => el.remove()); document.querySelectorAll('[aria-invalid]').forEach(el => { el.removeAttribute('aria-invalid'); if (el.getAttribute('aria-describedby')?.endsWith('-error')) el.removeAttribute('aria-describedby'); });
-    try { await action(e); } catch (error) { report(error); } finally { if (ownsAction) actionBusy = false; }
+    try { await action(e); } catch (error) { await report(error); } finally { if (ownsAction) actionBusy = false; }
   }); }
   function download(name, content, mediaType = 'application/json') {
     const blob = new Blob([content], { type: mediaType }), url = URL.createObjectURL(blob), link = document.createElement('a'); link.href = url; link.download = name; document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 30000);
