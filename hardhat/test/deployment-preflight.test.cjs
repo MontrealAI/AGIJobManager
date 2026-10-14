@@ -960,3 +960,20 @@ test('activation fails closed on incomplete reserves, malformed flags or amounts
   assert.throws(() => requireReadinessState({ ...state(), reserves: [0n, 0n, 0n, 0n, 1n], balance: 1n }), /no existing job escrow, bonds or payment claims/);
   assert.throws(() => requireReadinessState({ ...state(), wallets: [A] }), /exactly two/);
 });
+
+
+test('concurrent intake activation cannot be reported as a paused deployment', async () => {
+  const harness = deploymentHarness();
+  try {
+    const getContractAt = harness.hardhat.ethers.getContractAt;
+    let reads = 0;
+    harness.hardhat.ethers.getContractAt = async (...args) => ({
+      ...await getContractAt(...args),
+      paused: async () => ++reads === 1,
+    });
+    await assert.rejects(harness.main(), /intake is no longer paused/);
+    assert.equal(harness.broadcasts(), 9);
+    assert.equal(harness.receipt().status, 'failed');
+    assert.equal(harness.receipt().contracts.AGIJobManager.status, 'confirmed');
+  } finally { harness.cleanup(); }
+});

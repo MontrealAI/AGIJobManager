@@ -452,6 +452,9 @@ async function main() {
     const stablePayload = stableObject({ constructorArgs, libraries: linkedLibraries, finalOwner: resolvedFinalOwner });
     const configHash = ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(stablePayload)));
 
+    const intakePaused = await manager.paused();
+    if (intakePaused !== true) throw new Error('Manager intake is no longer paused. Deployment cannot be reported as deployed_paused; reconcile concurrent owner actions before activation review.');
+
     const record = {
       chainId,
       network: network.name,
@@ -475,7 +478,7 @@ async function main() {
       constructorArgs,
       libraries: linkedLibraries,
       ownershipTransfer,
-      intakePaused: await manager.paused(),
+      intakePaused,
       intakePausedAtDeployment: true,
       agentNftRequiredAtDeployment: initialNftRequired,
       verification: verificationResults,

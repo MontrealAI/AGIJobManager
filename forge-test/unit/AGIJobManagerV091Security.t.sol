@@ -102,29 +102,34 @@ contract AGIJobManagerV091SecurityTest is Test {
     function testFuzz_RejectsMalformedWrapperOwnerAddress(uint96 upper, address claimant) external {
         vm.assume(upper != 0 && claimant != address(0));
         V091ABIWordSource wrapper = new V091ABIWordSource();
+        V091ABIWordSource registry = new V091ABIWordSource();
+        registry.setWord(ENS_OWNER, uint256(uint160(address(wrapper))));
         uint256 canonical = uint256(uint160(claimant));
         wrapper.setWord(OWNER_OF, canonical | (uint256(upper) << 160));
         assertFalse(
-            ENSOwnership.verifyENSOwnership(address(0), address(wrapper), claimant, "alice", bytes32(uint256(1)))
+            ENSOwnership.verifyENSOwnership(address(registry), address(wrapper), claimant, "alice", bytes32(uint256(1)))
         );
         wrapper.setWord(OWNER_OF, canonical);
         assertTrue(
-            ENSOwnership.verifyENSOwnership(address(0), address(wrapper), claimant, "alice", bytes32(uint256(1)))
+            ENSOwnership.verifyENSOwnership(address(registry), address(wrapper), claimant, "alice", bytes32(uint256(1)))
         );
     }
 
     function test_RejectsMalformedApprovedAddress() external {
         V091ABIWordSource wrapper = new V091ABIWordSource();
+        V091ABIWordSource registry = new V091ABIWordSource();
+        registry.setWord(ENS_OWNER, uint256(uint160(address(wrapper))));
         wrapper.setWord(OWNER_OF, uint256(uint160(EMPLOYER)));
         wrapper.setWord(GET_APPROVED, (uint256(1) << 160) | uint256(uint160(AGENT)));
-        assertFalse(ENSOwnership.verifyENSOwnership(address(0), address(wrapper), AGENT, "alice", bytes32(uint256(1))));
+        assertFalse(ENSOwnership.verifyENSOwnership(address(registry), address(wrapper), AGENT, "alice", bytes32(uint256(1))));
         wrapper.setWord(GET_APPROVED, uint256(uint160(AGENT)));
-        assertTrue(ENSOwnership.verifyENSOwnership(address(0), address(wrapper), AGENT, "alice", bytes32(uint256(1))));
+        assertTrue(ENSOwnership.verifyENSOwnership(address(registry), address(wrapper), AGENT, "alice", bytes32(uint256(1))));
     }
 
     function test_RejectsMalformedResolverAndResolvedAddress() external {
         V091ABIWordSource registry = new V091ABIWordSource();
         V091ABIWordSource resolver = new V091ABIWordSource();
+        registry.setWord(ENS_OWNER, uint256(uint160(EMPLOYER)));
         uint256 resolverAddress = uint256(uint160(address(resolver)));
         registry.setWord(RESOLVER, resolverAddress | (uint256(1) << 160));
         resolver.setWord(ADDR, uint256(uint160(AGENT)));
