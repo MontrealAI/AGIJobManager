@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fail, parseStrict, LIMITS } from '../../site/assets/successor/safe.mjs';
 import { defaultMission } from '../../site/assets/successor/missions.mjs';
-import { createSystem, runCandidate, chooseCandidate, compareCandidates, exportCapsule, inspectCapsule, restoreCapsule, readableSummary } from '../../site/assets/successor/model.mjs';
+import { continueHistory, createSystem, runCandidate, chooseCandidate, compareCandidates, exportCapsule, inspectCapsule, restoreCapsule, readableSummary } from '../../site/assets/successor/model.mjs';
 import { prepareImprovement } from '../../site/assets/successor/jobs.mjs';
 import { compileComputerWork, importAlpha } from './adapter.mjs';
 import { builderArtifacts, buildSuccessor } from './build.mjs';
@@ -24,6 +24,7 @@ try {
   else if (command === 'import-alpha' && args.length === 3) { write(args[2], await importAlpha(read(args[0]), { budget: args[1] })); }
   else if (command === 'inspect' && args.length === 1) { const { capsule } = await inspectCapsule(read(args[0])); console.log(readableSummary(capsule.payload.state)); }
   else if (command === 'restore' && args.length === 3 && args[1] === '--confirm') { const inspected = await inspectCapsule(read(args[0])); write(args[2], await exportCapsule(await restoreCapsule(inspected, true), inspected.capsule.payload.sourceManifest)); }
+  else if (command === 'continue-history' && args.length === 3 && args[1] === '--confirm') { const inspected = await inspectCapsule(read(args[0])); const continued = await continueHistory(inspected.capsule.payload.state, true); write(args[2], await exportCapsule(continued.state, inspected.capsule.payload.sourceManifest)); }
   else if (command === 'export' && args.length === 2) {
     const { capsule } = await inspectCapsule(read(args[0])); fail(!fs.existsSync(args[1]), 'OUTPUT_EXISTS');
     const artifacts = buildSuccessor(args[1]); const raw = await exportCapsule(capsule.payload.state, artifacts.sourceManifest);
@@ -31,7 +32,7 @@ try {
     const active = capsule.payload.state.candidates.find(c => c.id === capsule.payload.state.active);
     for (const file of active?.files || []) write(path.join(args[1], file.name), file.content);
   } else {
-    console.log('SUCCESSOR Ω — offline, no wallet or provider access\n\nexample analyst|website|custom mission.json\nrun mission.json unselected.json\nchoose unselected.json latest selected.json\nimprove selected.json compared.json\nchoose compared.json latest improved.json\nrollback improved.json CANDIDATE_HASH restored.json\nplan selected.json USDC_BUDGET draft.json\ncompile draft.json runtime-context.json specification.json\nimport-alpha original-pack.json NEW_USDC_BUDGET imported.json\nvalidate|inspect capsule.json\nrestore capsule.json --confirm restored.json\nexport capsule.json NEW_OUTPUT_DIRECTORY\n\nAll outputs refuse overwrite. Run/choose are local preferences, never operational admission.');
+    console.log('SUCCESSOR Ω — offline, no wallet or provider access\n\nexample analyst|website|custom mission.json\nrun mission.json unselected.json\nchoose unselected.json latest selected.json\nimprove selected.json compared.json\nchoose compared.json latest improved.json\nrollback improved.json CANDIDATE_HASH restored.json\nplan selected.json USDC_BUDGET draft.json\ncompile draft.json runtime-context.json specification.json\nimport-alpha original-pack.json NEW_USDC_BUDGET imported.json\nvalidate|inspect capsule.json\nrestore capsule.json --confirm restored.json\ncontinue-history capsule.json --confirm new-segment.json\nexport capsule.json NEW_OUTPUT_DIRECTORY\n\nAll outputs refuse overwrite. Run/choose are local preferences, never operational admission.');
     if (command && command !== '--help') process.exitCode = 1;
   }
 } catch (error) { if (error.failureState && command === 'improve' && args.length === 2) write(args[1], await exportCapsule(error.failureState, builderArtifacts().sourceManifest));

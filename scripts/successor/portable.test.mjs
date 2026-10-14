@@ -36,7 +36,7 @@ test('report row associations, exact columns, completeness and closed visible pr
   const mission=defaultMission();mission.input='id,category,value\na,Alpha,100\nb,Beta,900';
   const original=executeMission(mission).files;
   assert.deepEqual(JSON.parse(original.find(f=>f.name==='result.json').content).groups,[{category:'Alpha',count:1,total:'100',min:'100',max:'100'},{category:'Beta',count:1,total:'900',min:'900',max:'900'}]);
-  for(const mutate of [html=>html.replace('<td>Alpha</td>','<td>Beta</td>').replace('<td>Beta</td></tr>','<td>Alpha</td></tr>'),html=>html.replace('<tbody>','<tbody style="display:none">'),html=>html.replace('<thead>','<thead hidden>'),html=>html.replace('Total</th>','Minimum</th>'),html=>html.replace('<td>100</td>','<td>900</td>'),html=>html.replace('<body>','<body class="skip">'),html=>html.replace('</tbody>','<tr><td>extra</td></tr></tbody>'),html=>html.replace('lang="en"','lang="fr"'),html=>html.replace('border-collapse:collapse','display:none'),html=>html.replace(/<tr><td>Alpha[\s\S]*?<\/tr>/,'')]) {
+  for(const mutate of [html=>html.replace('<td>Alpha</td>','<td>Beta</td>').replace('<td>Beta</td></tr>','<td>Alpha</td></tr>'),html=>html.replace('<tbody>','<tbody style="display:none">'),html=>html.replace('<thead>','<thead hidden>'),html=>html.replace('Total</th>','Minimum</th>'),html=>html.replace('<td>100</td>','<td>900</td>'),html=>html.replace('<body>','<body class="skip">'),html=>html.replace('<main>','<div class="skip"><main>').replace('</main>','</main></div>'),html=>html.replace('<body>','<body><html class="skip">'),html=>html.replace('<main>','<DIV class="skip"><main>').replace('</main>','</main></DIV>'),html=>html.replace('<main>','<title><main>').replace('</main>','</main></title>'),html=>html.replace('<main>','<p><main>').replace('</main>','</main></p>'),html=>html.replace('<table>','<style><table>').replace('</table>','</table></style>'),html=>html.replace('</tbody>','<tr><td>extra</td></tr></tbody>'),html=>html.replace('lang="en"','lang="fr"'),html=>html.replace('border-collapse:collapse','display:none'),html=>html.replace(/<tr><td>Alpha[\s\S]*?<\/tr>/,'')]) {
     const files=structuredClone(original);files.find(f=>f.name==='report.html').content=mutate(files.find(f=>f.name==='report.html').content);
     assert.equal(checkArtifacts(mission,'baseline',files).passed,false);
   }
@@ -69,4 +69,67 @@ test('explicit mapping preserves decimal text and rejects ambiguous values, reus
   const result=await previewMapping(raw,mapping);assert.equal(result.preview[0].value,'-12.050001');assert.equal(result.receipt.decimalFormat,'dot-decimal-text');assert.equal(result.receipt.mapping.value,'amount');
   for(const bad of ['[{"order_id":"a","product":"A","amount":12.5}]','order_id,product,amount\na,A,"1,000"','order_id,product,amount\na,A,1e3'])await assert.rejects(previewMapping(bad,mapping));
   await assert.rejects(previewMapping(raw,{...mapping,value:'product'}));
+});
+
+for (const count of [98, 99, 100]) test(`history ${count}: exact restore, preserved checkpoint, explicit continuation and fresh rerun`, async () => {
+  const {appendEvent,continueHistory,historyEvents,validateState}=await import('../../site/assets/successor/model.mjs');
+  let run=await runCandidate(await createSystem(defaultMission()),'baseline','0'.repeat(64));
+  let state=await chooseCandidate(run.state,run.candidate.id,'keep');
+  const plan=await prepareImprovement(state,{budget:'100'});state=await recordPlan(state,plan);
+  run=await runCandidate(state,'improved','0'.repeat(64));state=await chooseCandidate(run.state,run.candidate.id,'replace');
+  while(state.chronicle.length<count) await appendEvent(state,'restored','0'.repeat(64));
+  const raw=await exportCapsule(state), inspected=await inspectCapsule(raw), restored=await restoreCapsule(inspected,true);
+  assert.deepEqual(restored,state,'restore must not consume a history slot or change committed work');assert.deepEqual(JSON.parse(await exportCapsule(restored)),JSON.parse(raw));
+  if(count===100) await assert.rejects(runCandidate(restored,'improved','0'.repeat(64)),{code:'HISTORY_LIMIT'});
+  else assert.equal((await runCandidate(restored,'improved','0'.repeat(64))).state.chronicle.length,count+1);
+  await assert.rejects(continueHistory(restored,false),{code:'HISTORY_CONFIRMATION'});
+  const continued=await continueHistory(restored,true);assert.deepEqual(JSON.parse(continued.checkpoint),JSON.parse(raw));assert.deepEqual(historyEvents(continued.state).slice(0,count),state.chronicle);
+  assert.deepEqual(continued.state.candidates,state.candidates);assert.deepEqual(continued.state.plans,state.plans);assert.equal(continued.state.active,state.active);assert.equal(continued.state.authority,'none');
+  const capsule=await inspectCapsule(await exportCapsule(continued.state));assert.equal(capsule.capsule.format,'successor-portable/2');
+  run=await runCandidate(await restoreCapsule(capsule,true),'improved','0'.repeat(64));
+  const rolled=await chooseCandidate(run.state,state.candidates[0].id,'rollback');assert.equal(rolled.active,state.candidates[0].id);await validateState(rolled);
+});
+
+test('history archive corruption, truncation, cross-segment chain, schema mismatch and overflow are rejected', async () => {
+  const {appendEvent,continueHistory,validateState}=await import('../../site/assets/successor/model.mjs');
+  const {sha256}=await import('../../site/assets/successor/safe.mjs');
+  let state=await createSystem(defaultMission());while(state.chronicle.length<100) await appendEvent(state,'restored','0'.repeat(64));
+  const overflow=structuredClone(state);const record={sequence:100,action:'restored',subject:'0'.repeat(64),previous:state.chronicle.at(-1).sha256};overflow.chronicle.push({...record,sha256:await sha256(record)});await assert.rejects(validateState(overflow),{code:'CHRONICLE'});
+  state=(await continueHistory(state,true)).state;
+  for(const mutation of [s=>s.archives[0].events[0].subject='1'.repeat(64),s=>s.archives[0].events.pop(),s=>s.archives[0].start=1,s=>s.chronicle[0].previous='0'.repeat(64),s=>s.chronicle[0].subject='0'.repeat(64),s=>s.schema='agijobmanager/successor-capsule/v1',s=>s.authority='restored']) {const bad=structuredClone(state);mutation(bad);await assert.rejects(validateState(bad));}
+  const capsule=JSON.parse(await exportCapsule(state));capsule.format='successor-portable/1';await assert.rejects(inspectCapsule(JSON.stringify(capsule)),{code:'VERSION'});
+  const tamper=structuredClone(state);tamper.archives[0].events.pop();tamper.archives[0].sha256=await sha256({start:0,events:tamper.archives[0].events});await assert.rejects(validateState(tamper),{code:'CHRONICLE_CHAIN'});
+});
+
+test('all ten history archives remain readable and exportable when continuation reaches its finite bound', async () => {
+  const {appendEvent,continueHistory,historyEvents}=await import('../../site/assets/successor/model.mjs');
+  let state=await createSystem(defaultMission());
+  for(let segment=0;segment<10;segment++){while(state.chronicle.length<100) await appendEvent(state,'restored','0'.repeat(64));state=(await continueHistory(state,true)).state;}
+  while(state.chronicle.length<100) await appendEvent(state,'restored','0'.repeat(64));
+  assert.equal(historyEvents(state).length,1100);const raw=await exportCapsule(state), restored=await restoreCapsule(await inspectCapsule(raw),true);assert.deepEqual(restored,state);
+  await assert.rejects(continueHistory(state,true),{code:'HISTORY_ARCHIVE_LIMIT'});assert.equal(await exportCapsule(state),raw);
+});
+
+test('candidate and plan bounds block only new entries and preserve read-only recovery', async () => {
+  const {validateState}=await import('../../site/assets/successor/model.mjs');
+  let state=await createSystem(defaultMission());
+  for(let i=0;i<12;i++)state=(await runCandidate(state,'baseline',i.toString(16).padStart(64,'0'))).state;
+  const rerun=await runCandidate(state,'baseline','0'.repeat(64));assert.equal(rerun.state.candidates.length,12);
+  await assert.rejects(runCandidate(state,'baseline','f'.repeat(64)),{code:'CANDIDATE_LIMIT'});
+  state=await chooseCandidate(state,state.candidates[0].id,'keep');
+  for(let i=0;i<12;i++)state=await recordPlan(state,await prepareImprovement(state,{budget:String(100+i)}));
+  const same=await recordPlan(state,state.plans[0]);assert.equal(same.plans.length,12);
+  await assert.rejects(recordPlan(state,await prepareImprovement(state,{budget:'200'})),{code:'PLAN_LIMIT'});
+  await validateState(await restoreCapsule(await inspectCapsule(await exportCapsule(state)),true));
+});
+
+test('serialized byte boundary exports compact valid work instead of an oversized pretty capsule', async () => {
+  const {canonical,sha256,LIMITS}=await import('../../site/assets/successor/safe.mjs');
+  const mission=defaultMission();mission.input='id,category,value\n'+Array.from({length:1000},(_,i)=>'row'+i+','+('Category '+i).padEnd(79,'x')+',1').join('\n');
+  let state=await createSystem(mission);for(let i=0;i<11;i++)state=(await runCandidate(state,'baseline',i.toString(16).padStart(64,'0'))).state;
+  const payload={state,sourceManifest:null},capsule={format:'successor-portable/1',payload,sha256:await sha256(payload)};
+  assert.ok(new TextEncoder().encode(canonical(capsule)).length<LIMITS.capsule);assert.ok(new TextEncoder().encode(JSON.stringify(capsule,null,2)).length>LIMITS.capsule);
+  const raw=await exportCapsule(state);assert.ok(new TextEncoder().encode(raw).length<=LIMITS.capsule);assert.deepEqual((await inspectCapsule(raw)).capsule.payload.state,state);
+  await assert.rejects(inspectCapsule(raw+' '.repeat(LIMITS.capsule)),{code:'INPUT_SIZE'});
+  await assert.rejects(runCandidate(state,'baseline','b'.repeat(64)),{code:'CAPSULE_CAPACITY'});assert.equal(await exportCapsule(state),raw,'rejected overflow must leave earlier work exportable');
 });

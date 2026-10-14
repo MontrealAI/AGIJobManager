@@ -1,4 +1,4 @@
-import { chromium } from '@playwright/test';
+const { chromium } = await import(process.env.SUCCESSOR_PLAYWRIGHT || '@playwright/test');
 import { createServer } from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,7 +16,7 @@ const server = createServer((req, res) => {
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); const origin = `http://127.0.0.1:${server.address().port}`;
 const browser = await chromium.launch(process.env.SUCCESSOR_CHROMIUM ? { headless: true, executablePath: process.env.SUCCESSOR_CHROMIUM, args: ['--no-sandbox', '--disable-dev-shm-usage'] } : { headless: true });
 const results = [], pages = [];
-const { default: AxeBuilder } = await import('../../ui/node_modules/@axe-core/playwright/dist/index.mjs');
+const { default: AxeBuilder } = await import(process.env.SUCCESSOR_AXE || '../../ui/node_modules/@axe-core/playwright/dist/index.mjs');
 async function open(url, options = {}) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, ...options }), page = await context.newPage(); page.setDefaultTimeout(10000);
   const errors = [], network = []; page.on('pageerror', error => errors.push(error.message)); page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
