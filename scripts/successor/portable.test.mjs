@@ -132,4 +132,19 @@ test('serialized byte boundary exports compact valid work instead of an oversize
   const raw=await exportCapsule(state);assert.ok(new TextEncoder().encode(raw).length<=LIMITS.capsule);assert.deepEqual((await inspectCapsule(raw)).capsule.payload.state,state);
   await assert.rejects(inspectCapsule(raw+' '.repeat(LIMITS.capsule)),{code:'INPUT_SIZE'});
   await assert.rejects(runCandidate(state,'baseline','b'.repeat(64)),{code:'CAPSULE_CAPACITY'});assert.equal(await exportCapsule(state),raw,'rejected overflow must leave earlier work exportable');
+  const {builderArtifacts}=await import('./build.mjs');
+  const {appendEvent,exportableState}=await import('../../site/assets/successor/model.mjs');
+  const source=builderArtifacts().sourceManifest;
+  const size=s=>new TextEncoder().encode(canonical({format:'successor-portable/1',payload:{state:s,sourceManifest:source},sha256:'0'.repeat(64)})).length;
+  while(size(state)+2300<3999900)await appendEvent(state,'restored','x'.repeat(2000));
+  const probe=structuredClone(state);await appendEvent(probe,'restored','x');await appendEvent(state,'restored','x'.repeat(3999900-size(probe)+1));
+  const checkpoint=await exportCapsule(state,source);assert.equal(new TextEncoder().encode(checkpoint).length,3999900);
+  const restored=await restoreCapsule(await inspectCapsule(checkpoint),true);
+  const selected=await chooseCandidate(restored,restored.candidates[0].id,'keep');
+  await assert.rejects(exportableState(selected,source),{code:'CAPSULE_CAPACITY'});
+  assert.equal(await exportCapsule(restored,source),checkpoint,'source-bearing rejection preserves the prior workspace');
+  const selectedSource=await exportCapsule(restored);const imported=await inspectCapsule(selectedSource);
+  assert.equal(imported.capsule.payload.sourceManifest,null);
+  assert.equal(await exportCapsule(await restoreCapsule(imported,true),imported.capsule.payload.sourceManifest),selectedSource);
+
 });

@@ -156,6 +156,11 @@ export async function exportCapsule(state, sourceManifest = null) {
   // Whitespace must not turn an accepted compact capsule into an unimportable export.
   return new TextEncoder().encode(raw).length <= LIMITS.capsule ? raw : canonical(capsule);
 }
+export async function exportableState(next, sourceManifest = null) {
+  try { await exportCapsule(next, sourceManifest); }
+  catch (error) { if (error.code === 'INPUT_SIZE') fail(false, 'CAPSULE_CAPACITY'); throw error; }
+  return next;
+}
 export async function inspectCapsule(raw) {
   const capsule = parseStrict(raw); keys(capsule, ['format', 'payload', 'sha256'], 'CAPSULE_FIELDS'); fail(['successor-portable/1', 'successor-portable/2'].includes(capsule.format), 'VERSION');
   keys(capsule.payload, ['state', 'sourceManifest'], 'PAYLOAD_FIELDS'); fail(capsule.sha256 === await sha256(capsule.payload), 'CAPSULE_CHANGED');
