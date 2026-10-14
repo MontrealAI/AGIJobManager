@@ -37,7 +37,7 @@ jobs:
         run: python3 scripts/release/check-v114-boundaries.py
       - name: Complete preflight and real entrypoint regressions
         run: npm --prefix hardhat run test:preflight
-      - name: Compile unchanged contracts
+      - name: Compile reviewed candidate contracts
         run: npm run build
       - name: Native compiler, provider, storage and historical runtime compatibility
         run: npm --prefix hardhat run test:registry-native

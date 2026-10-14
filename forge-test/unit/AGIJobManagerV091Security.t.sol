@@ -121,9 +121,13 @@ contract AGIJobManagerV091SecurityTest is Test {
         registry.setWord(ENS_OWNER, uint256(uint160(address(wrapper))));
         wrapper.setWord(OWNER_OF, uint256(uint160(EMPLOYER)));
         wrapper.setWord(GET_APPROVED, (uint256(1) << 160) | uint256(uint160(AGENT)));
-        assertFalse(ENSOwnership.verifyENSOwnership(address(registry), address(wrapper), AGENT, "alice", bytes32(uint256(1))));
+        assertFalse(
+            ENSOwnership.verifyENSOwnership(address(registry), address(wrapper), AGENT, "alice", bytes32(uint256(1)))
+        );
         wrapper.setWord(GET_APPROVED, uint256(uint160(AGENT)));
-        assertTrue(ENSOwnership.verifyENSOwnership(address(registry), address(wrapper), AGENT, "alice", bytes32(uint256(1))));
+        assertTrue(
+            ENSOwnership.verifyENSOwnership(address(registry), address(wrapper), AGENT, "alice", bytes32(uint256(1)))
+        );
     }
 
     function test_RejectsMalformedResolverAndResolvedAddress() external {

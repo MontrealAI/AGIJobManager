@@ -53,3 +53,16 @@ Before release, run the new suite and existing ENS, namespace, controller-confli
 | --- | --- |
 | `contracts/utils/ENSOwnership.sol` | `244bcedf9ef9da775b3a663b2dcc4a221ea70810e1543ac0f255e3f0d3acaca0` |
 | `test/ensRevocation.regression.test.js` | `cceb00aefe4157015c00f68e1d419d10dcdadd1dc79bfff629be823cacd905c4` |
+
+## Remote candidate qualification update
+
+GitHub Actions executed source `ea5aef1a16a0ae777ce9f5147c829291668b297d`:
+
+- [Contract CI](https://github.com/MontrealAI/AGIJobManager/actions/runs/38646186825): all four test shards passed (240 + 197 + 181 + 174 = 792 tests), including the twelve new revocation cases. Compilation, Solidity lint and size checks passed. The overall workflow failed later in the Genesis rehearsal because its mock memberships omitted the newly required registry binding; that fixture is corrected in the subsequent candidate.
+- [Security workflow](https://github.com/MontrealAI/AGIJobManager/actions/runs/38646186740): all 494 deployment/preflight checks passed; Foundry stopped at formatting, before build, fuzz, invariant and Slither stages. The formatting correction does not establish those later results.
+- [Native USDC and ENS fork run](https://github.com/MontrealAI/AGIJobManager/actions/runs/38646186813): both scenario commands passed. The following comparison correctly rejected the old source hashes. The actual uploaded report is retained separately as `mainnet-cutover-next-deployment.json`; original historical reports remain unchanged. Artifact ID `11932208475`, ZIP SHA-256 `2da33014eae0097bcc6b94840e5ca836ae77cdf6a48b6029ce4c8aed1dea8c51`.
+- Manager deployed runtime measured 24,359 bytes, leaving 217 bytes under EIP-170. This is not permission to add features without remeasurement.
+
+These results supersede the earlier local-only test limitations for the identified source, not for future edits. Final exact-head aggregate CI, current-source Slither review and independent audit remain required. No failed workflow is reported as a full qualification pass.
+
+The next-deployment source inventory records exact before/after contract hashes and the changed readiness evidence input. The release boundary still rejects other contract/compiler changes, mutated historical source, unreviewed additions and dependency drift. Historical runtime replay recompiles the preserved ENS source rather than asserting the new library has the old runtime hash. This records an intentional compatibility break; it does not waive qualification.
