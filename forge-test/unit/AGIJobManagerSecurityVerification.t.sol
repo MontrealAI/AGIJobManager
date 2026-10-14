@@ -166,6 +166,7 @@ contract AGIJobManagerSecurityVerificationTest is Test {
 
         string memory label = "agent1";
         bytes32 subnode = keccak256(abi.encodePacked(agentRootNode, keccak256(bytes(label))));
+        ensRegistry.setOwner(subnode, address(wrapper));
         wrapper.setOwner(uint256(subnode), agent);
 
         vm.prank(employer);

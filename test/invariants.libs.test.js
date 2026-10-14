@@ -143,7 +143,7 @@ contract("Utility library invariants", (accounts) => {
     );
     assert.equal(zeroRoot, false, "zero root nodes should fail closed");
 
-    await setNameWrapperOwnership(nameWrapper, root, label, claimant);
+    await setNameWrapperOwnership(nameWrapper, root, label, claimant, ens);
     const wrappedOwned = await harness.verifyENSOwnership.call(
       ens.address,
       nameWrapper.address,
@@ -199,6 +199,7 @@ contract("Utility library invariants", (accounts) => {
     const label = "alice";
     const node = subnode(root, label);
 
+    await ens.setOwner(node, nameWrapper.address);
     await nameWrapper.setOwner(web3.utils.toBN(node), other);
     await nameWrapper.setApprovalForAll(claimant, true, { from: other });
 
@@ -221,6 +222,7 @@ contract("Utility library invariants", (accounts) => {
     const node = subnode(root, label);
     const nodeId = web3.utils.toBN(node);
 
+    await ens.setOwner(node, wrapper.address);
     await wrapper.setOwner(nodeId, other);
     await wrapper.setApproved(nodeId, claimant);
     let ok = await harness.verifyENSOwnership.call(ens.address, wrapper.address, claimant, label, root);
@@ -241,6 +243,7 @@ contract("Utility library invariants", (accounts) => {
     const wrapper = await InvalidBoolNameWrapper.new({ from: owner });
     const root = rootNode("club-root");
 
+    await ens.setOwner(subnode(root, "agent2"), wrapper.address);
     await wrapper.setOwnerValue(other, { from: owner });
     await wrapper.setApprovedValue("0x0000000000000000000000000000000000000000", { from: owner });
 

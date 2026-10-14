@@ -110,8 +110,8 @@ contract("AGIJobManager economic safety", (accounts) => {
     await agiType.mint(agent, { from: owner });
     await manager.addAGIType(agiType.address, 80, { from: owner });
 
-    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
-    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
+    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent, ens);
+    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator, ens);
     await fundValidators(token, manager, [validator], owner);
     await fundAgents(token, manager, [agent], owner);
 

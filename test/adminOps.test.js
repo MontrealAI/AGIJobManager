@@ -63,8 +63,8 @@ contract("AGIJobManager admin ops", (accounts) => {
       { from: owner }
     );
 
-    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
-    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
+    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent, ens);
+    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator, ens);
     agiTypeNft = await MockERC721.new({ from: owner });
     await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
     await agiTypeNft.mint(agent, { from: owner });

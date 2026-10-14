@@ -10,6 +10,8 @@ Current automated work uses [schema 6/7 operator-budget admission without retain
 
 **v1.14.0 deployment tooling:** these instructions match this checkout. Manager and helper commands default to read-only when `DRY_RUN` is missing or empty. Published v1.0.5 downloads are unchanged; always use explicit `DRY_RUN=1` for plans on older tags. Record the reviewed commit with `git rev-parse HEAD` and use its matching scripts, documentation and CI results. See [release scope](../docs/V1_RELEASE_SCOPE.md#published-download-versus-current-source).
 
+For a second mainnet instance, use the [release-review checklist](../docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md) before preparing a broadcast. It separates source qualification, first-instance preservation, operator policy and activation.
+
 ## Deployment at a glance
 
 | Step | What you do | Result |
@@ -77,7 +79,7 @@ Verify all four identity getters against the intended names:
 
 Root values are ENS namehashes. Primary and alpha roots are accepted alternatives for the same role, not mutually exclusive deployment modes. A zero root disables that ENS branch. Review every owner-managed additional address and any nonzero Merkle root; keep them empty when ENS membership is required for ordinary onboarding. `lockIdentityConfiguration()` does not disable these owner-managed exceptions. The owner may change ENS roots only before that lock and with all escrow/bond reserves zero.
 
-Native USDC is fixed to Circle's Ethereum or Sepolia address. All amounts use six decimals. USDC pause/blocklist checks run at one recorded preflight block. Both recipients must be distinct, nonzero and different from USDC; the contract also rejects itself as a recipient. [Circle's registry](https://developers.circle.com/stablecoins/usdc-contract-addresses) is the address authority.
+Native USDC is fixed to Circle's Ethereum or Sepolia address. All amounts use six decimals. USDC pause/blocklist and ENS dependency code checks use one EIP-1898 canonical block hash, checked again before deployment begins. Unsupported endpoints fail closed without a block-number fallback. Both recipients must be distinct, nonzero and different from USDC; the contract also rejects itself as a recipient. [Circle's registry](https://developers.circle.com/stablecoins/usdc-contract-addresses) is the address authority.
 
 ## Compile and rehearse
 
@@ -126,7 +128,7 @@ DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mai
 
 This command checks successful canonical transaction receipts and confirmations, the recorded deployer and exact creation bytecode/constructor arguments, linked runtime and paused manager state, then retries explorer verification. It sends **zero blockchain transactions**; explorer source-verification requests still use the configured API key. A successful recovery writes a separate `.reverified.<block>.json` receipt and preserves the original journal. Use that new receipt for readiness. It reports whether ownership still needs a proposal and acceptance; it never performs either operation. Incomplete library-only deployments, inconsistent receipts, changed code and further verification failures remain blocked and require explicit operator reconciliation. Never edit verification fields merely to bypass a failed check.
 
-Recovery and readiness require RPC support for EIP-1898: every contract-state, code and storage read uses the selected `blockHash` with `requireCanonical: true`. Unsupported endpoints or an unavailable canonical block stop the command; there is no fallback to block numbers. Use a compatible endpoint and retry while preserving the original deployment evidence.
+Manager deployment preflight, recovery and readiness require RPC support for EIP-1898: every contract-state, code and storage read uses the selected `blockHash` with `requireCanonical: true`. Unsupported endpoints or an unavailable canonical block stop the command; there is no fallback to block numbers. Use a compatible endpoint and retry while preserving the original deployment evidence.
 
 ## Accept ownership and verify the live instance
 

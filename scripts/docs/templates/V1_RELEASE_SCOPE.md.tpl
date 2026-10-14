@@ -2,10 +2,14 @@
 
 **Current edition: {{TAG}}.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
 
+## Unreleased contract-hardening candidate
+
+This source now changes ENS membership authorization to reject stale ownership/resolver records. The [engineering finding](qualification/ENS_MEMBERSHIP_REVOCATION.md) describes the scope and verification limits. It changes linked library bytecode and needs new full source qualification and independent review before deployment; historical ABI/bytecode-preservation claims describe the preceding release baseline. Existing managers are immutable and keep their original code, jobs and claims. Follow the [second-deployment checklist](DEPLOYMENT/SECOND_MAINNET_RELEASE.md); publication is not activation.
+
 ## Included in this edition
 
 - Public source and a versioned USDC console with participant, owner and recovery guidance.
-- The preserved contract build, eight library links, USDC accounting, buyer protections and reserved payment claims.
+- Eight fixed library links, USDC accounting, buyer protections and reserved payment claims, plus the unreleased ENS authorization correction described above.
 - Hardhat setup, explicit read-only plans, guarded deployment, source verification, transaction journals, recovery and instance-readiness checks.
 - Lifecycle economics, signed action-bound qualification, pre-funding offer/capacity checks and canonical state/closure observations.
 - Reproducible release assets, source qualification, per-file manifests and asset checksums.

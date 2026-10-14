@@ -10,6 +10,7 @@ library ENSOwnership {
     // Keep a fixed staticcall cap: enough for normal ENS stack reads while bounding griefing surface.
     uint256 private constant ENS_STATICCALL_GAS_LIMIT = 80_000;
     bytes4 private constant OWNER_OF_SELECTOR = 0x6352211e;
+    bytes4 private constant OWNER_SELECTOR = bytes4(keccak256("owner(bytes32)"));
     bytes4 private constant GET_APPROVED_SELECTOR = 0x081812fc;
     bytes4 private constant IS_APPROVED_FOR_ALL_SELECTOR = 0xe985e9c5;
     bytes4 private constant RESOLVER_SELECTOR = 0x0178b8bf;
@@ -24,10 +25,10 @@ library ENSOwnership {
     ) private view returns (bool) {
         if (rootNode == bytes32(0)) return false;
         bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
-        if (_verifyNameWrapperOwnership(nameWrapperAddress, claimant, subnode)) {
+        if (_verifyNameWrapperOwnership(ensAddress, nameWrapperAddress, claimant, subnode)) {
             return true;
         }
-        return _verifyResolverOwnership(ensAddress, claimant, subnode);
+        return _verifyResolverOwnership(ensAddress, nameWrapperAddress, claimant, subnode);
     }
     function verifyENSOwnership(
         address ensAddress,
@@ -39,10 +40,10 @@ library ENSOwnership {
         EnsLabelUtils.requireValidLabel(subdomain);
         if (rootNode == bytes32(0)) return false;
         bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
-        if (_verifyNameWrapperOwnership(nameWrapperAddress, claimant, subnode)) {
+        if (_verifyNameWrapperOwnership(ensAddress, nameWrapperAddress, claimant, subnode)) {
             return true;
         }
-        return _verifyResolverOwnership(ensAddress, claimant, subnode);
+        return _verifyResolverOwnership(ensAddress, nameWrapperAddress, claimant, subnode);
     }
 
     function verifyENSOwnership(
@@ -81,22 +82,27 @@ library ENSOwnership {
     ) private view returns (bytes32 node, address controller) {
         if (root == bytes32(0)) return (bytes32(0), address(0));
         node = keccak256(abi.encodePacked(root, keccak256(bytes(label))));
-        if (!_verifyNameWrapperOwnership(wrapper, claimant, node) && !_verifyResolverOwnership(ensAddress, claimant, node)) {
-            return (bytes32(0), address(0));
+        if (_verifyNameWrapperOwnership(ensAddress, wrapper, claimant, node)) {
+            (, controller) = _staticcallAddress(wrapper, abi.encodeWithSelector(OWNER_OF_SELECTOR, uint256(node)));
+        } else {
+            controller = _resolverController(ensAddress, wrapper, node);
+            if (controller == address(0) || !_resolverMatches(ensAddress, claimant, node)) {
+                return (bytes32(0), address(0));
+            }
         }
-        (, controller) = _staticcallAddress(wrapper, abi.encodeWithSelector(OWNER_OF_SELECTOR, uint256(node)));
-        if (controller == address(0)) {
-            (, controller) = _staticcallAddress(ensAddress, abi.encodeWithSignature("owner(bytes32)", node));
-        }
-        if (controller == address(0)) controller = claimant;
+        if (controller == address(0)) return (bytes32(0), address(0));
     }
 
     function _verifyNameWrapperOwnership(
+        address ensAddress,
         address nameWrapperAddress,
         address claimant,
         bytes32 subnode
     ) private view returns (bool) {
         if (nameWrapperAddress == address(0)) return false;
+        // An unwrapped parent can revoke/reassign the registry node without clearing wrapper data.
+        (bool registryOk, address registryOwner) = _staticcallAddress(ensAddress, abi.encodeWithSelector(OWNER_SELECTOR, subnode));
+        if (!registryOk || registryOwner != nameWrapperAddress) return false;
         (bool ok, address owner) = _staticcallAddress(
             nameWrapperAddress,
             abi.encodeWithSelector(OWNER_OF_SELECTOR, uint256(subnode))
@@ -121,9 +127,27 @@ library ENSOwnership {
 
     function _verifyResolverOwnership(
         address ensAddress,
+        address nameWrapperAddress,
         address claimant,
         bytes32 subnode
     ) private view returns (bool) {
+        return _resolverController(ensAddress, nameWrapperAddress, subnode) != address(0)
+            && _resolverMatches(ensAddress, claimant, subnode);
+    }
+
+    /// @dev ENS retains resolver records when a name is revoked or its wrapped owner expires.
+    /// A stale address record is never a membership credential without a live controller.
+    function _resolverController(address ensAddress, address wrapper, bytes32 node)
+        private view returns (address controller)
+    {
+        (bool ok, address registryOwner) = _staticcallAddress(ensAddress, abi.encodeWithSelector(OWNER_SELECTOR, node));
+        if (!ok || registryOwner == address(0)) return address(0);
+        if (registryOwner != wrapper) return registryOwner;
+        (ok, controller) = _staticcallAddress(wrapper, abi.encodeWithSelector(OWNER_OF_SELECTOR, uint256(node)));
+        if (!ok) return address(0);
+    }
+
+    function _resolverMatches(address ensAddress, address claimant, bytes32 subnode) private view returns (bool) {
         if (ensAddress == address(0)) return false;
         (bool ok, address resolverAddress) = _staticcallAddress(
             ensAddress,
