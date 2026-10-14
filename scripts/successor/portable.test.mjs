@@ -146,5 +146,10 @@ test('serialized byte boundary exports compact valid work instead of an oversize
   const selectedSource=await exportCapsule(restored);const imported=await inspectCapsule(selectedSource);
   assert.equal(imported.capsule.payload.sourceManifest,null);
   assert.equal(await exportCapsule(await restoreCapsule(imported,true),imported.capsule.payload.sourceManifest),selectedSource);
+  const {parseStrict}=await import('../../site/assets/successor/safe.mjs');
+  const embedded=checkpoint.replace(/</g,'\\u003c');assert.ok(new TextEncoder().encode(embedded).length>LIMITS.capsule);
+  const decoded=canonical(parseStrict(embedded,6*LIMITS.capsule));assert.equal(decoded,canonical(JSON.parse(checkpoint)));
+  assert.deepEqual((await inspectCapsule(decoded)).capsule.payload.state,state);
+
 
 });

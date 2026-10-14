@@ -1,4 +1,4 @@
-import { fail, canonical, sha256, LIMITS } from './safe.mjs';
+import { fail, canonical, parseStrict, sha256, LIMITS } from './safe.mjs';
 import { defaultMission } from './missions.mjs';
 import { historyEvents, historyCapacity, exportableState, appendEvent, reuseSystem, selectedMethod, recordPlan, createSystem, chooseCandidate, compareCandidates, exportCapsule, readableSummary, STORAGE_KEY } from './model.mjs';
 import { planAlternatives } from './jobs.mjs';
@@ -195,5 +195,8 @@ export function initialize() {
   }
   attach(); showMission(defaultMission('analyst', lang)); redraw();
   const saved = $('successor-capsule').textContent.trim();
-  if (saved !== 'null') inspect(saved).catch(report);
+  if (saved !== 'null') {
+    try { inspect(canonical(parseStrict(saved, 6 * LIMITS.capsule))).catch(report); }
+    catch (error) { report(error); }
+  }
 }
