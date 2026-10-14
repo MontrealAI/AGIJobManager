@@ -100,6 +100,7 @@ export function initialize() {
     $('empty-results').hidden = Boolean(candidate); $('result-content').hidden = !candidate;
     $('improve-local').disabled = !active || state.mission.kind === 'custom' || Boolean(currentWorker); $('retain').disabled = !active;
     $('rollback').disabled = !previousSelection();
+    $('keep-version').disabled = true;
     if (candidate) {
       $('result-summary').textContent = (candidate.checker.passed ? t('Checks passed · fixed method only', 'Vérifications réussies · méthode fixe seulement') : t('Checks failed — keep the current version', 'Échec des vérifications — gardez la version actuelle')) + ' · ' + t('Local measurement', 'Mesure locale') + ' · ' + (candidate.manifest.variant === 'baseline' ? t('Original version', 'Version initiale') : t('Improved candidate', 'Candidat amélioré'));
       if (previewURL) URL.revokeObjectURL(previewURL); previewURL = URL.createObjectURL(new Blob([candidate.files.find(f => f.name.endsWith('.html')).content], { type: 'text/html' })); $('preview').src = previewURL;
