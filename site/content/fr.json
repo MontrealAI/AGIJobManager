@@ -412,5 +412,45 @@
     "description": "Analysez des données publiques ou créez un site modifiable dans votre navigateur. Vérifiez un résultat concret, choisissez une amélioration et conservez une copie fonctionnelle.",
     "cta": "Créer mon SUCCESSOR Ω",
     "note": "Gratuit en local. Sans compte, portefeuille ni clé fournisseur."
+  },
+  "ecosystem": {
+    "nav": "Explorer l’écosystème",
+    "eyebrow": "QUATRE PROJETS · UNE CARTE CLAIRE",
+    "title": "Trouvez votre place dans l’écosystème AGI.",
+    "intro": "Commencez par ce qui correspond à votre objectif : explorer des idées, examiner des preuves, préparer une demande ou configurer un environnement d’exécution.",
+    "current": "Vous êtes ici",
+    "open": "Explorer le projet",
+    "cards": [
+      {
+        "id": "alpha",
+        "name": "AGI Alpha Agent",
+        "role": "Idées et plans",
+        "description": "Explorez les recherches, les idées et les plans proposés avant de choisir le travail à entreprendre.",
+        "detail": "La planification ne publie ni ne finance un travail."
+      },
+      {
+        "id": "jobs",
+        "name": "AGIJobsv0",
+        "role": "Démonstrations et preuves du JobRegistry",
+        "description": "Examinez le parcours JobRegistry utilisant le jeton AGIALPHA, ses démonstrations et les preuves associées.",
+        "detail": "Un protocole distinct du gestionnaire USDC."
+      },
+      {
+        "id": "manager",
+        "name": "AGIJobManager",
+        "role": "Demandes et séquestre USDC",
+        "description": "Préparez ici une demande claire. Examinez le parcours de séquestre USDC distinct avant de publier ou de financer un travail.",
+        "detail": "Une demande enregistrée est un brouillon, pas un travail financé."
+      },
+      {
+        "id": "fleet",
+        "name": "AGI Fleet Linux",
+        "role": "Environnements d’exécution et de revue",
+        "description": "Explorez les environnements servant à réaliser le travail et à examiner ses preuves de manière indépendante.",
+        "detail": "Machines et évaluateurs ont leur propre configuration."
+      }
+    ],
+    "boundaryTitle": "Des idées reliées. Des responsabilités distinctes.",
+    "boundary": "Chaque projet exige sa propre configuration, ses autorisations et sa qualification. Ces liens ne transfèrent ni fonds, ni travaux, ni autorité, et ne prouvent pas la disponibilité opérationnelle. Le JobRegistry au jeton AGIALPHA d’AGIJobsv0 et le séquestre USDC d’AGIJobManager sont des systèmes distincts."
   }
 }

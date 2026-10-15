@@ -412,5 +412,45 @@
     "description": "Try a public-data analyst or build an editable website, right here in your browser. Check a real result, choose an improvement and take home a working copy.",
     "cta": "Create my SUCCESSOR Ω",
     "note": "Free locally. No account, wallet or provider key."
+  },
+  "ecosystem": {
+    "nav": "Explore the ecosystem",
+    "eyebrow": "FOUR PROJECTS · ONE CLEAR MAP",
+    "title": "Find your place in the AGI ecosystem.",
+    "intro": "Start with the part that fits your goal. Explore ideas, inspect evidence, prepare a work request or set up an execution environment.",
+    "current": "You are here",
+    "open": "Explore project",
+    "cards": [
+      {
+        "id": "alpha",
+        "name": "AGI Alpha Agent",
+        "role": "Ideas & plans",
+        "description": "Explore research, ideas and candidate plans before deciding what work is worth pursuing.",
+        "detail": "Planning does not publish or fund a job."
+      },
+      {
+        "id": "jobs",
+        "name": "AGIJobsv0",
+        "role": "JobRegistry demos & evidence",
+        "description": "Inspect the AGIALPHA-token JobRegistry track, its demonstrations and the evidence behind them.",
+        "detail": "A separate protocol from the USDC Manager."
+      },
+      {
+        "id": "manager",
+        "name": "AGIJobManager",
+        "role": "Work requests & USDC escrow",
+        "description": "Prepare a clear request here. Review the separate USDC escrow workflow before publishing or funding work.",
+        "detail": "A saved request is a draft, not a funded job."
+      },
+      {
+        "id": "fleet",
+        "name": "AGI Fleet Linux",
+        "role": "Execution & review environments",
+        "description": "Explore the environments used to carry out work and independently review its evidence.",
+        "detail": "Machines and reviewers need their own setup."
+      }
+    ],
+    "boundaryTitle": "Connected ideas. Separate responsibilities.",
+    "boundary": "Each project needs its own configuration, permissions and qualification. These links do not transfer funds, jobs or authority, and do not establish live readiness. AGIJobsv0’s AGIALPHA-token JobRegistry and AGIJobManager’s USDC escrow are distinct systems."
   }
 }

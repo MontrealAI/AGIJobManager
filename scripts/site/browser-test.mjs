@@ -4,6 +4,13 @@ import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
+const { default: AxeBuilder } = await import('../../ui/node_modules/@axe-core/playwright/dist/index.mjs');
+const ecosystemProjects = {
+  alpha: 'https://montrealai.github.io/AGI-Alpha-Agent-v0/',
+  jobs: 'https://montrealai.github.io/AGIJobsv0/',
+  manager: 'https://montrealai.github.io/AGIJobManager/',
+  fleet: 'https://montrealai.github.io/AGI-Fleet-Linux/',
+};
 const output = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../../build/pages",
@@ -59,6 +66,19 @@ async function checkEmployerEntries(page, language, label) {
   }
   assert.equal(await page.locator('#employer-welcome').isVisible(), true, `${label}: newcomer welcome is visible`);
   assert.equal(await page.locator('#employer-welcome h2').count(), 1, `${label}: newcomer welcome has a heading`);
+  assert.equal(await page.locator('#ecosystem').isVisible(), true, `${label}: ecosystem is visible`);
+  assert.equal(await page.locator('.ecosystem-card').count(), 4, `${label}: four ecosystem projects`);
+  assert.equal(await page.locator('.ecosystem-current').count(), 1, `${label}: current project is identified`);
+  assert.equal(await page.locator('.ecosystem-boundary').isVisible(), true, `${label}: protocol boundaries remain visible`);
+  for (const [project, url] of Object.entries(ecosystemProjects)) {
+    const entry = page.locator(`[data-ecosystem-project="${project}"]`);
+    assert.equal(await entry.count(), 1, `${label}: one ${project} ecosystem link`);
+    assert.equal(await entry.getAttribute('href'), url, `${label}: exact ${project} URL`);
+    assert.ok((await entry.textContent()).trim(), `${label}: ${project} has a text label`);
+    const box = await entry.boundingBox();
+    assert.ok(box.width >= 48 && box.height >= 48, `${label}: ${project} link has a 48px target`);
+    assert.ok(await entry.evaluate(element => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1), `${label}: ${project} text is not clipped`);
+  }
 }
 
 async function checkReflow(page, label) {
@@ -171,8 +191,39 @@ try {
     assert.ok(page.url().endsWith('/agijobmanager-usdc.html'), 'The advanced console remains available');
     await page.close();
   }
+  // Exercise semantic links with the keyboard and Back without contacting the public sites.
+  for (const language of ['', 'fr/']) {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const page = await context.newPage();
+    await page.route('https://montrealai.github.io/**', route => route.fulfill({
+      contentType: 'text/html', body: '<!doctype html><html lang="en"><title>Project route test</title><h1>Project route test</h1></html>',
+    }));
+    await page.goto(base + language);
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.className), 'skip', 'The skip link remains the first keyboard stop');
+    assert.ok(await page.locator('.skip').evaluate(element => element.getBoundingClientRect().top >= 0 && getComputedStyle(element).clipPath === 'none'), 'The focused skip link is fully available');
+    await page.keyboard.press('Enter');
+    assert.ok(page.url().endsWith('#main'), 'The skip link reaches the main content');
+    await page.locator('.header a[href="#ecosystem"]').focus();
+    await page.keyboard.press('Enter');
+    assert.ok(page.url().endsWith('#ecosystem'), 'Keyboard navigation reaches the ecosystem');
+    for (const [project, url] of Object.entries(ecosystemProjects)) {
+      await page.locator(`[data-ecosystem-project="${project}"]`).focus();
+      await page.keyboard.press('Enter');
+      await page.waitForURL(url);
+      await page.goBack();
+      assert.ok(page.url().startsWith(base + language), `${project}: Back returns to the chosen language`);
+      assert.equal(await page.locator('#ecosystem').isVisible(), true);
+    }
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const audit = await new AxeBuilder({ page }).include('#ecosystem').include('.home-hero-shell').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+      assert.deepEqual(audit.violations, [], `${language || 'en'} ${width}px: hero and ecosystem accessibility`);
+    }
+    await context.close();
+  }
   console.log(
-    "Pages browser checks passed: English/French, 320/390/768/1440 widths, larger text and 200% text reflow, prominent locale-preserving employer routes, 48px primary links, keyboard entry, four role routes, calculator, search, FAQ, no-JS onboarding and advanced console navigation.",
+    "Pages browser checks passed: English/French, four-project ecosystem links and keyboard/Back navigation, hero/ecosystem WCAG checks, 320/390/768/1440 widths, larger text and 200% text reflow, prominent locale-preserving employer routes, 48px primary links, keyboard entry, four role routes, calculator, search, FAQ, no-JS onboarding and advanced console navigation.",
   );
 } finally {
   await browser.close();
