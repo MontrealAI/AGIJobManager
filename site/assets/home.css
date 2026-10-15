@@ -96,6 +96,9 @@
   color: var(--ink);
   border: 2px solid #04719a;
 }
+.home-page .skip:not(:focus) {
+  clip-path: inset(50%);
+}
 .home-page .button {
   display: inline-flex;
   min-height: 56px;
@@ -224,10 +227,41 @@
 }
 
 .home-page .home-hero-shell {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   background:
-    radial-gradient(ellipse at 90% 20%, #714999 0, transparent 54%),
-    linear-gradient(115deg, #26103d, #43235c);
+    radial-gradient(ellipse at 88% 8%, #633b8b 0, transparent 55%),
+    radial-gradient(ellipse at 12% 95%, #43205f 0, transparent 60%),
+    #1b0e2e;
   color: #fff9ff;
+}
+.home-page .home-hero-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image:
+    radial-gradient(circle at 12% 13%, #f6dcff 0 1px, transparent 2px),
+    radial-gradient(circle at 43% 6%, #e4caff 0 1px, transparent 2px),
+    radial-gradient(circle at 61% 91%, #f6d99c 0 1px, transparent 2px),
+    radial-gradient(circle at 96% 73%, #e4caff 0 1px, transparent 2px);
+  background-size: 430px 380px, 590px 470px, 730px 610px, 510px 530px;
+}
+.home-page .home-hero-shell::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  width: 860px;
+  height: 860px;
+  top: -380px;
+  right: -300px;
+  border: 1px solid #d2adf026;
+  border-radius: 50%;
+  box-shadow: 0 0 0 100px #c194ec09, 0 0 0 200px #c194ec05;
 }
 .home-page .hero {
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
@@ -357,6 +391,184 @@
   margin: 0;
   border-top: 1px solid #e2d8e9;
   padding-top: 18px;
+}
+
+.home-page .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.home-page .ecosystem-section {
+  color: #f7efff;
+  background: linear-gradient(165deg, #1b0e2e, #28163d 65%, #21112f);
+  border-top: 1px solid #c89ee331;
+}
+.home-page .ecosystem-heading {
+  max-width: 850px;
+  margin-bottom: 38px;
+}
+.home-page .ecosystem-heading .eyebrow {
+  color: #d9b6fa;
+  letter-spacing: 0.07em;
+}
+.home-page .ecosystem-heading .section-intro {
+  color: #ded0ec;
+  margin-bottom: 0;
+}
+.home-page .ecosystem-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+.home-page .ecosystem-card {
+  display: flex;
+  flex-direction: column;
+  padding: 26px;
+  background: #302041;
+  border: 1px solid #725389;
+  border-radius: 20px;
+}
+.home-page .ecosystem-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 26px;
+}
+.home-page .ecosystem-symbol {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #9870b5;
+  border-radius: 14px;
+  background: #402a57;
+  color: #edceff;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.home-page .ecosystem-current-label {
+  color: #4f296a;
+  background: #eadcf5;
+  border: 1px solid #cbb3dc;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: var(--home-help);
+  font-weight: 650;
+}
+.home-page .ecosystem-project {
+  color: #dabafa;
+  font-size: var(--home-help);
+  font-weight: 650;
+  margin-bottom: 10px;
+}
+.home-page .ecosystem-card h3 {
+  margin-bottom: 18px;
+  color: #fcf6ff;
+}
+.home-page .ecosystem-description {
+  color: #e1d5ed;
+  font-size: var(--home-read);
+  margin-bottom: 18px;
+}
+.home-page .ecosystem-detail {
+  color: #d2bfdf;
+  font-size: var(--home-help);
+  margin-bottom: 26px;
+}
+.home-page .ecosystem-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 48px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #725389;
+  color: #f3d8ff;
+  font-size: var(--home-help);
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.home-page .ecosystem-link > [aria-hidden="true"] {
+  flex-shrink: 0;
+}
+.home-page .ecosystem-link:hover {
+  color: white;
+  text-decoration-thickness: 2px;
+}
+.home-page .ecosystem-link:focus-visible {
+  outline-color: #f6d99c;
+}
+.home-page .ecosystem-current {
+  color: var(--ink);
+  background: #fff9ef;
+  border-color: #f6d99c;
+  box-shadow: 0 12px 40px #140b242e;
+}
+.home-page .ecosystem-current h3 {
+  color: #291b3d;
+}
+.home-page .ecosystem-current :is(.ecosystem-description, .ecosystem-detail) {
+  color: #61546e;
+}
+.home-page .ecosystem-current :is(.ecosystem-project, .ecosystem-link) {
+  color: #633099;
+}
+.home-page .ecosystem-current .ecosystem-link {
+  border-color: #d0b9df;
+}
+.home-page .ecosystem-current .ecosystem-link:focus-visible {
+  outline-color: #04719a;
+}
+.home-page .ecosystem-boundary {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 26px 0 0;
+  margin-top: 12px;
+}
+.home-page .ecosystem-boundary > span {
+  flex-shrink: 0;
+  color: #e4c7fa;
+  font-size: 1.8rem;
+  line-height: 1.3;
+}
+.home-page .ecosystem-boundary h3 {
+  color: #f3e9fb;
+  font-size: var(--home-read);
+  margin-bottom: 8px;
+}
+.home-page .ecosystem-boundary p {
+  color: #d9cce4;
+  font-size: var(--home-help);
+  max-width: 1080px;
+  margin-bottom: 0;
+}
+@media (max-width: 1100px) {
+  .home-page .ecosystem-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 620px) {
+  .home-page .ecosystem-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .home-page .ecosystem-card {
+    padding: 24px;
+  }
+  .home-page .ecosystem-boundary {
+    gap: 12px;
+  }
 }
 
 .home-page .welcome-heading {
@@ -1252,6 +1464,8 @@
     width: 100%;
   }
   .home-page .home-hero-shell,
+  .home-page .ecosystem-section,
+  .home-page .ecosystem-card,
   .home-page .welcome-examples article,
   .home-page .role-panel,
   .home-page .flow-section,
@@ -1260,6 +1474,20 @@
   .home-page .evidence-section {
     background: white !important;
     box-shadow: none;
+  }
+  .home-page .home-hero-shell::before,
+  .home-page .home-hero-shell::after {
+    display: none;
+  }
+  .home-page .ecosystem-section :is(h2, h3) {
+    color: black;
+  }
+  .home-page .ecosystem-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .home-page .ecosystem-card {
+    break-inside: avoid;
+    border-color: #999;
   }
   .home-page .hero {
     display: block;

@@ -95,6 +95,27 @@ for (const file of ["index.html", "fr/index.html", "employers/index.html", "fr/e
     }
     for (const id of ['employer-welcome', 'home-larger-text', 'advanced-console-link'])
       assert.ok(ids.includes(id), `${file}: missing newcomer navigation ${id}`);
+    assert.ok(html.indexOf('id="ecosystem"') < html.indexOf('id="successor-welcome"'), `${file}: ecosystem map appears near the beginning`);
+    assert.ok(html.includes('href="#ecosystem"'), `${file}: navigation reaches the ecosystem map`);
+    assert.equal((html.match(/data-ecosystem-project=/g) || []).length, 4, `${file}: exactly four ecosystem links`);
+    const ecosystemUrls = {
+      alpha: 'https://montrealai.github.io/AGI-Alpha-Agent-v0/',
+      jobs: 'https://montrealai.github.io/AGIJobsv0/',
+      manager: 'https://montrealai.github.io/AGIJobManager/',
+      fleet: 'https://montrealai.github.io/AGI-Fleet-Linux/',
+    };
+    for (const [project, url] of Object.entries(ecosystemUrls)) {
+      assert.ok(html.includes(`data-ecosystem-project="${project}" href="${url}"`), `${file}: ${project} has its exact public project URL`);
+      assert.ok(ids.includes(`ecosystem-${project}-title`), `${file}: ${project} has an accessible heading`);
+    }
+    const language = file.startsWith('fr/') ? 'fr' : 'en';
+    const copy = JSON.parse(fs.readFileSync(path.join(root, `site/content/${language}.json`), 'utf8')).ecosystem;
+    assert.deepEqual(copy.cards.map(card => card.id), ['alpha', 'jobs', 'manager', 'fleet']);
+    assert.match(copy.cards.find(card => card.id === 'jobs').description, /AGIALPHA/);
+    assert.match(copy.cards.find(card => card.id === 'manager').role, /USDC/);
+    assert.match(copy.boundary, /AGIALPHA.*USDC/);
+    assert.match(copy.boundary, language === 'fr' ? /ne transfèrent ni fonds, ni travaux, ni autorité/ : /do not transfer funds, jobs or authority/);
+    assert.match(copy.boundary, language === 'fr' ? /ne prouvent pas la disponibilité opérationnelle/ : /do not establish live readiness/);
     assert.ok(html.includes('href="#employer-welcome"'), `${file}: navigation reaches the newcomer welcome`);
     assert.ok(html.includes('id="home-larger-text" aria-pressed="false"') || /id="home-larger-text"[^>]*aria-pressed="false"/.test(html), `${file}: text size control declares its initial state`);
   }
@@ -119,5 +140,5 @@ assert.ok(
     !fs.existsSync(path.join(out, ".git")),
 );
 console.log(
-  "Pages checks passed: bilingual pages, prominent locale-preserving employer routes, newcomer navigation, guide paths, exact USDC allocations, invalid inputs and byte-identical console aliases.",
+  "Pages checks passed: bilingual pages, four-project ecosystem routes and protocol boundaries, prominent locale-preserving employer routes, newcomer navigation, guide paths, exact USDC allocations, invalid inputs and byte-identical console aliases.",
 );
