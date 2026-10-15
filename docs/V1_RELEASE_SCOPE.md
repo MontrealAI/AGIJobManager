@@ -1,15 +1,15 @@
 # AGIJobManager release scope
 
-**Current edition: v1.17.0.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
+**Current edition: v1.17.1.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
 
-## Unreleased contract-hardening candidate
+## Inherited contract hardening and second-deployment checks
 
-This source now changes ENS membership authorization to reject stale ownership/resolver records. The [engineering finding](qualification/ENS_MEMBERSHIP_REVOCATION.md) describes the scope and verification limits. It changes linked library bytecode and needs new full source qualification and independent review before deployment; historical ABI/bytecode-preservation claims describe the preceding release baseline. Existing managers are immutable and keep their original code, jobs and claims. Follow the [second-deployment checklist](DEPLOYMENT/SECOND_MAINNET_RELEASE.md); publication is not activation.
+The ENS membership correction introduced in v1.17.0 rejects unowned-name and stale-wrapper admission paths. The [engineering finding](qualification/ENS_MEMBERSHIP_REVOCATION.md) describes the scope and verification limits. This patch preserves that Solidity source and corrected linked-library bytecode. Existing managers are immutable and keep their original code, jobs and claims. Follow the [second-deployment checklist](DEPLOYMENT/SECOND_MAINNET_RELEASE.md) and [scoped owner qualification decision](DEPLOYMENT/SECOND_MAINNET_QUALIFICATION_DECISION.md), which records the external-review and Sepolia omissions. Publication is not activation.
 
 ## Included in this edition
 
 - Public source and a versioned USDC console with participant, owner and recovery guidance.
-- Eight fixed library links, USDC accounting, buyer protections and reserved payment claims, plus the unreleased ENS authorization correction described above.
+- Eight fixed library links, USDC accounting, buyer protections and reserved payment claims, including the inherited ENS authorization correction described above.
 - Hardhat setup, explicit read-only plans, guarded deployment, source verification, transaction journals, recovery and instance-readiness checks.
 - Lifecycle economics, signed action-bound qualification, pre-funding offer/capacity checks and canonical state/closure observations.
 - Reproducible release assets, source qualification, per-file manifests and asset checksums.
@@ -18,13 +18,13 @@ The public archive contains no private Fleet/Agent/Node application, production 
 
 ## Published download versus current source
 
-**v1.17.0 integrates strict explorer-input comparison and compiler-derived NFT registry readiness into standard read-only commands.** Production contracts, compiler settings, dependency resolutions, ABI and settlement rules are preserved. Private Fleet 1.10.0, Agent 1.16.0 and Node 2.17.0 are separate unchanged companion editions; this release does not qualify their hardware or execution.
+**v1.17.1 adds read-only USDC implementation binding and bilingual workflow discovery.** Solidity source, compiler settings, dependency resolutions, ABI and settlement rules are preserved from v1.17.0. Private Fleet 1.10.0, Agent 1.16.0 and Node 2.17.0 are separate unchanged companion editions; this release does not qualify their hardware or execution.
 
 Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md` and `RELEASE_MANIFEST.json`, plus the published external `QUALIFICATION.json`, identify the qualified source and publication evidence. Main may contain later work; never combine its scripts with an older release's instructions or attestations. Current guides apply to their checkout. Historical releases, dated qualification records and legal notices retain their original versions.
 
 | Edition | Change introduced |
 | --- | --- |
-| [v1.17.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.17.0) | Strict Etherscan comparison, compiler-derived bounded NFT readiness and exact-source publication |
+| [v1.17.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.17.1) | Read-only USDC implementation binding, second-deployment qualification decision and bilingual workflow directory |
 | [v1.13.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.13.0) | Reviewer-window reservations and separate pilot quality/economics targets |
 | [v1.12.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.12.0) | Participant project cash scenarios, cohort loss/supervision gates and private stale-observation rejection |
 | [v1.11.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.11.0) | Workforce policy V2, capacity planning and dependent-review time admission |

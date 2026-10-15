@@ -7,7 +7,7 @@ import stat
 
 REPOSITORY = 'MontrealAI/AGIJobManager'
 TAG = 'v' + json.loads((pathlib.Path(__file__).resolve().parents[2] / 'package.json').read_text())['version']
-TITLE = TAG + ' — ENS admission and deployment hardening'
+TITLE = TAG + ' — Second-deployment checks and workflow discovery'
 BUILDER_ASSETS = {'My-SUCCESSOR-Omega-en.html', 'My-SUCCESSOR-Omega-fr.html', 'SUCCESSOR-Omega-editable-source.zip', 'SOURCE_MANIFEST.json'}
 LIMIT = 450_000_000
 BASE = '191cf3590e5cdc08df1bb0af500ee28a91c8b010'
