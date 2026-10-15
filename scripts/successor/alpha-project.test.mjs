@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { importAlphaProject, inspectAlphaProject, advanceAlphaProject, ALPHA_SOURCE } from './alpha-project.mjs';
 import { canonical, sha256 } from '../../site/assets/successor/safe.mjs';
@@ -70,4 +72,57 @@ test('new history cannot relabel a local preference as an execution, and invalid
   const planned = await advanceAlphaProject(executed, { alphaCheckout: root, action: 'select-and-draft', budget: '100' });
   const altered = JSON.parse(planned); altered.history.at(-1).kind = 'local-run'; delete altered.sha256; altered.sha256 = await sha256(altered);
   await assert.rejects(inspectAlphaProject(canonical(altered), { alphaCheckout: root }), { code: 'TRANSITION_CHANGED' });
+});
+
+test('a selected transfer cannot rerun while retaining old selection and USDC plans', async () => {
+  const imported = await importAlphaProject(await fixture(), options('en'));
+  const executed = await advanceAlphaProject(imported, { alphaCheckout: root, action: 'run' });
+  const planned = await advanceAlphaProject(executed, { alphaCheckout: root, action: 'select-and-draft', budget: '100' });
+  await assert.rejects(advanceAlphaProject(planned, { alphaCheckout: root, action: 'run' }), { code: 'EXPLICIT_NEW_CYCLE_REQUIRED' });
+  const read = await inspectAlphaProject(planned, { alphaCheckout: root });
+  assert.equal(read.transfer.history.length, 3); assert.equal(read.state.plans.length, 1);
+  assert.notEqual(read.state.active, null);
+});
+
+test('fully resealed capsules cannot fabricate the complete Manager source manifest', async () => {
+  const imported = await importAlphaProject(await fixture(), options('en'));
+  for (const change of [manifest => manifest.commit = '0'.repeat(40), manifest => manifest.files[0].sha256 = '0'.repeat(64), manifest => manifest.files.reverse()]) {
+    const transfer = JSON.parse(imported), capsule = JSON.parse(transfer.history[0].capsule);
+    change(capsule.payload.sourceManifest); capsule.sha256 = await sha256(capsule.payload);
+    transfer.history[0].capsule = canonical(capsule); transfer.history[0].sha256 = await sha256(transfer.history[0].capsule);
+    delete transfer.sha256; transfer.sha256 = await sha256(transfer);
+    await assert.rejects(inspectAlphaProject(canonical(transfer), { alphaCheckout: root }), { code: 'MANAGER_SOURCE_DRIFT' });
+  }
+});
+
+test('hidden tracked edits are rejected before loading the pinned native validator', { timeout: 120000 }, async () => {
+  const original = await fixture(), temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'alpha-validator-bytes-'));
+  const git = args => execFileSync('git', ['-C', temporary, ...args], { encoding: 'utf8', timeout: 30000 });
+  try {
+    execFileSync('git', ['-C', root, 'worktree', 'add', '--detach', temporary, ALPHA_SOURCE.commit], { timeout: 60000, stdio: 'pipe' });
+    for (const relative of ['examples/successor-project/engine.mjs', 'docs/successor/mission/sources.json']) {
+      const file = path.join(temporary, relative), before = fs.readFileSync(file);
+      for (const flag of ['skip-worktree', 'assume-unchanged']) {
+        git(['update-index', '--' + flag, '--', relative]);
+        try {
+          fs.writeFileSync(file, Buffer.concat([before, Buffer.from('\n/* hidden tracked edit */\n')]));
+          assert.equal(git(['status', '--porcelain', '--untracked-files=no']).trim(), '');
+          await assert.rejects(importAlphaProject(original, { ...options('en'), alphaCheckout: temporary }), { code: 'ALPHA_SOURCE_BYTES' });
+        } finally { fs.writeFileSync(file, before); git(['update-index', '--no-' + flag, '--', relative]); }
+      }
+      git(['update-index', '--skip-worktree', '--', relative]);
+      try {
+        fs.unlinkSync(file);
+        await assert.rejects(importAlphaProject(original, { ...options('en'), alphaCheckout: temporary }), { code: 'ALPHA_SOURCE_BYTES' });
+        fs.symlinkSync(path.join(root, relative), file);
+        await assert.rejects(importAlphaProject(original, { ...options('en'), alphaCheckout: temporary }), { code: 'ALPHA_SOURCE_BYTES' });
+      } finally {
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+        fs.writeFileSync(file, before); git(['update-index', '--no-skip-worktree', '--', relative]);
+      }
+    }
+  } finally {
+    execFileSync('git', ['-C', root, 'worktree', 'remove', '--force', temporary], { timeout: 30000, stdio: 'pipe' });
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
 });

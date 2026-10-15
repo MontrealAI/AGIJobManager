@@ -19,7 +19,23 @@ Mapping is explicit: Alpha `group` becomes Manager `category`; `amount` retains 
 
 The transfer is bounded to 4 MB and eight Manager checkpoints. At capacity, retain/export the unchanged file. Neither history is pruned automatically. Recovery revalidates the native Alpha dossier and every Manager capsule, mission, hash and history prefix. It grants no authority.
 
+Each capsule must contain the complete expected Manager source manifest,
+including commit and ordered file hashes. Recomputed nested/outer checksums do
+not authorize different provenance. Before executing Alpha's validator, the
+adapter reads the closed 17-file inventory from the pinned Git object and checks
+actual bytes and symlink boundaries, even when Git index flags hide edits.
+Once a transfer has a selected candidate or USDC plan, `run` refuses it with
+`EXPLICIT_NEW_CYCLE_REQUIRED`. Preserve that history and explicitly choose a new
+native Alpha cycle for different work; selection is never silently retained or
+reset by another run.
+
 This adapter does **not** finish the four-repository flagship. The native Alpha project reader does not yet ingest the Manager transfer as a new Alpha cycle. The project handoff has not yet been integrated into the hosted bilingual journey, Jobs v0 receiver, Fleet execution/review envelope or protected evaluation. Existing lower-level commissioning paths remain separate. No cross-repository production commissioning is claimed.
+
+The separately qualified [Alpha return adapter in PR #4820](https://github.com/MontrealAI/AGI-Alpha-Agent-v0/pull/4820)
+can retain this transfer inside a new native Alpha cycle through a separate CLI
+continuity envelope. Use its exact selected Manager revision; a source pin from
+before this review correction is not interchangeable. The native project schema
+and hosted journey remain separate from that optional receiver.
 
 ## Français
 
@@ -27,4 +43,15 @@ Cet adaptateur local conserve le dossier Alpha original, l'identité du projet e
 
 Choisissez `fr` lors de l'importation. `run` recalcule les données localement, sans sélectionner de version. `select-and-draft` sélectionne explicitement le résultat vérifié localement et prépare une proposition **USDC non financée**, au prix indiqué séparément. Aucune conversion $AGIALPHA/USDC, signature, permission, évaluation protégée ou revue indépendante n'est créée. Les fichiers existants ne sont jamais remplacés.
 
-Le retour vers un nouveau cycle Alpha, l'interface hébergée, la réception Jobs v0 et la délégation/revue Fleet restent à intégrer et à qualifier.
+L’interface hébergée, la réception Jobs v0 et la délégation/revue Fleet restent à intégrer et à qualifier.
+
+Le récepteur CLI distinct de la [PR Alpha #4820](https://github.com/MontrealAI/AGI-Alpha-Agent-v0/pull/4820)
+conserve le transfert dans un nouveau cycle au moyen d’une enveloppe séparée.
+Utilisez sa révision Manager épinglée exacte; ce chemin ne termine pas l’interface
+hébergée ni l’intégration des quatre dépôts.
+
+Le manifeste source Manager complet est vérifié dans chaque capsule. Les 17
+fichiers du validateur Alpha sont comparés à l’inventaire Git épinglé, même si
+des indicateurs Git masquent une modification. Après sélection ou préparation
+d’une proposition USDC, `run` refuse de relancer ce transfert : conservez son
+historique et choisissez explicitement un nouveau cycle Alpha.

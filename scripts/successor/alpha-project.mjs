@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn, execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { fail, keys, canonical, parseStrict, sha256, publicOnly } from '../../site/assets/successor/safe.mjs';
 import { defaultMission, csvRows, validateMission } from '../../site/assets/successor/missions.mjs';
 import { createSystem, runCandidate, chooseCandidate, exportCapsule, inspectCapsule, recordPlan } from '../../site/assets/successor/model.mjs';
@@ -18,6 +19,25 @@ function checkedCheckout(directory) {
   const git = args => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', timeout: 10000, maxBuffer: 100000 }).trim();
   fail(git(['rev-parse', 'HEAD']) === ALPHA_SOURCE.commit && git(['rev-parse', 'HEAD^{tree}']) === ALPHA_SOURCE.tree, 'ALPHA_SOURCE_PIN');
   fail(git(['status', '--porcelain', '--untracked-files=no']) === '', 'ALPHA_SOURCE_DIRTY');
+  // Git status can hide edits behind skip-worktree/assume-unchanged. Read the
+  // validator's complete closed source inventory from the pinned Git object,
+  // then verify the actual files Node will load, including symlink boundaries.
+  const manifestPath = 'docs/successor/mission/sources.json';
+  const trustedBytes = execFileSync('git', ['-C', root, 'show', `${ALPHA_SOURCE.commit}:${manifestPath}`], { timeout: 10000, maxBuffer: 100000 });
+  const fileBytes = relative => {
+    fail(typeof relative === 'string' && /^[A-Za-z0-9_./-]+$/.test(relative) && !relative.split('/').includes('..') && !path.isAbsolute(relative), 'ALPHA_SOURCE_BYTES');
+    const file = path.join(root, relative);
+    try {
+      fail(fs.lstatSync(file).isFile() && fs.realpathSync(file) === file, 'ALPHA_SOURCE_BYTES');
+      return fs.readFileSync(file);
+    } catch { fail(false, 'ALPHA_SOURCE_BYTES'); }
+  };
+  fail(fileBytes(manifestPath).equals(trustedBytes), 'ALPHA_SOURCE_BYTES');
+  const manifest = JSON.parse(trustedBytes.toString('utf8'));
+  fail(manifest.schema === 'successor-mission-source/v1' && Object.keys(manifest.sources).length === 17, 'ALPHA_SOURCE_BYTES');
+  for (const [relative, expected] of Object.entries(manifest.sources)) {
+    fail(createHash('sha256').update(fileBytes(relative)).digest('hex') === expected, 'ALPHA_SOURCE_BYTES');
+  }
   return root;
 }
 async function validateNative(raw, directory) {
@@ -83,7 +103,7 @@ export async function inspectAlphaProject(raw, { alphaCheckout }) {
     keys(entry, ['kind', 'capsule', 'sha256']); fail(entry.sha256 === await sha256(entry.capsule), 'CAPSULE_CHANGED');
     fail(index === 0 ? entry.kind === 'imported' : ['local-run', 'selected-for-usdc-draft'].includes(entry.kind), 'TRANSFER_HISTORY');
     const inspected = await inspectCapsule(entry.capsule), state = inspected.capsule.payload.state;
-    fail(inspected.capsule.payload.sourceManifest?.engineSha256 === builderArtifacts().sourceManifest.engineSha256, 'MANAGER_SOURCE_DRIFT');
+    fail(canonical(inspected.capsule.payload.sourceManifest) === canonical(builderArtifacts().sourceManifest), 'MANAGER_SOURCE_DRIFT');
     fail(canonical(state.mission) === canonical(mission), 'MISSION_CHANGED');
     if (prior) {
       fail(state.chronicle.length > prior.chronicle.length && canonical(state.chronicle.slice(0, prior.chronicle.length)) === canonical(prior.chronicle), 'HISTORY_REWRITTEN');
@@ -108,7 +128,10 @@ export async function advanceAlphaProject(raw, { alphaCheckout, action, budget }
 }
 
 async function nextState(state, kind, budget) {
-  if (kind === 'local-run') return (await runCandidate(state, 'baseline', builderArtifacts().sourceManifest.engineSha256)).state;
+  if (kind === 'local-run') {
+    fail(state.active === null && state.plans.length === 0, 'EXPLICIT_NEW_CYCLE_REQUIRED');
+    return (await runCandidate(state, 'baseline', builderArtifacts().sourceManifest.engineSha256)).state;
+  }
   fail(kind === 'selected-for-usdc-draft' && state.candidates.length > 0, 'RUN_REQUIRED');
   const next = await chooseCandidate(state, state.candidates.at(-1).id, 'keep');
   return recordPlan(next, await prepareImprovement(next, { budget, requested: next.mission.purpose }));
