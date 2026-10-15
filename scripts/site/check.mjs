@@ -13,6 +13,13 @@ const root = path.resolve(
     "../..",
   ),
   out = path.join(root, "build/pages");
+const inventory = JSON.parse(fs.readFileSync(path.join(out, "build-info.json"), "utf8"));
+assert.equal(Object.hasOwn(inventory.files, ".nojekyll"), false, "Build-only marker must not claim public deployment coverage");
+assert.deepEqual(Object.keys(inventory.buildOnlyFiles), [".nojekyll"]);
+assert.equal(inventory.buildOnlyFiles[".nojekyll"].bytes, 0);
+assert.equal(inventory.buildOnlyFiles[".nojekyll"].sha256, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+assert.equal(fs.readFileSync(path.join(out, ".nojekyll")).length, 0);
+assert.ok(inventory.buildOnlyFiles[".nojekyll"].reason.includes("excluded"));
 const examples = [
   ["100", 8, [52000000n, 8000000n, 30000000n, 10000000n]],
   ["1000", 8, [520000000n, 80000000n, 300000000n, 100000000n]],

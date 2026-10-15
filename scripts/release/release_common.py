@@ -2,12 +2,14 @@
 import hashlib
 import json
 import pathlib
+import posixpath
 import re
 import stat
+from urllib.parse import urlsplit, urlunsplit
 
 REPOSITORY = 'MontrealAI/AGIJobManager'
 TAG = 'v' + json.loads((pathlib.Path(__file__).resolve().parents[2] / 'package.json').read_text())['version']
-TITLE = TAG + ' — Second-deployment checks and workflow discovery'
+TITLE = TAG + ' — Guarded optional-router verification and precise Pages inventory'
 BUILDER_ASSETS = {'My-SUCCESSOR-Omega-en.html', 'My-SUCCESSOR-Omega-fr.html', 'SUCCESSOR-Omega-editable-source.zip', 'SOURCE_MANIFEST.json'}
 LIMIT = 450_000_000
 BASE = '191cf3590e5cdc08df1bb0af500ee28a91c8b010'
@@ -53,6 +55,23 @@ def source_path(name, mode):
     require(not (p.name == '.env' or (p.name.startswith('.env.') and not p.name.endswith(('.example', '.sample', '.template')))), 'Private environment file must not ship')
     require(p.suffix.lower() not in {'.zip', '.tar', '.gz', '.xz', '.7z', '.pem', '.key', '.p12', '.pfx'}, 'Archive or signer material must not ship: ' + name)
     require((len(p.parts) > 1 and p.parts[0] in ROOT_DIRS) or (len(p.parts) == 1 and (name in ROOT_FILES or name.startswith('hardhat.') or name.endswith(('.md', '.yml', '.yaml')))), 'Path is outside the reviewed inclusion policy: ' + name)
+
+
+def packaged_guide(data, source_name, available, guide_destinations):
+    """Rebase inline Markdown links in root guide copies; preserve source bytes."""
+    def rebase(match):
+        href = match.group(2)
+        target = urlsplit(href)
+        if target.scheme or target.netloc or href.startswith('#'):
+            return match.group(0)
+        resolved = posixpath.normpath(posixpath.join(posixpath.dirname(source_name), target.path))
+        require(not resolved.startswith(('/', '../')) and resolved != '..' and '\\' not in resolved, 'Unsafe packaged guide link: ' + href)
+        source_target = 'source/' + resolved
+        require(source_target in available, 'Missing packaged guide link target: ' + resolved)
+        destination = guide_destinations.get(resolved, source_target)
+        return match.group(1) + urlunsplit(('', '', destination, target.query, target.fragment)) + match.group(3)
+    return re.sub(r'(\[[^\]\n]+\]\()([^()\s]+)(\))', rebase, data.decode('utf-8')).encode('utf-8')
+
 
 def run_jobs(api, run_id, attempt):
     result, page = [], 1

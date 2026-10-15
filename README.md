@@ -46,11 +46,11 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Source candidate: v1.17.1 — ENS admission and deployment hardening.**
+**Source candidate: v1.17.2 — Guarded optional-router verification and precise Pages inventory.**
 [Operate the already deployed instance](docs/OPERATIONS/COMMISSIONING.md) ·
-[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Candidate notes](docs/releases/v1.17.1/RELEASE_NOTES.md).
+[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Candidate notes](docs/releases/v1.17.2/RELEASE_NOTES.md).
 
-**[previously published v1.17.0 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.17.0/AGIJobManager-v1.17.0-COMPLETE.zip)** · [previously published v1.17.0 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.17.0/QUALIFICATION.json).
+**[previously published v1.17.1 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.17.1/AGIJobManager-v1.17.1-COMPLETE.zip)** · [previously published v1.17.1 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.17.1/QUALIFICATION.json).
 The source candidate is not yet published and does not inherit the prior release's qualification.
 Software publication and intake activation are separate decisions.
 

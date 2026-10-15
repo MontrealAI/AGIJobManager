@@ -118,6 +118,10 @@ function inventory(dir) {
   }
 }
 inventory(output);
+// upload-pages-artifact intentionally omits dotfiles. Preserve local build
+// markers separately instead of promising that they are deployed public files.
+const buildOnlyFiles = { ".nojekyll": { ...files[".nojekyll"], reason: "Local branch-publishing marker; excluded by upload-pages-artifact." } };
+delete files[".nojekyll"];
 fs.writeFileSync(
   path.join(output, "build-info.json"),
   JSON.stringify(
@@ -128,6 +132,7 @@ fs.writeFileSync(
       consoleSource: "ui/agijobmanager-usdc.html",
       successorSource: successor.sourceManifest,
       files,
+      buildOnlyFiles,
     },
     null,
     2,
