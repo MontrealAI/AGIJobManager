@@ -46,7 +46,7 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Source candidate: {{TAG}} — SUCCESSOR Ω Builder for Everyone.**
+**Source candidate: {{TAG}} — ENS admission and deployment hardening.**
 [Operate the already deployed instance](docs/OPERATIONS/COMMISSIONING.md) ·
 [Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Candidate notes](docs/releases/{{TAG}}/RELEASE_NOTES.md).
 
@@ -126,7 +126,7 @@ npm run docs:check
 
 For deployment, first run `npm --prefix hardhat run setup`, review the private configuration, then use the [Hardhat procedure](hardhat/README.md). New managers start with intake paused. The [default configuration](config/usdc-deployment.json) still auto-selects **no live manager**. The separate [recorded instance](config/mainnet/agi-jobs-usdc.json) is historical evidence, not a replacement default or an activation grant. Publishing this software does not deploy contracts or open intake.
 
-The current manager uses eight fixed linked libraries. Solidity, existing payout rules and historical deployment records are preserved in this release. A verified compatible manager needs no redeployment for this off-chain workforce release. Preserve original jobs on their original contracts; see [compatibility](docs/V1_RELEASE_SCOPE.md#compatibility).
+The current manager uses eight fixed linked libraries. This unreleased source includes [ENS membership revocation hardening](docs/qualification/ENS_MEMBERSHIP_REVOCATION.md), which changes library bytecode and requires fresh full qualification before a new deployment. Existing payout rules and historical deployment records are preserved. Existing immutable managers are not upgraded by this source change; preserve their jobs and recovery paths. Use the [second-deployment checklist](docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md) and [compatibility guide](docs/V1_RELEASE_SCOPE.md#compatibility).
 
 ## Release evidence and production use
 

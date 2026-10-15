@@ -22,14 +22,16 @@ function subnode(root, subdomain) {
   return soliditySha3({ type: "bytes32", value: root }, { type: "bytes32", value: labelHash });
 }
 
-async function setNameWrapperOwnership(nameWrapper, root, subdomain, owner) {
+async function setNameWrapperOwnership(nameWrapper, root, subdomain, owner, ens) {
   const node = subnode(root, subdomain);
+  await ens.setOwner(node, nameWrapper.address);
   await nameWrapper.setOwner(toBN(node), owner);
   return node;
 }
 
 async function setResolverOwnership(ens, resolver, root, subdomain, owner) {
   const node = subnode(root, subdomain);
+  await ens.setOwner(node, owner);
   await ens.setResolver(node, resolver.address);
   await resolver.setAddr(node, owner);
   return node;

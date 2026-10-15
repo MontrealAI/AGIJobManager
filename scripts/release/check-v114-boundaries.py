@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline source, dependency and version boundaries for v1.14.0 preparation."""
+"""Offline pinned dependency/compiler boundaries and explicit next-deployment source changes."""
 import hashlib, json, pathlib, subprocess
 ROOT=pathlib.Path(__file__).resolve().parents[2]
 BASE='191cf3590e5cdc08df1bb0af500ee28a91c8b010'
@@ -39,12 +39,28 @@ for directory in ('','hardhat/','ui/'):
         else: lock['packages'].pop(name)
     if not (lock==prior): raise AssertionError(f'Dependency resolution changed: {directory}')
 if not (read('config/usdc-deployment.json')['version']==read('package.json')['version']): raise AssertionError('Release invariant failed')
-protected=['contracts','hardhat.config.mjs','hardhat/hardhat.config.js','foundry.toml','remappings.txt']
-if not (not git('diff','--name-only',BASE,'--',*protected).strip()): raise AssertionError('Contract or compiler configuration changed')
+compiler=['hardhat.config.mjs','hardhat/hardhat.config.js','foundry.toml','remappings.txt']
+if git('diff','--name-only',BASE,'--',*compiler).strip(): raise AssertionError('Compiler configuration changed')
+contract_review=read('config/next-deployment-contract-changes.json')
+if contract_review.get('baseline')!=BASE or not contract_review.get('scope'): raise AssertionError('Contract review baseline/scope differs')
+changes=contract_review.get('files',{})
+if not isinstance(changes,dict) or not changes: raise AssertionError('Explicit contract change inventory required')
+actual=set(git('diff','--name-only',BASE,'--','contracts').splitlines())
+actual.update(git('ls-files','--others','--exclude-standard','--','contracts').splitlines())
+if actual!=set(changes): raise AssertionError('Contract changes exceed or omit the reviewed source inventory')
+for name,review in changes.items():
+    if not name.startswith('contracts/') or '..' in pathlib.PurePosixPath(name).parts or not review.get('purpose'): raise AssertionError('Invalid contract review entry')
+    before=subprocess.check_output(['git','show',f'{BASE}:{name}'],cwd=ROOT)
+    after=(ROOT/name).read_bytes()
+    if hashlib.sha256(before).hexdigest()!=review.get('beforeSha256') or hashlib.sha256(after).hexdigest()!=review.get('afterSha256'):
+        raise AssertionError('Reviewed contract source bytes differ: '+name)
+fixture='test/fixtures/ENSOwnership.pre-revocation.sol.txt'
+if hashlib.sha256((ROOT/fixture).read_bytes()).hexdigest()!=changes['contracts/utils/ENSOwnership.sol']['beforeSha256']:
+    raise AssertionError('Historical ENS source fixture differs from preserved baseline')
 pkg=read('hardhat/package.json')
 for name in ('reverify:mainnet','reverify:sepolia','check:readiness','check:readiness:sepolia'):
     if not ('--no-compile' in pkg['scripts'][name]): raise AssertionError(f'{name} must preserve saved artifacts')
 text=(ROOT/'hardhat/scripts/check-readiness.cjs').read_text()
 if not ('readRegistrySnapshot' in text and 'await checkNftPolicy(' not in text): raise AssertionError('Release invariant failed')
 if not (not list(ROOT.glob('.v114-bootstrap*'))): raise AssertionError('Bootstrap material must not ship')
-print('COMPATIBILITY BOUNDARIES PASSED: contracts/compiler unchanged; only reviewed, authorized security dependency repairs; standard commands integrated.')
+print('SOURCE BOUNDARIES PASSED: compiler unchanged; exact inventoried ENS/mock source changes and dependency repairs only. Changed library bytecode requires new full qualification and deployment.')

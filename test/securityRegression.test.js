@@ -62,8 +62,8 @@ contract("AGIJobManager security regressions", (accounts) => {
       { from: owner }
     );
 
-    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
-    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
+    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent, ens);
+    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator, ens);
     await manager.addModerator(moderator, { from: owner });
     agiTypeNft = await MockERC721.new({ from: owner });
     await manager.addAGIType(agiTypeNft.address, 1, { from: owner });
@@ -317,8 +317,8 @@ contract("AGIJobManager security regressions", (accounts) => {
       { from: owner }
     );
 
-    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
-    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
+    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent, ens);
+    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator, ens);
 
     await failing.setFailTransferFroms(true, { from: owner });
     await failing.approve(managerFailing.address, toBN(toWei("10")), { from: employer });
@@ -347,8 +347,8 @@ contract("AGIJobManager security regressions", (accounts) => {
       { from: owner }
     );
 
-    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
-    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
+    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent, ens);
+    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator, ens);
     await managerFailing.setRequiredValidatorApprovals(1, { from: owner });
     const agiType = await MockERC721.new({ from: owner });
     await agiType.mint(agent, { from: owner });

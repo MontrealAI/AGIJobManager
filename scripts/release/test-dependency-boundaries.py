@@ -8,13 +8,13 @@ class DependencyBoundaries(unittest.TestCase):
             root=pathlib.Path(tmp)/'source'
             subprocess.run(['git','clone','--quiet','--shared','--no-checkout',str(ROOT),str(root)],check=True)
             subprocess.run(['git','reset','--hard','191cf3590e5cdc08df1bb0af500ee28a91c8b010'],cwd=root,check=True,stdout=subprocess.DEVNULL)
-            paths=['package.json','package-lock.json','hardhat/package.json','hardhat/package-lock.json','ui/package.json','ui/package-lock.json','config/usdc-deployment.json','config/v114-dependency-repairs.json','scripts/release/check-v114-boundaries.py','hardhat/scripts/check-readiness.cjs']
+            paths=['package.json','package-lock.json','hardhat/package.json','hardhat/package-lock.json','ui/package.json','ui/package-lock.json','config/usdc-deployment.json','config/v114-dependency-repairs.json','scripts/release/check-v114-boundaries.py','hardhat/scripts/check-readiness.cjs','config/next-deployment-contract-changes.json','test/fixtures/ENSOwnership.pre-revocation.sol.txt','contracts/utils/ENSOwnership.sol','contracts/test/MockENS.sol']
             paths += [str(p.relative_to(ROOT)) for p in (ROOT/'ui/vendor/braces').rglob('*') if p.is_file()]
             for name in paths:
                 target=root/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/name,target)
             def check(): return subprocess.run(['python3',str(root/'scripts/release/check-v114-boundaries.py')],cwd=root,capture_output=True,text=True)
             self.assertEqual(check().returncode,0)
-            cases=[('package.json','0.8.37','0.8.38'),('hardhat/package-lock.json','6.17.0','6.17.1'),('ui/package-lock.json','15.5.27','15.5.28'),('ui/package.json','18.3.1','18.3.2'),('ui/vendor/braces/lib/guard.js','128','129'),('hardhat.config.mjs','', '\n// unreviewed compiler change\n')]
+            cases=[('package.json','0.8.37','0.8.38'),('hardhat/package-lock.json','6.17.0','6.17.1'),('ui/package-lock.json','15.5.27','15.5.28'),('ui/package.json','18.3.1','18.3.2'),('ui/vendor/braces/lib/guard.js','128','129'),('hardhat.config.mjs','', '\n// unreviewed compiler change\n'),('contracts/utils/ENSOwnership.sol','', '\n// unreviewed contract change\n'),('contracts/AGIJobManager.sol','', '\n// unreviewed manager change\n'),('test/fixtures/ENSOwnership.pre-revocation.sol.txt','', '\n// mutated history\n')]
             for name,old,new in cases:
                 with self.subTest(name=name):
                     target=root/name;before=target.read_text()
@@ -22,6 +22,9 @@ class DependencyBoundaries(unittest.TestCase):
                     try:self.assertNotEqual(check().returncode,0)
                     finally:target.write_text(before)
             extra=root/'ui/vendor/braces/unreviewed.js';extra.write_text('module.exports = {};\n')
+            self.assertNotEqual(check().returncode,0);extra.unlink()
+            self.assertEqual(check().returncode,0)
+            extra=root/'contracts/Unreviewed.sol';extra.write_text('// unreviewed source\n')
             self.assertNotEqual(check().returncode,0);extra.unlink()
             self.assertEqual(check().returncode,0)
 

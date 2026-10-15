@@ -62,8 +62,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
       { from: owner }
     );
 
-    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
-    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
+    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent, ens);
+    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator, ens);
     await manager.setAgentNftRequired(true, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setVoteQuorum(1, { from: owner });

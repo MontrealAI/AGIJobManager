@@ -149,9 +149,12 @@ try {
   await send(nft.mint(agent.address));
   const agentLabel = 'genesis00';
   const agentNode = E.namehash(`${agentLabel}.alpha.agent.agi.eth`);
+  await send(ens.setOwner(agentNode, wrapper.target));
   await send(wrapper.setOwner(BigInt(agentNode), agent.address));
   for (let i = 0; i < reviewers.length; i++) {
-    await send(wrapper.setOwner(BigInt(E.namehash(`reviewer${i}.club.agi.eth`)), reviewers[i].address));
+    const reviewerNode = E.namehash(`reviewer${i}.club.agi.eth`);
+    await send(ens.setOwner(reviewerNode, wrapper.target));
+    await send(wrapper.setOwner(BigInt(reviewerNode), reviewers[i].address));
   }
   await send(manager.addModerator(moderator.address));
   await send(manager.setEnsJobPages(pages.target));

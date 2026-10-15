@@ -465,7 +465,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const payout = parseUSDCAmount("12");
       const jobId = await createJob({ manager, token, employer, payout });
 
-      await setNameWrapperOwnership(nameWrapper, rootNode("agent-root"), "alice", agent);
+      await setNameWrapperOwnership(nameWrapper, rootNode("agent-root"), "alice", agent, ens);
       await manager.applyForJob(jobId, "alice", EMPTY_PROOF, { from: agent });
 
       await setResolverOwnership(ens, resolver, rootNode("club-root"), "validator", validator);

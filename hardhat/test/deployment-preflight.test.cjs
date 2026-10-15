@@ -17,7 +17,7 @@ const C = `0x${'33'.repeat(20)}`;
 const D = `0x${'44'.repeat(20)}`;
 const ZERO = `0x${'00'.repeat(20)}`;
 const state = () => ({ owner: A, finalOwner: A, pendingOwner: ZERO, paused: true, settlementPaused: false,
-  wallets: [A, B], expectedWallets: [A, B], reserves: [0n, 0n, 0n, 0n], balance: 0n });
+  wallets: [A, B], expectedWallets: [A, B], reserves: [0n, 0n, 0n, 0n, 0n], balance: 0n });
 const token = (overrides = {}) => ({ decimals: async () => 6n, paused: async () => false, isBlacklisted: async () => false, ...overrides });
 const usdc = (overrides = {}) => ({ chainId: 1, tokenAddress: TOKEN, token: token(), recipients: [A, B], blockTag: 123, ...overrides });
 
@@ -77,8 +77,8 @@ test('activation preflight requires paused intake and functional settlement', ()
 
 test('activation rejects changed recipients, insolvent reserves and existing jobs', () => {
   assert.throws(() => requireReadinessState({ ...state(), wallets: [B, A] }), /does not match/);
-  assert.throws(() => requireReadinessState({ ...state(), reserves: [1n, 0n, 0n, 0n] }), /below reserved/);
-  assert.throws(() => requireReadinessState({ ...state(), reserves: [0n, 0n, 1n, 0n], balance: 1n }), /no existing job/);
+  assert.throws(() => requireReadinessState({ ...state(), reserves: [1n, 0n, 0n, 0n, 0n] }), /below reserved/);
+  assert.throws(() => requireReadinessState({ ...state(), reserves: [0n, 0n, 1n, 0n, 0n], balance: 1n }), /no existing job/);
   assert.deepEqual(requireReadinessState({ ...state(), balance: 99n }), { balance: '99', reserved: '0' });
 });
 
@@ -143,8 +143,10 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
     assert.deepEqual(params.at(-1), {blockHash:hash(1000),requireCanonical:true});
     if (method==='eth_getCode') return provider.getCode(params[0],params[1]);
     assert.equal(method,'eth_call');
-    const iface=new realEthers.Interface(managerAbi),parsed=iface.parseTransaction(params[0]);
-    return iface.encodeFunctionResult(parsed.name,[await manager[parsed.name]()]);
+    const isToken = params[0].to.toLowerCase() === TOKEN.toLowerCase();
+    const iface = new realEthers.Interface(isToken ? require('../scripts/deployment-safety.cjs').USDC_ABI : managerAbi);
+    const parsed = iface.parseTransaction(params[0]);
+    return iface.encodeFunctionResult(parsed.name, [await (isToken ? token() : manager)[parsed.name](...parsed.args)]);
   };
   const mockEthers = { ...realEthers, provider, getSigners: async () => noSigner ? [] : [{ address: A }],
     Contract: function () { return token(); }, getContractAt: async () => manager,
@@ -164,6 +166,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
       run: async (task, params) => { logs.push(['verifier call',params]); if (verificationError) throw verificationError; if (failVerification) throw new Error('Explorer unavailable'); return verificationResult; } };
     if (name === './runtime.cjs') return { getRuntime: async () => mockRequire('hardhat') };
     if (name === './deployment-safety.cjs') return require('../scripts/deployment-safety.cjs');
+    if (name === './canonical-state.cjs') return require('../scripts/canonical-state.cjs');
     return require(name);
   };
   mockRequire.cache = require.cache;
@@ -372,6 +375,7 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
     if (name === './runtime.cjs') return { getRuntime: async () => mockRequire('hardhat') };
     if (name === './deploy.cjs') return require('../scripts/deploy.cjs');
     if (name === './deployment-safety.cjs') return require('../scripts/deployment-safety.cjs');
+    if (name === './canonical-state.cjs') return require('../scripts/canonical-state.cjs');
     if (name === '../../scripts/lib/usdc') return require('../../scripts/lib/usdc');
     return require(name);
   };
@@ -909,4 +913,67 @@ test('ENS failed prefix transactions and mismatched readback stop before verific
     assert.equal(harness.receipt().status, 'failed');
     assert.deepEqual(harness.actions, ['deploy', 'setJobManager', 'setJobLabelPrefix']);
   }
+});
+
+
+test('deployment preflight rejects unsupported canonical reads before files or broadcasts', async () => {
+  const harness = deploymentHarness();
+  try {
+    harness.hardhat.ethers.provider.send = async () => { throw new Error('unsupported blockHash'); };
+    await assert.rejects(harness.main(), /CANONICAL_STATE_READ_BLOCKED.*No block-number fallback/);
+    assert.equal(harness.broadcasts(), 0);
+    assert.equal(fs.existsSync(path.join(harness.folder, 'deployments')), false);
+  } finally { harness.cleanup(); }
+});
+
+test('deployment preflight rejects a reorg before files or broadcasts', async () => {
+  const harness = deploymentHarness();
+  try {
+    harness.hardhat.ethers.provider.getBlock = async tag => ({ number: 1000, hash: hash(tag === 'latest' ? 1000 : 1001) });
+    await assert.rejects(harness.main(), /Preflight block changed or disappeared/);
+    assert.equal(harness.broadcasts(), 0);
+    assert.equal(fs.existsSync(path.join(harness.folder, 'deployments')), false);
+  } finally { harness.cleanup(); }
+});
+
+test('deployment plan records canonical preflight scope', async () => {
+  const harness = deploymentHarness({ dryRun: true });
+  try {
+    await harness.main();
+    const plan = JSON.parse(harness.logs.find(args => typeof args[0] === 'string' && args[0].startsWith('{'))[0]);
+    assert.equal(plan.preflight.stateReference, 'EIP-1898 canonical block hash; no number fallback');
+    assert.deepEqual(plan.preflight.tokenState.blockTag, { blockHash: hash(1000), requireCanonical: true });
+  } finally { harness.cleanup(); }
+});
+
+
+test('activation fails closed on incomplete reserves, malformed flags or amounts', () => {
+  for (const reserves of [[], [0n, 0n, 0n, 0n], Array(6).fill(0n)]) {
+    assert.throws(() => requireReadinessState({ ...state(), reserves }), /all five reserves/);
+  }
+  for (const value of [-1n, '0x00', ' 0', true, null, 1.5, Number.MAX_SAFE_INTEGER + 1, 1n << 256n]) {
+    assert.throws(() => requireReadinessState({ ...state(), balance: value }), /exact unsigned integer|outside uint256/);
+    assert.throws(() => requireReadinessState({ ...state(), reserves: [value, 0n, 0n, 0n, 0n] }), /exact unsigned integer|outside uint256/);
+  }
+  for (const paused of [1, 'true', null]) assert.throws(() => requireReadinessState({ ...state(), paused }), /explicit booleans/);
+  assert.throws(() => requireReadinessState({ ...state(), owner: ZERO, finalOwner: ZERO }), /non-zero/);
+  assert.throws(() => requireReadinessState({ ...state(), reserves: [0n, 0n, 0n, 0n, 1n], balance: 1n }), /no existing job escrow, bonds or payment claims/);
+  assert.throws(() => requireReadinessState({ ...state(), wallets: [A] }), /exactly two/);
+});
+
+
+test('concurrent intake activation cannot be reported as a paused deployment', async () => {
+  const harness = deploymentHarness();
+  try {
+    const getContractAt = harness.hardhat.ethers.getContractAt;
+    let reads = 0;
+    harness.hardhat.ethers.getContractAt = async (...args) => ({
+      ...await getContractAt(...args),
+      paused: async () => ++reads === 1,
+    });
+    await assert.rejects(harness.main(), /intake is no longer paused/);
+    assert.equal(harness.broadcasts(), 9);
+    assert.equal(harness.receipt().status, 'failed');
+    assert.equal(harness.receipt().contracts.AGIJobManager.status, 'confirmed');
+  } finally { harness.cleanup(); }
 });

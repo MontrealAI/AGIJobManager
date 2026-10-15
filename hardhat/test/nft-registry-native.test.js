@@ -36,9 +36,21 @@ describe('Native v1.14.0 verification and readiness compatibility',function(){
   manager=await(await ethers.getContractFactory('AGIJobManager',{libraries:links})).deploy(await token.getAddress(),'ipfs://',[ethers.ZeroAddress,ethers.ZeroAddress],Array(4).fill(ethers.ZeroHash),Array(2).fill(ethers.ZeroHash),[accounts[1].address,accounts[2].address]);
   await manager.waitForDeployment();
  });
- it('reconstructs all nine historical mainnet runtime hashes from the release build without a public RPC',async()=>{
+ it('reconstructs all nine historical mainnet runtimes from preserved source and rejects the changed ENS runtime',async()=>{
+  const input=structuredClone(buildInfo.input);
+  const source=safety.resolveInputSource(buildInfo,'contracts/utils/ENSOwnership.sol');
+  const preserved=fs.readFileSync(new URL('../../test/fixtures/ENSOwnership.pre-revocation.sol.txt',import.meta.url),'utf8');
+  const review=JSON.parse(fs.readFileSync(new URL('../../config/next-deployment-contract-changes.json',import.meta.url),'utf8'));
+  assert.equal(ethers.sha256(ethers.toUtf8Bytes(preserved)).slice(2),review.files['contracts/utils/ENSOwnership.sol'].beforeSha256);
+  assert(input.sources[source],'Historical source must replace the exact compiler input unit');
+  input.sources[source]={content:preserved};
+  const output=JSON.parse(require('solc').compile(JSON.stringify(input)));
+  assert.deepEqual((output.errors||[]).filter(item=>item.severity==='error'||item.severity==='warning'),[]);
+  const historicalBuild={...buildInfo,input,output};
   for(const name of [...LIBRARIES,'AGIJobManager']){
-   const a=await artifacts.readArtifact(FQNS[name]);
+   const current=await artifacts.readArtifact(FQNS[name]);
+   const compiled=output.contracts[current.inputSourceName||current.sourceName][name];
+   const a={...current,bytecode:'0x'+compiled.evm.bytecode.object,deployedBytecode:'0x'+compiled.evm.deployedBytecode.object,deployedLinkReferences:compiled.evm.deployedBytecode.linkReferences};
    const address=name==='AGIJobManager'?evidence.manager:evidence.libraries[FQNS[name]];
    let code=a.deployedBytecode.slice(2).toLowerCase();
    const replace=(start,length,value)=>{const hex=value.slice(2).toLowerCase().padStart(length*2,'0');assert.equal(hex.length,length*2);code=code.slice(0,start*2)+hex+code.slice((start+length)*2);};
@@ -46,12 +58,13 @@ describe('Native v1.14.0 verification and readiness compatibility',function(){
     const match=Object.entries(evidence.libraries).find(([fqn])=>{const split=fqn.lastIndexOf(':');return fqn.slice(split+1)===lib&&safety.resolveInputSource(buildInfo,fqn.slice(0,split))===source;});
     assert(match,`Missing ${source}:${lib}`);for(const pos of positions)replace(pos.start,pos.length,match[1]);
    }
-   const target=buildInfo.output.contracts[a.inputSourceName||a.sourceName][name];
+   const target=output.contracts[a.inputSourceName||a.sourceName][name];
    const immutables=target.evm.deployedBytecode.immutableReferences||{};
    if(Object.keys(immutables).length){assert.equal(Object.keys(immutables).length,1);assert(name==='AGIJobManager'||Object.hasOwn(immutables,'library_deploy_address'));for(const pos of Object.values(immutables).flat())replace(pos.start,pos.length,name==='AGIJobManager'?evidence.usdcToken:address);}
    if(name!=='AGIJobManager'&&code.startsWith(`73${'00'.repeat(20)}3014`))replace(1,20,address);
    const linked='0x'+code;
-   safety.requireArtifactMatch({artifact:a,buildInfo,address,libraries:evidence.libraries,tokenAddress:evidence.usdcToken,code:linked});
+   safety.requireArtifactMatch({artifact:a,buildInfo:historicalBuild,address,libraries:evidence.libraries,tokenAddress:evidence.usdcToken,code:linked});
+   if(name==='ENSOwnership')assert.throws(()=>safety.requireArtifactMatch({artifact:current,buildInfo,address,libraries:evidence.libraries,tokenAddress:evidence.usdcToken,code:linked}),/differs/);
    assert.equal(ethers.keccak256(linked),evidence.runtimeCodeHashes[name],name);
   }
  });

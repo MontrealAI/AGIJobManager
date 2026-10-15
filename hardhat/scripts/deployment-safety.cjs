@@ -1,5 +1,5 @@
 const { requireCanonicalUSDC } = require('../../scripts/lib/usdc');
-const { namehash, ZeroHash } = require('ethers');
+const { namehash, ZeroHash, isAddress, ZeroAddress } = require('ethers');
 
 const NETWORK_CHAINS = Object.freeze({ mainnet: 1, sepolia: 11155111 });
 const MAX_RUNTIME_BYTES = 24576;
@@ -112,6 +112,29 @@ function requireVerified(verification, names) {
 }
 
 function requireReadinessState(state) {
+  if (!state || typeof state !== 'object' || Array.isArray(state)) throw new Error('Readiness state must be an object.');
+  for (const field of ['owner', 'finalOwner', 'pendingOwner']) {
+    if (!isAddress(state[field]) || (field !== 'pendingOwner' && state[field].toLowerCase() === ZeroAddress)) {
+      throw new Error(`Readiness ${field} must be a valid ${field === 'pendingOwner' ? '' : 'non-zero '}address.`);
+    }
+  }
+  if (typeof state.paused !== 'boolean' || typeof state.settlementPaused !== 'boolean') throw new Error('Readiness pause flags must be explicit booleans.');
+  for (const field of ['wallets', 'expectedWallets']) {
+    if (!Array.isArray(state[field]) || state[field].length !== 2 || state[field].some(address => !isAddress(address) || address.toLowerCase() === ZeroAddress)) {
+      throw new Error(`Readiness ${field} must contain exactly two non-zero addresses.`);
+    }
+  }
+  if (!Array.isArray(state.reserves) || state.reserves.length !== 5) throw new Error('Readiness requires all five reserves: escrow, agent bonds, validator bonds, dispute bonds and payment claims.');
+  const uint256 = (value, label) => {
+    if (!((typeof value === 'bigint') || (typeof value === 'string' && /^(0|[1-9][0-9]*)$/.test(value)) || (typeof value === 'number' && Number.isSafeInteger(value)))) {
+      throw new Error(`Readiness ${label} must be an exact unsigned integer.`);
+    }
+    const amount = BigInt(value);
+    if (amount < 0n || amount >= (1n << 256n)) throw new Error(`Readiness ${label} is outside uint256.`);
+    return amount;
+  };
+  const balance = uint256(state.balance, 'balance');
+  const reserves = state.reserves.map((amount, index) => uint256(amount, `reserve ${index}`));
   if (state.owner.toLowerCase() !== state.finalOwner.toLowerCase()) throw new Error('Final owner has not accepted ownership.');
   if (BigInt(state.pendingOwner) !== 0n) throw new Error('A pending ownership transfer remains open.');
   if (!state.paused) throw new Error('Pre-activation readiness requires intake to be paused.');
@@ -120,8 +143,8 @@ function requireReadinessState(state) {
     if (state.wallets[index].toLowerCase() !== state.expectedWallets[index].toLowerCase()) throw new Error(`Settlement wallet ${index} does not match the reviewed receipt.`);
   }
   if (state.wallets[0].toLowerCase() === state.wallets[1].toLowerCase()) throw new Error('Settlement wallets must be distinct.');
-  const reserved = state.reserves.reduce((sum, amount) => sum + BigInt(amount), 0n);
-  if (BigInt(state.balance) < reserved) throw new Error('USDC balance is below reserved escrow, bonds and claims.');
+  const reserved = reserves.reduce((sum, amount) => sum + amount, 0n);
+  if (balance < reserved) throw new Error('USDC balance is below reserved escrow, bonds and claims.');
   if (reserved !== 0n) throw new Error('Initial activation requires no existing job escrow, bonds or payment claims.');
   return { reserved: reserved.toString(), balance: String(state.balance) };
 }

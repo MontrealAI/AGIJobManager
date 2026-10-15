@@ -854,6 +854,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       const subdomain = "agent-name";
       const subnode = makeSubnode(agentRootNode, subdomain);
+      await ens.setOwner(subnode, nameWrapper.address, { from: owner });
       await nameWrapper.setOwner(web3.utils.toBN(subnode), agent, { from: owner });
 
       await assignJob(manager, jobId, agent, [], subdomain);
@@ -868,6 +869,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const subdomain = "validator-name";
       const subnode = makeSubnode(clubRootNode, subdomain);
 
+      await ens.setOwner(subnode, validator4, { from: owner });
       await ens.setResolver(subnode, resolver.address, { from: owner });
       await resolver.setAddr(subnode, validator4, { from: owner });
 

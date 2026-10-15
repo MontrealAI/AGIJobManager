@@ -59,9 +59,9 @@ contract("AGIJobManager happy path", (accounts) => {
     await agiType.mint(agent, { from: owner });
     await manager.addAGIType(agiType.address, 92, { from: owner });
 
-    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
-    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator-a", validatorA);
-    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator-b", validatorB);
+    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent, ens);
+    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator-a", validatorA, ens);
+    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator-b", validatorB, ens);
 
     await manager.setRequiredValidatorApprovals(2, { from: owner });
     await manager.setVoteQuorum(2, { from: owner });

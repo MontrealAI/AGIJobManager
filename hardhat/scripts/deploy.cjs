@@ -1,4 +1,5 @@
 const { USDC_ABI, describeMembershipConfig, parseBooleanSetting, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, prepareDeployment, requireCode, requireOperationalUSDC, requireVerified, requireArtifactMatch } = require('./deployment-safety.cjs');
+const { createCanonicalReader } = require('./canonical-state.cjs');
 const fs = require('fs');
 const path = require('path');
 const { getRuntime } = require('./runtime.cjs');
@@ -288,15 +289,20 @@ async function main() {
   const profile = config[network.name];
   const { constructorArgs, finalOwner: resolvedFinalOwner } = resolveReviewedProfile(network.name, profile);
   const block = await ethers.provider.getBlock('latest');
-  if (!block) throw new Error('Unable to resolve the preflight block.');
-  const tokenCode = await requireCode(ethers.provider, constructorArgs.usdcTokenAddress, 'USDC', block.number);
+  if (!block || !Number.isSafeInteger(block.number) || !ethers.isHexString(block.hash, 32)) throw new Error('Unable to resolve the preflight block and hash.');
+  const pinned = createCanonicalReader(ethers.provider, block);
+  const tokenCode = await requireCode(pinned, constructorArgs.usdcTokenAddress, 'USDC', pinned.at);
   for (const [index, address] of constructorArgs.ensConfig.entries()) {
-    if (address !== ethers.ZeroAddress) await requireCode(ethers.provider, address, `ensConfig[${index}]`, block.number);
+    if (address !== ethers.ZeroAddress) await requireCode(pinned, address, `ensConfig[${index}]`, pinned.at);
   }
-  const usdc = new ethers.Contract(constructorArgs.usdcTokenAddress, USDC_ABI, ethers.provider);
+  const usdc = pinned.contract(constructorArgs.usdcTokenAddress, USDC_ABI);
   const tokenState = await requireOperationalUSDC({ chainId, tokenAddress: constructorArgs.usdcTokenAddress, token: usdc,
-    recipients: [...constructorArgs.settlementWallets, resolvedFinalOwner, deployer.address], blockTag: block.number });
+    recipients: [...constructorArgs.settlementWallets, resolvedFinalOwner, deployer.address], blockTag: pinned.at });
   const { buildInfo, runtimeBytes } = await qualifiedBuild();
+  const confirmedBlock = await ethers.provider.getBlock(block.number);
+  if (!confirmedBlock || confirmedBlock.number !== block.number || confirmedBlock.hash?.toLowerCase() !== block.hash.toLowerCase()) {
+    throw new Error('Preflight block changed or disappeared. No deployment was started; repeat the read-only plan against consistent canonical state.');
+  }
 
   if (chainId === 1 && !dryRun) {
     if (process.env.DEPLOY_CONFIRM_MAINNET !== MAINNET_CONFIRMATION_VALUE) {
@@ -324,7 +330,7 @@ async function main() {
     libraries: LIBRARIES,
     compiler: COMPILER_SETTINGS,
     runtimeBytes,
-    preflight: { blockNumber: block.number, blockHash: block.hash, tokenCodeHash: ethers.keccak256(tokenCode), tokenState },
+    preflight: { blockNumber: block.number, blockHash: block.hash, stateReference: 'EIP-1898 canonical block hash; no number fallback', tokenCodeHash: ethers.keccak256(tokenCode), tokenState },
     dryRun,
   };
 
@@ -446,6 +452,9 @@ async function main() {
     const stablePayload = stableObject({ constructorArgs, libraries: linkedLibraries, finalOwner: resolvedFinalOwner });
     const configHash = ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(stablePayload)));
 
+    const intakePaused = await manager.paused();
+    if (intakePaused !== true) throw new Error('Manager intake is no longer paused. Deployment cannot be reported as deployed_paused; reconcile concurrent owner actions before activation review.');
+
     const record = {
       chainId,
       network: network.name,
@@ -469,7 +478,7 @@ async function main() {
       constructorArgs,
       libraries: linkedLibraries,
       ownershipTransfer,
-      intakePaused: await manager.paused(),
+      intakePaused,
       intakePausedAtDeployment: true,
       agentNftRequiredAtDeployment: initialNftRequired,
       verification: verificationResults,

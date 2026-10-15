@@ -912,7 +912,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     it("accepts NameWrapper ownership and resolver address matches", async () => {
       await createJob();
       const subdomain = "agent";
-      await setNameWrapperOwnership(nameWrapper, agentRoot, subdomain, agent);
+      await setNameWrapperOwnership(nameWrapper, agentRoot, subdomain, agent, ens);
       await manager.applyForJob(0, subdomain, [], { from: agent });
 
       await createJob(employer, payout, duration, "QmResolver");

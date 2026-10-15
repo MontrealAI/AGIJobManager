@@ -1,7 +1,7 @@
 # ENS Reference (Generated)
 
 Generated at (UTC): 1970-01-01T00:00:00Z
-Source fingerprint: cbedded5941befd1
+Source fingerprint: ae3239c781998b07
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -58,9 +58,9 @@ Source files used:
 - `function handleHook(uint8 hook, uint256 jobId) external onlyJobManager` ([contracts/ens/ENSJobPages.sol#L355](../../contracts/ens/ENSJobPages.sol#L355))
 - `function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner` ([contracts/ens/ENSJobPages.sol#L505](../../contracts/ens/ENSJobPages.sol#L505))
 - `function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal` ([contracts/ens/ENSJobPages.sol#L510](../../contracts/ens/ENSJobPages.sol#L510))
-- `function verifyENSOwnership(` ([contracts/utils/ENSOwnership.sol#L32](../../contracts/utils/ENSOwnership.sol#L32))
-- `function verifyENSOwnership(` ([contracts/utils/ENSOwnership.sol#L48](../../contracts/utils/ENSOwnership.sol#L48))
-- `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` ([contracts/utils/ENSOwnership.sol#L61](../../contracts/utils/ENSOwnership.sol#L61))
+- `function verifyENSOwnership(` ([contracts/utils/ENSOwnership.sol#L33](../../contracts/utils/ENSOwnership.sol#L33))
+- `function verifyENSOwnership(` ([contracts/utils/ENSOwnership.sol#L49](../../contracts/utils/ENSOwnership.sol#L49))
+- `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` ([contracts/utils/ENSOwnership.sol#L62](../../contracts/utils/ENSOwnership.sol#L62))
 
 ## Events and errors
 
@@ -100,5 +100,6 @@ Source files used:
 - @notice Prefix used when constructing ENS job labels as prefix + decimal(jobId). ([contracts/ens/ENSJobPages.sol#L117](../../contracts/ens/ENSJobPages.sol#L117))
 - @notice Updates the default prefix used for unsnapshotted/future job ENS labels. ([contracts/ens/ENSJobPages.sol#L148](../../contracts/ens/ENSJobPages.sol#L148))
 -      Legacy jobs that predate this contract must be migrated before hooks can mutate ENS records. ([contracts/ens/ENSJobPages.sol#L810](../../contracts/ens/ENSJobPages.sol#L810))
-- @notice Stable ENS credential and its controller for per-job voting uniqueness. ([contracts/utils/ENSOwnership.sol#L69](../../contracts/utils/ENSOwnership.sol#L69))
+- @notice Stable ENS credential and its controller for per-job voting uniqueness. ([contracts/utils/ENSOwnership.sol#L70](../../contracts/utils/ENSOwnership.sol#L70))
+- @dev ENS retains resolver records when a name is revoked or its wrapped owner expires. ([contracts/utils/ENSOwnership.sol#L138](../../contracts/utils/ENSOwnership.sol#L138))
 

@@ -8,7 +8,7 @@ contract('v0.9.5 buyer protection and payment isolation', accounts => {
   const Manager = artifacts.require('AGIJobManager');
   const club = rootNode('club'), agents = rootNode('agents'), zero = '0x' + '00'.repeat(32);
   const cost = 100000000n;
-  let manager, token, wrapper, bond;
+  let manager, token, wrapper, bond, ens;
   const rpc = (method, params = []) => web3.currentProvider.request({ method, params });
   const advance = async seconds => { await rpc('evm_increaseTime', [seconds]); await rpc('evm_mine'); };
   const balance = async account => BigInt((await token.balanceOf(account)).toString());
@@ -25,14 +25,14 @@ contract('v0.9.5 buyer protection and payment isolation', accounts => {
   };
   async function fixture(tokenName = 'MockUSDCControls') {
     token = await artifacts.require(tokenName).new();
-    const ens = await artifacts.require('MockENSRegistry').new();
+    ens = await artifacts.require('MockENSRegistry').new();
     wrapper = await artifacts.require('MockNameWrapper').new();
     manager = await Manager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, club, agents, zero, zero, zero, zero, [wallet30, wallet10]));
     const nft = await artifacts.require('MockERC721').new();
     await nft.mint(agent); await manager.addAGIType(nft.address, 1);
-    await setNameWrapperOwnership(wrapper, agents, 'worker', agent);
+    await setNameWrapperOwnership(wrapper, agents, 'worker', agent, ens);
     for (const [who, label] of [[alice, 'alice'], [bob, 'bob'], [carol, 'carol'], [agent, 'agent'], [buyer, 'buyer']]) {
-      await setNameWrapperOwnership(wrapper, club, label, who);
+      await setNameWrapperOwnership(wrapper, club, label, who, ens);
     }
     for (const who of [buyer, agent, alice, bob, carol, operator, outsider]) {
       await token.mint(who, '1000000000'); await token.approve(manager.address, '1000000000', { from: who });
@@ -159,11 +159,11 @@ contract('v0.9.5 buyer protection and payment isolation', accounts => {
     assert.equal((await manager.getJobValidation(0)).validatorApprovals.toString(), '1');
   });
   it('prevents credential transfers from creating an additional vote', async () => {
-    await submit(); await vote(alice, 'alice'); await setNameWrapperOwnership(wrapper, club, 'alice', operator);
+    await submit(); await vote(alice, 'alice'); await setNameWrapperOwnership(wrapper, club, 'alice', operator, ens);
     await expectCustomError(vote(operator, 'alice'), 'InvalidState');
   });
   it('prevents one controller from using multiple Club names in the same job', async () => {
-    await setNameWrapperOwnership(wrapper, club, 'another', alice); await wrapper.setApprovalForAll(operator, true, { from: alice });
+    await setNameWrapperOwnership(wrapper, club, 'another', alice, ens); await wrapper.setApprovalForAll(operator, true, { from: alice });
     await submit(); await vote(alice, 'alice'); await expectCustomError(vote(operator, 'another'), 'InvalidState');
   });
   it('allows distinct ENS credentials without requiring an owner exception', async () => {

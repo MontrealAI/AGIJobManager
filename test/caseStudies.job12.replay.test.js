@@ -42,6 +42,7 @@ async function configureEnsOwnership({
   const subnode = makeSubnode(rootNode, subdomain);
   const subnodeUint = web3.utils.toBN(subnode);
   await nameWrapper.setOwner(subnodeUint, claimant, { from });
+  await ens.setOwner(subnode, nameWrapper.address, { from });
   await ens.setResolver(subnode, resolver.address, { from });
   await resolver.setAddr(subnode, claimant, { from });
   return subnode;
