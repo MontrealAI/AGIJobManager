@@ -199,3 +199,7 @@ Pause intake to stop new work while allowing existing work to settle. Use settle
 Code is non-upgradeable. Future code changes require a fresh deployment and an explicit migration plan. See the [deploy-day runbook](../docs/DEPLOY_DAY_RUNBOOK.md) and [incident response](../docs/OPERATIONS/INCIDENT_RESPONSE.md).
 
 For existing mainnet deployments, use the [v1.14.0 verification and readiness recovery guide](../docs/releases/v1.14.0/RECOVERY_GUIDE.md). Standard reverify/readiness commands preserve saved builds with `--no-compile`; native registry qualification is `npm --prefix hardhat run test:registry-native` from the source root.
+
+## Additional USDC implementation check
+
+Before the separate activation decision, use the [read-only USDC implementation companion](../docs/DEPLOYMENT_USDC_IMPLEMENTATION_CHECK.md) to bind current proxy and implementation code to explicitly reviewed expectations. It preserves existing receipts and commands, uses no signer and can share the financial/readiness report's canonical block/hash. The command is one part of A2, not a full readiness certificate. For the planned second deployment, see the [scoped owner qualification decision](../docs/DEPLOYMENT/SECOND_MAINNET_QUALIFICATION_DECISION.md).

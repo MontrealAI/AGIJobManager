@@ -1,6 +1,8 @@
 # USDC cutover qualification
 
-The checked-in machine report binds the explicitly listed source files and package versions. CI regenerates it for the checked-out candidate and requires an exact match. The 2026-10-10 tooling refresh changes only the reviewed runtime-adapter fingerprint; the pinned fork observations and contract hashes remain unchanged. All 23 fork cases pass with preserved legacy inventory and ENS/USDC outcomes. Published v0.9.5 evidence remains pinned to its release tag. See [the v1.0.0 review](OPERATIONS_V097.md).
+The checked-in machine report binds the explicitly listed source files and package versions. CI regenerates it for the checked-out candidate and requires an exact match. Published [v1.17.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.17.0), source `b721819639668f0074c244d516bbbe0cf57329a7`, passed final-source [native-USDC/ENS fork qualification](https://github.com/MontrealAI/AGIJobManager/actions/runs/38672184202): 23 cutover cases and 11 native-USDC cases. Its release `QUALIFICATION.json` binds the final-source workflow evidence. The new [ENS membership correction](ENS_MEMBERSHIP_REVOCATION.md) changes linked library bytecode; old contract hashes must not be used to qualify that library.
+
+The 2026-10-10 tooling refresh described below was an earlier runtime-adapter-only change. Published v0.9.5 and v1.0.0 observations remain historical evidence at their recorded source and blocks; see [the v1.0.0 review](OPERATIONS_V097.md). Neither the historical forks nor the v1.17.0 pass establish independent external review, actual signer control or current live-instance readiness.
 
 ## Verdict and scope
 
@@ -67,7 +69,9 @@ The fresh USDC deployment and each new lifecycle leave the legacy inventory unch
 
 A separate fork scenario expires the actual overdue legacy job 11 on its original contract. Its employer and agent are the same address, so that address receives the 10,000-token payout refund plus the 2,802.4-token bond return. The new USDC job, balances and reserves remain unchanged. This exit was simulated locally; the live job was not expired or otherwise changed.
 
-## Executed qualification
+## Historical executed qualification
+
+The following scenario descriptions and counts preserve the earlier qualification record; they are not the v1.17.0 aggregate inventory. For v1.17.0 source `b721819639668f0074c244d516bbbe0cf57329a7`, the retained executed evidence records 792 contract regressions, 494 deployment/preflight checks, 11 native-USDC fork cases and 23 cutover cases. Final [security verification](https://github.com/MontrealAI/AGIJobManager/actions/runs/38672184298) passed deployment tests, Foundry build/unit/fuzz/invariants and the current source-bound Slither review. See the release `QUALIFICATION.json` and [ENS correction review](ENS_MEMBERSHIP_REVOCATION.md) for scope; no automated pass is an independent audit.
 
 | Area | Evidence |
 | --- | --- |
@@ -81,9 +85,9 @@ A separate fork scenario expires the actual overdue legacy job 11 on its origina
 | Recovery | Concurrent-job reserve isolation; treasury withdrawal protection; recipient rotation guards; emergency pause/resume |
 | Legacy continuity | All recorded legacy inventory preserved during new operations; original-asset exit remains usable |
 
-Qualification for the current source covers **23 cutover scenarios, 8 native-USDC fork scenarios, 106 deployment/preflight/verifier cases, 533 contract/console regressions and 10 actual deployment/size cases**. The Foundry suite contains 37 unit/fuzz/invariant tests. The release validation record binds their final CI results to the exact source commit. Compilation is warning-free; manager runtime is 24,359 bytes, 217 below Ethereum's limit.
+The earlier recorded qualification covered **23 cutover scenarios, 8 native-USDC fork scenarios, 106 deployment/preflight/verifier cases, 533 contract/console regressions and 10 actual deployment/size cases**. The Foundry suite contains 37 unit/fuzz/invariant tests. The release validation record binds their final CI results to the exact source commit. Compilation is warning-free; manager runtime is 24,359 bytes, 217 below Ethereum's limit.
 
-The full static scan retains **115** individually reviewed observations: **0 high, 9 medium, 36 low, 70 informational and 0 optimization**. New or relocated findings include per-voter rounding, mapping deletion and guarded ledger updates across token calls; all have source-bound dispositions and evidence. See the [v0.9.5 buyer-protection review](buyer-protection-static-review.json) and the checked Slither baseline. The earlier [NFT-policy review](nft-policy-static-review.json) is historical v0.9.4 evidence. These are internal reviews, not an independent audit or zero-finding claim.
+The earlier static scan retained **115** individually reviewed observations: **0 high, 9 medium, 36 low, 70 informational and 0 optimization**. New or relocated findings include per-voter rounding, mapping deletion and guarded ledger updates across token calls; all have source-bound dispositions and evidence. See the [v0.9.5 buyer-protection review](buyer-protection-static-review.json) and the checked Slither baseline. The earlier [NFT-policy review](nft-policy-static-review.json) is historical v0.9.4 evidence. These are internal reviews, not an independent audit or zero-finding claim.
 
 ## Reproduce without production keys
 
