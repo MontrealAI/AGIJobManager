@@ -1,0 +1,11 @@
+# Second-deployment checks and workflow discovery
+
+This patch adds a read-only, fail-closed Ethereum mainnet USDC implementation check and an English/French workflow directory. Solidity source, compiler settings, dependency versions, ENS eligibility policy, settlement economics and deployed contracts are unchanged from v1.17.0. A new manager still requires the corrected ENS linked library introduced in v1.17.0; existing immutable managers and their liabilities remain on their original instance.
+
+The USDC companion checks an explicitly reviewed proxy and implementation runtime binding at one canonical block hash, rechecks chain and block identity, and preserves receipts without overwriting files. It does not generate an approved binding or replace the existing readiness checks. See the [implementation-check guide](../../DEPLOYMENT_USDC_IMPLEMENTATION_CHECK.md).
+
+The [second-deployment checklist](../../DEPLOYMENT/SECOND_MAINNET_RELEASE.md) records lessons from the previous actual deployment and distinguishes historical fork evidence from current chain state. Fresh read-only RPC verification was not established during the October 15 review; the attempted endpoint returned HTTP 403. Current owner, settings, balances, obligations, linked-library and USDC implementation evidence remain required before deployment or activation.
+
+On October 15, 2026 the owner chose to proceed without an external independent review or Sepolia rehearsal for this second deployment. Both are recorded as not performed, owner-accepted omissions in the [scoped qualification decision](../../DEPLOYMENT/SECOND_MAINNET_QUALIFICATION_DECISION.md). AI review and automated tests do not constitute an independent security audit. Technical fail-closed gates and separate transaction/activation authorization remain in force.
+
+The bilingual directory links existing local, demonstration and on-chain workflows with their respective operating boundaries. Publication requires all seven workflows on the exact final main source, reproducible assets and source-bound attestations. A software release is not evidence of deployment, current operational readiness or a guarantee of flawless contracts. Historical v1.17.0 release assets and qualification records remain unchanged.
