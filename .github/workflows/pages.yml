@@ -98,6 +98,7 @@ jobs:
       - name: SUCCESSOR browser, accessibility and isolated worker rehearsal
         run: |
           npm run successor:browser
+          node scripts/successor/history-browser-test.mjs
           npm run successor:rehearse
       - name: Retain SUCCESSOR checks and screenshots
         if: always()
@@ -106,6 +107,7 @@ jobs:
           name: SUCCESSOR-evidence-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             build/successor-browser/
+            build/successor-history-browser/
             build/successor-rehearsal/
           if-no-files-found: error
       - name: Upload Pages artifact

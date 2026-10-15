@@ -1,5 +1,5 @@
 // Shared data boundary. No imported code, object revivers or network fetches.
-export const LIMITS = Object.freeze({ capsule: 4_000_000, input: 120_000, rows: 1000, candidates: 12, events: 100, output: 300_000 });
+export const LIMITS = Object.freeze({ capsule: 4_000_000, input: 120_000, rows: 1000, candidates: 12, events: 100, historySegments: 10, output: 300_000 });
 export function fail(ok, code, detail = '') {
   if (!ok) { const error = new Error(detail || code); error.code = code; throw error; }
 }
