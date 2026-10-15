@@ -182,16 +182,16 @@ export async function restoreCapsule(inspected, confirmed) {
   // It must work even when every history slot is occupied.
   return clone(capsule.payload.state);
 }
-export async function continueHistory(state, confirmed) {
+export async function continueHistory(state, confirmed, sourceManifest = null) {
   fail(confirmed === true, 'HISTORY_CONFIRMATION'); await validateState(state);
-  const checkpoint = await exportCapsule(state);
+  const checkpoint = await exportCapsule(state, sourceManifest);
   const next = clone(state), archives = next.archives || [];
   fail(archives.length < LIMITS.historySegments, 'HISTORY_ARCHIVE_LIMIT');
   const segment = { start: historyEvents(next).length - next.chronicle.length, events: clone(next.chronicle) };
   segment.sha256 = await sha256(segment); archives.push(segment);
   next.schema = ARCHIVE_SCHEMA; next.archives = archives; next.chronicle = [];
   await appendEvent(next, 'history-continued', segment.sha256);
-  await validateState(next); await exportCapsule(next);
+  await validateState(next); await exportableState(next, sourceManifest);
   return { state: next, checkpoint };
 }
 export function readableSummary(state) {
@@ -202,12 +202,12 @@ export function readableSummary(state) {
 export function selectedMethod(state) {
   return state.candidates.find(c => c.id === state.active)?.manifest.variant || (historyEvents(state).find(e => e.action === 'method-reused') ? parseStrict(historyEvents(state).find(e => e.action === 'method-reused').subject).variant : 'baseline');
 }
-export async function reuseSystem(parent, mission, confirmed) {
+export async function reuseSystem(parent, mission, confirmed, sourceManifest = null) {
   fail(confirmed === true, 'REUSE_CONFIRMATION'); await validateState(parent); validateMission(mission);
   const selected = parent.candidates.find(c => c.id === parent.active); fail(selected?.checker.passed, 'SELECT_VERSION');
   fail(mission.kind === parent.mission.kind && mission.kind !== 'custom', 'REUSE_KIND');
   fail(mission.input !== parent.mission.input, 'REUSE_INPUT');
-  const parentCapsule = await exportCapsule(parent), next = await createSystem(mission);
+  const parentCapsule = await exportCapsule(parent, sourceManifest), next = await createSystem(mission);
   await appendEvent(next, 'method-reused', canonical({parentCapsuleSha256:JSON.parse(parentCapsule).sha256,parentMissionSha256:await sha256(parent.mission),parentCandidate:selected.id,kind:mission.kind,variant:selected.manifest.variant}));
   return {state:next,parentCapsule,variant:selected.manifest.variant};
 }

@@ -1,12 +1,12 @@
 import { escapeHTML as e } from './assets/successor/safe.mjs';
 
-export function renderSuccessor(lang, { commit, version, css, script, scriptHash, styleHash, artifactStyleHash, sourceManifest, license, workerSource }) {
+export function renderSuccessor(lang, { commit, version, css, script, scriptHash, styleHash, artifactStyleHash, legacyArtifactStyleHash, sourceManifest, license, workerSource }) {
   const fr = lang === 'fr', t = (en, french) => fr ? french : en;
   const json = value => JSON.stringify(value).replace(/</g, '\\u003c');
   const field = (id, label, value = '', max = 1500, area = false) => `<label for="${id}">${label}</label>${area ? `<textarea id="${id}" maxlength="${max}" rows="4">${e(value)}</textarea>` : `<input id="${id}" maxlength="${max}" value="${e(value)}">`}`;
   return `<!doctype html>
 <html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#23113f"><meta name="description" content="${t('Create, run, improve and keep your own useful local mission system.', 'Créez, testez, améliorez et conservez votre propre système de mission.')}">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-${scriptHash}'; style-src 'sha256-${styleHash}' 'sha256-${artifactStyleHash}'; worker-src blob:; frame-src blob:; connect-src 'none'; img-src data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-${scriptHash}'; style-src 'sha256-${styleHash}' 'sha256-${artifactStyleHash}' 'sha256-${legacyArtifactStyleHash}'; worker-src blob:; frame-src blob:; connect-src 'none'; img-src data:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer"><title>SUCCESSOR Ω · ${t('Build something you can keep', 'Créez quelque chose qui vous appartient')}</title><style>${css}</style></head>
 <body><div id="interface"><a class="skip" href="#main">${t('Skip to content', 'Aller au contenu')}</a>
 <header class="top"><a class="brand" href="${fr ? '../' : '../'}"><span aria-hidden="true">Ω</span><span>AGI Jobs<small>SUCCESSOR BUILDER</small></span></a><nav aria-label="${t('Main navigation', 'Navigation principale')}"><a href="${fr ? '../employers/' : '../employers/'}">${t('Prepare a job', 'Préparer une demande')}</a><button id="larger" type="button" aria-pressed="false" disabled>Aa · ${t('Larger text', 'Texte agrandi')}</button><button id="language" type="button" disabled lang="${fr ? 'en' : 'fr'}">${t('Français', 'English')}</button></nav></header>

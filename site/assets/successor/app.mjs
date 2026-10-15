@@ -158,7 +158,7 @@ export function initialize() {
       for (const id of required) if (!$(id).value.trim()) throw Object.assign(new Error('FIELD_REQUIRED'), { code: 'FIELD_REQUIRED', field: id });
       const mission = formMission(); if (state && canonical(mission) !== canonical(state.mission)) fail($('new-mission').checked, 'NEW_MISSION');
       let next; const changed = !state || canonical(mission) !== canonical(state.mission);
-      if(reuseRequested) { const reused=await reuseSystem(state,mission,true); download('Previous-SUCCESSOR-Omega.json',reused.parentCapsule);next=reused.state; } else next=changed?await createSystem(mission):state;
+      if(reuseRequested) { const reused=await reuseSystem(state,mission,true,workspaceSource); download('Previous-SUCCESSOR-Omega.json',reused.parentCapsule);next=reused.state; } else next=changed?await createSystem(mission):state;
       if(changed && approvedMapping && approvedMapping.normalizedSha256 === await sha256(mission.input)) await appendEvent(next,'input-mapped',canonical(approvedMapping));
       const run = ++runNumber; say(t('Running your bounded local mission…', 'Exécution de votre mission locale…'));
       if (mission.kind === 'custom') { await commitState(next, source); candidate = null; } else { const variant = selectedMethod(next); const result = await work('run', { state: next, variant, sourceIdentity: source.engineSha256 }); if (run !== runNumber) return; await commitState(result.state, source); candidate = result.candidate; }
@@ -176,9 +176,9 @@ export function initialize() {
     bind('history-link', () => { $('chronicle').closest('details').open = true; $('chronicle').focus(); });
     bind('continue-history', async () => {
       fail(state && $('history-consent').checked, 'HISTORY_CONFIRMATION');
-      const continued = await work('continue-history', { state, confirmed: true });
+      const continued = await work('continue-history', { state, confirmed: true, sourceManifest: workspaceSource });
       download('Previous-History-Checkpoint.json', continued.checkpoint);
-      await commitState(continued.state, source); $('history-consent').checked = false; redraw();
+      await commitState(continued.state); $('history-consent').checked = false; redraw();
       say(t('Earlier events remain inside this capsule, linked by their verified archive hash. A new bounded segment is ready. Check that the checkpoint downloaded and save a fresh copy. No permissions were granted.', 'Les événements précédents restent dans ce fichier JSON, liés par l’empreinte vérifiée de l’archive. Un nouveau segment limité est prêt. Vérifiez le téléchargement du repère et enregistrez une nouvelle copie. Aucune permission n’a été accordée.'));
     });
     bind('download-capsule', async () => download('My-SUCCESSOR-Omega.json', await exportCapsule(state, workspaceSource)));

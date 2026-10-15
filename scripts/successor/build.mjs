@@ -7,6 +7,7 @@ import { renderSuccessor } from '../../site/successor.mjs';
 import { canonical } from '../../site/assets/successor/safe.mjs';
 import { sourceZip } from '../../site/assets/successor/archive.mjs';
 import { STYLE } from '../../site/assets/successor/missions.mjs';
+import { STYLE as LEGACY_STYLE } from '../../site/assets/successor/legacy-missions.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -46,13 +47,13 @@ export function builderArtifacts({ commit, version } = {}) {
   const workerSource = "'use strict';\n" + worker.code + `\nself.onmessage = async ({data}) => { try { let result; const p = data.payload;
     if (data.operation === 'run') result = await ${worker.names[0]}.runCandidate(p.state, p.variant, p.sourceIdentity);
     else if (data.operation === 'inspect') result = await ${worker.names[0]}.inspectCapsule(p.raw);
-    else if (data.operation === 'continue-history') result = await ${worker.names[0]}.continueHistory(p.state, p.confirmed);
+    else if (data.operation === 'continue-history') result = await ${worker.names[0]}.continueHistory(p.state, p.confirmed, p.sourceManifest);
     else if (data.operation === 'restore') result = await ${worker.names[0]}.restoreCapsule(p.inspected, p.confirmed);
     else if (data.operation === 'plan') result = await ${worker.names[1]}.prepareImprovement(p.state, p.options);
     else throw Error('OPERATION');
     self.postMessage({result}); } catch (error) { self.postMessage({error:error.message, code:error.code || error.message, failureState:error.failureState || null}); } };`;
   const css = read('site/assets/successor/style.css'), license = read('LICENSE');
-  const params = { commit, version, css, script, scriptHash: hash(script, 'base64'), styleHash: hash(css, 'base64'), artifactStyleHash: hash(STYLE, 'base64'), sourceManifest, license, workerSource };
+  const params = { commit, version, css, script, scriptHash: hash(script, 'base64'), styleHash: hash(css, 'base64'), artifactStyleHash: hash(STYLE, 'base64'), legacyArtifactStyleHash: hash(LEGACY_STYLE, 'base64'), sourceManifest, license, workerSource };
   const pages = Object.fromEntries(['en', 'fr'].map(lang => [lang, renderSuccessor(lang, params)]));
   const layouts = Object.fromEntries(Object.entries(pages).map(([lang, html]) => [lang, html.match(/<div id="interface">([\s\S]*?)<\/div><script id="successor-source"/)[1]]));
   const sources = [...SOURCE_FILES.map(file => ({ path: file, content: read(file) })), { path: 'LICENSE', content: license }, { path: 'SOURCE.json', content: JSON.stringify({ commit, version, sourceManifest }, null, 2) + '\n' }, { path: 'README.txt', content: 'SUCCESSOR Ω editable local engine (MIT).\nRequires Node 22.23.2 or later. No npm install or network is needed.\nTest: node --test scripts/successor/portable.test.mjs\nRebuild: node scripts/successor/build.mjs --out rebuilt\nOpen rebuilt/My-SUCCESSOR-Omega-en.html in a desktop browser.\nImport your separate JSON capsule, confirm restore, and rerun.\nChanges to the engine require a new source identity and fresh checks.\nNo credentials, paid providers or live-worker software are included.\nThe full repository includes adversarial tests, CLI adapters, worker rehearsal and operator documentation.\n' }];

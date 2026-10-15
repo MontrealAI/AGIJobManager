@@ -143,6 +143,10 @@ test('serialized byte boundary exports compact valid work instead of an oversize
   const selected=await chooseCandidate(restored,restored.candidates[0].id,'keep');
   await assert.rejects(exportableState(selected,source),{code:'CAPSULE_CAPACITY'});
   assert.equal(await exportCapsule(restored,source),checkpoint,'source-bearing rejection preserves the prior workspace');
+  const {continueHistory}=await import('../../site/assets/successor/model.mjs');
+  await assert.rejects(continueHistory(restored,true,source),{code:'CAPSULE_CAPACITY'});
+  assert.equal(await exportCapsule(restored,source),checkpoint);
+  await continueHistory(restored,true,null);
   const selectedSource=await exportCapsule(restored);const imported=await inspectCapsule(selectedSource);
   assert.equal(imported.capsule.payload.sourceManifest,null);
   assert.equal(await exportCapsule(await restoreCapsule(imported,true),imported.capsule.payload.sourceManifest),selectedSource);
@@ -152,4 +156,26 @@ test('serialized byte boundary exports compact valid work instead of an oversize
   assert.deepEqual((await inspectCapsule(decoded)).capsule.payload.state,state);
 
 
+});
+
+for (const sourceManifest of [null,{repository:'MontrealAI/AGIJobManager',commit:'a'.repeat(40),engineSha256:'b'.repeat(64),files:[],license:'MIT'}]) test(`history and reuse preserve exact parent source ${sourceManifest?'present':'absent'}`,async()=>{
+  const {continueHistory,reuseSystem}=await import('../../site/assets/successor/model.mjs');
+  let state=await createSystem(defaultMission('analyst','en'));
+  const ran=await runCandidate(state,'baseline','0'.repeat(64));state=await chooseCandidate(ran.state,ran.candidate.id,'keep');
+  const raw=await exportCapsule(state,sourceManifest),original=JSON.parse(raw);
+  const continued=await continueHistory(state,true,sourceManifest);assert.equal(continued.checkpoint,raw);
+  assert.deepEqual(JSON.parse(await exportCapsule(continued.state,sourceManifest)).payload.sourceManifest,sourceManifest);
+  const reused=await reuseSystem(state,{...state.mission,input:'id,category,value\na,A,4'},true,sourceManifest);
+  assert.equal(reused.parentCapsule,raw);assert.equal(JSON.parse(reused.state.chronicle.at(-1).subject).parentCapsuleSha256,original.sha256);
+  assert.equal(await exportCapsule(state,sourceManifest),raw,'parent remains unchanged');
+});
+
+test('JSON and CSV mapping reject empty or oversized column names during preview',async()=>{
+  const {previewMapping}=await import('../../site/assets/successor/mapping.mjs');
+  for(const name of ['', 'a'.repeat(81)])for(const raw of [JSON.stringify([{id:'a',category:'A',[name]:'1'}]),`id,category,${name}\na,A,1`])await assert.rejects(previewMapping(raw,{id:'id',category:'category',value:name}),{code:'MAPPING_COLUMNS'});
+});
+test('generated Builder CSP permits only exact reviewed current and legacy artifact styles',async()=>{
+  const {builderArtifacts}=await import('./build.mjs');const {createHash}=await import('node:crypto');
+  const {STYLE}=await import('../../site/assets/successor/missions.mjs');const {STYLE:legacy}=await import('../../site/assets/successor/legacy-missions.mjs');
+  for(const html of Object.values(builderArtifacts().pages)){const csp=html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];for(const css of [STYLE,legacy])assert.ok(csp.includes(`'sha256-${createHash('sha256').update(css).digest('base64')}'`));assert.ok(!csp.includes('unsafe-inline'));}
 });

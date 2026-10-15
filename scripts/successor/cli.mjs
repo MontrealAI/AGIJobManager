@@ -24,7 +24,7 @@ try {
   else if (command === 'import-alpha' && args.length === 3) { write(args[2], await importAlpha(read(args[0]), { budget: args[1] })); }
   else if (command === 'inspect' && args.length === 1) { const { capsule } = await inspectCapsule(read(args[0])); console.log(readableSummary(capsule.payload.state)); }
   else if (command === 'restore' && args.length === 3 && args[1] === '--confirm') { const inspected = await inspectCapsule(read(args[0])); write(args[2], await exportCapsule(await restoreCapsule(inspected, true), inspected.capsule.payload.sourceManifest)); }
-  else if (command === 'continue-history' && args.length === 3 && args[1] === '--confirm') { const inspected = await inspectCapsule(read(args[0])); const continued = await continueHistory(inspected.capsule.payload.state, true); write(args[2], await exportCapsule(continued.state, inspected.capsule.payload.sourceManifest)); }
+  else if (command === 'continue-history' && args.length === 3 && args[1] === '--confirm') { const inspected = await inspectCapsule(read(args[0])); const continued = await continueHistory(inspected.capsule.payload.state, true, inspected.capsule.payload.sourceManifest); write(args[2], await exportCapsule(continued.state, inspected.capsule.payload.sourceManifest)); }
   else if (command === 'export' && args.length === 2) {
     const { capsule } = await inspectCapsule(read(args[0])); fail(!fs.existsSync(args[1]), 'OUTPUT_EXISTS');
     const artifacts = buildSuccessor(args[1]); const raw = await exportCapsule(capsule.payload.state, artifacts.sourceManifest);

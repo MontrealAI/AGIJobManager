@@ -5,7 +5,7 @@ export function inputColumns(raw) {
   publicOnly(raw); text(raw, LIMITS.input);
   if (raw.trimStart().startsWith('[')) {
     const records = parseStrict(raw, LIMITS.input); fail(Array.isArray(records) && records.length > 0 && records.length <= LIMITS.rows, 'DATA_LIMIT');
-    const columns = Object.keys(records[0]); fail(columns.length >= 3 && columns.length <= 32, 'MAPPING_COLUMNS');
+    const columns = Object.keys(records[0]); fail(columns.length >= 3 && columns.length <= 32 && columns.every(c=>c.length>0&&c.length<=80), 'MAPPING_COLUMNS');
     fail(records.every(row => canonical(Object.keys(row).sort()) === canonical([...columns].sort())), 'MAPPING_COLUMNS');
     return {columns, records};
   }
