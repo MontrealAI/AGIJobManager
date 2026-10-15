@@ -130,3 +130,9 @@ For the [already-connected USDC instance](deployments/MAINNET_USDC_2026-10-10.md
 | `NODE_PATH` | Must be absent or empty in the launch environment; the checker refuses inherited module-search overrides. This is not a supported deployment or RPC setting. |
 
 Both entries are deliberately empty in `hardhat/.env.example`. They document prohibited startup overrides, not permission to add them. Empty `.env` entries do not clear inherited shell values. Node may process preload options before the checker starts, so the check cannot undo a preload that already ran: review the shell, service launcher and command-line options **before starting Node**. Do not erase unfamiliar values merely to force a pass, and do not edit the preserved operator checkout for this documentation update.
+
+## Standalone USDC implementation evidence
+
+The read-only [implementation companion](DEPLOYMENT_USDC_IMPLEMENTATION_CHECK.md) uses `MAINNET_RPC_URL`, an explicitly owner/operator-reviewed JSON binding in `READINESS_USDC_CONFIG`, and a new exclusive output path in `USDC_IMPLEMENTATION_REPORT`. It does not load `.env`, create a signer, edit receipts or grant deployment/activation approval. Export only the needed values privately.
+
+To match a separate financial/readiness report's canonical snapshot, export both `USDC_SNAPSHOT_BLOCK_NUMBER` (decimal) and `USDC_SNAPSHOT_BLOCK_HASH`. Omit or unset both to select latest; empty exported snapshot settings are invalid. The companion rejects a different canonical hash and unsupported proxy/chain/type. Observed candidate values are not approved bindings. Its result covers only the implementation-identity portion of A2.

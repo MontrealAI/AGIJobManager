@@ -5,6 +5,8 @@ an existing instance. Deployment, ownership acceptance and opening paid intake
 are separate decisions. A successful test run does not establish a flawless
 contract, an independent audit or authority to sign transactions.
 
+For the planned second deployment, the owner made a scoped qualification decision on 15 October 2026: no external independent review and no Sepolia rehearsal. Record both as **NOT PERFORMED — OWNER-ACCEPTED OMISSION**, as detailed in the [second-deployment decision](SECOND_MAINNET_QUALIFICATION_DECISION.md). This does not waive exact-source tests, bytecode/configuration checks, local-fork rehearsal, recovery records or separate transaction/activation authorization.
+
 ## 1. Preserve the first instance
 
 Start with the [recorded mainnet instance](../deployments/MAINNET_USDC_2026-10-10.md)
@@ -42,8 +44,10 @@ fork/cutover checks. Record command, exact source SHA, tool versions, exit statu
 and evidence location. Label blocked or unexecuted checks explicitly. Do not
 substitute a focused test pass for the complete suite.
 
-Review the final source and all eight fixed library links independently before
-material exposure. If any Solidity, compiler, dependency patch or linking setting
+Review the final source and all eight fixed library links, and retain the scope
+and findings. External independent review is not being performed for this planned
+second deployment under the recorded owner decision; do not describe internal or
+AI-assisted review as an independent audit. If any Solidity, compiler, dependency patch or linking setting
 changes, reproduce bytecode, size, gas and security qualification. Source inspection
 or automated tooling alone is not an independent security audit.
 
@@ -90,9 +94,13 @@ record; never copy historical addresses merely because they appear in a document
 The offline check needs no RPC, signing key or explorer key and sends nothing.
 It does not establish address control or source qualification.
 
-Use the intended signer arrangement for a complete Sepolia rehearsal, including
-ownership acceptance, payout, refund, dispute and failed-payment recovery. Record
-which paths were actually executed; a read-only plan is not that rehearsal.
+The owner has selected no Sepolia rehearsal for this second deployment. Learn
+from the actual previous mainnet deployment and execute the candidate lifecycle
+and recovery paths on an isolated mainnet fork, including ownership acceptance,
+payout, refund, dispute and failed-payment recovery. Preserve the exact source,
+fork block/hash and executed paths. Record Sepolia as not performed; a fork or
+read-only plan does not establish present control of the intended production
+signers. Verify signer availability separately without exposing credentials.
 
 For a keyless mainnet plan, configure the RPC and intended `DEPLOYER_ADDRESS`, then:
 
@@ -127,6 +135,7 @@ No missing reserve or malformed pause flag should qualify as an empty manager.
 Readiness is still a technical snapshot, not an automatic intake-opening decision.
 
 Close the remaining actual-participant, signer/incident-response, financial/policy
-and operator-disclosure gates. Obtain independent final-source review and retain
-its scope and unresolved findings. Only then can the owner make a separate
+and operator-disclosure gates. Retain the internal final-source review, its
+unresolved findings and the explicit owner-accepted omission of external review.
+The omission is not a pass or a guarantee. Only then can the owner make a separate
 activation decision with deliberately limited, accurately described exposure.
