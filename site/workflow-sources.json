@@ -1,0 +1,75 @@
+{
+  "successor": [
+    "examples/successor/README.md",
+    "examples/successor/ambiguous.json",
+    "examples/successor/analyst.json",
+    "examples/successor/custom.json",
+    "examples/successor/duplicate-conflict.csv",
+    "examples/successor/malformed.csv",
+    "examples/successor/tie.csv",
+    "examples/successor/website.json"
+  ],
+  "employer": [
+    "site/employers.mjs",
+    "site/assets/employer-model.mjs",
+    "scripts/site/employer-browser-test.mjs"
+  ],
+  "roles": [
+    "docs/ui/DEMO.md",
+    "ui/src/lib/demo.ts",
+    "ui/src/app/demo/page.tsx",
+    "ui/src/demo/fixtures/scenarios.json",
+    "ui/src/demo/fixtures/scenarios.ts",
+    "ui/e2e/demo.spec.ts"
+  ],
+  "workforce": [
+    "experiments/workforce-10000/CANONICAL.json",
+    "experiments/workforce-10000/MONTE_CARLO.json",
+    "experiments/workforce-10000/PAIRED_DIFFERENCES.json",
+    "experiments/workforce-10000/PROTOCOL.json",
+    "experiments/workforce-10000/README.md",
+    "experiments/workforce-10000/SENSITIVITY.json",
+    "experiments/workforce-10000/SOURCE_PROVENANCE.json",
+    "experiments/workforce-10000/simulate.py",
+    "experiments/workforce-10000/test_simulation.py"
+  ],
+  "economics": [
+    "examples/astra-pilot-reference.json",
+    "examples/capacity-plan.json",
+    "examples/computer-runtime.json",
+    "examples/computer-work-v2.json",
+    "examples/computer-work-v3.json",
+    "examples/project-economics-100.json",
+    "examples/project-economics-1000.json",
+    "examples/project-economics-10000.json",
+    "examples/review-reservation.json"
+  ],
+  "genesis": [
+    "docs/examples/GENESIS_JOB_TODAY.md",
+    "docs/examples/genesis/README.md",
+    "docs/examples/genesis/evidence/artwork-inspection.json",
+    "docs/examples/genesis/evidence/decoded-receipt.json",
+    "docs/examples/genesis/evidence/deliverable-checks.json",
+    "docs/examples/genesis/evidence/historical-state-decoded.json",
+    "docs/examples/genesis/evidence/historical-state-raw.json",
+    "docs/examples/genesis/evidence/historical-transaction.json",
+    "docs/examples/genesis/evidence/job-completion.json",
+    "docs/examples/genesis/evidence/job-spec.json",
+    "docs/examples/genesis/evidence/legacy-abi.json",
+    "docs/examples/genesis/evidence/manifest.json"
+  ],
+  "erc8004": [
+    "integrations/erc8004/examples/.well-known/agent-registration.json",
+    "integrations/erc8004/examples/feedback_actions.sample.json",
+    "integrations/erc8004/examples/output.sample.json",
+    "integrations/erc8004/examples/registration.json"
+  ],
+  "specifications": [
+    "docs/examples/artifact_manifest.json",
+    "docs/examples/completion.json",
+    "docs/examples/jobCompletion.v1.json",
+    "docs/examples/jobSpec.v1.json",
+    "docs/examples/nft-metadata/AGIJobCompletionNFT.template.json",
+    "docs/examples/spec.json"
+  ]
+}

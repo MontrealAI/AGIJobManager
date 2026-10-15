@@ -133,6 +133,7 @@ export function render(t, data) {
     </section>
     <section id="resources" class="section container"><p class="eyebrow">${e(t.docsEyebrow)}</p><h2>${e(t.docsTitle)}</h2><p class="section-intro">${e(t.docsIntro)}</p>
       <div class="search-wrap" hidden><label for="guide-search">${e(t.searchLabel)}</label><input id="guide-search" type="search" placeholder="${e(t.searchPlaceholder)}" autocomplete="off" aria-controls="resource-grid"><span id="search-count" class="small" role="status"></span></div>
+      <p><a class="button button-secondary" href="./workflows/">${fr ? "Explorer toutes les démos et parcours" : "Explore all demos and workflows"}</a></p>
       <div id="resource-grid" class="resources">${t.resources.map(([title, desc, p, keywords]) => `<a class="resource" href="${doc(p)}" data-search="${e(title + " " + desc + " " + keywords)}"><div><h3>${e(title)}</h3><p>${e(desc)}</p></div><span aria-hidden="true">↗</span></a>`).join("")}</div>
       <p id="no-results" hidden>${e(t.noResults)}</p>${link(doc("docs/README.md"), t.docsAll)}
     </section>

@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { render } from "../../site/template.mjs";
+import { renderWorkflows } from "../../site/workflows.mjs";
 import { renderEmployer } from "../../site/employers.mjs";
 import { buildSuccessor } from "../successor/build.mjs";
 
@@ -49,7 +50,7 @@ if (
 fs.rmSync(output, { recursive: true, force: true });
 fs.mkdirSync(path.join(output, "assets"), { recursive: true });
 const successor = buildSuccessor(path.join(output, 'successor/downloads'), { commit, version: pkg.version });
-for (const name of ["app.mjs", "payments.mjs", "style.css", "home.css", "mark.svg", "employer.mjs", "employer-model.mjs", "employer.css"])
+for (const name of ["app.mjs", "payments.mjs", "style.css", "home.css", "mark.svg", "employer.mjs", "employer-model.mjs", "employer.css", "workflows.css"])
   fs.copyFileSync(
     path.join(root, "site/assets", name),
     path.join(output, "assets", name),
@@ -70,6 +71,9 @@ for (const lang of ["en", "fr"]) {
   const employerDirectory = path.join(directory, "employers");
   fs.mkdirSync(employerDirectory, { recursive: true });
   fs.writeFileSync(path.join(employerDirectory, "index.html"), renderEmployer(lang, { commit, version: pkg.version }));
+  const workflowDirectory = path.join(directory, "workflows");
+  fs.mkdirSync(workflowDirectory, { recursive: true });
+  fs.writeFileSync(path.join(workflowDirectory, "index.html"), renderWorkflows(lang, { commit, version: pkg.version, sources: json("site/workflow-sources.json") }));
   const successorDirectory = path.join(directory, 'successor');
   fs.mkdirSync(successorDirectory, { recursive: true });
   fs.writeFileSync(path.join(successorDirectory, 'index.html'), successor.pages[lang]);

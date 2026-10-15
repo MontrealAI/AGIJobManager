@@ -222,6 +222,33 @@ try {
     }
     await context.close();
   }
+  for (const language of ['', 'fr/']) {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await page.goto(base + language + 'workflows/');
+    assert.equal(await page.locator('article').count(), 8);
+    for (const width of [320, 390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const scale of [100, 200]) {
+        await page.evaluate(scale => document.documentElement.style.fontSize = scale + '%', scale);
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${language} workflows ${width}/${scale}`);
+      }
+    }
+    await page.evaluate(() => document.documentElement.style.fontSize = '100%');
+    const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+    assert.deepEqual(audit.violations, []);
+    for (const href of await page.locator('a[href^="../"]').evaluateAll(nodes => nodes.map(a => a.href)))
+      assert.equal((await page.request.get(href)).status(), 200, href);
+    await page.locator('summary').first().focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('details').first().getAttribute('open'), '');
+    await context.close();
+    const noJS = await browser.newContext({ javaScriptEnabled: false });
+    const staticPage = await noJS.newPage();
+    await staticPage.goto(base + language + 'workflows/');
+    assert.equal(await staticPage.locator('article').count(), 8);
+    await noJS.close();
+  }
   console.log(
     "Pages browser checks passed: English/French, four-project ecosystem links and keyboard/Back navigation, hero/ecosystem WCAG checks, 320/390/768/1440 widths, larger text and 200% text reflow, prominent locale-preserving employer routes, 48px primary links, keyboard entry, four role routes, calculator, search, FAQ, no-JS onboarding and advanced console navigation.",
   );

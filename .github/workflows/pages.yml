@@ -78,6 +78,7 @@ jobs:
         run: |
           node scripts/site/build.mjs
           node scripts/site/check.mjs
+          node --test scripts/site/workflows.test.mjs
           node --check site/assets/app.mjs
           node --check site/assets/employer.mjs
           node --test scripts/site/employer-model.test.mjs
