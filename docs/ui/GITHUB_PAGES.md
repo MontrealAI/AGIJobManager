@@ -87,9 +87,11 @@ Before approving an employer UI change, also inspect narrow screens and enlarged
 | `agijobmanager-usdc.html` | Byte-identical copy of `ui/agijobmanager-usdc.html` |
 | `agijobmanagerv0.html` | Preserved compatibility alias for that same current USDC console |
 | `agijobmanager.html` | Preserved committed single-file React interface from `ui/dist-ipfs/agijobmanager.html` |
-| `build-info.json` | Source commit, version, source paths, published file sizes and SHA-256 digests |
+| `build-info.json` | Source commit, version, source paths, public file sizes/digests and separate build-only markers |
 | `404.html` | Return-to-home page |
 | `sitemap.xml` | Homepage and employer onboarding language URLs |
+
+The `files` inventory describes public Pages files. The local empty `.nojekyll` marker remains in the build but is listed separately under `buildOnlyFiles`, because `upload-pages-artifact` omits dotfiles. It must not be treated as a missing public deployment file. Verify `build-info.json` and every public file against the same reviewed source after publication.
 
 These hosted consoles follow the publishing commit. For an immutable release, use [release assets](https://github.com/MontrealAI/AGIJobManager/releases) and verify their checksums. The existing UI CI remains responsible for reproducing and qualifying the committed React artifact. The Pages builder does not silently rebuild it with a different configuration.
 

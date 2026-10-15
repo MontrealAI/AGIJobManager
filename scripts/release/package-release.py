@@ -9,7 +9,7 @@ import subprocess
 import tarfile
 import tempfile
 import zipfile
-from release_common import TAG, TITLE, LIMIT, BUILDER_ASSETS, REPOSITORY, sha, require, source_path
+from release_common import TAG, TITLE, LIMIT, BUILDER_ASSETS, REPOSITORY, sha, require, source_path, packaged_guide
 
 root = pathlib.Path(__file__).resolve().parents[2]
 
@@ -34,8 +34,9 @@ def package(out):
             data = member.linkname.encode() if member.issym() else archive.extractfile(member).read()
             require(len(data) < LIMIT, 'Source file exceeds package limit')
             payload['source/' + member.name] = (data, mode)
-    for name in ['START_HERE.md', 'RELEASE_NOTES.md', 'RECOVERY_GUIDE.md', 'VALIDATION.md']:
-        payload[name] = (payload[f'source/docs/releases/{TAG}/{name}'][0], stat.S_IFREG | 0o644)
+    guides = {f'docs/releases/{TAG}/{name}': name for name in ['START_HERE.md', 'RELEASE_NOTES.md', 'RECOVERY_GUIDE.md', 'VALIDATION.md']}
+    for source_name, name in guides.items():
+        payload[name] = (packaged_guide(payload['source/' + source_name][0], source_name, payload, guides), stat.S_IFREG | 0o644)
     for name, source_name in [('agijobmanager-usdc.html', 'ui/agijobmanager-usdc.html'), ('LICENSE', 'LICENSE')]:
         payload[name] = payload['source/' + source_name]
     # Build solely from the archived commit, never untracked working-tree inputs.

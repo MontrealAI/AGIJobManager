@@ -16,7 +16,7 @@ import unittest
 import zipfile
 from unittest.mock import Mock, patch
 from urllib.parse import quote
-from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, LIMIT, source_path, validate_qualification, verify_assets, sha
+from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, LIMIT, source_path, validate_qualification, verify_assets, sha, packaged_guide
 
 PUBLISHER = Path(__file__).with_name('publish-release.py')
 SOURCE = 'a' * 40
@@ -515,6 +515,45 @@ class PackageVerificationTests(unittest.TestCase):
             archive = Mock(); archive.infolist.return_value = [item, embedded] + ([item] if name.endswith('README.md') else [])
             with self.subTest(name=name), self.assertRaises(ValueError): self.verifier['archive_inventory'](archive, {'files': {name: {}}})
             archive.read.assert_not_called()
+
+
+
+class PackagedGuideTests(unittest.TestCase):
+    source = f'docs/releases/{TAG}/START_HERE.md'
+    sibling = f'docs/releases/{TAG}/VALIDATION.md'
+
+    def render(self, text, available=None):
+        available = available or {'source/docs/DEPLOYMENT/OPTIONAL_METADATA_ROUTER.md', 'source/hardhat/README.md', 'source/' + self.sibling}
+        return packaged_guide(text.encode(), self.source, available, {self.source: 'START_HERE.md', self.sibling: 'VALIDATION.md'}).decode()
+
+    def test_parent_links_resolve_within_archive(self):
+        self.assertEqual(self.render('[router](../../DEPLOYMENT/OPTIONAL_METADATA_ROUTER.md) [setup](../../../hardhat/README.md)'), '[router](source/docs/DEPLOYMENT/OPTIONAL_METADATA_ROUTER.md) [setup](source/hardhat/README.md)')
+
+    def test_sibling_guides_remain_at_archive_root(self):
+        self.assertEqual(self.render('[validation](VALIDATION.md)'), '[validation](VALIDATION.md)')
+
+    def test_external_links_and_local_fragments_are_unchanged(self):
+        text = '[web](https://example.com/a) [email](mailto:help@example.com) [anchor](#steps)'
+        self.assertEqual(self.render(text), text)
+
+    def test_queries_and_fragments_are_preserved(self):
+        self.assertEqual(self.render('[guide](../../../hardhat/README.md?plain=1#setup)'), '[guide](source/hardhat/README.md?plain=1#setup)')
+
+    def test_missing_or_escaping_targets_fail_closed(self):
+        for href in ['../../MISSING.md', '../../../../outside.md', '/absolute.md']:
+            with self.subTest(href=href), self.assertRaises(ValueError):
+                self.render('[bad](' + href + ')')
+
+    def test_current_release_root_guide_links_resolve(self):
+        root = Path(__file__).resolve().parents[2]
+        guides = {f'docs/releases/{TAG}/{name}': name for name in ['START_HERE.md', 'RELEASE_NOTES.md', 'RECOVERY_GUIDE.md', 'VALIDATION.md']}
+        available = {'source/' + str(p.relative_to(root)) for p in (root / 'docs').rglob('*.md')}
+        available.add('source/hardhat/README.md')
+        for source_name in guides:
+            original = (root / source_name).read_bytes()
+            rendered = packaged_guide(original, source_name, available, guides)
+            self.assertNotIn(b'](../', rendered)
+            self.assertEqual((root / source_name).read_bytes(), original)
 
 
 if __name__ == '__main__':
