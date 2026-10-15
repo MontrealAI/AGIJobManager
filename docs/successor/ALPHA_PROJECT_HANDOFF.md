@@ -24,6 +24,8 @@ including commit and ordered file hashes. Recomputed nested/outer checksums do
 not authorize different provenance. Before executing Alpha's validator, the
 adapter reads the closed 17-file inventory from the pinned Git object and checks
 actual bytes and symlink boundaries, even when Git index flags hide edits.
+Unavailable checkout directories and Git failures return a fixed error code;
+their local paths and Git diagnostics are excluded from API and CLI errors.
 Once a transfer has a selected candidate or USDC plan, `run` refuses it with
 `EXPLICIT_NEW_CYCLE_REQUIRED`. Preserve that history and explicitly choose a new
 native Alpha cycle for different work; selection is never silently retained or
@@ -55,3 +57,5 @@ fichiers du validateur Alpha sont comparés à l’inventaire Git épinglé, mê
 des indicateurs Git masquent une modification. Après sélection ou préparation
 d’une proposition USDC, `run` refuse de relancer ce transfert : conservez son
 historique et choisissez explicitement un nouveau cycle Alpha.
+Un dossier indisponible ou une erreur Git produit un code fixe, sans chemin
+local ni diagnostic Git dans les erreurs API ou CLI.

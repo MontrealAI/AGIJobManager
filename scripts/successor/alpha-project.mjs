@@ -15,15 +15,20 @@ const MAPPING = 'alpha-public-data-to-manager-rows/v1';
 async function managerSource() { return { repository: 'MontrealAI/AGIJobManager', adapterSha256: await sha256(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8')), engineSha256: builderArtifacts().sourceManifest.engineSha256 }; }
 function checkedCheckout(directory) {
   fail(typeof directory === 'string' && path.isAbsolute(directory), 'ALPHA_CHECKOUT');
-  const root = fs.realpathSync(directory);
-  const git = args => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', timeout: 10000, maxBuffer: 100000 }).trim();
+  let root;
+  try { root = fs.realpathSync(directory); } catch { fail(false, 'ALPHA_CHECKOUT'); }
+  const gitBytes = args => {
+    try { return execFileSync('git', ['-C', root, ...args], { stdio: 'pipe', timeout: 10000, maxBuffer: 100000 }); }
+    catch { fail(false, 'ALPHA_CHECKOUT'); }
+  };
+  const git = args => gitBytes(args).toString('utf8').trim();
   fail(git(['rev-parse', 'HEAD']) === ALPHA_SOURCE.commit && git(['rev-parse', 'HEAD^{tree}']) === ALPHA_SOURCE.tree, 'ALPHA_SOURCE_PIN');
   fail(git(['status', '--porcelain', '--untracked-files=no']) === '', 'ALPHA_SOURCE_DIRTY');
   // Git status can hide edits behind skip-worktree/assume-unchanged. Read the
   // validator's complete closed source inventory from the pinned Git object,
   // then verify the actual files Node will load, including symlink boundaries.
   const manifestPath = 'docs/successor/mission/sources.json';
-  const trustedBytes = execFileSync('git', ['-C', root, 'show', `${ALPHA_SOURCE.commit}:${manifestPath}`], { timeout: 10000, maxBuffer: 100000 });
+  const trustedBytes = gitBytes(['show', `${ALPHA_SOURCE.commit}:${manifestPath}`]);
   const fileBytes = relative => {
     fail(typeof relative === 'string' && /^[A-Za-z0-9_./-]+$/.test(relative) && !relative.split('/').includes('..') && !path.isAbsolute(relative), 'ALPHA_SOURCE_BYTES');
     const file = path.join(root, relative);

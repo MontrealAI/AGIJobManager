@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { importAlphaProject, inspectAlphaProject, advanceAlphaProject, ALPHA_SOURCE } from './alpha-project.mjs';
 import { canonical, sha256 } from '../../site/assets/successor/safe.mjs';
@@ -49,6 +49,23 @@ test('explicit mapping, native corruption, source pins and prices fail closed', 
   await assert.rejects(importAlphaProject(raw, { ...options('en'), alphaCheckout: path.resolve('.') }), { code: 'ALPHA_SOURCE_PIN' });
   const imported = await importAlphaProject(raw, options('en'));
   await assert.rejects(advanceAlphaProject(imported, { alphaCheckout: root, action: 'select-and-draft', budget: '100' }), { code: 'RUN_REQUIRED' });
+});
+test('invalid checkout errors never disclose local paths through the API or CLI', async () => {
+  const original = await fixture(), temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'private-alpha-checkout-'));
+  try {
+    const input = path.join(temporary, 'project.json'), output = path.join(temporary, 'transfer.json');
+    fs.writeFileSync(input, original);
+    for (const checkout of [path.join(temporary, 'missing-private-directory'), temporary]) {
+      await assert.rejects(importAlphaProject(original, { ...options('en'), alphaCheckout: checkout }), error => {
+        assert.equal(error.code, 'ALPHA_CHECKOUT'); assert.equal(error.message, 'ALPHA_CHECKOUT');
+        assert.equal(String(error).includes(temporary), false); return true;
+      });
+      const result = spawnSync(process.execPath, ['scripts/successor/cli.mjs', 'import-alpha-project', input, checkout, 'en', '--map-public-data', output], { encoding: 'utf8', timeout: 30000 });
+      assert.equal(result.status, 1); assert.equal(result.stdout, '');
+      assert.deepEqual(JSON.parse(result.stderr), { code: 'ALPHA_CHECKOUT', message: 'ALPHA_CHECKOUT', authority: 'none' });
+      assert.equal(result.stderr.includes(temporary), false); assert.equal(fs.existsSync(output), false);
+    }
+  } finally { fs.rmSync(temporary, { recursive: true, force: true }); }
 });
 test('recomputed outer checksums cannot change source history, mapping, mission or authority', async () => {
   const imported = await importAlphaProject(await fixture(), options('en'));

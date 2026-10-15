@@ -3,13 +3,17 @@ on:
   pull_request:
     paths:
       - 'scripts/successor/**'
-      - 'site/assets/successor/**'
+      - 'site/**'
+      - 'package.json'
+      - 'LICENSE'
       - '.github/workflows/alpha-project-handoff.yml'
   push:
     branches: [main]
     paths:
       - 'scripts/successor/**'
-      - 'site/assets/successor/**'
+      - 'site/**'
+      - 'package.json'
+      - 'LICENSE'
       - '.github/workflows/alpha-project-handoff.yml'
 permissions:
   contents: read
