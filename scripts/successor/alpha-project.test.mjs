@@ -7,6 +7,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { importAlphaProject, inspectAlphaProject, advanceAlphaProject, ALPHA_SOURCE } from './alpha-project.mjs';
 import { canonical, sha256 } from '../../site/assets/successor/safe.mjs';
+import { appendEvent, continueHistory, exportCapsule, inspectCapsule } from '../../site/assets/successor/model.mjs';
 const root = process.env.SUCCESSOR_ALPHA_SOURCE;
 if (!root) throw Error('SUCCESSOR_ALPHA_SOURCE must identify the pinned, clean Alpha checkout; these integration tests never skip');
 const alpha = name => import(pathToFileURL(path.join(root, name)));
@@ -109,6 +110,23 @@ test('fully resealed capsules cannot fabricate the complete Manager source manif
     transfer.history[0].capsule = canonical(capsule); transfer.history[0].sha256 = await sha256(transfer.history[0].capsule);
     delete transfer.sha256; transfer.sha256 = await sha256(transfer);
     await assert.rejects(inspectAlphaProject(canonical(transfer), { alphaCheckout: root }), { code: 'MANAGER_SOURCE_DRIFT' });
+  }
+});
+
+test('a valid resealed first capsule cannot substitute a legacy engine or invented archived history', async () => {
+  const imported = await importAlphaProject(await fixture(), options('en'));
+  const first = JSON.parse(JSON.parse(imported).history[0].capsule);
+  const legacy = structuredClone(first.payload.state); legacy.engine = 'successor-local/1';
+  const fabricated = structuredClone(first.payload.state);
+  await appendEvent(fabricated, 'run-failed', 'FABRICATED_FAILURE');
+  const archived = (await continueHistory(fabricated, true, first.payload.sourceManifest)).state;
+  for (const state of [legacy, archived]) {
+    const transfer = JSON.parse(imported), capsule = await exportCapsule(state, first.payload.sourceManifest);
+    await inspectCapsule(capsule); // Valid native capsules still must match this import's exact initial state.
+    transfer.history[0].capsule = capsule; transfer.history[0].sha256 = await sha256(capsule);
+    delete transfer.sha256; transfer.sha256 = await sha256(transfer);
+    await assert.rejects(inspectAlphaProject(canonical(transfer), { alphaCheckout: root }), { code: 'IMPORT_EXECUTION_CLAIM' });
+    await assert.rejects(advanceAlphaProject(canonical(transfer), { alphaCheckout: root, action: 'run' }), { code: 'IMPORT_EXECUTION_CLAIM' });
   }
 });
 

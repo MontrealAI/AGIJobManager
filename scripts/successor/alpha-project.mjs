@@ -116,7 +116,7 @@ export async function inspectAlphaProject(raw, { alphaCheckout }) {
       const expected = await nextState(prior, entry.kind, plan?.draft.fields.budget);
       fail(canonical(state) === canonical(expected), 'TRANSITION_CHANGED');
     }
-    else fail(state.candidates.length === 0 && state.plans.length === 0 && state.active === null && state.chronicle.length === 1, 'IMPORT_EXECUTION_CLAIM');
+    else fail(canonical(state) === canonical(await createSystem(mission)), 'IMPORT_EXECUTION_CLAIM');
     prior = state;
   }
   return { transfer, state: prior, originalProject: project };
