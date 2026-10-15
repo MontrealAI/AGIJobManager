@@ -237,7 +237,7 @@ The NFT mint is still intended to proceed even if ENS URI retrieval fails.
 
 ### What owners should do for ENS-based tokenURI routing
 
-1. Deploy/configure an ENS job pages contract (for example `AGIJobPages`).
+1. Select and qualify the intended helper. For generic `AGIJobPages`, use the [guarded optional-router deployment and verification path](../DEPLOYMENT/OPTIONAL_METADATA_ROUTER.md), then separately authorize owner configuration; it is distinct from the ENS namespace-owning `ENSJobPages`.
 2. Set it with `setEnsJobPages(address)`.
 3. Enable routing with `setUseEnsJobTokenURI(true)`.
 4. Ensure resolver returns ABI-encoded non-empty string <= 1024 bytes under 200k gas.

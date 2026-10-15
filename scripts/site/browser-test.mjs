@@ -203,9 +203,11 @@ try {
     assert.equal(await page.evaluate(() => document.activeElement.className), 'skip', 'The skip link remains the first keyboard stop');
     assert.ok(await page.locator('.skip').evaluate(element => element.getBoundingClientRect().top >= 0 && getComputedStyle(element).clipPath === 'none'), 'The focused skip link is fully available');
     await page.keyboard.press('Enter');
+    await page.waitForURL(base + language + '#main', { timeout: 5000 });
     assert.ok(page.url().endsWith('#main'), 'The skip link reaches the main content');
     await page.locator('.header a[href="#ecosystem"]').focus();
     await page.keyboard.press('Enter');
+    await page.waitForURL(base + language + '#ecosystem', { timeout: 5000 });
     assert.ok(page.url().endsWith('#ecosystem'), 'Keyboard navigation reaches the ecosystem');
     for (const [project, url] of Object.entries(ecosystemProjects)) {
       await page.locator(`[data-ecosystem-project="${project}"]`).focus();

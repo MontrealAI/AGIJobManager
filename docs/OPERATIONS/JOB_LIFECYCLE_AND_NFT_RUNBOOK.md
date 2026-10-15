@@ -104,6 +104,8 @@ Override paths:
 
 ## Router deployment and activation
 
+Use the [guarded optional-router deployment and verification path](../DEPLOYMENT/OPTIONAL_METADATA_ROUTER.md) first. The steps below describe separately authorized owner configuration only after an exact-source `verified_unconfigured` receipt. Do not bypass runtime, constructor, explorer or journal checks. No live verification is implied by these instructions.
+
 1. Deploy `AGIJobPages` with constructor args:
    - `baseMetadataURI` (for example `ipfs://<CID>/`)
    - `externalUrlBase` (optional)
