@@ -1,4 +1,4 @@
-name: Bounded Public Account Metadata Observation
+name: Bounded Jobs Dependency Runtime Observation
 
 # Publication and this opened-only trigger require root review. Updates and reopened
 # PRs cannot trigger a second observation; there is no dispatch or schedule entrypoint.
@@ -17,7 +17,7 @@ jobs:
       github.run_attempt == 1 &&
       github.event.pull_request.head.repo.full_name == 'MontrealAI/AGIJobManager' &&
       github.event.pull_request.head.repo.fork == false &&
-      github.event.pull_request.head.ref == 'qualification/account-metadata-observation-20261016'
+      github.event.pull_request.head.ref == 'qualification/jobs-dependency-code-20261016'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -63,12 +63,12 @@ jobs:
           env -i PATH="$PATH" HOME="$HOME" node collector/scripts/qualification/observe-account-metadata.cjs \
             --dependency-root "$GITHUB_WORKSPACE/actual-c2" \
             --collector-commit "$COLLECTOR_COMMIT" \
-            --output "$GITHUB_WORKSPACE/metadata-evidence/account-metadata-observation.json"
-      - name: Preserve the bounded public metadata receipt
+            --output "$GITHUB_WORKSPACE/metadata-evidence/jobs-passive-dependency-code.json"
+      - name: Preserve the bounded public runtime receipt
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: account-metadata-observation
-          path: metadata-evidence/account-metadata-observation.json
+          name: jobs-passive-dependency-code
+          path: metadata-evidence/jobs-passive-dependency-code.json
           if-no-files-found: error
           retention-days: 14
