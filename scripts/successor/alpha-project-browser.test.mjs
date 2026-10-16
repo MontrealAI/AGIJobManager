@@ -6,7 +6,7 @@ import { gunzipSync } from 'node:zlib';
 import { canonical, sha256 } from '../../site/assets/successor/safe.mjs';
 import { importAlphaProject, inspectAlphaProject, advanceAlphaProject, validateBrowserAlpha } from '../../site/assets/successor/alpha-project.mjs';
 import { builderArtifacts } from './build.mjs';
-import { fixture } from './alpha-project-fixture.mjs';
+import { fixture, capacityFixtures } from './alpha-project-fixture.mjs';
 const vendor = 'site/assets/successor/vendor/alpha-project/';
 const provenance = JSON.parse(fs.readFileSync(vendor + 'provenance.json'));
 
@@ -37,6 +37,15 @@ test('browser import rejects malformed native history, secrets and missing expli
   const bad = JSON.parse(raw); bad.cycles[0].records[0].bytes += ' ';
   await assert.rejects(validateBrowserAlpha(canonical(bad)), { code: 'ALPHA_NATIVE_INVALID' });
   await assert.rejects(validateBrowserAlpha(raw.replace('browser-project', 'api_key=abcdefghijklmnop')), { code: 'PRIVATE_INPUT' });
+});
+test('all eight checkpoint capacities remain readable while new runs reserve a final USDC draft slot', async () => {
+  const histories = await capacityFixtures(context);
+  for (const [index, raw] of histories.entries()) assert.equal((await inspectAlphaProject(raw, context)).transfer.history.length, index + 1);
+  await assert.rejects(advanceAlphaProject(histories[6], { action: 'run' }, context), { code: 'TRANSFER_DRAFT_RESERVE' });
+  const planned = await inspectAlphaProject(await advanceAlphaProject(histories[6], { action: 'select-and-draft', budget: '12.50' }, context), context);
+  assert.equal(planned.transfer.history.length, 8); assert.equal(planned.state.plans[0].pricing.jobBaseUnits, '12500000');
+  await assert.rejects(advanceAlphaProject(histories[7], { action: 'run' }, context), { code: 'TRANSFER_HISTORY' });
+  await assert.rejects(advanceAlphaProject(histories[7], { action: 'select-and-draft', budget: '1' }, context), { code: 'TRANSFER_HISTORY' });
 });
 
 test('packed trusted editable inventory preserves exact bytes, closed sources and existing initial-size gate', () => {
