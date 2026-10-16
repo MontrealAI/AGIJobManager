@@ -1,6 +1,6 @@
 {
   "schema": "ubuntu-hardhat-terminal-acceptance-v1",
-  "status": "FULL_JOBS_REHEARSAL_RUNNING",
+  "status": "LOCAL_FULL_REHEARSAL_INTERRUPTED_HOSTED_QUALIFICATION_PENDING",
   "preparedFromToolingBase": "644feb032b6d03ca8b0a0aa02dae8b6c0bccdeed",
   "environment": {
     "os": "Ubuntu 24.04.3 LTS",
@@ -180,12 +180,17 @@
       "nativeFiveCreationPrefixPassed": true
     },
     "jobs": {
-      "status": "RUNNING",
+      "status": "INTERRUPTED_BY_EXECUTION_ENVIRONMENT_RESET",
       "expectedOperations": 39,
       "expectedCreations": 25,
       "compilerInputSha256": "a962576832d4540c4cd682f9251b6eed2a333c87a1ce5fa61ed5716e7091b891",
       "expectedCloseout": "39 creator operations / 25 creations, awaiting-commissioning; pending governor settings are not an unexpected native failure",
-      "boundedAuthorityChecksMayRemainIncomplete": true
+      "boundedAuthorityChecksMayRemainIncomplete": true,
+      "observedLocalPrefixBeforeReset": {
+        "acceptedOperations": 14,
+        "preparedOperations": 15,
+        "complete": false
+      }
     }
   },
   "keyHandling": {
@@ -235,5 +240,11 @@
     "logSha256": "11f78a50932a219ef458ce214e12e1694d2f09f6d5abfce2ef03347693e00da4",
     "fix": "Test HRE getContractAt now supplies the explicit read-only provider instead of discovering a signer. Original contract/native API source unchanged. Fresh full rerun is required and in progress."
   },
-  "receiptRecheckPolicy": "First Jobs prefix verification in each process checks every receipt; reuse is in memory only and requires an identical head/view plus fresh native canonical last-receipt validation. Any drift/failure or process restart requires full verification."
+  "receiptRecheckPolicy": "First Jobs prefix verification in each process checks every receipt; reuse is in memory only and requires an identical head/view plus fresh native canonical last-receipt validation. Any drift/failure or process restart requires full verification.",
+  "hostedQualification": {
+    "status": "PENDING",
+    "workflow": ".github/workflows/ubuntu-hardhat-terminal.yml",
+    "scope": "Ubuntu 24.04 / Node22.23.3, exact source builds, 24 security cases, real PTY CLI and all 9+5+39 disposable operations",
+    "mainnetAuthorized": false
+  }
 }
