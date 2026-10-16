@@ -145,6 +145,8 @@ The creator is explicitly selected in the core reviewed profile as `creator.addr
 | Setting | Candidate behavior |
 | --- | --- |
 | `CREATOR_TRANSACTION_MODE` | Optional-helper transaction mode; only qualified `eoa-create` with empty creator code is supported by this increment. Other transports fail closed. |
+| `MANAGER_READ_RPC_URL` | Explicit HTTPS endpoint for the standalone core-session CLI's bounded read-only preflight, session, recovery and reconciliation commands. The read transport rejects signing and submission methods. |
+| `MANAGER_RELAY_RPC_URL` | Explicit HTTPS endpoint used only by the separately authorized core-session `relay` command. Selecting an endpoint does not authorize relay or remove exact-envelope, source, nonce, expiry, lock, journal or campaign gates. |
 | `DEPLOYMENT_LOCK_DIRECTORY` | Existing operator-selected shared directory for exclusive chain/creator nonce locks. Unresolved failures retain the lock; never auto-break it. |
 | `ENS_BUILD_DIGEST` | Reviewed digest of exact helper compiler input and compiler long version, required before live creation. |
 | `ENS_MANAGER_CODE_HASH` | Explicit reviewed runtime hash of the new paused, governor-owned manager. |
@@ -156,5 +158,7 @@ The creator is explicitly selected in the core reviewed profile as `creator.addr
 | `ENS_LEGACY_BUILD_DIGEST` | Reviewed original helper compiler-input identity, checked against the original saved input. |
 | `AUTHORITY_REVIEW` | Source-bound reviewed direct-role/metadata expectations; complete creator and governor subjects required. |
 | `AUTHORITY_REPORT` | New read-only direct authority report. Passing direct checks remains `finalized:false`, `activationAuthorized:false`, exit 3 while comprehensive setup, ENS/controller/operator, signing and approval gates remain. |
+
+The standalone `hardhat/scripts/core-session.cjs` CLI reads `MANAGER_READ_RPC_URL` and `MANAGER_RELAY_RPC_URL` directly from its launch environment. It does not load `hardhat/.env` or fall back to `MAINNET_RPC_URL`; the empty example entries document these separate inputs. Export only the endpoint required by the selected command, privately. Offline `plan`, signed-file `import`, `retrieve-handoff`, `inspect-journal` and `repair-journal` do not create the read transport. The `relay` command also requires the read endpoint for its independent checks. HTTPS endpoints must omit URL user/password credentials and fragments. No real endpoint is supplied here.
 
 Optional router configuration uses `ROUTER_CONFIG`, `ROUTER_JOURNAL`, `ROUTER_REVERIFY` and `ROUTER_REPORT`; archived two-argument router recovery additionally names `ROUTER_LEGACY_ARTIFACT` and `ROUTER_LEGACY_BUILD_INFO`. New router schemas bind creator separately from owner and append the explicit governor to constructor arguments. No metadata pointer, root custody, approval, fee wallet or intake state is changed by optional CREATE/verification.

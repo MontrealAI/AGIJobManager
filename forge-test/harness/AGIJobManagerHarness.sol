@@ -10,7 +10,11 @@ contract AGIJobManagerHarness is AGIJobManager {
         address[2] memory ensConfig,
         bytes32[4] memory rootNodes,
         bytes32[2] memory merkleRoots
-    ) AGIJobManager(usdcTokenAddress, baseIpfs, ensConfig, rootNodes, merkleRoots, [address(0x301), address(0x101)], msg.sender) {
+    )
+        AGIJobManager(
+            usdcTokenAddress, baseIpfs, ensConfig, rootNodes, merkleRoots, [address(0x301), address(0x101)], msg.sender
+        )
+    {
         if (paused()) _unpause();
     }
 

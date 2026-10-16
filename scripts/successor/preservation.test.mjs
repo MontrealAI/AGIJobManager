@@ -63,3 +63,25 @@ test('historical reviews stay unchanged and new fork evidence binds the candidat
     if (!['package.json', 'package-lock.json', 'hardhat/package.json', 'hardhat/package-lock.json'].includes(file)) assert.equal(hash, oldHashes[file]);
   }
 });
+
+test('pre-governor current qualification and change inventory remain byte-for-byte historical evidence', () => {
+  const preserved = {
+    'docs/qualification/history/expected-mainnet-cutover-v1.18.0.json': '36bc8cfb2d3d8e15b04372ea1fbed3fe407a921c0d70b525d673be4447f63746',
+    'docs/qualification/history/next-deployment-contract-changes-v1.18.0.json': '93f50d12f034ab8bdf6f951c48f71c3dd010fa82ab485d2d9f61c21f97d587d5'
+  };
+  for (const [file, hash] of Object.entries(preserved)) assert.equal(digest(fs.readFileSync(file)), hash, file);
+  const old = JSON.parse(fs.readFileSync('docs/qualification/history/expected-mainnet-cutover-v1.18.0.json'));
+  const current = JSON.parse(fs.readFileSync('docs/qualification/mainnet-cutover-next-deployment.json'));
+  const { sourceSha256: oldSources, ...oldOutcomes } = old;
+  const { sourceSha256: currentSources, ...currentOutcomes } = current;
+  assert.deepEqual(currentOutcomes, oldOutcomes);
+  assert.deepEqual(Object.keys(currentSources), Object.keys(oldSources));
+  for (const [file, hash] of Object.entries(currentSources)) {
+    assert.equal(hash, digest(fs.readFileSync(file)), file + ' must bind the newly observed source');
+    if (hash !== oldSources[file]) {
+      const review = reviewedChanges[file];
+      assert.ok(review?.purpose, file + ' changed input requires exact review');
+      assert.equal(hash, review.afterSha256, file);
+    }
+  }
+});

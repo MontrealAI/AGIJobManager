@@ -1,6 +1,6 @@
 {
   "baseline": "191cf3590e5cdc08df1bb0af500ee28a91c8b010",
-  "scope": "Inherited v1.17.0 ENS membership correction with v1.18.0 release identity; source review is not runtime qualification, independent audit or activation approval.",
+  "scope": "Exact inherited ENS membership correction plus explicit initial-governor constructors and public useEnsJobTokenURI getter for a new deployment. This source inventory is not complete release qualification, independent audit, physical-wallet qualification or activation approval.",
   "files": {
     "contracts/utils/ENSOwnership.sol": {
       "beforeSha256": "5178a64b4618bf861a300b57fa4c4ca183313c46005509e14dc0c87ca8254209",
@@ -11,13 +11,28 @@
       "beforeSha256": "6458d3fbdaafd623aa44bde80c54e58823cca47530e238649fcd19f8accf58ff",
       "afterSha256": "57057dacfc94f4b1b4c9547b78c269ea1a936046931b2a12bad0c29da06f5d6b",
       "purpose": "Model explicit registry ownership in local fixtures; not a production deployment target."
+    },
+    "contracts/AGIJobManager.sol": {
+      "beforeSha256": "e9be32b61afb55818d4108f295c5b80d9e2f5649e4697b9a199f8c000d8285c4",
+      "afterSha256": "3c0cfc462cc815bd8a432243c221eb6fd210880ec6178509a489265db18f7962",
+      "purpose": "Append nonzero initialGovernor and transfer ownership during construction; expose the existing useEnsJobTokenURI state getter. Preserve settlement, USDC and bonding behavior; new ABI and deployment required."
+    },
+    "contracts/ens/ENSJobPages.sol": {
+      "beforeSha256": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
+      "afterSha256": "80d67283a1d12eaa475d13c5290b00b183f0d84dfe3711c68841622152da1adf",
+      "purpose": "Append nonzero initialGovernor and transfer ownership during construction before ENS initialization; new ABI and deployment required."
+    },
+    "contracts/periphery/AGIJobPages.sol": {
+      "beforeSha256": "21b0011e798c73717524708af6af2aa244bc63dc29ec9172ee149ad5c6e898ad",
+      "afterSha256": "6b6bcf0470609325e8490e3909decdc85f0015c366a9815bd5d27dbcb0f3fa74",
+      "purpose": "Append nonzero initialGovernor and transfer ownership during construction; new ABI and deployment required."
     }
   },
   "evidenceInputs": {
     "hardhat/scripts/deployment-safety.cjs": {
       "beforeSha256": "0bfe3cfacbc97aafa1120d8d6d7c6aca501f9cd5c2777518bb41d5ef7079e446",
-      "afterSha256": "fa739a2460544328553236a5e7223c74d1e3ac28af6d5f3620e8ae173f4cca27",
-      "purpose": "Require complete, exact five-reserve readiness state; fork evidence input changes without changing settlement economics."
+      "afterSha256": "35957661a7f4e749368e64f77bbcfff2bfef3ac4eebdf80c37679fada2fb41ea",
+      "purpose": "Require complete exact five-reserve readiness state and strictly validate artifact runtime bytecode metadata. Independently rerun the actual explicit-governor candidate USDC fork and 23-case cutover; settlement economics are unchanged."
     },
     "package.json": {
       "beforeSha256": "cb4c469111c491557d769ae80baef09f99c094a64f02574c610749def000f517",
@@ -38,6 +53,11 @@
       "beforeSha256": "65a889b2611afe2327602c9899b6bb2eacd7a6f1259ba0924f31bdc052fe757d",
       "afterSha256": "ebdb3e307e42e6ea0739451252f2606789cdc9f47a21044dea095f6ab4b5638a",
       "purpose": "Fresh v1.18.0 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
+    },
+    "hardhat/test/mainnet-cutover.test.js": {
+      "beforeSha256": "a9627a0596b5b30c4b95c9f62a64aae2de00c47100af5a1a2c69431f43f5e516",
+      "afterSha256": "818d1049c39a6de454cf4761188f7f4a68c6c8c35d72baf2371f960170489944",
+      "purpose": "Pass the explicit initial-governor constructor argument in four local fork fixtures. Actual new-source 23-case cutover was rerun at the recorded fixed block; fixture authority is separate from production wallet qualification."
     }
   }
 }

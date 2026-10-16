@@ -63,4 +63,4 @@ for name in ('reverify:mainnet','reverify:sepolia','check:readiness','check:read
 text=(ROOT/'hardhat/scripts/check-readiness.cjs').read_text()
 if not ('readRegistrySnapshot' in text and 'await checkNftPolicy(' not in text): raise AssertionError('Release invariant failed')
 if not (not list(ROOT.glob('.v114-bootstrap*'))): raise AssertionError('Bootstrap material must not ship')
-print('SOURCE BOUNDARIES PASSED: compiler unchanged; exact inventoried ENS/mock source changes and dependency repairs only. Changed library bytecode requires new full qualification and deployment.')
+print('SOURCE BOUNDARIES PASSED: compiler unchanged; contract source and dependency repairs match the exact reviewed inventories. This boundary check is not full release qualification or activation approval.')
