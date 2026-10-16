@@ -520,6 +520,58 @@ class SourceBoundaryDispatch(unittest.TestCase):
             extra.unlink()
 
 
+
+    def test_11_exact_slither_review_slice_and_unexpected_paths(self):
+        """Evidence/order integration is finite; it grants no security acceptance."""
+        reviewed = (
+            '.github/workflows/security-verification.yml',
+            'docs/security/pr1586-e1ed502-evidence.json',
+            'docs/security/pr1586-e1ed502-review.md',
+            'scripts/security/run-slither-deterministic.py',
+            'scripts/security/run-slither-extended.sh',
+            'scripts/security/slither-reviewed-findings-pr1586-e1ed502.json',
+            'scripts/security/test-slither-deterministic.py',
+            'scripts/security/test-slither-review.py',
+            'scripts/security/verify-slither-review.py',
+        )
+        schema = M['strict_json']((self.current / M['SCHEMA']).read_bytes())
+        allowed = schema['properties']['reviewedInputChanges']['items']['enum']
+        self.assertTrue(set(reviewed) <= M['REVIEW_PATHS'])
+        self.assertTrue(set(reviewed) <= set(allowed))
+        self.assertTrue(set(reviewed) <= set(self.manifest['reviewedInputChanges']))
+        M['verify_explicit'](self.args())
+        for name in reviewed:
+            with self.subTest(changed=name):
+                self.mutate(self.current, name, lambda data: data + b'\n',
+                    lambda: self.assertRaises(M['BoundaryError'], M['verify_explicit'], self.args()))
+                omitted = copy.deepcopy(self.manifest)
+                omitted['inputs'].pop(name)
+                with self.assertRaises(M['BoundaryError']):
+                    M['source_inventory'](self.current, self.objects, omitted, 'staged')
+        historical = 'scripts/security/slither-reviewed-findings-v1.18.0.json'
+        self.assertEqual(M['sha']((self.current / historical).read_bytes()),
+                         '2769b2c2d752771d19e2f1ae3345703b9c0986716d3af5dd659921a21f309209')
+        for name in ('scripts/security/run-slither-unreviewed.py',
+                     'docs/security/pr1586-unreviewed-review.md',
+                     '.github/workflows/unreviewed-slither.yml'):
+            with self.subTest(unexpected=name):
+                path = self.current / name
+                self.assertFalse(path.exists())
+                path.write_text('unreviewed\n')
+                try:
+                    forged = copy.deepcopy(self.manifest)
+                    forged['inputs'][name] = {'mode': '100644',
+                        'sha256': M['sha'](path.read_bytes()), 'predecessorGitBlob': None,
+                        'predecessorSha256': None, 'reviewReason': 'Self-approved security path'}
+                    forged['reviewedInputChanges'].append(name)
+                    with self.assertRaisesRegex(M['BoundaryError'], 'Schema enum mismatch'):
+                        M['validate_schema'](forged, schema)
+                    with self.assertRaisesRegex(M['BoundaryError'], 'Unreviewed source input additions'):
+                        M['source_inventory'](self.current, self.objects, forged, 'staged')
+                finally:
+                    path.unlink()
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--object-store', action='append')

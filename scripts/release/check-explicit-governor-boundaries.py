@@ -66,6 +66,16 @@ ADDITIVE_HISTORY = {
 # A finite review slice, not a mutable baseline or blanket directory exclusion.
 REVIEW_PATHS = {
     MANIFEST, SCHEMA, VERIFIER, DISPATCHER, TESTS,
+    # Exact PR1595 review/order/gate evidence slice; no directory exclusion.
+    '.github/workflows/security-verification.yml',
+    'docs/security/pr1586-e1ed502-evidence.json',
+    'docs/security/pr1586-e1ed502-review.md',
+    'scripts/security/run-slither-deterministic.py',
+    'scripts/security/run-slither-extended.sh',
+    'scripts/security/slither-reviewed-findings-pr1586-e1ed502.json',
+    'scripts/security/test-slither-deterministic.py',
+    'scripts/security/test-slither-review.py',
+    'scripts/security/verify-slither-review.py',
     'hardhat/.env.example', 'docs/DEPLOYMENT_CONFIGURATION.md',
     'docs/deployment/core-external-signing.md',
     'scripts/docs/generate-repo-map.mjs', 'docs/REPO_MAP.md',

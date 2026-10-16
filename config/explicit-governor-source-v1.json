@@ -122,10 +122,10 @@
     },
     ".github/workflows/security-verification.yml": {
       "mode": "100644",
-      "sha256": "b52bace7a33834bfb7be500b20ccb161cb2babcc49ba116f7fea93cf472ef91a",
+      "sha256": "f0457162565922084f4cd96d1681808f012911d3ea6588ef90e961af4e38a474",
       "predecessorGitBlob": "a9c63d67876704c9423501c750ed5e9c6d9f4217",
       "predecessorSha256": "b52bace7a33834bfb7be500b20ccb161cb2babcc49ba116f7fea93cf472ef91a",
-      "reviewReason": null
+      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
     },
     ".github/workflows/ui.yml": {
       "mode": "100644",
@@ -4593,6 +4593,20 @@
       "predecessorSha256": "dc91b024798f9becb1f656da8a07e25df15cbe942c41c1e155c1f9a8a1979650",
       "reviewReason": null
     },
+    "docs/security/pr1586-e1ed502-evidence.json": {
+      "mode": "100644",
+      "sha256": "a29af1764a973539a9474ca887c74057e14ec23a3f408bc97376f409dd87f590",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
+    },
+    "docs/security/pr1586-e1ed502-review.md": {
+      "mode": "100644",
+      "sha256": "ec6a02a84901c84f087a2742df245fe84ad4787a3d596833a28d3ae4fb5c922d",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
+    },
     "docs/security/v0.8.0-static-analysis.md": {
       "mode": "100644",
       "sha256": "0aefd6e134bca902896bcd5dce4ebbffc98e92194f18f0da7a80639d6be241db",
@@ -6828,10 +6842,10 @@
     },
     "schemas/explicit-governor-source-v1.schema.json": {
       "mode": "100644",
-      "sha256": "d4d5777673e98caa6d84b6b7d2deb34fb2dc16bda2d733fb49e43a5aea96128e",
+      "sha256": "549626e22df7dc88dc2b9fb3e47f815023aba6ced852228f249aa05945be9cfb",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add strict source-profile field, path and claim schema. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics."
+      "reviewReason": "Add strict source-profile field, path and claim schema. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion."
     },
     "scripts/advisor/sample_job_state.json": {
       "mode": "100644",
@@ -7437,10 +7451,10 @@
     },
     "scripts/release/check-explicit-governor-boundaries.py": {
       "mode": "100644",
-      "sha256": "150a307579509245d391bab8ecc8f18667c2e390821dfef529728086fa56246d",
+      "sha256": "f3bddfa00e79bb6adc5977c90f1e08aeb0b9bf1b37cd8ede342c620ca1e1605a",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics."
+      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion."
     },
     "scripts/release/check-source-boundaries.py": {
       "mode": "100644",
@@ -7500,10 +7514,10 @@
     },
     "scripts/release/test-source-boundary-dispatch.py": {
       "mode": "100644",
-      "sha256": "90eea22ad50abc3ce2a49ec0da25236bb9634e31d3d72875307378915fc4452a",
+      "sha256": "4cd8fd3e2ff929009027edc3e718fde3b075e21455a443b019a48b14d8bd8ea5",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics."
+      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion."
     },
     "scripts/release/verify-genesis-ui.mjs": {
       "mode": "100644",
@@ -7547,12 +7561,19 @@
       "predecessorSha256": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116",
       "reviewReason": null
     },
+    "scripts/security/run-slither-deterministic.py": {
+      "mode": "100644",
+      "sha256": "f29076dd22046c72661b888e50eacbd5475da5ce8f3e737e160a172473d4ea7e",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
+    },
     "scripts/security/run-slither-extended.sh": {
       "mode": "100644",
-      "sha256": "ae23abf938d410c88ff340ec828f3bb30441fd6a22aaa0be34499f4fb72c38cb",
+      "sha256": "d1f9747d1695e6d19e558b59f660e40925a3b68c6da48124a334fc3ea5f17722",
       "predecessorGitBlob": "6c4a7040d4f721994b769c3f6f9a6e869f7378c0",
       "predecessorSha256": "ae23abf938d410c88ff340ec828f3bb30441fd6a22aaa0be34499f4fb72c38cb",
-      "reviewReason": null
+      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
     },
     "scripts/security/run-slither.sh": {
       "mode": "100755",
@@ -7581,6 +7602,13 @@
       "predecessorGitBlob": "2731e02203da90e8220496d490d1e1ee69dfed23",
       "predecessorSha256": "7c6e5346fe75f6fd15d5877a834042925f0486352caff80d930f9c877e5c2bba",
       "reviewReason": null
+    },
+    "scripts/security/slither-reviewed-findings-pr1586-e1ed502.json": {
+      "mode": "100644",
+      "sha256": "c10f8ad011b0d29dcfbbdf4cc9031e5360f87d8221ccdf0ae8019d57d93921fa",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
     },
     "scripts/security/slither-reviewed-findings-v1.16.0.json": {
       "mode": "100644",
@@ -7645,19 +7673,26 @@
       "predecessorSha256": "b97a511ba9965c64efc2019b8fee6a640803638450527548c007197b1faf577f",
       "reviewReason": null
     },
+    "scripts/security/test-slither-deterministic.py": {
+      "mode": "100644",
+      "sha256": "baf6d3c4e5bc4c6631973c58d705f7a4f43ecfe039c89b3dd1c5093373e07ef4",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
+    },
     "scripts/security/test-slither-review.py": {
       "mode": "100644",
-      "sha256": "23e262346104266f0de547efa0d2a80f8b764de21e18a613e5672c74f17ce041",
+      "sha256": "239d5c1071e7d47bbf9adbdf8d0947dc9499a87a5a6d1342c6d30aa9837b7180",
       "predecessorGitBlob": "b40a4546cd3df56c5035dfc560a0cda677e5001f",
       "predecessorSha256": "23e262346104266f0de547efa0d2a80f8b764de21e18a613e5672c74f17ce041",
-      "reviewReason": null
+      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
     },
     "scripts/security/verify-slither-review.py": {
       "mode": "100755",
-      "sha256": "baab2cee4711528de6c26ba6105c20bed9b4e69aa76776d0be796ed560bd4e66",
+      "sha256": "7806e9ee48872959bddf9bd6e0eddee41daca0861e706f14cef5900c5d6875ad",
       "predecessorGitBlob": "fc5cda1e3138a899967cd9336cbf2d28c812f654",
       "predecessorSha256": "baab2cee4711528de6c26ba6105c20bed9b4e69aa76776d0be796ed560bd4e66",
-      "reviewReason": null
+      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
     },
     "scripts/simulate-genesis-job.mjs": {
       "mode": "100644",
@@ -10104,6 +10139,7 @@
     }
   },
   "reviewedInputChanges": [
+    ".github/workflows/security-verification.yml",
     "docs/DEPLOYMENT_CONFIGURATION.md",
     "docs/REPO_MAP.md",
     "docs/deployment/core-external-signing.md",
@@ -10113,6 +10149,8 @@
     "docs/qualification/history/expected-mainnet-cutover-v1.18.0.json",
     "docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json",
     "docs/qualification/history/next-deployment-contract-changes-v1.18.0.json",
+    "docs/security/pr1586-e1ed502-evidence.json",
+    "docs/security/pr1586-e1ed502-review.md",
     "forge-test/harness/AGIJobManagerHarness.sol",
     "forge-test/unit/AGIJobManagerSecurityVerification.t.sol",
     "forge-test/unit/AGIJobManagerV091Security.t.sol",
@@ -10147,7 +10185,13 @@
     "scripts/qualification/prepare-core-catalog.mjs",
     "scripts/release/check-explicit-governor-boundaries.py",
     "scripts/release/check-source-boundaries.py",
-    "scripts/release/test-source-boundary-dispatch.py"
+    "scripts/release/test-source-boundary-dispatch.py",
+    "scripts/security/run-slither-deterministic.py",
+    "scripts/security/run-slither-extended.sh",
+    "scripts/security/slither-reviewed-findings-pr1586-e1ed502.json",
+    "scripts/security/test-slither-deterministic.py",
+    "scripts/security/test-slither-review.py",
+    "scripts/security/verify-slither-review.py"
   ],
   "compilerSourceClosure": {
     "@openzeppelin/contracts/access/Ownable.sol": "a8e4e1ae19d9bd3e8b0a6d46577eec098c01fbaffd3ec1252fd20d799e73393b",
