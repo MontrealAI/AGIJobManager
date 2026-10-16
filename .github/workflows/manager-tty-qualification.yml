@@ -1,0 +1,129 @@
+name: Exact Ubuntu TTY Creator Qualification
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/manager-tty-qualification.yml'
+      - 'scripts/qualification/qualify-tty-inspect.mjs'
+      - 'config/tty-source-target.json'
+      - 'config/tty-source-review-binding.json'
+permissions:
+  contents: read
+concurrency:
+  group: manager-tty-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  bounded-creator-route:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Check out the separate reviewed harness
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: qualifier
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check out the exact creator source checkpoint
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: MontrealAI/AGIJobManager
+          ref: e1ed5027955aeee4c6ac14a8ab4b39b4388b8328
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22.23.2
+          cache: npm
+          cache-dependency-path: |
+            source/package-lock.json
+            source/hardhat/package-lock.json
+      - name: Verify reviewed harness bytes before execution
+        run: |
+          python3 -I - <<'PY'
+          import hashlib,pathlib
+          root=pathlib.Path('qualifier')
+          expected={
+            'scripts/qualification/qualify-tty-inspect.mjs':'b71a4791370301763d3d36d81c42553ecaeb206d1aa0360bd4f1f5c0f64ddf54',
+            'config/tty-source-target.json':'333c8238a8d10c317f5e6c38d7e2149463d30f13e663494407b0236e7816e2b4',
+            'config/tty-source-review-binding.json':'43777539d04105ec97a3d71236b3f59de5211279a8aadd8527f3ef1598eb0f5c'
+          }
+          for name,digest in expected.items():
+              p=root/name
+              assert p.is_file() and not p.is_symlink()
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==digest,name
+          PY
+      - name: Install only existing pinned dependencies
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = v22.23.2
+          npm --prefix source ci
+          npm --prefix source/hardhat ci
+          node source/scripts/security/patch-openzeppelin-compiler.cjs
+      - name: Bind actual source to reviewed finite manifest and preserved legacy policy
+        run: |
+          python3 -I source/scripts/release/check-source-boundaries.py \
+            --profile manager-explicit-governor-v1 --mode bound \
+            --source-root "$(realpath source)" --object-store "$(realpath source)" \
+            --dependency-root "$(realpath source/node_modules)" \
+            --manifest config/explicit-governor-source-v1.json \
+            --manifest-sha256 576d63dbb46b2680434d836adddc53a25577e8147c0bdd8704992799145e9537 \
+            --verifier-sha256 150a307579509245d391bab8ecc8f18667c2e390821dfef529728086fa56246d \
+            --schema-sha256 d4d5777673e98caa6d84b6b7d2deb34fb2dc16bda2d733fb49e43a5aea96128e \
+            --review-binding "$(realpath qualifier/config/tty-source-review-binding.json)" \
+            --review-binding-sha256 43777539d04105ec97a3d71236b3f59de5211279a8aadd8527f3ef1598eb0f5c
+          python3 -I source/scripts/release/test-source-boundary-dispatch.py \
+            --object-store "$(realpath source)" --dependency-root "$(realpath source/node_modules)"
+      - name: Compile unchanged exact contract closure before artifact consumers
+        working-directory: source
+        run: node --max-old-space-size=2048 node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs compile
+      - name: Run shared TTY and creator regression cases
+        working-directory: source
+        run: |
+          set -euo pipefail
+          node --max-old-space-size=384 --test --test-concurrency=1 hardhat/test/ephemeral-key.test.cjs hardhat/test/deploy-core-tty.test.cjs | tee "$RUNNER_TEMP/manager-tty-unit.tap"
+          python3 -I - <<'PY'
+          import pathlib,os,re
+          text=(pathlib.Path(os.environ['RUNNER_TEMP'])/'manager-tty-unit.tap').read_text()
+          for key,n in {'tests':80,'pass':80,'fail':0,'cancelled':0,'skipped':0,'todo':0}.items():
+              values=re.findall(r'^# '+key+r' (\d+)$',text,re.M)
+              assert values and int(values[-1])==n,(key,values)
+          PY
+      - name: Exercise the actual Hardhat offline entry and source/catalog negatives
+        run: |
+          node --max-old-space-size=384 qualifier/scripts/qualification/qualify-tty-inspect.mjs \
+            --source-root "$(realpath source)" \
+            --target "$(realpath qualifier/config/tty-source-target.json)" \
+            --output "$RUNNER_TEMP/manager-tty-inspect"
+      - name: Exercise both disposable creator campaigns and lost-response resume
+        working-directory: source
+        run: |
+          set -euo pipefail
+          MANAGER_TTY_TEST_REPORT="$RUNNER_TEMP/manager-tty-evm.jsonl" \
+          node --max-old-space-size=384 node_modules/hardhat/dist/src/cli.js \
+            --config hardhat.core-session.config.mjs test mocha --no-compile \
+            hardhat/test/deploy-core-tty.test.js | tee "$RUNNER_TEMP/manager-tty-evm.log"
+          python3 -I - <<'PY'
+          import pathlib,os,json
+          rows=[json.loads(x) for x in (pathlib.Path(os.environ['RUNNER_TEMP'])/'manager-tty-evm.jsonl').read_text().splitlines()]
+          assert len(rows)==2
+          assert {r['mode']for r in rows}=={'empty-eoa-direct-create.v1','marker-eoa-direct-create.v1'}
+          for r in rows:
+              assert r['signatures']==r['sends']==len(r['receiptProofs'])==9
+              assert r['paused'] and r['governor']=='0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99'
+              assert r['sourceContractBuildDigest']=='e0965c57b18ace72bb9081b29976098fcc8f08b58ddd1005876d7696aeeb622d'
+          PY
+      - name: Retain bounded qualification evidence including failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: manager-tty-source-qualified-evidence
+          path: |
+            ${{ runner.temp }}/manager-tty-unit.tap
+            ${{ runner.temp }}/manager-tty-inspect
+            ${{ runner.temp }}/manager-tty-evm.log
+            ${{ runner.temp }}/manager-tty-evm.jsonl
+          if-no-files-found: error
+          retention-days: 30
