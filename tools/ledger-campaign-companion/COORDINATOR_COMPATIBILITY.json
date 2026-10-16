@@ -237,58 +237,91 @@
     "Alpha arbitrary governor calls or policy changes beyond two new-graph bindings",
     "Factories, contract wallets, wrappers, batches, CREATE2, type4 creation, automatic-broadcast wallets",
     "Any unsupported new source commit, including owner local fixes not yet published/frozen",
-    "Jobs hardware/external signature adapter (separate inventory; not completed by raw export)",
+    "Jobs optional companion Ledger/browser transport and marker-bearing creator; exact native external-manual route is separately accepted",
     "Real Ledger/provider/explorer/authority activation certification inferred from synthetic tests"
   ],
   "jobs": {
-    "schema": "manual-ledger/jobs-interface-summary/v1",
-    "reference": {
-      "commit": "fed83bc183753e871621fc1cb3aa8510bd38f642",
-      "tree": "a49fa5d32272555e62431363f1ffd36b84ea87be",
-      "trackedFiles": 5052,
-      "trackedBytesAndModesMatch": true,
-      "untrackedFilesChecked": false
-    },
-    "externalSigningSupported": false,
-    "packetSchema": null,
-    "workflowSuccessesObserved": 56,
-    "adapterTests": {
-      "pass": 7,
-      "fail": 0,
-      "node": "22.23.3"
-    },
-    "actualSourceToolingTests": {
-      "pass": 11,
-      "fail": 0,
-      "node": "22.23.3"
-    },
-    "genuineReadOnlyCliProbe": "jobs-interface-cli-probe.json",
-    "physicalQualified": false,
-    "deploymentRerun": false,
-    "authorityComplete": false,
-    "activationReady": false,
-    "filesSha256": {
-      "config/implementation-modules.json": "ebb99bfbf615b67a3801656da6060a83a9d8af8079ef6bbc6c7b33517393414a",
-      "config/solidity-compiler.json": "48b1584546fa588b961eff8534daba37d7fea69ad557c85c599757213a53efdf",
-      "package-lock.json": "9941cb118e1257a32d5e85509346920d5e30bf11882dac6f36725d0d2fb744fa",
-      "package.json": "4f118177592fae78bd8adf18cfa24a776780afd307fed1180e6b0ae0d165e963",
-      "scripts/deploy/authority-audit.cjs": "0d17fcb9af17d92dbbed6d998a2fb18ff4dc2c127f12c4b32d3d34056663b102",
-      "scripts/deploy/authority-handover.cjs": "68f9f4886538bb0584f2ad21803e16c0c358fdc4a80198af908b38ad559f0544",
-      "scripts/deploy/authority-runtime.cjs": "825e35a2a708becce4a0210396827df05638e85efcb558ac2478f6f32e13b386",
-      "scripts/deploy/implementations.cjs": "d7df798d67de1eec8422ea9b73e5fcc544018c39cd988390d53d7cf0c76624db",
-      "scripts/deploy/stage-protocol.cjs": "4965f9c3ce512de1a224c71855230e70cf287093e0af34cd3cd033f2797915ea",
-      "scripts/v2/deployDefaults.ts": "d230593e518564cfdaada5417c9e3b4e91416fcf12958193ddf45c58d469f999",
-      "scripts/v2/lib/deployment-candidate.cjs": "d8e92dd04da1f4c8f506abfd6158ed2eb0b725fc8bb0382e598373d48c2a6f04",
-      "scripts/v2/plan-deploy.ts": "2ea3fac4a28c012178e2e2dcf35080a2dd59e46d96a88bfe6c4eaa2128687b62"
-    },
+    "schema": "manual-ledger/jobs-interface-summary/v2",
     "repository": "MontrealAI/AGIJobsv0",
-    "unsupportedInterfaces": [
-      "Versioned immutable unsigned handoff",
-      "Durable actor-locked prepare-only intent",
-      "External signed raw import",
-      "Exact acknowledgement and one-shot relay",
-      "Signer-free canonical observe/recovery"
-    ]
+    "commit": "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5",
+    "tree": "720312acac83eddeeb76644e1e22f53578e91784",
+    "externalSigningSupported": true,
+    "supportScope": "Original pinned native CLI/profile/command API only; optional companion browser transport remains unqualified",
+    "profile": "jobs-external-manual-v1",
+    "packetSchema": "jobs-external-envelope-v1",
+    "nodeVersions": [
+      "22.23.3"
+    ],
+    "creatorProfile": "empty-code-eoa-type2",
+    "selectedMarkerCreatorQualified": false,
+    "nativeQualification": {
+      "runId": 38954500102,
+      "artifactId": 12072489816,
+      "archiveSha256": "1da8f5a17978b92bf355537076125063b064c287d71b5c3e40858a9fcc33d025",
+      "memberSha256": "26f188a32c1bf62464c2239d3fad7ea729d1179265d24d5391ac66f23826787d",
+      "passed": true,
+      "operations": 39,
+      "creations": 25,
+      "readback": "docs/qualification/jobs-9a79-hosted-38954500102.json"
+    },
+    "productionPlanAccepted": false,
+    "physicalQualified": false,
+    "bootstrapQualified": false,
+    "providerQualified": false,
+    "authorityComplete": false,
+    "productionApproved": false,
+    "activationReady": false,
+    "companionTransportQualified": false,
+    "historicalEvidence": {
+      "schema": "manual-ledger/jobs-interface-summary/v1",
+      "reference": {
+        "commit": "fed83bc183753e871621fc1cb3aa8510bd38f642",
+        "tree": "a49fa5d32272555e62431363f1ffd36b84ea87be",
+        "trackedFiles": 5052,
+        "trackedBytesAndModesMatch": true,
+        "untrackedFilesChecked": false
+      },
+      "externalSigningSupported": false,
+      "packetSchema": null,
+      "workflowSuccessesObserved": 56,
+      "adapterTests": {
+        "pass": 7,
+        "fail": 0,
+        "node": "22.23.3"
+      },
+      "actualSourceToolingTests": {
+        "pass": 11,
+        "fail": 0,
+        "node": "22.23.3"
+      },
+      "genuineReadOnlyCliProbe": "jobs-interface-cli-probe.json",
+      "physicalQualified": false,
+      "deploymentRerun": false,
+      "authorityComplete": false,
+      "activationReady": false,
+      "filesSha256": {
+        "config/implementation-modules.json": "ebb99bfbf615b67a3801656da6060a83a9d8af8079ef6bbc6c7b33517393414a",
+        "config/solidity-compiler.json": "48b1584546fa588b961eff8534daba37d7fea69ad557c85c599757213a53efdf",
+        "package-lock.json": "9941cb118e1257a32d5e85509346920d5e30bf11882dac6f36725d0d2fb744fa",
+        "package.json": "4f118177592fae78bd8adf18cfa24a776780afd307fed1180e6b0ae0d165e963",
+        "scripts/deploy/authority-audit.cjs": "0d17fcb9af17d92dbbed6d998a2fb18ff4dc2c127f12c4b32d3d34056663b102",
+        "scripts/deploy/authority-handover.cjs": "68f9f4886538bb0584f2ad21803e16c0c358fdc4a80198af908b38ad559f0544",
+        "scripts/deploy/authority-runtime.cjs": "825e35a2a708becce4a0210396827df05638e85efcb558ac2478f6f32e13b386",
+        "scripts/deploy/implementations.cjs": "d7df798d67de1eec8422ea9b73e5fcc544018c39cd988390d53d7cf0c76624db",
+        "scripts/deploy/stage-protocol.cjs": "4965f9c3ce512de1a224c71855230e70cf287093e0af34cd3cd033f2797915ea",
+        "scripts/v2/deployDefaults.ts": "d230593e518564cfdaada5417c9e3b4e91416fcf12958193ddf45c58d469f999",
+        "scripts/v2/lib/deployment-candidate.cjs": "d8e92dd04da1f4c8f506abfd6158ed2eb0b725fc8bb0382e598373d48c2a6f04",
+        "scripts/v2/plan-deploy.ts": "2ea3fac4a28c012178e2e2dcf35080a2dd59e46d96a88bfe6c4eaa2128687b62"
+      },
+      "repository": "MontrealAI/AGIJobsv0",
+      "unsupportedInterfaces": [
+        "Versioned immutable unsigned handoff",
+        "Durable actor-locked prepare-only intent",
+        "External signed raw import",
+        "Exact acknowledgement and one-shot relay",
+        "Signer-free canonical observe/recovery"
+      ]
+    }
   },
   "followOnQualification": {
     "schema": "manual-ledger-native-compatibility-follow-on-v1",
@@ -519,7 +552,7 @@
         ]
       }
     ],
-    "jobs": "No external manual signing compatibility entry is added: exact source and independent acceptance handoff remain unavailable.",
+    "jobs": "Exact9a79/tree720312 native handoff received with hash-verified complete hosted run38954500102. Original CLI available for separately approved empty-code creator/plan; marker account and optional companion transport remain unqualified.",
     "walletPrebindingHelper": {
       "status": "ACTUAL_FIVE_CREATE_PREBINDING_NATIVE_HELPER_PASSED",
       "source": {

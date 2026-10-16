@@ -8,7 +8,7 @@ Version: 0.2.0-candidate.2. This follow-on source begins at companion PR #1588 c
 | Deterministic/server | Envelope, two-origin HTTP/CSP, persistence, cancellation/recovery, acknowledgement, one-shot attempt control, verification/authority validation | Implementation evidence only |
 | Manager native acceptance | Exact selected source; actual nine-creation coordinator subprocess path plus recovery negatives | No physical Ledger or live-provider inference |
 | Alpha native acceptance | Exact selected source; actual five-creation/two-binding subprocess path plus recovery negatives | No physical Ledger or global-pause inference |
-| Jobs | Exact future external-manual adapter and actual acceptance required | Current refusal preserved |
+| Jobs native | Exact9a79/tree720312 external-manual handoff and complete hosted39-operation qualification received | Empty-code creator only; real signing/plan and optional companion transport remain separate |
 | Real browser | Current pinned source/build, sandbox enabled; synthetic device explicitly identified | Physical USB acceptance remains separate |
 | Explorer/runtime | Canonical receipt, exact source/compiler/settings/constructor/links/runtime, legitimate immutables; bounded durable service state | Submission/polling success alone is insufficient |
 | Authority | Ownership, pending ownership, roles, upgrade/configuration and relevant dependency permissions | Missing live observations remain blockers |
@@ -66,3 +66,11 @@ For full clean reproduction, pass the same independently pinned `COMPANION_TEST_
 `node scripts/reproduce.mjs` creates an isolated temporary copy, performs a clean dependency install, deterministic tests, all production bundles and test-device exclusion checks, then removes that temporary copy. Native coordinator and real-browser acceptance commands require their separately pinned checkouts/toolchain; see the corresponding acceptance scripts and `scripts/browser-README.md`.
 
 Do not publish signed raw bytes, private recovery files, keys, APDU logs or native session state in evidence. Synthetic device/browser, disposable coordinator, live explorer/provider and physical-device categories remain distinct. Comprehensive authority and activation stay false without actual complete evidence. Alpha's initial uncommissioned state is not a global pause; no global pause exists. External audit and Sepolia remain owner-accepted omissions, not passing tests. Previous deployments and economics remain untouched.
+
+## Jobs exact native handoff integration — 16 October 2026
+
+The exact Jobs9a79/tree720312 hosted public member was independently downloaded and checked against artifact12072489816 archive SHA256 `1da8f5a17978b92bf355537076125063b064c287d71b5c3e40858a9fcc33d025` and member SHA256 `26f188a32c1bf62464c2239d3fad7ea729d1179265d24d5391ac66f23826787d`. It records nine complete passing stages,39 fresh-CLI operations,25 creations and paused closeout. Stage groups84/43/33/22 pass without skips; all broader production/device/bootstrap/authority flags remain false.
+
+The native integration uses the original exact source's `loadExternalProfile` and `runCommand`; it does not normalize Jobs packets to Manager/Alpha schemas or invent a relay. Focused local dispatch/profile tests use labelled synthetic native responses and cannot qualify a physical wallet, source bootstrap or provider. The original Jobs hosted campaign is the native CLI acceptance evidence. Existing Manager/Alpha qualification remains separately pinned. Source manifest and narrow release inventory include the new native module, tests and bilingual runbook; dependencies are unchanged. No production transaction or native plan acceptance is performed.
+
+Integration verification: complete required official-soljson/native-compiler deterministic suite448/448 PASS with zero failures/skips/cancellations/todos; three production bundles and fixture exclusion PASS. Native Jobs hosted39-operation evidence remains a separate source/runtime scope. The new integration dispatch tests do not claim physical Ledger or full production-plan acceptance.

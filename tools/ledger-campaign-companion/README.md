@@ -2,7 +2,13 @@
 
 This review candidate adds a local English/French campaign dashboard, an isolated USB Ledger signing frame, durable private recovery, bounded adapters for the existing Manager and Alpha coordinators, and exact-source verification automation. The owner must approve every exact transaction on the physical Ledger. Starting this package grants no Mainnet permission. Each real transaction requires the owner's explicit review and manual physical signature; funding, governance, ENS changes and activation are separate decisions. Disposable local-chain acceptance is identified separately.
 
-**Mainnet deployment requires a separate decision for each exact contract set.** This package is a review candidate, with physical Ledger/macOS and live explorer acceptance still pending. Real-browser tests with synthetic devices, native disposable-chain acceptance and deterministic tests establish distinct scopes. Earlier passing runs do not qualify this changed source. Jobs external signing is being implemented by the native owner team and remains refused here until its exact interface and acceptance evidence are supplied.
+**Mainnet deployment requires a separate decision for each exact contract set.** This package is a review candidate, with physical Ledger/macOS and live explorer acceptance still pending. Real-browser tests with synthetic devices, native disposable-chain acceptance and deterministic tests establish distinct scopes. Earlier passing runs do not qualify this changed source. The exact Jobs native external-manual handoff is now received and separately qualified; its real signing/production plan and optional companion transport retain their own status.
+
+## Jobs exact native handoff received
+
+Jobs PR #3986 at `9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5` / tree `720312acac83eddeeb76644e1e22f53578e91784` passed [complete fresh-CLI qualification](https://github.com/MontrealAI/AGIJobsv0/actions/runs/38954500102): all nine stages, 39 operations and 25 creations on a disposable chain. Artifact12072489816 and its public member were downloaded and hash-verified. See [native protocol, integration and EN/FR operator flow](JOBS_NATIVE_EN_FR.md).
+
+The pinned native CLI is available independently of the optional companion. `coordinators/jobs-native.mjs` registers the exact interface and exposes the original native profile/command API to a trusted local caller; it adds no signer or network relay. The original historical Jobs inventory is retained. The current profile requires an **empty-code creator**; the selected marker-bearing account is not qualified. Real signing, the Mac/bootstrap/provider and production plan remain separate. The optional browser companion reports `JOBS_COMPANION_TRANSPORT_NOT_QUALIFIED`; that is not a missing native adapter or a prerequisite for using the native route. Raw-signature export is not imposed when an existing supported wallet route safely verifies the exact transaction.
 
 ## Primary configuration path: existing Ledger wallet + Etherscan
 
@@ -35,9 +41,9 @@ The [owner's complete exact d371 native qualification handoff](https://github.co
 |---|---|---|---|
 | Manager | MontrealAI/AGIJobManager, commit `eb6f725e0b40ac81e50a374304e54a5ff6859fcf`, tree `73347842e4a81767ef14686a607b7aceb4f5d70c` (PR #1587 correction on #1586) | Private JSON `{raw}` | Nine core CREATEs |
 | Alpha | MontrealAI/AGI-Alpha-Agent-v0, commit `d69cdd3ddc0f36933d07f0f64abfe15e742bf68c` | Private raw transaction text | Five CREATEs and two existing governor bindings |
-| Jobs | MontrealAI/AGIJobsv0, merged candidate `fed83bc183753e871621fc1cb3aa8510bd38f642` | Unsupported | Read-only inventory and refusal |
+| Jobs native | MontrealAI/AGIJobsv0, `9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5`, tree `720312acac83eddeeb76644e1e22f53578e91784` | Native envelope-v1 and private JSON `{raw}` when that route is selected | 39 operations through paused handover; empty-code creator only; optional companion transport separate |
 
-Current Jobs main inspected at `bd45f34de1c1e58986aafb4b0e5c48bc155839ca` has tree `a49fa5d32272555e62431363f1ffd36b84ea87be`, identical to the historical `fed83…` inventory. That tree identity does not supply or qualify an external-manual signing adapter; Jobs remains unsupported.
+Historical Jobs main inspected at `bd45f34de1c1e58986aafb4b0e5c48bc155839ca` has tree `a49fa5d32272555e62431363f1ffd36b84ea87be`, identical to the historical `fed83…` inventory. That historical tree does not supply the new external-manual adapter. The accepted native9a79 handoff above is separate; no qualification is backdated to the old source.
 
 Unknown revisions and packet schemas fail closed. Manager #1586's uncorrected `3c974ad3cb1d828e5c89464fd8424d8ae853d9dd` is an inspected candidate, not this adapter's supported operational source. Owner changes require a new frozen revision and qualification. Previous constructor evidence cannot certify new source.
 

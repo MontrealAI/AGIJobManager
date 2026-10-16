@@ -44,6 +44,9 @@ FORBIDDEN = {'node_modules', '.git', '.venv', '__pycache__', '.next', 'cache', '
 # Exact source-only companion inventory; changes require explicit review.
 # Do not add the whole tools directory to ROOT_DIRS.
 LEDGER_COMPANION_SOURCE_FILES = frozenset({
+    "tools/ledger-campaign-companion/test/jobs-native.test.mjs",
+    "tools/ledger-campaign-companion/coordinators/jobs-native.mjs",
+    "tools/ledger-campaign-companion/JOBS_NATIVE_EN_FR.md",
     "tools/ledger-campaign-companion/.gitignore",
     "tools/ledger-campaign-companion/COORDINATOR_COMPATIBILITY.json",
     "tools/ledger-campaign-companion/DEPENDENCIES.json",

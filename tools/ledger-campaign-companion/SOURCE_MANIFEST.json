@@ -10,8 +10,8 @@
     },
     {
       "path": "COORDINATOR_COMPATIBILITY.json",
-      "bytes": 33680,
-      "sha256": "310f24dc5df1fdedac12adc71dce485bfc6cd21f090dd5b6e806fd5e9d80f665"
+      "bytes": 35267,
+      "sha256": "e7f485a997b98af506e3e198e7f4db63797e655e8cd5ecbcf8a2c221750482f4"
     },
     {
       "path": "DEPENDENCIES.json",
@@ -20,8 +20,13 @@
     },
     {
       "path": "DEPLOYMENT_DECISION_EN_FR.md",
-      "bytes": 15921,
-      "sha256": "b3b26ad3b014862757566f6fb4bacbb4a47a5b49af9d984e96a436d58a83c322"
+      "bytes": 16499,
+      "sha256": "1771a6ec42637c854125017f03c6997900f7ec28754ad1dc846dfedc20293c78"
+    },
+    {
+      "path": "JOBS_NATIVE_EN_FR.md",
+      "bytes": 12845,
+      "sha256": "083ad183cc660b27e7b30fc13c95962b648ce2287ae69f5e5dabd027c2946f97"
     },
     {
       "path": "LEGACY_SOURCE_PREVIEW_2_START_HERE_EN_FR.txt",
@@ -40,8 +45,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 20356,
-      "sha256": "9c105ebf65578b82a2eede94667c0964f4c7d3216d9ea0949ebbfaacf5850fee"
+      "bytes": 21873,
+      "sha256": "f3070bf11eaa5dfb21a536138be4ac1f2074b279fb93e3121c362fd87042c7c1"
     },
     {
       "path": "SDK_CONTEXT_POLICY_EN_FR.md",
@@ -60,8 +65,8 @@
     },
     {
       "path": "START_HERE_EN_FR.txt",
-      "bytes": 7797,
-      "sha256": "15c56167edffd30d0421a6ff77650e87546eed201765b1c0435b5c6a3c4f4d72"
+      "bytes": 7985,
+      "sha256": "005575522f540b3891a01b4753928411f4d537b1ab1ff6bdd56ac6369c6ddde7"
     },
     {
       "path": "THIRD_PARTY.md",
@@ -70,13 +75,13 @@
     },
     {
       "path": "VALIDATION.md",
-      "bytes": 11630,
-      "sha256": "adffdd4d1a4e16032ceeec6b8c2167cacdb461a28e08ee8dea03d69ef06d5ffe"
+      "bytes": 13345,
+      "sha256": "97eec0223a293a6c649d66e420a709085c984fe2498b5b30c3a48cd503b48db5"
     },
     {
       "path": "bridge/README.md",
-      "bytes": 7630,
-      "sha256": "89b9486123d99192e2fa884a30143f2cf9149246710efd9ffd1ee024a6ee27d5"
+      "bytes": 7861,
+      "sha256": "976245b7c5ab2786b0c41c5b6c6fdc07a139539694a0aeabed1408ba5106155f"
     },
     {
       "path": "bridge/actor-lock-policy.mjs",
@@ -105,8 +110,8 @@
     },
     {
       "path": "bridge/start.mjs",
-      "bytes": 7097,
-      "sha256": "26098a9b2e3f0e9942bc1f66d1493e66e0aca5a675cbdcc6ae30d0ffba0c6356"
+      "bytes": 7218,
+      "sha256": "3dfef522773ba366834df57bc61f6925d54ea684eef944a89b823342948cd99a"
     },
     {
       "path": "campaign-signer.html",
@@ -134,9 +139,14 @@
       "sha256": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d"
     },
     {
+      "path": "coordinators/jobs-native.mjs",
+      "bytes": 7616,
+      "sha256": "b34e402167bf5352537966713a3ba63cbf33af9b56bd71a8e0678b873de1aaa6"
+    },
+    {
       "path": "coordinators/jobs.mjs",
-      "bytes": 7137,
-      "sha256": "44ee5574ce2e574b2ce7398df58ab210dd3ac11b8dd065e4b93e742658e5d888"
+      "bytes": 9404,
+      "sha256": "811a3a7b8761f3ae0ecaf9f81e609e909d2df9139dac487733a1d3fc4e27d747"
     },
     {
       "path": "coordinators/manager.mjs",
@@ -460,8 +470,13 @@
     },
     {
       "path": "test/jobs-adapter.test.mjs",
-      "bytes": 3164,
-      "sha256": "d46b238afeb7e4c32d263d22772a93d5e4f40e44e3d238457a7216ec0826c7e8"
+      "bytes": 3465,
+      "sha256": "2885316e3f575992e9b1d00ad7bce4b470ea5e38c6545950f25d921ce25f00a6"
+    },
+    {
+      "path": "test/jobs-native.test.mjs",
+      "bytes": 8443,
+      "sha256": "ffe787dafcc7bb3364dd2cb64c88ab29740bc88f93df25ef9d6666d031ed4a56"
     },
     {
       "path": "test/private-explorer-journal.test.mjs",

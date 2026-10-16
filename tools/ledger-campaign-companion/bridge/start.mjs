@@ -46,6 +46,7 @@ async function main() {
     const correctedCandidate = adapter.supported.commit === MANAGER_CORRECTED.commit && adapter.supported.tree === MANAGER_CORRECTED.tree;
     throw Object.assign(new Error(), { code: correctedCandidate ? 'MANAGER_EXACT_NATIVE_QUALIFICATION_HANDOFF_REQUIRED' : 'MANAGER_NATIVE_ENS_ROOT_ORDER_CORRECTION_REQUIRED' });
   }
+  if (campaign.adapter === 'jobs') throw Object.assign(new Error(), { code: 'JOBS_COMPANION_TRANSPORT_NOT_QUALIFIED' });
   await adapter.inspectCampaign(campaign);
   const policy = await privateJson(configuration.trustPolicyPath);
   const trustedContext = createTrustedCampaignContext({ campaign, plan: readJson(campaign.coordinator.planPath), policy, expectedPolicySha256: configuration.reviewedTrustPolicySha256, sourceRoot: campaign.coordinator.checkout, observeSource: () => observeSource(campaign.coordinator, adapter.supported), nativePlanValidated: true });

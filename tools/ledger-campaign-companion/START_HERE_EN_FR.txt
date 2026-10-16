@@ -14,7 +14,7 @@ The primary configuration path is your existing Ledger-backed wallet with Ethers
 
 Exact phase commands and input schema: verification/WALLET_CONFIGURATION_EN_FR.md (`node verification/wallet-config.mjs --help`).
 
-Wallet-generated calls are separate evidence; they do not automatically import into or complete a native seven-step Alpha signing journal. Exact source compatibility, physical USB/macOS, live-provider/explorer and final authority checks retain their own status. Jobs signing remains unsupported until its separate exact adapter passes acceptance. Audit and Sepolia are accepted omissions. Previous deployments, jobs, balances and permissions remain untouched.
+Wallet-generated calls are separate evidence; they do not automatically import into or complete a native seven-step Alpha signing journal. Exact source compatibility, physical USB/macOS, live-provider/explorer and final authority checks retain their own status. Jobs exact native external-manual adapter9a79 has passed the complete hosted39-operation qualification. Use JOBS_NATIVE_EN_FR.md; an empty-code creator is required and the selected marker account is not qualified. Its optional browser-companion transport remains separate. Audit and Sepolia are accepted omissions. Previous deployments, jobs, balances and permissions remain untouched.
 
 FRANÇAIS
 

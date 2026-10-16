@@ -1,8 +1,8 @@
 # Bounded local campaign bridge / Pont local limité
 
-This bridge adds orchestration to the retained signer preview. It does not certify Mainnet readiness or authorize physical signing, submission, funding, governance or activation. The production launcher accepts only the fixed, explicitly supported Manager/Alpha/Jobs adapter imports; Jobs currently refuses external signing.
+This bridge adds orchestration to the retained signer preview. It does not certify Mainnet readiness or authorize physical signing, submission, funding, governance or activation. The production launcher accepts only the fixed, explicitly supported Manager/Alpha/Jobs adapter imports; Jobs now has a separately qualified native external-manual route; its optional browser-companion transport remains unqualified. See [the exact native handoff](../JOBS_NATIVE_EN_FR.md).
 
-Ce pont ajoute l'orchestration au signataire conservé. Il ne certifie pas la disponibilité Mainnet et n'autorise aucune signature physique, aucun envoi, financement, acte de gouvernance ou activation. Jobs refuse actuellement la signature externe.
+Ce pont ajoute l'orchestration au signataire conservé. Il ne certifie pas la disponibilité Mainnet et n'autorise aucune signature physique, aucun envoi, financement, acte de gouvernance ou activation. Le CLI natif externe-manuel Jobs9a79 est qualifié séparément; le transport du compagnon navigateur facultatif reste non qualifié.
 
 ## Launch boundary
 

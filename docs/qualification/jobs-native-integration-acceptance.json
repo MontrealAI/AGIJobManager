@@ -1,0 +1,65 @@
+{
+  "schema": "jobs-native-handoff-integration-acceptance-v1",
+  "recordedAt": "2026-10-16T20:52:11.031246+00:00",
+  "baseCommit": "cb807e6d4b83cee04b2470751a2dd5b8be1bb76f",
+  "nativeSource": {
+    "repository": "MontrealAI/AGIJobsv0",
+    "commit": "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5",
+    "tree": "720312acac83eddeeb76644e1e22f53578e91784"
+  },
+  "scope": "Local deterministic native-handoff integration and source packaging; original native39 fresh-CLI qualification is separate hosted evidence. Synthetic dispatch responses are explicitly labelled in test source.",
+  "node": {
+    "version": "22.23.3",
+    "executableSha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48"
+  },
+  "deterministicTests": {
+    "tests": 448,
+    "pass": 448,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "compilerModes": {
+    "officialSoljsonRequired": true,
+    "nativeCompilerRequired": true,
+    "silentCompilerSkipsAllowed": false,
+    "soljsonSha256": "221d7a667378b5068d913e75fe092507e061363cd1d23b64c49ae82febabad4c",
+    "nativeVersion": "0.8.37+commit.f401782d.Linux.g++"
+  },
+  "productionBuild": {
+    "bundles": 3,
+    "passed": true,
+    "testFixtureExclusionPassed": true
+  },
+  "releaseGates": {
+    "tests": 99,
+    "passed": 99,
+    "failed": 0,
+    "companionExplicitSourcePaths": 165,
+    "companionManifestRows": 164,
+    "unknownPrivateGeneratedPathsRemainExcluded": true
+  },
+  "sourceFileSha256": {
+    "tools/ledger-campaign-companion/coordinators/jobs-native.mjs": "b34e402167bf5352537966713a3ba63cbf33af9b56bd71a8e0678b873de1aaa6",
+    "tools/ledger-campaign-companion/coordinators/jobs.mjs": "811a3a7b8761f3ae0ecaf9f81e609e909d2df9139dac487733a1d3fc4e27d747",
+    "tools/ledger-campaign-companion/bridge/start.mjs": "3dfef522773ba366834df57bc61f6925d54ea684eef944a89b823342948cd99a",
+    "tools/ledger-campaign-companion/test/jobs-native.test.mjs": "ffe787dafcc7bb3364dd2cb64c88ab29740bc88f93df25ef9d6666d031ed4a56",
+    "tools/ledger-campaign-companion/test/jobs-adapter.test.mjs": "2885316e3f575992e9b1d00ad7bce4b470ea5e38c6545950f25d921ce25f00a6",
+    "tools/ledger-campaign-companion/coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+    "tools/ledger-campaign-companion/SOURCE_MANIFEST.json": "1e0e2604198d059937a395686f7e040d955f2c8370dcfdf1da8c6daeba3cbf95",
+    "scripts/release/release_common.py": "83461f59b307c85485d4a456f59619f7038593595428398f5a893e9ed5bb6ee5",
+    "scripts/release/test-release-gates.py": "1434d9e45f724205c68a7371c25d3a0533ac45eb1fcc912789d4b042d4f582e1"
+  },
+  "dependencyChanges": false,
+  "jobsSolidityChanges": false,
+  "managerSolidityChanges": false,
+  "nativeQualificationFlagsPromoted": false,
+  "realWalletSigningPerformed": false,
+  "productionPlanAccepted": false,
+  "selectedMarkerCreatorQualified": false,
+  "companionTransportQualified": false,
+  "productionApproved": false,
+  "activationReady": false,
+  "mainnetTransactions": 0
+}
