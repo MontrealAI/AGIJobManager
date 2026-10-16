@@ -252,7 +252,7 @@ async function qualifiedBuild() {
   const runtimeBytes = {};
   for (const name of [...LIBRARIES, 'AGIJobManager']) {
     const artifact = await artifacts.readArtifact(FQNS[name]);
-    runtimeBytes[name] = requireRuntimeSize(name, artifact.deployedBytecode);
+    runtimeBytes[name] = requireRuntimeSize(name, artifact.deployedBytecode, { allowUnlinked: true });
     const compiled = buildInfo.output.contracts[artifact.inputSourceName || artifact.sourceName]?.[artifact.contractName];
     if (!compiled || `0x${compiled.evm.bytecode.object}` !== artifact.bytecode || `0x${compiled.evm.deployedBytecode.object}` !== artifact.deployedBytecode) {
       throw new Error(`${name} artifact differs from the manager build. Restore matching saved artifacts and build-info, or reproduce in a separate development checkout; preserve the original deployment evidence.`);

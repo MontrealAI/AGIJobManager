@@ -16,8 +16,8 @@
   "evidenceInputs": {
     "hardhat/scripts/deployment-safety.cjs": {
       "beforeSha256": "0bfe3cfacbc97aafa1120d8d6d7c6aca501f9cd5c2777518bb41d5ef7079e446",
-      "afterSha256": "fa739a2460544328553236a5e7223c74d1e3ac28af6d5f3620e8ae173f4cca27",
-      "purpose": "Require complete, exact five-reserve readiness state; fork evidence input changes without changing settlement economics."
+      "afterSha256": "35957661a7f4e749368e64f77bbcfff2bfef3ac4eebdf80c37679fada2fb41ea",
+      "purpose": "Require complete exact five-reserve readiness state and reject malformed/unresolved observed runtime bytes; compiler-template opt-in only. No settlement economic change. Exact v1.18.0-to-review source inventory and executed fork provenance: config/runtime-bytecode-qualification-20261016.json."
     },
     "package.json": {
       "beforeSha256": "cb4c469111c491557d769ae80baef09f99c094a64f02574c610749def000f517",

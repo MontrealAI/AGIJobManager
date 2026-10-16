@@ -35,6 +35,24 @@ test('blocks empty and oversized runtime code before broadcasting', () => {
   assert.throws(() => requireRuntimeSize('manager', '0x'), /valid/);
 });
 
+test('runtime checks distinguish compiler link templates from canonical deployed bytes', () => {
+  const placeholder = `__$${'a'.repeat(34)}$__`;
+  for (const malformed of ['0xzz', '0x60__bad-template__00', `0x${placeholder}`]) {
+    assert.throws(() => requireRuntimeSize('observed-runtime', malformed), /malformed/);
+  }
+  assert.equal(requireRuntimeSize('compiler-template', `0x60${placeholder}00`, { allowUnlinked: true }), 22);
+  for (const malformed of ['0xzz', '0x60__bad-template__00', `0x60__$${'g'.repeat(34)}$__00`]) {
+    assert.throws(() => requireRuntimeSize('compiler-template', malformed, { allowUnlinked: true }), /malformed/);
+  }
+});
+
+test('artifact matching cannot treat an unresolved link template as observed runtime', () => {
+  const code = `0x60__$${'a'.repeat(34)}$__00`;
+  const artifact = { sourceName: 'Synthetic.sol', contractName: 'Synthetic', deployedBytecode: code };
+  const buildInfo = { output: { contracts: { 'Synthetic.sol': { Synthetic: { evm: { deployedBytecode: { immutableReferences: {} } } } } } } };
+  assert.throws(() => requireArtifactMatch({ artifact, buildInfo, code }), /malformed/);
+});
+
 test('rejects EOA or missing contract dependencies', async () => {
   await assert.rejects(requireCode({ getCode: async () => '0x' }, A, 'ENS', 123), /no deployed bytecode/);
 });
