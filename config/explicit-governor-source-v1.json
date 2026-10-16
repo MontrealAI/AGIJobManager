@@ -1828,6 +1828,13 @@
       "predecessorSha256": null,
       "reviewReason": "Add bounded direct-origin policy/trace fixtures and limits; record every call destination code and reject marker-bearing callees. Synthetic disposable execution is not actual account, provider, signer or final source qualification."
     },
+    "docs/deployment/ubuntu-ephemeral-creator.md": {
+      "mode": "100644",
+      "sha256": "84972b786ef1541a5de076b43d68440a663a9237f8d7602538dcbe2f412b71fc",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change."
+    },
     "docs/deployments-and-bridging.md": {
       "mode": "100644",
       "sha256": "9cd7f68eb48f7c2d4473e0905babe1e0ff117ac3e6f65d4922eb35e300246f36",
@@ -5279,6 +5286,13 @@
       "predecessorSha256": "8bad3969d59455dbb3f2ad518c9dd30fcac12fdaf3be851ec106395f8d113f15",
       "reviewReason": null
     },
+    "hardhat.creator.config.mjs": {
+      "mode": "100644",
+      "sha256": "034b7b65dd89b381f3295e80aa0481b326059e487504d82165d73f690cdd94b2",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change."
+    },
     "hardhat.cutover-fork.config.mjs": {
       "mode": "100644",
       "sha256": "97ae65fb86ad2a6e7ac4b487a561e60fe4698bbc9bf6759105be330e4a5384f0",
@@ -5524,6 +5538,20 @@
       "predecessorSha256": "5a5fdb857d2071b3c3d8deb13ef6ea38749c01ce3a3be1f3164db706acb25c76",
       "reviewReason": null
     },
+    "hardhat/scripts/deploy-core-tty.cjs": {
+      "mode": "100644",
+      "sha256": "22f001ca52503bc29f26381a8163ec84ba40d4158c88565f2a49d895d0e10f0b",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change."
+    },
+    "hardhat/scripts/deploy-core-tty.js": {
+      "mode": "100644",
+      "sha256": "1c9402235b79ee7fea25ef4b30a4ada55a4d4253b4932e7ebc74a61f640dce21",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change."
+    },
     "hardhat/scripts/deploy-ens-job-pages.cjs": {
       "mode": "100644",
       "sha256": "dc0129cba5fe403d964a2cfb065c63cbc6e67382f9a534e3cb818806bb408cbf",
@@ -5607,6 +5635,13 @@
       "predecessorGitBlob": "2ee3ecefa0b262bec1a9ac72450a984b4ca77a55",
       "predecessorSha256": "fa951a05babb076a731c148f6f6bbd07aa6f24fecc8cf091b2f0ab5cfc14b08a",
       "reviewReason": "Pin session/parent/child/creator-lock identities, journal/head bytes and directory membership before writes/cleanup; preserve PR1587 private-state and async source guards."
+    },
+    "hardhat/scripts/ephemeral-key.cjs": {
+      "mode": "100644",
+      "sha256": "379b3c6709bd98eeb382de73d24ef3bc3c8d3610833a8b9b73ddf31d6191eb55",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change."
     },
     "hardhat/scripts/explorer-input-comparison.cjs": {
       "mode": "100644",
@@ -5811,6 +5846,20 @@
       "predecessorSha256": "b9f6b885c8df19c6bcb12779bb1449ca1b250168a80072cf94602d5f001d767c",
       "reviewReason": null
     },
+    "hardhat/test/deploy-core-tty.test.cjs": {
+      "mode": "100644",
+      "sha256": "e1e04e955ce06378b41383956c8a0240fea74ec686b4ca25d4346a783952c361",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change."
+    },
+    "hardhat/test/deploy-core-tty.test.js": {
+      "mode": "100644",
+      "sha256": "fe98b541c68152295d915fa8d08a823184b32f5aa411f90236e9fa286ae8e813",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change."
+    },
     "hardhat/test/deployment-preflight.test.cjs": {
       "mode": "100644",
       "sha256": "1b7ca2748fc4a1221ce74a6c9ddb117a4cc38521a7ac5d80d2a4ea38516252ed",
@@ -5845,6 +5894,13 @@
       "predecessorGitBlob": "1fec03cf859523c20cfca6b4222ad0afdfba7115",
       "predecessorSha256": "b119f9de5557dc6042ba3d6aec34246960a0c5a1169dc2035e8d36dec9af0d5c",
       "reviewReason": null
+    },
+    "hardhat/test/ephemeral-key.test.cjs": {
+      "mode": "100644",
+      "sha256": "098618ea3d221f46e2df9b8042a82765797b5df3659ca001a043bfc5faeec0f4",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change."
     },
     "hardhat/test/explicit-governor.test.js": {
       "mode": "100644",
@@ -6772,10 +6828,10 @@
     },
     "schemas/explicit-governor-source-v1.schema.json": {
       "mode": "100644",
-      "sha256": "c2778358ec77d1a83f2e1ad1b81575b30b91eac3c3194cbf6050370f76aac412",
+      "sha256": "d4d5777673e98caa6d84b6b7d2deb34fb2dc16bda2d733fb49e43a5aea96128e",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add strict source-profile field, path and claim schema."
+      "reviewReason": "Add strict source-profile field, path and claim schema. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics."
     },
     "scripts/advisor/sample_job_state.json": {
       "mode": "100644",
@@ -7381,10 +7437,10 @@
     },
     "scripts/release/check-explicit-governor-boundaries.py": {
       "mode": "100644",
-      "sha256": "5cc3207c4da88012a3abad9136e4f75f5aa074a4a4c7b470b33dcc730ab487c0",
+      "sha256": "150a307579509245d391bab8ecc8f18667c2e390821dfef529728086fa56246d",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim."
+      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics."
     },
     "scripts/release/check-source-boundaries.py": {
       "mode": "100644",
@@ -7444,10 +7500,10 @@
     },
     "scripts/release/test-source-boundary-dispatch.py": {
       "mode": "100644",
-      "sha256": "6d0f4735cf8e91e8901d6a02fb36461e8d2b1cc1b3270aefb580d11f58d57813",
+      "sha256": "90eea22ad50abc3ce2a49ec0da25236bb9634e31d3d72875307378915fc4452a",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim."
+      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics."
     },
     "scripts/release/verify-genesis-ui.mjs": {
       "mode": "100644",
@@ -10052,6 +10108,7 @@
     "docs/REPO_MAP.md",
     "docs/deployment/core-external-signing.md",
     "docs/deployment/direct-origination-profile.md",
+    "docs/deployment/ubuntu-ephemeral-creator.md",
     "docs/qualification/CORE_SESSION_NATIVE.md",
     "docs/qualification/history/expected-mainnet-cutover-v1.18.0.json",
     "docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json",
@@ -10059,20 +10116,27 @@
     "forge-test/harness/AGIJobManagerHarness.sol",
     "forge-test/unit/AGIJobManagerSecurityVerification.t.sol",
     "forge-test/unit/AGIJobManagerV091Security.t.sol",
+    "hardhat.creator.config.mjs",
     "hardhat/.env.example",
     "hardhat/scripts/actor-policy.cjs",
     "hardhat/scripts/core-creation-plan.cjs",
     "hardhat/scripts/core-creation-verifier.cjs",
     "hardhat/scripts/core-session.cjs",
+    "hardhat/scripts/deploy-core-tty.cjs",
+    "hardhat/scripts/deploy-core-tty.js",
     "hardhat/scripts/deployment-session.cjs",
+    "hardhat/scripts/ephemeral-key.cjs",
     "hardhat/scripts/export-verification-package.cjs",
     "hardhat/scripts/operator-paths.cjs",
     "hardhat/test/core-session-docs.test.cjs",
     "hardhat/test/core-session-output.test.cjs",
     "hardhat/test/core-session-revalidation.test.cjs",
     "hardhat/test/core-session.test.js",
+    "hardhat/test/deploy-core-tty.test.cjs",
+    "hardhat/test/deploy-core-tty.test.js",
     "hardhat/test/direct-origin-policy.test.cjs",
     "hardhat/test/direct-origin-trace.test.js",
+    "hardhat/test/ephemeral-key.test.cjs",
     "hardhat/test/helpers/native-core-rpc.cjs",
     "hardhat/test/native-core-session.test.cjs",
     "hardhat/test/operator-private-state.regression.test.cjs",

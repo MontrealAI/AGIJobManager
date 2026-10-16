@@ -270,6 +270,14 @@ class SourceBoundaryDispatch(unittest.TestCase):
                      'hardhat/test/direct-origin-policy.test.cjs',
                      'hardhat/test/direct-origin-trace.test.js',
                      'docs/deployment/direct-origination-profile.md',
+                     'docs/deployment/ubuntu-ephemeral-creator.md',
+                     'hardhat.creator.config.mjs',
+                     'hardhat/scripts/deploy-core-tty.cjs',
+                     'hardhat/scripts/deploy-core-tty.js',
+                     'hardhat/scripts/ephemeral-key.cjs',
+                     'hardhat/test/deploy-core-tty.test.cjs',
+                     'hardhat/test/deploy-core-tty.test.js',
+                     'hardhat/test/ephemeral-key.test.cjs',
                      'hardhat/scripts/operator-paths.cjs',
                      'hardhat/scripts/export-verification-package.cjs',
                      'hardhat/test/operator-private-state.regression.test.cjs',
@@ -283,7 +291,10 @@ class SourceBoundaryDispatch(unittest.TestCase):
         for name in ('contracts/Unreviewed.sol', 'contracts/ignored.bin', 'hardhat/scripts/unreviewed.pyc',
                      'hardhat/scripts/direct-origin-unreviewed.cjs',
                      'hardhat/test/direct-origin-unreviewed.test.cjs',
-                     'docs/deployment/direct-origination-unreviewed.md'):
+                     'docs/deployment/direct-origination-unreviewed.md',
+                     'hardhat/scripts/deploy-core-tty-unreviewed.cjs',
+                     'hardhat.creator.unreviewed.config.mjs',
+                     'docs/deployment/ubuntu-ephemeral-unreviewed.md'):
             path = self.current / name
             path.write_text('// unreviewed\n')
             try:
