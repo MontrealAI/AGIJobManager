@@ -27,6 +27,7 @@ function gitBytes(root, args) {
   try { return execFileSync('git', gitArguments(root, args), { env: gitEnvironment(), stdio: 'pipe', timeout: 10000, maxBuffer: 3_000_000 }); }
   catch { fail(false, 'SOURCE_GIT_OBJECT'); }
 }
+export function immutableGitBytes(directory, args) { return gitBytes(fs.realpathSync(directory), args); }
 function repositoryRoot(root) {
   let actual;
   try { actual = execFileSync('git', gitArguments(root, ['rev-parse', '--show-toplevel']), { env: gitEnvironment(), encoding: 'utf8', stdio: 'pipe', timeout: 10000 }).trim(); }

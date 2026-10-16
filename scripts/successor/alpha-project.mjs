@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawn, execFileSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
+import { immutableGitBytes } from './source-identity.mjs';
 import { createHash } from 'node:crypto';
 import { fail, parseStrict, publicOnly } from '../../site/assets/successor/safe.mjs';
 import { builderArtifacts } from './build.mjs';
@@ -13,7 +14,7 @@ function checkedCheckout(directory) {
   let root;
   try { root = fs.realpathSync(directory); } catch { fail(false, 'ALPHA_CHECKOUT'); }
   const gitBytes = args => {
-    try { return execFileSync('git', ['-C', root, ...args], { stdio: 'pipe', timeout: 10000, maxBuffer: 100000 }); }
+    try { return immutableGitBytes(root, args); }
     catch { fail(false, 'ALPHA_CHECKOUT'); }
   };
   const git = args => gitBytes(args).toString('utf8').trim();
