@@ -1,0 +1,1216 @@
+{
+  "schema": 1,
+  "commit": "e1ed5027955aeee4c6ac14a8ab4b39b4388b8328",
+  "tree": "72a5c5810717ada48281ca493bf3ed856816ecdd",
+  "worktree_clean_tracked": true,
+  "time_utc": "2026-10-16T22:50:18.820224+00:00",
+  "workflow": "Security Verification / run38973323244",
+  "versions": {
+    "node": "v22.23.2",
+    "forge": "forge Version: 1.7.1\nCommit SHA: 4072e48705af9d93e3c0f6e29e93b5e9a40caed8\nBuild Timestamp: 2026-05-08T07:50:55.527285345Z (1778226655)\nBuild Profile: dist",
+    "solc": "solc, the solidity compiler commandline interface\nVersion: 0.8.37+commit.f401782d.Linux.g++",
+    "slither": "0.11.6",
+    "python": "Python 3.12.14"
+  },
+  "binary_sha256": {
+    "/root/.solc-select/artifacts/solc-0.8.37/solc-0.8.37": "5de843c2c93563cc66425c99a4fb13fdbf32b4c4ae07469480faaf126e14404a",
+    "/tmp/foundry-toolchain/node_modules/@foundry-rs/forge-linux-amd64/bin/forge": "4f77da0810de94325734855d0ad58d70640aa8a5b2a837608ddf8c26da34355c",
+    "/tmp/manager-r3-node22/node_modules/node/bin/node": "3517c2df0b2f8cd7f422b4b8450ef81c6889f08eb03e281d6de9079b15e6a327"
+  },
+  "solc_cached_official_linux_amd64_list_record": {
+    "path": "solc-linux-amd64-v0.8.37+commit.f401782d",
+    "version": "0.8.37",
+    "build": "commit.f401782d",
+    "longVersion": "0.8.37+commit.f401782d",
+    "keccak256": "0x092cddf584b7ed2b820dcaf0700966fb62888c2d39fc71c8fa5877e2447a1654",
+    "sha256": "0x5de843c2c93563cc66425c99a4fb13fdbf32b4c4ae07469480faaf126e14404a",
+    "urls": [
+      "dweb:/ipfs/QmXQdXCgFSAjC7VZSJtBpSasWfw1DCvc9dbChF5mb3xRu8"
+    ]
+  },
+  "npm_install_command": "PATH=/tmp/manager-r3-node22/node_modules/.bin:$PATH npm ci --offline --ignore-scripts",
+  "dependency_patch_command": "node scripts/security/patch-openzeppelin-compiler.cjs",
+  "scan_command": "PATH=/tmp/manager-r3-node22/node_modules/.bin:/tmp/foundry-toolchain/node_modules/.bin:/tmp/manager-r3-slither-venv/bin:$PATH FOUNDRY_SOLC=/root/.solc-select/artifacts/solc-0.8.37/solc-0.8.37 bash scripts/security/run-slither-extended.sh",
+  "scan_exit_code": 1,
+  "scan_exit_reason": "All three analyzer runs succeeded; unmodified final review gate rejects changed source hashes in the three reviewed contracts.",
+  "input_source_count": 91,
+  "all_standard_input_sources_byte_equal_to_worktree_files": true,
+  "compiler_input_sha256_canonical": "e5ba9ccd8b88f3739a31c26742b4f4bfca8381a70f22e596fc1c167df75e48b8",
+  "compiler_build_info_sha256": "1f77800aa6af9df9af876700dbe1be8046879b535ccd77402c603557f266ce1a",
+  "solc_version": "0.8.37",
+  "solc_long_version": "0.8.37",
+  "compiler_settings": {
+    "remappings": [
+      "@openzeppelin/=node_modules/@openzeppelin/",
+      "forge-std/=lib/forge-std/src/",
+      "@nomicfoundation/=node_modules/@nomicfoundation/",
+      "hardhat/=node_modules/hardhat/"
+    ],
+    "optimizer": {
+      "enabled": true,
+      "runs": 40
+    },
+    "metadata": {
+      "useLiteralContent": false,
+      "bytecodeHash": "none",
+      "appendCBOR": true
+    },
+    "outputSelection": {
+      "*": {
+        "": [
+          "ast"
+        ],
+        "*": [
+          "abi",
+          "evm.bytecode.object",
+          "evm.bytecode.sourceMap",
+          "evm.bytecode.linkReferences",
+          "evm.deployedBytecode.object",
+          "evm.deployedBytecode.sourceMap",
+          "evm.deployedBytecode.linkReferences",
+          "evm.deployedBytecode.immutableReferences",
+          "evm.methodIdentifiers",
+          "metadata"
+        ]
+      }
+    },
+    "evmVersion": "shanghai",
+    "viaIR": true,
+    "debug": {
+      "revertStrings": "strip"
+    },
+    "libraries": {}
+  },
+  "source_sha256": {
+    "contracts/AGIJobManager.sol": "3c0cfc462cc815bd8a432243c221eb6fd210880ec6178509a489265db18f7962",
+    "contracts/ens/ENSJobPages.sol": "80d67283a1d12eaa475d13c5290b00b183f0d84dfe3711c68841622152da1adf",
+    "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
+    "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",
+    "contracts/ens/INameWrapper.sol": "182065cbe99804d03abef665ec6d927cfa4d91cc0804301d7893fe6a57fc58d3",
+    "contracts/ens/IPublicResolver.sol": "87c6e8d65d352ae4d69d802ab01b070531199078d41a79ea3be934a479d2b48e",
+    "contracts/legacy/AGIJobManagerOriginal.sol": "3a98e0735e8d056c15327a533e088d996e5fee60febfa973cb8f6166aff2ec3b",
+    "contracts/periphery/AGIJobPages.sol": "6b6bcf0470609325e8490e3909decdc85f0015c366a9815bd5d27dbcb0f3fa74",
+    "contracts/periphery/AGIReviewEscrow.sol": "18724f4f0a631d05b2b528f77813216ddc5e9eb3dd334c4a7731a314fbdc714e",
+    "contracts/test/BoundedReturndataENSMocks.sol": "3530369cd9ef6567adc3516ba42b91ad9c600be90a467c4cdfb9172ad06a2b86",
+    "contracts/test/CompletionNFTHolders.sol": "371f526ed7601fbec99a8272aef45661d66db472fdce8728bf32e90a6833b67d",
+    "contracts/test/ENSLivenessMocks.sol": "d07b05a427002f7f03b9311555bb30c6f957119447eeb0670c0e4be7ec7a1a54",
+    "contracts/test/ERC20NoReturn.sol": "d3bb3cb536cc476ed502ce0145b69fec50a927cdaebb196ccca0f8386f9e65f7",
+    "contracts/test/EnsLabelUtilsHarness.sol": "7404df55f522fbd28d24609f97a2f46502749f6f16e4366c6f1326dc82e7d618",
+    "contracts/test/FailTransferToken.sol": "46448e15779f275742381be1c7bc3892c371b57ffb6edad28bc59c5df1c65790",
+    "contracts/test/FailingERC20.sol": "d457213bf1af1c221ca60fa533de675b04dee7d2c8ac00ac3641441a6be644a6",
+    "contracts/test/FalseAfterTransferUSDC.sol": "4b4f2a805ccfccb4cb62eac11a22ea4bb263a09616ed594b884a4d2c8667840b",
+    "contracts/test/FeeOnTransferToken.sol": "028ee1fbb20a243ec229ab10de1d75e9f851fa897a04db98db744f7538a31385",
+    "contracts/test/HookGasBurner.sol": "e31178d1105335ed79da11ff5e3a4c5e36eae4ec7cba3981b4524a8f587d3dc5",
+    "contracts/test/HookToken.sol": "0a1e2114c9e3da7bff82abb44b8d606d9f826848026fb03ac0f32714c2a744e7",
+    "contracts/test/InvalidBoolNameWrapper.sol": "93589a6f77ff3695a007fa826bf8ac3ab08f912a52368403b4212d37536982f3",
+    "contracts/test/InvalidBoolReturnERC20.sol": "638ca0ee304935e1598b30b4d7f0ec9e2dc359dde0bff160d92b3b11ef74bb4c",
+    "contracts/test/MalformedENSComponents.sol": "0e27bc2c0e8349257235fe2322142cade6d224e8fb309c0abbf05b683bdf87b5",
+    "contracts/test/MalformedReturnERC20.sol": "58dec19996b2956f355e7b3f8be31ae0e9a54c8c8449b575853489bcb929b1c1",
+    "contracts/test/MaliciousCompletionReceiver.sol": "ceb7ba77923c6421005509b5587c0a6acdbe4bd147b07de27ed525080d3e7d86",
+    "contracts/test/MockAGIJobManagerView.sol": "056c045321141486b59d3ba149d980a7445c0ed77bbb483df92ada740ed53e8f",
+    "contracts/test/MockBrokenERC721.sol": "478e2bd06f09bade70ebf4350be599e55cba858b4375a44e9d7137526733529b",
+    "contracts/test/MockENS.sol": "57057dacfc94f4b1b4c9547b78c269ea1a936046931b2a12bad0c29da06f5d6b",
+    "contracts/test/MockENSJobPages.sol": "1186ad51ad6948468ecdcccc44e5b0df6320a1d5747eb10eb537d694c93ad867",
+    "contracts/test/MockENSJobPagesMalformed.sol": "48bced65862b0075f91e1643f655d2a1b0235f00df30d37843932b3c11e2ad8b",
+    "contracts/test/MockENSRegistry.sol": "5b361ae0815f930b008f1e948dadab1628ff52e929b8c367c80b291450fbbfd3",
+    "contracts/test/MockERC165Only.sol": "1c9426c75e830e6739acab4116eed18243e5e056b3d36a2e3cf78c833716ed7c",
+    "contracts/test/MockERC20.sol": "7710c6e658d39b8707d515a05902fb985572ff639b44a941aa70efe01f396504",
+    "contracts/test/MockERC721.sol": "b43e8fab5b8e467d4e886d07ea6d4c0567573ef49080c3fc018610e09d58bc6f",
+    "contracts/test/MockERC721Only.sol": "4b6ce80550f1219659bb4ff143bfb49af97b84c35c7921ca72926d52644f739d",
+    "contracts/test/MockGasGriefERC721.sol": "d670417e5a78060ad2f7222f248690c2b89d8240dce2dd312946e92cbe11c7a6",
+    "contracts/test/MockHookCaller.sol": "dafbc13035d9831586e430c1643b24f42ed0069e576e65b0d58ae33c6855e07b",
+    "contracts/test/MockLoopingERC721.sol": "3cbeba9b40a86ea2164bb1ca08f850cc64a6dfe7350c80d41123c04215d32e5f",
+    "contracts/test/MockNameWrapper.sol": "01bcaefd1cab244edbaaabe6350347b21552bd964d0cd5f28863b6fe673b28a1",
+    "contracts/test/MockNoSupportsInterface.sol": "45041384d4baa4d6aa9938b7d8eba36e5b196a0971581b40696bae2d250a3acc",
+    "contracts/test/MockPublicResolver.sol": "afd0f7e0248536ce64f3cc7c31fa88b548a5c87dd52f646a48017567ea1407ee",
+    "contracts/test/MockResolver.sol": "d77451f982723e3b58633c3510f4020a5caf834c3d56ac1571e480e0375a44cb",
+    "contracts/test/MockUSDCControls.sol": "0329914204c103f12f8ba64aa23433e6331dd4731960cc3ced1291b9eaf6d906",
+    "contracts/test/OwnerRotationReceiver.sol": "cebb0a358464f893b25e38759a302f4bbdadb9ff5d0f6568db6970e632a93c72",
+    "contracts/test/ReenteringEmployer.sol": "622235ed7e365db9e6c4d82106b9bd1c132f0c2eda9abad2f3e4d5a98d0e2919",
+    "contracts/test/ReentrantReviewToken.sol": "939d4655a66ebba33be325aeca43f441072a3d1158061c9f8913711a1166c962",
+    "contracts/test/ReputationHarness.sol": "ff279b44b02c1944366d6ae8b75f10ee26d2083df316b331935b21966eb2049a",
+    "contracts/test/RescueMocks.sol": "0f9277f7e599ca1ab36137dbcb45c9faf77bce6384e662c6b8a8e80c0050f083",
+    "contracts/test/RevertingBalanceOfERC20.sol": "e0832f3fb4336c5740766a7a7cde94728c11e2e2c3c51626255d9bfd7192995c",
+    "contracts/test/RevertingENSComponents.sol": "f7545235bc35c73611e8aae3ca679497e190ec96a900ea4da0abb159990ba0d7",
+    "contracts/test/RevertingERC20.sol": "b95d073d8f8ec609bbadb1328a9bed28cc3555cbe23c660f342e3c4d7bdabdc5",
+    "contracts/test/UtilsHarness.sol": "5345b58f2d3d3eb874fd2737216deae7b2f77065f4fb6bf74063a29a3d84ff29",
+    "contracts/utils/BondMath.sol": "f082b47230121bd98c9a2c4c5c0957734461f2fbf612b2386e249fa4b4b3fa30",
+    "contracts/utils/ENSOwnership.sol": "244bcedf9ef9da775b3a663b2dcc4a221ea70810e1543ac0f255e3f0d3acaca0",
+    "contracts/utils/EnsLabelUtils.sol": "e7bf88fa5c3ecd85472e066c73dd76c2ce3b9f1f9700db27c4781e0577b358db",
+    "contracts/utils/JobSettlement.sol": "0e38c450b7461f36d30ec0aa06488135cf690dec0c8822b837f6f1b273a7cd93",
+    "contracts/utils/JobState.sol": "1840624830777ffbaedb5aada50d3f748f2f7aa89f788f329d9e598ff1b37459",
+    "contracts/utils/JobValidation.sol": "0f085da143a6ecbd3f7d941945a86dd54ad4bd27834457041f75bcab782a615d",
+    "contracts/utils/NftEligibility.sol": "f08254fbcdaad64a1e22c8f79b2cfc3ade0ee41c76dbb7c659bdfd196f7637dc",
+    "contracts/utils/ReputationMath.sol": "c742c3e7cb05a412405e8fe29d5283b1464e6c377ce98e2d8a360f96f3e3522c",
+    "contracts/utils/TransferUtils.sol": "797242b5d1ac32547e065a0989d8f407a3f5a22618e98681a332d3e85197ce36",
+    "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
+    "node_modules/@openzeppelin/contracts/access/Ownable.sol": "a8e4e1ae19d9bd3e8b0a6d46577eec098c01fbaffd3ec1252fd20d799e73393b",
+    "node_modules/@openzeppelin/contracts/access/Ownable2Step.sol": "3e3bdb084bc14ade54e8259e710287956a7dbf2b2b4ad1e4cd8899d2293c7241",
+    "node_modules/@openzeppelin/contracts/interfaces/IERC165.sol": "410e40cd79f1b82bb6bbab95fa4279252cae6e3962b0bff46ab4855f6de91d35",
+    "node_modules/@openzeppelin/contracts/interfaces/IERC4906.sol": "6b572852b6d6e1db371287a0eb443a724e9005e025025b9c82ebc8804433c0ff",
+    "node_modules/@openzeppelin/contracts/interfaces/IERC721.sol": "e3bcee0ce85a310031fcef279f963e73c12c676a66c5c562ab3945ccf10aecff",
+    "node_modules/@openzeppelin/contracts/security/Pausable.sol": "2072248d2f79e661c149fd6a6593a8a3f038466557c9b75e50e0b001bcb5cf97",
+    "node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol": "fa97ea556c990ee44f2ef4c80d4ef7d0af3f5f9b33a02142911140688106f5a9",
+    "node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol": "578834a1bcdac6a22de5e07ae63bbbd4d41615f35950afc6e6c068d92619b334",
+    "node_modules/@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol": "a7ad38fa0a06fe6e24f81fee4f1fc3870767db96d1ba37df7be1199f7a3ace7f",
+    "node_modules/@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol": "cf407886a0ce7e2af7efe7867e2d2864903426f63eeaa68eecf33d57f7d910c2",
+    "node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": "d20d52b4be98738b8aa52b5bb0f88943f62128969b33d654fbca731539a7fe0a",
+    "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": "7ebde70853ccafcf1876900dad458f46eb9444d591d39bfc58e952e2582f5587",
+    "node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": "af5c8a77965cc82c33b7ff844deb9826166689e55dc037a7f2f790d057811990",
+    "node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol": "bbf4d26d660ce8f9c9887af3a46bf4eab5f4c15eb8413ad89b65ecdd05dee7a9",
+    "node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol": "82dc918d8df553e2461b96595580e565424b407d73dab8a7ce4bde479810fb2a",
+    "node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol": "01cd07a08d98f784bb466d1c3298d0e8a3f85587d468edea7e08d6a26f59ad8f",
+    "node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol": "c8d867eda0fd764890040a3644f5ccf5db92f852779879f321ab3ad8b799bf97",
+    "node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol": "77f0f7340c2da6bb9edbc90ab6e7d3eb8e2ae18194791b827a3e8c0b11a09b43",
+    "node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol": "7bf559fad1068a1329517b56b1ecddefa67e79a03bb0801b9e6bf06bf73eb334",
+    "node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol": "f16b861aa1f623ccc5e173f1a82d8cf45b678a7fb81e05478fd17eb2ccb7b37e",
+    "node_modules/@openzeppelin/contracts/utils/Address.sol": "2cfd9ff9d2e03c87c12deae8f8afb95b85496ac9944ebf57843c7b9fd479d156",
+    "node_modules/@openzeppelin/contracts/utils/Context.sol": "b2cfee351bcafd0f8f27c72d76c054df9b571b62cfac4781ed12c86354e2a56c",
+    "node_modules/@openzeppelin/contracts/utils/Strings.sol": "d273b688181261c2e5ce4554216f6cd24a7f14f52a71e81839eeb56304a68652",
+    "node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol": "e9e7342678cbee8864cd8ce0a49ee9556af1351c40f74fd5cf458b3dc3bdd0ff",
+    "node_modules/@openzeppelin/contracts/utils/cryptography/MerkleProof.sol": "deae99b9a68659bd845f8a8580633a3538c45d3b475533280ae55fa388a03ffa",
+    "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol": "8806a632d7b656cadb8133ff8f2acae4405b3a64d8709d93b0fa6a216a8a6154",
+    "node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol": "701e025d13ec6be09ae892eb029cd83b3064325801d73654847a5fb11c58b1e5",
+    "node_modules/@openzeppelin/contracts/utils/math/Math.sol": "85a2caf3bd06579fb55236398c1321e15fd524a8fe140dff748c0f73d7a52345",
+    "node_modules/@openzeppelin/contracts/utils/math/SignedMath.sol": "420a5a5d8d94611a04b39d6cf5f02492552ed4257ea82aba3c765b1ad52f77f6"
+  },
+  "production_sha256": {
+    "contracts/AGIJobManager.sol": "3c0cfc462cc815bd8a432243c221eb6fd210880ec6178509a489265db18f7962",
+    "contracts/periphery/AGIReviewEscrow.sol": "18724f4f0a631d05b2b528f77813216ddc5e9eb3dd334c4a7731a314fbdc714e",
+    "contracts/periphery/AGIJobPages.sol": "6b6bcf0470609325e8490e3909decdc85f0015c366a9815bd5d27dbcb0f3fa74",
+    "contracts/ens/ENSJobPages.sol": "80d67283a1d12eaa475d13c5290b00b183f0d84dfe3711c68841622152da1adf",
+    "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
+    "contracts/ens/IPublicResolver.sol": "87c6e8d65d352ae4d69d802ab01b070531199078d41a79ea3be934a479d2b48e",
+    "contracts/ens/INameWrapper.sol": "182065cbe99804d03abef665ec6d927cfa4d91cc0804301d7893fe6a57fc58d3",
+    "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",
+    "contracts/utils/NftEligibility.sol": "f08254fbcdaad64a1e22c8f79b2cfc3ade0ee41c76dbb7c659bdfd196f7637dc",
+    "contracts/utils/EnsLabelUtils.sol": "e7bf88fa5c3ecd85472e066c73dd76c2ce3b9f1f9700db27c4781e0577b358db",
+    "contracts/utils/JobSettlement.sol": "0e38c450b7461f36d30ec0aa06488135cf690dec0c8822b837f6f1b273a7cd93",
+    "contracts/utils/JobState.sol": "1840624830777ffbaedb5aada50d3f748f2f7aa89f788f329d9e598ff1b37459",
+    "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
+    "contracts/utils/BondMath.sol": "f082b47230121bd98c9a2c4c5c0957734461f2fbf612b2386e249fa4b4b3fa30",
+    "contracts/utils/TransferUtils.sol": "797242b5d1ac32547e065a0989d8f407a3f5a22618e98681a332d3e85197ce36",
+    "contracts/utils/ENSOwnership.sol": "244bcedf9ef9da775b3a663b2dcc4a221ea70810e1543ac0f255e3f0d3acaca0",
+    "contracts/utils/JobValidation.sol": "0f085da143a6ecbd3f7d941945a86dd54ad4bd27834457041f75bcab782a615d",
+    "contracts/utils/ReputationMath.sol": "c742c3e7cb05a412405e8fe29d5283b1464e6c377ce98e2d8a360f96f3e3522c"
+  },
+  "config_sha256": {
+    "foundry.toml": "fb098664cd6a2b8cba0b038924a4d1e3273096741d4b194c84308d670ad9098a",
+    "package-lock.json": "cdd3b46e8de3be61efb0a60648eb1915f8127db0ed2ea01eb69cf2b6898e18f0",
+    "scripts/security/slither-extended.config.json": "3b273bb8476e06ac03dba09f3d6bc68390ef344883ef3c7f59fbdd0b6317ca01",
+    "scripts/security/slither-reentrancy.config.json": "7c6e5346fe75f6fd15d5877a834042925f0486352caff80d930f9c877e5c2bba",
+    "scripts/security/slither-all.config.json": "a0070c69b696f0401b15391074fd08f6ed31a2684dcda29f7a14b33a1f687159",
+    "slither.config.json": "3b273bb8476e06ac03dba09f3d6bc68390ef344883ef3c7f59fbdd0b6317ca01",
+    "scripts/security/patch-openzeppelin-compiler.cjs": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116",
+    "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
+    "scripts/security/run-slither.sh": "c4e819672f0955250dbb695298ec9128b50794c24cfbf76ab547ebb2d84650a2",
+    "scripts/security/run-slither-extended.sh": "ae23abf938d410c88ff340ec828f3bb30441fd6a22aaa0be34499f4fb72c38cb"
+  },
+  "changed_review_bound_files": [
+    "contracts/AGIJobManager.sol",
+    "contracts/periphery/AGIJobPages.sol",
+    "contracts/ens/ENSJobPages.sol"
+  ],
+  "openzeppelin_patched_sha256": {
+    "utils/Address.sol": {
+      "expected": "2cfd9ff9d2e03c87c12deae8f8afb95b85496ac9944ebf57843c7b9fd479d156",
+      "actual": "2cfd9ff9d2e03c87c12deae8f8afb95b85496ac9944ebf57843c7b9fd479d156"
+    },
+    "utils/Strings.sol": {
+      "expected": "d273b688181261c2e5ce4554216f6cd24a7f14f52a71e81839eeb56304a68652",
+      "actual": "d273b688181261c2e5ce4554216f6cd24a7f14f52a71e81839eeb56304a68652"
+    },
+    "token/ERC721/ERC721.sol": {
+      "expected": "01cd07a08d98f784bb466d1c3298d0e8a3f85587d468edea7e08d6a26f59ad8f",
+      "actual": "01cd07a08d98f784bb466d1c3298d0e8a3f85587d468edea7e08d6a26f59ad8f"
+    },
+    "utils/cryptography/ECDSA.sol": {
+      "expected": "e9e7342678cbee8864cd8ce0a49ee9556af1351c40f74fd5cf458b3dc3bdd0ff",
+      "actual": "e9e7342678cbee8864cd8ce0a49ee9556af1351c40f74fd5cf458b3dc3bdd0ff"
+    },
+    "utils/cryptography/MerkleProof.sol": {
+      "expected": "deae99b9a68659bd845f8a8580633a3538c45d3b475533280ae55fa388a03ffa",
+      "actual": "deae99b9a68659bd845f8a8580633a3538c45d3b475533280ae55fa388a03ffa"
+    }
+  },
+  "openzeppelin_package_version": "4.9.6",
+  "openzeppelin_lock_entry": {
+    "version": "4.9.6",
+    "resolved": "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-4.9.6.tgz",
+    "integrity": "sha512-xSmezSupL+y9VkHZJGDoCBpmnB2ogM13ccaYDWqJTfS3dbuHkgjuwDFUmaFauBCboQMGB/S5UqUl2y54X99BmA==",
+    "license": "MIT"
+  },
+  "reports": {
+    "slither-extended.json": {
+      "count": 12,
+      "success": true,
+      "retained_sha256": "7d6d6be3cf565d7190a95d19f1be22bb3c74ac1da113bd1d6fb189266565faa7",
+      "fresh_sha256": "314202293a81187705ed369c79ebb4b15d06d9af2ba3f0def7e2c2d174b1d823",
+      "normalized_full_finding_equality": true,
+      "normalized_finding_sha256": "b463a0c568b9258de941ce8dba6503e3048bde763f91feed55d1b60db1f370d2",
+      "counts_by_check": {
+        "reentrancy-balance": 1,
+        "divide-before-multiply": 2,
+        "mapping-deletion": 1,
+        "reentrancy-no-eth": 1,
+        "unused-return": 7
+      }
+    },
+    "slither-all.json": {
+      "count": 122,
+      "success": true,
+      "retained_sha256": "e4b43e4b8bbaa0a605058da0c03a3676f9d895d6307773e6795193c847a9bbd3",
+      "fresh_sha256": "566d3dad19208e6300dbb5cfdc83fe4bcfede48e0a693453447d8c6b521e64e4",
+      "normalized_full_finding_equality": true,
+      "normalized_finding_sha256": "72d2c6135da4eec162bde0a0c3984f283b1ea3719dbce1f5246344676c63c294",
+      "counts_by_check": {
+        "reentrancy-balance": 1,
+        "divide-before-multiply": 2,
+        "mapping-deletion": 1,
+        "reentrancy-no-eth": 1,
+        "unused-return": 7,
+        "reentrancy-benign": 2,
+        "reentrancy-events": 26,
+        "timestamp": 11,
+        "assembly": 10,
+        "cyclomatic-complexity": 1,
+        "solc-version": 1,
+        "low-level-calls": 4,
+        "missing-inheritance": 1,
+        "naming-convention": 45,
+        "too-many-digits": 5,
+        "unindexed-event-address": 4
+      }
+    },
+    "slither-reentrancy.json": {
+      "count": 29,
+      "success": true,
+      "retained_sha256": "04ee31ecc7e53aee59e321f0d515d5ce333de49ff89122e60c608035637d52af",
+      "fresh_sha256": "176c925e337576044e184636e9222f2d22c8d967b48ca76f5676a4c532dea3a7",
+      "normalized_full_finding_equality": true,
+      "normalized_finding_sha256": "75d42a587912f97e50eaa304c5e6cc0f6fa74786bc738b9173ba22f26dbb181e",
+      "counts_by_check": {
+        "reentrancy-events": 26,
+        "reentrancy-no-eth": 1,
+        "reentrancy-benign": 2
+      }
+    }
+  },
+  "artifacts": {
+    "AGIJobManager": {
+      "artifact_sha256": "21030e7390bdf0cfea35056f3219dbf52e1babd8c37197f761eef7f7336d3c4d",
+      "runtime_bytes": 24412,
+      "creation_bytes": 27210,
+      "runtime_link_references": {
+        "contracts/utils/BondMath.sol": {
+          "BondMath": [
+            {
+              "start": 5233,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/ENSOwnership.sol": {
+          "ENSOwnership": [
+            {
+              "start": 19208,
+              "length": 20
+            },
+            {
+              "start": 19428,
+              "length": 20
+            },
+            {
+              "start": 20752,
+              "length": 20
+            },
+            {
+              "start": 20875,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/JobSettlement.sol": {
+          "JobSettlement": [
+            {
+              "start": 6552,
+              "length": 20
+            },
+            {
+              "start": 7120,
+              "length": 20
+            },
+            {
+              "start": 21945,
+              "length": 20
+            },
+            {
+              "start": 22177,
+              "length": 20
+            },
+            {
+              "start": 22818,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/JobValidation.sol": {
+          "JobValidation": [
+            {
+              "start": 7375,
+              "length": 20
+            },
+            {
+              "start": 14470,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/NftEligibility.sol": {
+          "NftEligibility": [
+            {
+              "start": 9084,
+              "length": 20
+            },
+            {
+              "start": 10125,
+              "length": 20
+            },
+            {
+              "start": 18645,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/TransferUtils.sol": {
+          "TransferUtils": [
+            {
+              "start": 11970,
+              "length": 20
+            },
+            {
+              "start": 12689,
+              "length": 20
+            },
+            {
+              "start": 16940,
+              "length": 20
+            },
+            {
+              "start": 20986,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/UriUtils.sol": {
+          "UriUtils": [
+            {
+              "start": 11026,
+              "length": 20
+            },
+            {
+              "start": 16666,
+              "length": 20
+            },
+            {
+              "start": 23456,
+              "length": 20
+            }
+          ]
+        }
+      },
+      "creation_link_references": {
+        "contracts/utils/BondMath.sol": {
+          "BondMath": [
+            {
+              "start": 8031,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/ENSOwnership.sol": {
+          "ENSOwnership": [
+            {
+              "start": 22006,
+              "length": 20
+            },
+            {
+              "start": 22226,
+              "length": 20
+            },
+            {
+              "start": 23550,
+              "length": 20
+            },
+            {
+              "start": 23673,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/JobSettlement.sol": {
+          "JobSettlement": [
+            {
+              "start": 9350,
+              "length": 20
+            },
+            {
+              "start": 9918,
+              "length": 20
+            },
+            {
+              "start": 24743,
+              "length": 20
+            },
+            {
+              "start": 24975,
+              "length": 20
+            },
+            {
+              "start": 25616,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/JobValidation.sol": {
+          "JobValidation": [
+            {
+              "start": 10173,
+              "length": 20
+            },
+            {
+              "start": 17268,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/NftEligibility.sol": {
+          "NftEligibility": [
+            {
+              "start": 11882,
+              "length": 20
+            },
+            {
+              "start": 12923,
+              "length": 20
+            },
+            {
+              "start": 21443,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/TransferUtils.sol": {
+          "TransferUtils": [
+            {
+              "start": 14768,
+              "length": 20
+            },
+            {
+              "start": 15487,
+              "length": 20
+            },
+            {
+              "start": 19738,
+              "length": 20
+            },
+            {
+              "start": 23784,
+              "length": 20
+            }
+          ]
+        },
+        "contracts/utils/UriUtils.sol": {
+          "UriUtils": [
+            {
+              "start": 13824,
+              "length": 20
+            },
+            {
+              "start": 19464,
+              "length": 20
+            },
+            {
+              "start": 26254,
+              "length": 20
+            }
+          ]
+        }
+      },
+      "compiler_version": "0.8.37+commit.f401782d",
+      "metadata_settings": {
+        "remappings": [
+          "@nomicfoundation/=node_modules/@nomicfoundation/",
+          "@openzeppelin/=node_modules/@openzeppelin/",
+          "forge-std/=lib/forge-std/src/",
+          "hardhat/=node_modules/hardhat/"
+        ],
+        "optimizer": {
+          "enabled": true,
+          "runs": 40
+        },
+        "metadata": {
+          "bytecodeHash": "none"
+        },
+        "compilationTarget": {
+          "contracts/AGIJobManager.sol": "AGIJobManager"
+        },
+        "evmVersion": "shanghai",
+        "libraries": {},
+        "viaIR": true
+      }
+    },
+    "ENSJobPages": {
+      "artifact_sha256": "c6ff8fbe66a5c42da362be6dd8fcba006d0093ff2b7833cec11c4ee02ee627bd",
+      "runtime_bytes": 15344,
+      "creation_bytes": 16431,
+      "runtime_link_references": {},
+      "creation_link_references": {},
+      "compiler_version": "0.8.37+commit.f401782d",
+      "metadata_settings": {
+        "remappings": [
+          "@nomicfoundation/=node_modules/@nomicfoundation/",
+          "@openzeppelin/=node_modules/@openzeppelin/",
+          "forge-std/=lib/forge-std/src/",
+          "hardhat/=node_modules/hardhat/"
+        ],
+        "optimizer": {
+          "enabled": true,
+          "runs": 40
+        },
+        "metadata": {
+          "bytecodeHash": "none"
+        },
+        "compilationTarget": {
+          "contracts/ens/ENSJobPages.sol": "ENSJobPages"
+        },
+        "evmVersion": "shanghai",
+        "libraries": {},
+        "viaIR": true
+      }
+    },
+    "AGIJobPages": {
+      "artifact_sha256": "282409f66bf5c0f26960e36fe6ddb9c8acde94e8ae33ea1856ba7b8529e67af3",
+      "runtime_bytes": 4212,
+      "creation_bytes": 5522,
+      "runtime_link_references": {},
+      "creation_link_references": {},
+      "compiler_version": "0.8.37+commit.f401782d",
+      "metadata_settings": {
+        "remappings": [
+          "@nomicfoundation/=node_modules/@nomicfoundation/",
+          "@openzeppelin/=node_modules/@openzeppelin/",
+          "forge-std/=lib/forge-std/src/",
+          "hardhat/=node_modules/hardhat/"
+        ],
+        "optimizer": {
+          "enabled": true,
+          "runs": 40
+        },
+        "metadata": {
+          "bytecodeHash": "none"
+        },
+        "compilationTarget": {
+          "contracts/periphery/AGIJobPages.sol": "AGIJobPages"
+        },
+        "evmVersion": "shanghai",
+        "libraries": {},
+        "viaIR": true
+      }
+    },
+    "AGIReviewEscrow": {
+      "artifact_sha256": "92ac92b8b3710ebf2f034525f6cbfd97392255d6410e461cadab69cc73cd05ca",
+      "runtime_bytes": 3575,
+      "creation_bytes": 4146,
+      "runtime_link_references": {},
+      "creation_link_references": {},
+      "compiler_version": "0.8.37+commit.f401782d",
+      "metadata_settings": {
+        "remappings": [
+          "@nomicfoundation/=node_modules/@nomicfoundation/",
+          "@openzeppelin/=node_modules/@openzeppelin/",
+          "forge-std/=lib/forge-std/src/",
+          "hardhat/=node_modules/hardhat/"
+        ],
+        "optimizer": {
+          "enabled": true,
+          "runs": 40
+        },
+        "metadata": {
+          "bytecodeHash": "none"
+        },
+        "compilationTarget": {
+          "contracts/periphery/AGIReviewEscrow.sol": "AGIReviewEscrow"
+        },
+        "evmVersion": "shanghai",
+        "libraries": {},
+        "viaIR": true
+      }
+    }
+  },
+  "scope_limits": [
+    "This reproduces the source-checked Slither workflow, not a complete independent manual audit or mainnet commissioning.",
+    "Retained artifact includes reports, not its original full compiler input; current compiler input is independently reconstructed from exact commit, pinned lock and precise dependency patches, and all output findings fully reproduce after absolute checkout-root normalization only.",
+    "Slither configs deliberately exclude dependency/test/legacy findings, retain production finding families at every severity in the all-detector scan; compiled test/legacy/dependency sources remain captured in this input manifest.",
+    "Local Python dependency versions may differ from CI transitive versions; Slither itself0.11.6, exact compiler0.8.37, Forge1.7.1 and all findings match."
+  ],
+  "retained_artifact": {
+    "workflow_run": 38973323244,
+    "artifact_id": 12077574693,
+    "archive_sha256": "52233ee9ff5b6449a578246ef1ad0d833889972964bf30d526a54a066c37884e",
+    "report_sha256": {
+      "slither-extended.json": "7d6d6be3cf565d7190a95d19f1be22bb3c74ac1da113bd1d6fb189266565faa7",
+      "slither-reentrancy.json": "04ee31ecc7e53aee59e321f0d515d5ce333de49ff89122e60c608035637d52af",
+      "slither-all.json": "e4b43e4b8bbaa0a605058da0c03a3676f9d895d6307773e6795193c847a9bbd3"
+    }
+  },
+  "historical_reproduction": {
+    "historical_commit": "6484d09afbba64d7de24cd18ae4dbd246caffd17",
+    "historical_record": "scripts/security/slither-reviewed-findings-v1.18.0.json",
+    "historical_reproduction": "Original run-slither-extended.sh completed successfully; all163entries match v1.18.0 record and source hashes. Exact deps patched with original script, Slither0.11.6, solc0.8.37.",
+    "method": "Prefer exact findingID; otherwise require same check/impact/confidence and exact full detector description after removing only Solidity #line/-range suffixes. Only exception is informational constructor complexity12to13, explicitly matched to its historical constructor finding.",
+    "counts": {
+      "unique_raw_findings": 122,
+      "report_entries": 163,
+      "severity": {
+        "High": 1,
+        "Medium": 11,
+        "Low": 39,
+        "Informational": 71
+      },
+      "identity_classification": {
+        "identical_id_inherited": 75,
+        "relocated_id_inherited_full_description_equal_without_lines": 46,
+        "modified_inherited_constructor_complexity_12_to_13": 1
+      },
+      "independently_reviewed_outside_three_changed_contracts": 25,
+      "new_detector_findings": 0
+    },
+    "source_changes_from_record": [
+      {
+        "path": "contracts/AGIJobManager.sol",
+        "reviewed_sha256": "e9be32b61afb55818d4108f295c5b80d9e2f5649e4697b9a199f8c000d8285c4",
+        "current_sha256": "3c0cfc462cc815bd8a432243c221eb6fd210880ec6178509a489265db18f7962"
+      },
+      {
+        "path": "contracts/ens/ENSJobPages.sol",
+        "reviewed_sha256": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
+        "current_sha256": "80d67283a1d12eaa475d13c5290b00b183f0d84dfe3711c68841622152da1adf"
+      },
+      {
+        "path": "contracts/periphery/AGIJobPages.sol",
+        "reviewed_sha256": "21b0011e798c73717524708af6af2aa244bc63dc29ec9172ee149ad5c6e898ad",
+        "current_sha256": "6b6bcf0470609325e8490e3909decdc85f0015c366a9815bd5d27dbcb0f3fa74"
+      }
+    ],
+    "reports": {
+      "slither-extended.json": {
+        "current_entries": 12,
+        "historical_entries": 12,
+        "current_unique_ids": 12,
+        "identical_ids": 5,
+        "added_ids": [
+          "2122b6cef9d553e7a9859f61a4caab0ae2ca14df4d760a3dab11b5660cd0f349",
+          "592daed7318b5c9a493030b2cd7d05a06ce01bfb464321cd1e53ed1814ff009c",
+          "661df354221ce4c086cc243f37f60df44d54ab49929cfc44fdc3e2ee6f0951b0",
+          "6875f6a37181a1b94d94333f92629804c90b7a7c2aa3b9f6f944f98516b1766e",
+          "c046a105fb3d6e49028761e5ab94c5791e6becef2f815726080b35010bf31ffe",
+          "c142de04aeea6021efa30253fbc2368a2fbbb0c56f782a6bdfb85a20501840d2",
+          "ed4ab475de785bfacf340008068e822fbc3a84d58e85ab4efa9a2aab21bd93d4"
+        ],
+        "removed_ids": [
+          "6a657bd713879619e5cbbaf89c2e47cbd624af78c1d10d2863200ebae8370b4d",
+          "71b4cf55d5f2bb454f8cb7a64405ae4585152a6f1e56a0bb0239ea7c8bccc932",
+          "758fe7673278c7271d1e316c373a6c16d69ada7e92950b1ac4ca1aa460581d9f",
+          "c18f5be884ef9b08680419482ae1d61fc635bba48cfcb0f824c4af071a792240",
+          "ca2147462b0bd8d7df7f3a137bec670cca8a5fc215604838e95fd244fce75801",
+          "e0ba2c0ac4840a954954881bb069604f717ee62d7c36a880cf5b22dd108bda5b",
+          "e15f44dee99c7aa68f3c27db3eca3f81d883ab42e1adec080b620f3a4e3cb8af"
+        ],
+        "historical_report_sha256": "71a0a5729a91172c3a96616758aec70375f2d213286c88c4486c5dc87795fb14",
+        "current_retained_report_sha256": "7d6d6be3cf565d7190a95d19f1be22bb3c74ac1da113bd1d6fb189266565faa7"
+      },
+      "slither-reentrancy.json": {
+        "current_entries": 29,
+        "historical_entries": 29,
+        "current_unique_ids": 29,
+        "identical_ids": 2,
+        "added_ids": [
+          "1cf0897e53771ca40695604b1f479d0c936b8233aca1b81e1e76419284ae3165",
+          "2dd44832dde0e31a5c51a1eee20b1086258201ee6b493dcc6fe49d078491922f",
+          "369232fb9ff2db2044cccd9507700677034b81d1ec3f3b10d3c5f9f2a22bc3a1",
+          "388b543347c0f3f52afebcb3b5284b3f49473a66c48b32b8caf98ad62a95a90b",
+          "3b0a42f661715b44085e1178db3010af533daefb7a9c5e1ed74c4b288493891b",
+          "3ee168f18b65141967e263128720ccb64cb8ca569bde577b12f798596790d530",
+          "445d0aac4e9a3ba83396c798c77f596235bdef3363b2918ed0ce14dee799c29f",
+          "4f88b7289e7fcabf3f9a658a349b70ed09a653c5f0b8a489fe74ae0b51a6ef76",
+          "637a2a02d1c30ad0517ceaf1c089590d98ea23e63f9c35c37cf6eca3523907f3",
+          "6875f6a37181a1b94d94333f92629804c90b7a7c2aa3b9f6f944f98516b1766e",
+          "6964f1b240a34a55bd5cd5408c969f4a8c75c557e20c8c91df02101becd9bacb",
+          "701e472cfd9cafcf0d296101423a4634cc7581c9ec7bc24e66e50dad78c9ee3b",
+          "72e9b210921a2285b9e4fab52c991408bb8d99a48291ce02ec0d663d0c0a39fc",
+          "7781a9b073d128d86cd1ffeb1aaebddbd8bbb2fd7e9cd113a8c56e56114dc3b3",
+          "92002f6068cb008c02b89bb99e8122e62e7c83acf540eac5c56f3fd01db4106d",
+          "948fd06adda152136cf0b9933e3d525ce825736a0f126c52007fc54b98542694",
+          "9b103a97501a839c06e36d1b4ee904474ede6d621a9cc93d5c63e28dbfad91c8",
+          "a0ec740b974bd63ad1574426b42921634d1fb0194df4643d3fb1e96dd4598bd3",
+          "a7154c4b1d4a515c9b98df4d3695d95860c275101d211df6af137f20de6276d2",
+          "b89696436fee2520c9027f51f41b7cff76d72acc529d79b90bc64194a8d73a36",
+          "bd77b439ad30588f6d8eff25e94436671480f38c150d21ffabfa2ac4a13479fe",
+          "c0d1c2fe0b29e5e6acf09b94183971c50d6d85d01cf31ea8f60cc46e7eddd45b",
+          "ca895753cbde9df69db68d950df102877ee527a6a7e82c5c15da6180aae8fe87",
+          "e80bf50fc9a55a89788c53dc2326951649a9f6db8cc0c78ffc3e167677a202db",
+          "edc295a1582e657e6427c94dd9aba8692c5de8dba676f5c95b5c4a064816cc12",
+          "ef1335d576ea5cb16f6ae0ed97147a14ee30be40f0d354c3c2756c74525411e4",
+          "f81caea98c686fc8e1186c45d5b46a6d90e842cb89cadc9c355b2c3e5711bf76"
+        ],
+        "removed_ids": [
+          "0dfdfabef93367f19f94ddbf2ebfdf893ff183013465cb4cbd59f87c609ebdf2",
+          "12c7c715d9f98255a9cb96cd07ad56ff6e6a228c890bdfb0130a092fa0e2e6de",
+          "192756a7a3d7a859faf2698461777f6b702fdbc0b070e66ff87d445b253a5423",
+          "1984eefad32879981dfeae4ec8d4b4002cbd68ab0b7938801b60d950ee916df3",
+          "2038f9386b60418815c3c1c318bcbfd6e6596b075b4b593868551a3c84500ea8",
+          "2bb36030ea4104c5e5fd85977dfb6f224fee504b2ffab8029bf73a9ced37c279",
+          "33c29c69e01a2726e0662510e1e0290430d94074568c13ab27d26599da8b5d2b",
+          "3421f9a5535e3e2e87296aac44799663651f9a2475c3bbfff89e169f097464a2",
+          "34a22ec815db9237177709313e7e21c9c9c45bd8c0c72da42a251ce1b683c602",
+          "37a91a696b6cfc999b92a0260903f496be129747e80b0fe76b881be048941d02",
+          "42023577d4990a83249c26e489c76676cd5dbc0a126e996d9108b8f55b207265",
+          "4f83ce4f6ba1d8ed830bb77a1f636ae99ed0f207e39310173606b14c5951ebe5",
+          "719909ae40fdbec663e85d8e2af9ceb13ab97454afa186ff5e383ea08b5dadcc",
+          "758fe7673278c7271d1e316c373a6c16d69ada7e92950b1ac4ca1aa460581d9f",
+          "7ea2489baf088c15b39326a8602315bdc623b92d4b83ea8e4c0cdc6efc728bfe",
+          "86d52431aa9c8e8febadeebb82721e27ac2315ec698e8828c907f016326021e2",
+          "88e4858221ee06bca358cb5c78e2af5768e39b9cf653bfdce334013416faa490",
+          "90fcee66ab6e643c9ddcabb9ef8715a52d9a1c53f286257b62cc400269d80811",
+          "a71f39ac16fa531501a0adfa8b4e58e5a83e98549b90ffc1da0994c067859264",
+          "aa23ffd4d483033a92adf8bd24a827daed693982068ddc9b1bd739f5bc19f967",
+          "c5e77c3c6f111bfedfb83ebea9accca5481ca7cb251aef432b26d9b12fff181b",
+          "c9e6c503bcfcbac0b7e51e72e830aa8273d2d51d1c71843a1abf7ad28ed113e3",
+          "d0a62328c044cd245e61d48698cc88c8449acaed5f357da8b3599252c8fedb5d",
+          "d491b41f16c9379163315f0f656b7041cfef7476efa85efa612d35bdfcb3084e",
+          "d657d716b247cb6311ad0d3c371e5b68929538528da083070963cfe920673e6d",
+          "dcb719ceaa5fc19b1e100ce1b20032a2df13e2d7e9ad9a0233578c6cd01b59bc",
+          "e5cba8206b1271fcc31093b4464e27c1bc5a41af849c87b09d198c549908fe84"
+        ],
+        "historical_report_sha256": "0014236b07a7df6f39930a737edf7c62e8cab1dfc60050697f590ba83529e8e4",
+        "current_retained_report_sha256": "04ee31ecc7e53aee59e321f0d515d5ce333de49ff89122e60c608035637d52af"
+      },
+      "slither-all.json": {
+        "current_entries": 122,
+        "historical_entries": 122,
+        "current_unique_ids": 122,
+        "identical_ids": 75,
+        "added_ids": [
+          "0471733176af1c6736fe78c6b802bc1e45ff86e6b2087bb0d6a6c9b981d9fe14",
+          "1cf0897e53771ca40695604b1f479d0c936b8233aca1b81e1e76419284ae3165",
+          "1f79509e3089b65458683bf655d60ea6bc35500dcd16c06b174833af9f3bee01",
+          "2122b6cef9d553e7a9859f61a4caab0ae2ca14df4d760a3dab11b5660cd0f349",
+          "2254e43e60788ee84af3816f67a64084fdca378eb083cd0295e72d6141dae03e",
+          "2a754a8b547a521ceccb71bfc02509dfa55cabe92bb06b1be32f415eef66b750",
+          "2dd44832dde0e31a5c51a1eee20b1086258201ee6b493dcc6fe49d078491922f",
+          "369232fb9ff2db2044cccd9507700677034b81d1ec3f3b10d3c5f9f2a22bc3a1",
+          "388b543347c0f3f52afebcb3b5284b3f49473a66c48b32b8caf98ad62a95a90b",
+          "38d1df90184a558c2adb9ee0f9dde4040fc942dc60a2c519b9acb56f631a72d9",
+          "3b0a42f661715b44085e1178db3010af533daefb7a9c5e1ed74c4b288493891b",
+          "3ccb8fd10cc969b4bedb6f7005c2d43b990a7a0ecbdfff0184aa3d2d5a994d21",
+          "3ee168f18b65141967e263128720ccb64cb8ca569bde577b12f798596790d530",
+          "445d0aac4e9a3ba83396c798c77f596235bdef3363b2918ed0ce14dee799c29f",
+          "47420be36d3f8d68416061e0b38512a79c77e60cf5e5e8f4a1169d50840f23b7",
+          "4f88b7289e7fcabf3f9a658a349b70ed09a653c5f0b8a489fe74ae0b51a6ef76",
+          "592daed7318b5c9a493030b2cd7d05a06ce01bfb464321cd1e53ed1814ff009c",
+          "60b1afdcf62e04ccfca5a56ed32baeeaef70e1915262e5d39822f25579c6f797",
+          "61ca2e85b431a9fbad72ad1c1b3db892b4613588e5aa22322cac8f4fc8122477",
+          "637a2a02d1c30ad0517ceaf1c089590d98ea23e63f9c35c37cf6eca3523907f3",
+          "661df354221ce4c086cc243f37f60df44d54ab49929cfc44fdc3e2ee6f0951b0",
+          "6875f6a37181a1b94d94333f92629804c90b7a7c2aa3b9f6f944f98516b1766e",
+          "6964f1b240a34a55bd5cd5408c969f4a8c75c557e20c8c91df02101becd9bacb",
+          "701e472cfd9cafcf0d296101423a4634cc7581c9ec7bc24e66e50dad78c9ee3b",
+          "72e9b210921a2285b9e4fab52c991408bb8d99a48291ce02ec0d663d0c0a39fc",
+          "7781a9b073d128d86cd1ffeb1aaebddbd8bbb2fd7e9cd113a8c56e56114dc3b3",
+          "7f6c75219f58bd112b3ba8179258edf9df2973f2e73ceac695970be144cd928c",
+          "92002f6068cb008c02b89bb99e8122e62e7c83acf540eac5c56f3fd01db4106d",
+          "948fd06adda152136cf0b9933e3d525ce825736a0f126c52007fc54b98542694",
+          "9b103a97501a839c06e36d1b4ee904474ede6d621a9cc93d5c63e28dbfad91c8",
+          "a0ec740b974bd63ad1574426b42921634d1fb0194df4643d3fb1e96dd4598bd3",
+          "a44d3d3f76fe4396d214fc09475c87831e7ebade18742fe7c36aeea8c6498f7e",
+          "a7154c4b1d4a515c9b98df4d3695d95860c275101d211df6af137f20de6276d2",
+          "b89696436fee2520c9027f51f41b7cff76d72acc529d79b90bc64194a8d73a36",
+          "bd77b439ad30588f6d8eff25e94436671480f38c150d21ffabfa2ac4a13479fe",
+          "c046a105fb3d6e49028761e5ab94c5791e6becef2f815726080b35010bf31ffe",
+          "c0d1c2fe0b29e5e6acf09b94183971c50d6d85d01cf31ea8f60cc46e7eddd45b",
+          "c142de04aeea6021efa30253fbc2368a2fbbb0c56f782a6bdfb85a20501840d2",
+          "c77ca67ee2251bee18bcbba9f73d23a4f69286d3f1ea00c944b09ce936961c1e",
+          "ca895753cbde9df69db68d950df102877ee527a6a7e82c5c15da6180aae8fe87",
+          "cf431ac6553c2f49c270e62b472fb6f9b5b75279b934d7e9ab23203a8587af07",
+          "e729a6d9312ec7a227888cafc3a35ef5bfa3044adbb035259af68aef288b82ea",
+          "e80bf50fc9a55a89788c53dc2326951649a9f6db8cc0c78ffc3e167677a202db",
+          "ed4ab475de785bfacf340008068e822fbc3a84d58e85ab4efa9a2aab21bd93d4",
+          "edc295a1582e657e6427c94dd9aba8692c5de8dba676f5c95b5c4a064816cc12",
+          "ef1335d576ea5cb16f6ae0ed97147a14ee30be40f0d354c3c2756c74525411e4",
+          "f81caea98c686fc8e1186c45d5b46a6d90e842cb89cadc9c355b2c3e5711bf76"
+        ],
+        "removed_ids": [
+          "0dfdfabef93367f19f94ddbf2ebfdf893ff183013465cb4cbd59f87c609ebdf2",
+          "12c7c715d9f98255a9cb96cd07ad56ff6e6a228c890bdfb0130a092fa0e2e6de",
+          "192756a7a3d7a859faf2698461777f6b702fdbc0b070e66ff87d445b253a5423",
+          "1984eefad32879981dfeae4ec8d4b4002cbd68ab0b7938801b60d950ee916df3",
+          "1f03ec3644d9500edd8364fec0381162e3e7c81702e9370abec1c8f84efe0302",
+          "2038f9386b60418815c3c1c318bcbfd6e6596b075b4b593868551a3c84500ea8",
+          "259de6b7c4567956fe7c681864ceed4ff534b7cefadb5dbc65cb510033eeb110",
+          "2bb36030ea4104c5e5fd85977dfb6f224fee504b2ffab8029bf73a9ced37c279",
+          "33c29c69e01a2726e0662510e1e0290430d94074568c13ab27d26599da8b5d2b",
+          "3421f9a5535e3e2e87296aac44799663651f9a2475c3bbfff89e169f097464a2",
+          "34a22ec815db9237177709313e7e21c9c9c45bd8c0c72da42a251ce1b683c602",
+          "37a91a696b6cfc999b92a0260903f496be129747e80b0fe76b881be048941d02",
+          "4146e55f43d96d11c2b7198310819ae473ec07a6f7ecc0e647c6b5e30e223085",
+          "42023577d4990a83249c26e489c76676cd5dbc0a126e996d9108b8f55b207265",
+          "4f83ce4f6ba1d8ed830bb77a1f636ae99ed0f207e39310173606b14c5951ebe5",
+          "600b8b11d4fa51c2045d6b29e0c35ab345279596e2fe427203c252ca24cdc5db",
+          "6a657bd713879619e5cbbaf89c2e47cbd624af78c1d10d2863200ebae8370b4d",
+          "6e00b529820c08198c9c24e1c6d6fc7de8ec8bb4557528e0e8308f69b0ddd134",
+          "719909ae40fdbec663e85d8e2af9ceb13ab97454afa186ff5e383ea08b5dadcc",
+          "71b4cf55d5f2bb454f8cb7a64405ae4585152a6f1e56a0bb0239ea7c8bccc932",
+          "758fe7673278c7271d1e316c373a6c16d69ada7e92950b1ac4ca1aa460581d9f",
+          "7ea2489baf088c15b39326a8602315bdc623b92d4b83ea8e4c0cdc6efc728bfe",
+          "82265b133e51b3e9d8e5cc5b0d10181297cf321541aca833f47dedd11462d829",
+          "86d52431aa9c8e8febadeebb82721e27ac2315ec698e8828c907f016326021e2",
+          "87fb4a9668074c62330acf6fa9a22d434bc6b3fb17724d9e831e2504c9ee406f",
+          "88e4858221ee06bca358cb5c78e2af5768e39b9cf653bfdce334013416faa490",
+          "90c96fc675a173020d6cf70a41274c31334a5122548170d23bd75b4f35c1069a",
+          "90fcee66ab6e643c9ddcabb9ef8715a52d9a1c53f286257b62cc400269d80811",
+          "91d986099bd4fec0835b32167aa57119bf97bd1683ba34ec941dbe3c85031258",
+          "9bb5e4497092878f50182bbe2680cfa1dc4bc372938a0160319048bf60ff9c7a",
+          "9fca5bf28e3a9f132745e1dd9a95f432ccfd8fad3549f00e6fc8bf8e44616f2f",
+          "a71f39ac16fa531501a0adfa8b4e58e5a83e98549b90ffc1da0994c067859264",
+          "aa23ffd4d483033a92adf8bd24a827daed693982068ddc9b1bd739f5bc19f967",
+          "c18f5be884ef9b08680419482ae1d61fc635bba48cfcb0f824c4af071a792240",
+          "c5e77c3c6f111bfedfb83ebea9accca5481ca7cb251aef432b26d9b12fff181b",
+          "c9e6c503bcfcbac0b7e51e72e830aa8273d2d51d1c71843a1abf7ad28ed113e3",
+          "ca2147462b0bd8d7df7f3a137bec670cca8a5fc215604838e95fd244fce75801",
+          "d0a62328c044cd245e61d48698cc88c8449acaed5f357da8b3599252c8fedb5d",
+          "d491b41f16c9379163315f0f656b7041cfef7476efa85efa612d35bdfcb3084e",
+          "d657d716b247cb6311ad0d3c371e5b68929538528da083070963cfe920673e6d",
+          "dcb719ceaa5fc19b1e100ce1b20032a2df13e2d7e9ad9a0233578c6cd01b59bc",
+          "e05c567772198eab05c2bb9566d04ec48b35c15d51d1b19f854303214254b6f6",
+          "e0ba2c0ac4840a954954881bb069604f717ee62d7c36a880cf5b22dd108bda5b",
+          "e15f44dee99c7aa68f3c27db3eca3f81d883ab42e1adec080b620f3a4e3cb8af",
+          "e5cba8206b1271fcc31093b4464e27c1bc5a41af849c87b09d198c549908fe84",
+          "f7897028e032eb1b242aef8986377e1cff592102025aaded8e6b0055f64bcf5e",
+          "fe909eca6be5582f26c45f86ba06ba39c4347560907595856bba38d8071b01e7"
+        ],
+        "historical_report_sha256": "9f229876fe8a24b4a3c5b47b8cfc17e1dbf2768a277318308ff00499ccf939be",
+        "current_retained_report_sha256": "e4b43e4b8bbaa0a605058da0c03a3676f9d895d6307773e6795193c847a9bbd3"
+      }
+    }
+  },
+  "historical_compiler": {
+    "commit": "6484d09afbba64d7de24cd18ae4dbd246caffd17",
+    "build_info": "/workspace/scratch/c14ba97515c1/baseline-repro/out/build-info/dec7d149e0983bb9.json",
+    "build_info_sha256": "4bcf713fb32f1feab5db3cfb286fea84b484a6c2aefeb4b9227c41a4730dbbf0",
+    "solcVersion": "0.8.37",
+    "solcLongVersion": "0.8.37",
+    "input_settings": {
+      "remappings": [
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "forge-std/=lib/forge-std/src/",
+        "@nomicfoundation/=node_modules/@nomicfoundation/",
+        "hardhat/=node_modules/hardhat/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 40
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "none",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode.object",
+            "evm.bytecode.sourceMap",
+            "evm.bytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.sourceMap",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "shanghai",
+      "viaIR": true,
+      "debug": {
+        "revertStrings": "strip"
+      },
+      "libraries": {}
+    },
+    "compiler_source_count": 91,
+    "compiler_source_sha256": {
+      "contracts/AGIJobManager.sol": "e9be32b61afb55818d4108f295c5b80d9e2f5649e4697b9a199f8c000d8285c4",
+      "contracts/ens/ENSJobPages.sol": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
+      "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
+      "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",
+      "contracts/ens/INameWrapper.sol": "182065cbe99804d03abef665ec6d927cfa4d91cc0804301d7893fe6a57fc58d3",
+      "contracts/ens/IPublicResolver.sol": "87c6e8d65d352ae4d69d802ab01b070531199078d41a79ea3be934a479d2b48e",
+      "contracts/legacy/AGIJobManagerOriginal.sol": "3a98e0735e8d056c15327a533e088d996e5fee60febfa973cb8f6166aff2ec3b",
+      "contracts/periphery/AGIJobPages.sol": "21b0011e798c73717524708af6af2aa244bc63dc29ec9172ee149ad5c6e898ad",
+      "contracts/periphery/AGIReviewEscrow.sol": "18724f4f0a631d05b2b528f77813216ddc5e9eb3dd334c4a7731a314fbdc714e",
+      "contracts/test/BoundedReturndataENSMocks.sol": "3530369cd9ef6567adc3516ba42b91ad9c600be90a467c4cdfb9172ad06a2b86",
+      "contracts/test/CompletionNFTHolders.sol": "371f526ed7601fbec99a8272aef45661d66db472fdce8728bf32e90a6833b67d",
+      "contracts/test/ENSLivenessMocks.sol": "d07b05a427002f7f03b9311555bb30c6f957119447eeb0670c0e4be7ec7a1a54",
+      "contracts/test/ERC20NoReturn.sol": "d3bb3cb536cc476ed502ce0145b69fec50a927cdaebb196ccca0f8386f9e65f7",
+      "contracts/test/EnsLabelUtilsHarness.sol": "7404df55f522fbd28d24609f97a2f46502749f6f16e4366c6f1326dc82e7d618",
+      "contracts/test/FailTransferToken.sol": "46448e15779f275742381be1c7bc3892c371b57ffb6edad28bc59c5df1c65790",
+      "contracts/test/FailingERC20.sol": "d457213bf1af1c221ca60fa533de675b04dee7d2c8ac00ac3641441a6be644a6",
+      "contracts/test/FalseAfterTransferUSDC.sol": "4b4f2a805ccfccb4cb62eac11a22ea4bb263a09616ed594b884a4d2c8667840b",
+      "contracts/test/FeeOnTransferToken.sol": "028ee1fbb20a243ec229ab10de1d75e9f851fa897a04db98db744f7538a31385",
+      "contracts/test/HookGasBurner.sol": "e31178d1105335ed79da11ff5e3a4c5e36eae4ec7cba3981b4524a8f587d3dc5",
+      "contracts/test/HookToken.sol": "0a1e2114c9e3da7bff82abb44b8d606d9f826848026fb03ac0f32714c2a744e7",
+      "contracts/test/InvalidBoolNameWrapper.sol": "93589a6f77ff3695a007fa826bf8ac3ab08f912a52368403b4212d37536982f3",
+      "contracts/test/InvalidBoolReturnERC20.sol": "638ca0ee304935e1598b30b4d7f0ec9e2dc359dde0bff160d92b3b11ef74bb4c",
+      "contracts/test/MalformedENSComponents.sol": "0e27bc2c0e8349257235fe2322142cade6d224e8fb309c0abbf05b683bdf87b5",
+      "contracts/test/MalformedReturnERC20.sol": "58dec19996b2956f355e7b3f8be31ae0e9a54c8c8449b575853489bcb929b1c1",
+      "contracts/test/MaliciousCompletionReceiver.sol": "ceb7ba77923c6421005509b5587c0a6acdbe4bd147b07de27ed525080d3e7d86",
+      "contracts/test/MockAGIJobManagerView.sol": "056c045321141486b59d3ba149d980a7445c0ed77bbb483df92ada740ed53e8f",
+      "contracts/test/MockBrokenERC721.sol": "478e2bd06f09bade70ebf4350be599e55cba858b4375a44e9d7137526733529b",
+      "contracts/test/MockENS.sol": "57057dacfc94f4b1b4c9547b78c269ea1a936046931b2a12bad0c29da06f5d6b",
+      "contracts/test/MockENSJobPages.sol": "1186ad51ad6948468ecdcccc44e5b0df6320a1d5747eb10eb537d694c93ad867",
+      "contracts/test/MockENSJobPagesMalformed.sol": "48bced65862b0075f91e1643f655d2a1b0235f00df30d37843932b3c11e2ad8b",
+      "contracts/test/MockENSRegistry.sol": "5b361ae0815f930b008f1e948dadab1628ff52e929b8c367c80b291450fbbfd3",
+      "contracts/test/MockERC165Only.sol": "1c9426c75e830e6739acab4116eed18243e5e056b3d36a2e3cf78c833716ed7c",
+      "contracts/test/MockERC20.sol": "7710c6e658d39b8707d515a05902fb985572ff639b44a941aa70efe01f396504",
+      "contracts/test/MockERC721.sol": "b43e8fab5b8e467d4e886d07ea6d4c0567573ef49080c3fc018610e09d58bc6f",
+      "contracts/test/MockERC721Only.sol": "4b6ce80550f1219659bb4ff143bfb49af97b84c35c7921ca72926d52644f739d",
+      "contracts/test/MockGasGriefERC721.sol": "d670417e5a78060ad2f7222f248690c2b89d8240dce2dd312946e92cbe11c7a6",
+      "contracts/test/MockHookCaller.sol": "dafbc13035d9831586e430c1643b24f42ed0069e576e65b0d58ae33c6855e07b",
+      "contracts/test/MockLoopingERC721.sol": "3cbeba9b40a86ea2164bb1ca08f850cc64a6dfe7350c80d41123c04215d32e5f",
+      "contracts/test/MockNameWrapper.sol": "01bcaefd1cab244edbaaabe6350347b21552bd964d0cd5f28863b6fe673b28a1",
+      "contracts/test/MockNoSupportsInterface.sol": "45041384d4baa4d6aa9938b7d8eba36e5b196a0971581b40696bae2d250a3acc",
+      "contracts/test/MockPublicResolver.sol": "afd0f7e0248536ce64f3cc7c31fa88b548a5c87dd52f646a48017567ea1407ee",
+      "contracts/test/MockResolver.sol": "d77451f982723e3b58633c3510f4020a5caf834c3d56ac1571e480e0375a44cb",
+      "contracts/test/MockUSDCControls.sol": "0329914204c103f12f8ba64aa23433e6331dd4731960cc3ced1291b9eaf6d906",
+      "contracts/test/OwnerRotationReceiver.sol": "cebb0a358464f893b25e38759a302f4bbdadb9ff5d0f6568db6970e632a93c72",
+      "contracts/test/ReenteringEmployer.sol": "622235ed7e365db9e6c4d82106b9bd1c132f0c2eda9abad2f3e4d5a98d0e2919",
+      "contracts/test/ReentrantReviewToken.sol": "939d4655a66ebba33be325aeca43f441072a3d1158061c9f8913711a1166c962",
+      "contracts/test/ReputationHarness.sol": "ff279b44b02c1944366d6ae8b75f10ee26d2083df316b331935b21966eb2049a",
+      "contracts/test/RescueMocks.sol": "0f9277f7e599ca1ab36137dbcb45c9faf77bce6384e662c6b8a8e80c0050f083",
+      "contracts/test/RevertingBalanceOfERC20.sol": "e0832f3fb4336c5740766a7a7cde94728c11e2e2c3c51626255d9bfd7192995c",
+      "contracts/test/RevertingENSComponents.sol": "f7545235bc35c73611e8aae3ca679497e190ec96a900ea4da0abb159990ba0d7",
+      "contracts/test/RevertingERC20.sol": "b95d073d8f8ec609bbadb1328a9bed28cc3555cbe23c660f342e3c4d7bdabdc5",
+      "contracts/test/UtilsHarness.sol": "5345b58f2d3d3eb874fd2737216deae7b2f77065f4fb6bf74063a29a3d84ff29",
+      "contracts/utils/BondMath.sol": "f082b47230121bd98c9a2c4c5c0957734461f2fbf612b2386e249fa4b4b3fa30",
+      "contracts/utils/ENSOwnership.sol": "244bcedf9ef9da775b3a663b2dcc4a221ea70810e1543ac0f255e3f0d3acaca0",
+      "contracts/utils/EnsLabelUtils.sol": "e7bf88fa5c3ecd85472e066c73dd76c2ce3b9f1f9700db27c4781e0577b358db",
+      "contracts/utils/JobSettlement.sol": "0e38c450b7461f36d30ec0aa06488135cf690dec0c8822b837f6f1b273a7cd93",
+      "contracts/utils/JobState.sol": "1840624830777ffbaedb5aada50d3f748f2f7aa89f788f329d9e598ff1b37459",
+      "contracts/utils/JobValidation.sol": "0f085da143a6ecbd3f7d941945a86dd54ad4bd27834457041f75bcab782a615d",
+      "contracts/utils/NftEligibility.sol": "f08254fbcdaad64a1e22c8f79b2cfc3ade0ee41c76dbb7c659bdfd196f7637dc",
+      "contracts/utils/ReputationMath.sol": "c742c3e7cb05a412405e8fe29d5283b1464e6c377ce98e2d8a360f96f3e3522c",
+      "contracts/utils/TransferUtils.sol": "797242b5d1ac32547e065a0989d8f407a3f5a22618e98681a332d3e85197ce36",
+      "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
+      "node_modules/@openzeppelin/contracts/access/Ownable.sol": "a8e4e1ae19d9bd3e8b0a6d46577eec098c01fbaffd3ec1252fd20d799e73393b",
+      "node_modules/@openzeppelin/contracts/access/Ownable2Step.sol": "3e3bdb084bc14ade54e8259e710287956a7dbf2b2b4ad1e4cd8899d2293c7241",
+      "node_modules/@openzeppelin/contracts/interfaces/IERC165.sol": "410e40cd79f1b82bb6bbab95fa4279252cae6e3962b0bff46ab4855f6de91d35",
+      "node_modules/@openzeppelin/contracts/interfaces/IERC4906.sol": "6b572852b6d6e1db371287a0eb443a724e9005e025025b9c82ebc8804433c0ff",
+      "node_modules/@openzeppelin/contracts/interfaces/IERC721.sol": "e3bcee0ce85a310031fcef279f963e73c12c676a66c5c562ab3945ccf10aecff",
+      "node_modules/@openzeppelin/contracts/security/Pausable.sol": "2072248d2f79e661c149fd6a6593a8a3f038466557c9b75e50e0b001bcb5cf97",
+      "node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol": "fa97ea556c990ee44f2ef4c80d4ef7d0af3f5f9b33a02142911140688106f5a9",
+      "node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol": "578834a1bcdac6a22de5e07ae63bbbd4d41615f35950afc6e6c068d92619b334",
+      "node_modules/@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol": "a7ad38fa0a06fe6e24f81fee4f1fc3870767db96d1ba37df7be1199f7a3ace7f",
+      "node_modules/@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol": "cf407886a0ce7e2af7efe7867e2d2864903426f63eeaa68eecf33d57f7d910c2",
+      "node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": "d20d52b4be98738b8aa52b5bb0f88943f62128969b33d654fbca731539a7fe0a",
+      "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": "7ebde70853ccafcf1876900dad458f46eb9444d591d39bfc58e952e2582f5587",
+      "node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": "af5c8a77965cc82c33b7ff844deb9826166689e55dc037a7f2f790d057811990",
+      "node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol": "bbf4d26d660ce8f9c9887af3a46bf4eab5f4c15eb8413ad89b65ecdd05dee7a9",
+      "node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol": "82dc918d8df553e2461b96595580e565424b407d73dab8a7ce4bde479810fb2a",
+      "node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol": "01cd07a08d98f784bb466d1c3298d0e8a3f85587d468edea7e08d6a26f59ad8f",
+      "node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol": "c8d867eda0fd764890040a3644f5ccf5db92f852779879f321ab3ad8b799bf97",
+      "node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol": "77f0f7340c2da6bb9edbc90ab6e7d3eb8e2ae18194791b827a3e8c0b11a09b43",
+      "node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol": "7bf559fad1068a1329517b56b1ecddefa67e79a03bb0801b9e6bf06bf73eb334",
+      "node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol": "f16b861aa1f623ccc5e173f1a82d8cf45b678a7fb81e05478fd17eb2ccb7b37e",
+      "node_modules/@openzeppelin/contracts/utils/Address.sol": "2cfd9ff9d2e03c87c12deae8f8afb95b85496ac9944ebf57843c7b9fd479d156",
+      "node_modules/@openzeppelin/contracts/utils/Context.sol": "b2cfee351bcafd0f8f27c72d76c054df9b571b62cfac4781ed12c86354e2a56c",
+      "node_modules/@openzeppelin/contracts/utils/Strings.sol": "d273b688181261c2e5ce4554216f6cd24a7f14f52a71e81839eeb56304a68652",
+      "node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol": "e9e7342678cbee8864cd8ce0a49ee9556af1351c40f74fd5cf458b3dc3bdd0ff",
+      "node_modules/@openzeppelin/contracts/utils/cryptography/MerkleProof.sol": "deae99b9a68659bd845f8a8580633a3538c45d3b475533280ae55fa388a03ffa",
+      "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol": "8806a632d7b656cadb8133ff8f2acae4405b3a64d8709d93b0fa6a216a8a6154",
+      "node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol": "701e025d13ec6be09ae892eb029cd83b3064325801d73654847a5fb11c58b1e5",
+      "node_modules/@openzeppelin/contracts/utils/math/Math.sol": "85a2caf3bd06579fb55236398c1321e15fd524a8fe140dff748c0f73d7a52345",
+      "node_modules/@openzeppelin/contracts/utils/math/SignedMath.sol": "420a5a5d8d94611a04b39d6cf5f02492552ed4257ea82aba3c765b1ad52f77f6"
+    },
+    "production_mismatches_vs_checkout": [],
+    "native_solc_sha256": "5de843c2c93563cc66425c99a4fb13fdbf32b4c4ae07469480faaf126e14404a",
+    "native_solc_version": "solc, the solidity compiler commandline interface\nVersion: 0.8.37+commit.f401782d.Linux.g++",
+    "command": "PATH=/tmp/manager-r3-node22/node_modules/.bin:/tmp/foundry-toolchain/node_modules/.bin:/tmp/manager-r3-slither-venv/bin:$PATH FOUNDRY_SOLC=/root/.solc-select/artifacts/solc-0.8.37/solc-0.8.37 SLITHER_OUTPUT_DIR=/workspace/scratch/c14ba97515c1/evidence/baseline-agent/old-raw bash scripts/security/run-slither-extended.sh"
+  },
+  "constructor_source_proofs": [
+    {
+      "path": "contracts/ens/ENSJobPages.sol",
+      "accepted_baseline_sha256": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
+      "baseline_sha256": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
+      "candidate_sha256": "80d67283a1d12eaa475d13c5290b00b183f0d84dfe3711c68841622152da1adf",
+      "constructor_excluded_sha256": "6736641b5f23153482c4a1744236e9123a261d8223f45f5d0d62ea485b7ab553",
+      "non_constructor_bytes_identical": true
+    },
+    {
+      "path": "contracts/periphery/AGIJobPages.sol",
+      "accepted_baseline_sha256": "21b0011e798c73717524708af6af2aa244bc63dc29ec9172ee149ad5c6e898ad",
+      "baseline_sha256": "21b0011e798c73717524708af6af2aa244bc63dc29ec9172ee149ad5c6e898ad",
+      "candidate_sha256": "6b6bcf0470609325e8490e3909decdc85f0015c366a9815bd5d27dbcb0f3fa74",
+      "constructor_excluded_sha256": "112608f787b23ec7ca5be953a13095bed1e4d3cbfe6556f03dd679f5511cff16",
+      "non_constructor_bytes_identical": true
+    }
+  ],
+  "runtime_validation": {
+    "manager": {
+      "outcome": "PASS",
+      "source_commit": "e1ed5027955aeee4c6ac14a8ab4b39b4388b8328",
+      "node_version": "v22.23.2",
+      "compiler_version": "0.8.37",
+      "build": "Compiled62 Solidity files; exported91 artifacts; zero compiler warnings or errors",
+      "compiler_build_info_sha256": "c33e39e452fcd27c62e63bc9c7bc877cfa1995ce6506c7ee0b71f56a0b32f8b3",
+      "compiler_output_sha256": "ff3bf9cd575d3fd17aebd39fb983f286cea1ad567d93d87f1ac27e7a8c7a8545",
+      "contract_tests": {
+        "collected": 96,
+        "executed": 96,
+        "passed": 96,
+        "suites": [
+          "reviewEscrow.test.js",
+          "ownerControls.test.js",
+          "securityRegression.test.js",
+          "delistJob.reentrancy.test.js",
+          "v080.usdc.adversarial.test.js",
+          "completionSettlementInvariant.test.js",
+          "buyerProtection.v095.test.js",
+          "livenessTimeouts.test.js",
+          "v080.paused-launch.test.js"
+        ]
+      },
+      "extra_checks": "Existing standalone AGIJobManager ABI and deployed-bytecode-size checks passed",
+      "log_sha256": "5e01f24d1b84069144e839f3bc20913396f31bee1bbeddcf650464307b61cfe4",
+      "production_and_existing_test_sources": "git diff --exit-code -- contracts hardhat/test test scripts/security passed; only an untracked runner selected existing tests"
+    },
+    "pages": {
+      "compiler": "62 Solidity files compiled with solc 0.8.37, Shanghai, viaIR=true, optimizer 40; unmodified candidate pages sources verified by SHA256 after run",
+      "explicit_governor": {
+        "passed": 6,
+        "log": "evidence/pages-agent/explicit-governor.log",
+        "command": "node node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs test hardhat/test/explicit-governor.test.js"
+      },
+      "pages_and_ens_regression": {
+        "collected": 47,
+        "executed": 47,
+        "passed": 47,
+        "log": "evidence/pages-agent/pages-regression.log",
+        "runner": "evidence/pages-agent/run-pages-tests.cjs",
+        "suites": [
+          "test/jobMetadataRoutingAndMappings.test.js",
+          "test/ensHooks.integration.test.js",
+          "test/ensJobPagesHelper.test.js",
+          "test/ensAbiCompatibility.test.js"
+        ]
+      },
+      "execution_environment": "Hardhat edr-simulated chain 31337 only; no public RPC, signing keys, Mainnet transactions or prior deployment changes"
+    },
+    "forge": {
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0,
+      "suites": 4,
+      "fuzz_tests": 14,
+      "runs_per_fuzz_test": 512,
+      "fuzz_cases": 7168,
+      "log_sha256": "897157cec236a62c23a74cb2d733eaf29ed65d39e2e9bea6981b47c26dd3619e"
+    },
+    "compiler_compatibility": {
+      "passed": 8,
+      "log_sha256": "bc2fba2340a07960f62b2f0c788d8fd0c0d3251230e6b2f0cec67410b1311bad"
+    }
+  },
+  "standalone_balance_review": {
+    "schema": 1,
+    "commit": "e1ed5027955aeee4c6ac14a8ab4b39b4388b8328",
+    "standalone_balance_success": true,
+    "count": 1,
+    "id": "1afa160c1dbc377bd9b174d8014bccbb5fe931426b88debef19adb4780dbd35a",
+    "same_complete_finding_as_retained_all_except_absolute_worktree_paths": true,
+    "working_directory": "/workspace/scratch/c14ba97515c1/compiler-repro",
+    "output_sha256": "3b5970acd5165f90a1432dff18e007c61fbcd9f687dcebb994a8f9a4747707d5",
+    "source_code_diagnosis": "Slither0.11.6 choose_detectors returns unsorted set-derived explicit detector sequence; default all sequence sorts severity. Reentrancy base shares REENTRANCY context and skips previously processed functions; balance detector custom balanceOf tracing is absent if another family detector initialized context first. Mandatory all and medium/high scans already retain this same High finding."
+  },
+  "review_input_hashes": {
+    "baseline-agent/classification.json": "a30415f6b88bb6fc0a84a5516fc0b4b61fc58e92df392343a0f9e5c799b86c98",
+    "pages-agent/dispositions.json": "3cce8517ea7969f0b3aa8e243c0be1b66c473d7b8c64acf69a0715e5503ad763",
+    "manager-agent/findings.json": "2011cf894a735309577eb164991db5cd81bf1cfa47249c43de8ee25361392447"
+  },
+  "historical_acceptance_sha256": "2769b2c2d752771d19e2f1ae3345703b9c0986716d3af5dd659921a21f309209",
+  "acceptance_validation": {
+    "positive_retained_and_fresh_report_gate": "pass",
+    "historical_record_unchanged": true,
+    "verifier_only_change": "candidate acceptance record filename",
+    "negative_checks": [
+      {
+        "case": "historical acceptance rejects exact candidate",
+        "result": "rejected",
+        "reason": "Reviewed source changed: contracts/AGIJobManager.sol, contracts/ens/ENSJobPages.sol, contracts/periphery/AGIJobPages.sol"
+      },
+      {
+        "case": "source drift contracts/AGIJobManager.sol",
+        "result": "rejected",
+        "reason": "Reviewed source changed: contracts/AGIJobManager.sol"
+      },
+      {
+        "case": "source drift contracts/ens/ENSJobPages.sol",
+        "result": "rejected",
+        "reason": "Reviewed source changed: contracts/ens/ENSJobPages.sol"
+      },
+      {
+        "case": "source drift contracts/periphery/AGIJobPages.sol",
+        "result": "rejected",
+        "reason": "Reviewed source changed: contracts/periphery/AGIJobPages.sol"
+      },
+      {
+        "case": "source drift scripts/security/slither-all.config.json",
+        "result": "rejected",
+        "reason": "Reviewed source changed: scripts/security/slither-all.config.json"
+      },
+      {
+        "case": "removed high",
+        "result": "rejected",
+        "reason": "slither-all.json: review required; new=[], removed=['1afa160c1dbc377bd9b174d8014bccbb5fe931426b88debef19adb4780dbd35a'], changed=[]"
+      },
+      {
+        "case": "new finding",
+        "result": "rejected",
+        "reason": "slither-all.json: review required; new=['ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'], removed=[], changed=[]"
+      },
+      {
+        "case": "severity drift",
+        "result": "rejected",
+        "reason": "slither-all.json: review required; new=[], removed=[], changed=['1afa160c1dbc377bd9b174d8014bccbb5fe931426b88debef19adb4780dbd35a']"
+      },
+      {
+        "case": "confidence drift",
+        "result": "rejected",
+        "reason": "slither-all.json: review required; new=[], removed=[], changed=['1afa160c1dbc377bd9b174d8014bccbb5fe931426b88debef19adb4780dbd35a']"
+      }
+    ],
+    "fresh_unchanged_runner": {
+      "exit_code": 0,
+      "log_sha256": "6824fd8798a4ef4f1d09baf931f43e4796810011150cfa7dc82b1e2ebbc8636d",
+      "reports": {
+        "slither-extended.json": "17cf34a4e162060f49fd402680bef4075259d5f6116c0a0d79a44b68023547cf",
+        "slither-reentrancy.json": "c9cd30c1dc5c41612c7a800d966e43ce9f466d6e130ee6b595736e69c1c037ad",
+        "slither-all.json": "5802d5872bf15a0f900364fdd43779d2a841806fc0dbae4be1cdc58f3f6c58e0"
+      }
+    }
+  }
+}
