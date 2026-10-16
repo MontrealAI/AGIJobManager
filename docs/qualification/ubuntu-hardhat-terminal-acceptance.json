@@ -1,0 +1,128 @@
+{
+  "schema": "ubuntu-hardhat-terminal-acceptance-v1",
+  "status": "FULL_JOBS_REHEARSAL_RUNNING",
+  "preparedFromToolingBase": "644feb032b6d03ca8b0a0aa02dae8b6c0bccdeed",
+  "environment": {
+    "os": "Ubuntu 24.04.3 LTS",
+    "node": "22.23.3",
+    "hardhat": "3.17.0",
+    "ethers": "6.17.0",
+    "nodeExecutableSha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48"
+  },
+  "toolSourceSha256": "7e3465d088ef6145761b004b067e8c5e76f8a9f42b54f9420657ab911d78dfe4",
+  "productionSourceFiles": {
+    "hardhat.cjs": "539be27e6fa2099070cb8145ed21a2a89a6ca4d866760b54d4a753297d033460",
+    "native.cjs": "533cc16cf1e7eaca25b59013644255f09416245598ecb473adadf049bf879231",
+    "prompt.cjs": "dea6031c7ea087586f8f8c484e3dd806bfd70d6c120b2dda9a482e269ee8d59c",
+    "safety.cjs": "4923a59b0a651ebc0db6a531cb60b682a85d0eb247804581be73025f85c0d292",
+    "send.cjs": "94a00db7db63a1a00c7e301cc0f293a497d254d2b2f7490df85279cbec623935",
+    "terminal.cjs": "6d839dc89b8f56dc1ead2ec8b290e2df682a92a130ea539f24779232e0624acb"
+  },
+  "tests": {
+    "terminalSecurityAndTransport": {
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "tapSha256": "33e214708d602e4f023c8bda195e651a32bc2139354faa6267187e7637f74320"
+    },
+    "existingCompanionRequiredCompilerSuite": {
+      "passed": 448,
+      "failed": 0,
+      "skipped": 0,
+      "tapSha256": "69eb1e49feb45f47cbe6344c96797bc53c7ac880705ad65e846b8b6bd07d9654"
+    },
+    "releaseGates": {
+      "passed": 99,
+      "failed": 0,
+      "logSha256": "482da5f5fce626735d1d5f572f84b6ac123f442cc382bca8a907ed437d0db1ee"
+    },
+    "actualHiddenTerminalCLI": {
+      "status": "PASS",
+      "reportSha256": "60b7ffc2e4197d71f178e6331103649baf6948ac63d915ab340628ea48f70272",
+      "scope": {
+        "backendSubmissions": 1,
+        "eip1898": "canonical hash verified then adapted to numbered local EDR read",
+        "finality": "synthetic finalized=latest",
+        "governorSignatures": 0,
+        "localOnly": true,
+        "publicProviderCalls": 0,
+        "realKeys": false,
+        "reports": [
+          {
+            "echoRestored": true,
+            "hiddenTerminalSendCommand": true,
+            "keyAbsentFromCapturedOutput": true,
+            "operations": 1,
+            "project": "manager",
+            "reconciliationCommand": true,
+            "reviewCommand": true,
+            "toolSourceSha256": "7e3465d088ef6145761b004b067e8c5e76f8a9f42b54f9420657ab911d78dfe4",
+            "transactionHash": "0x9a119e45772790aa2a3e26972d7d3e84a547a64537e766477de193b939217d6b"
+          }
+        ],
+        "status": "PASS"
+      }
+    }
+  },
+  "nativeDisposableRehearsal": {
+    "manager": {
+      "status": "PASS",
+      "operations": 9,
+      "creations": 9,
+      "nativeCompletion": "CORE_CREATED_PAUSED_CONFIGURATION_SEPARATE",
+      "governor": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99"
+    },
+    "alpha": {
+      "status": "PASS",
+      "operations": 5,
+      "creations": 5,
+      "governorBindings": 0,
+      "nativeFiveCreationPrefixPassed": true
+    },
+    "jobs": {
+      "status": "RUNNING",
+      "expectedOperations": 39,
+      "expectedCreations": 25,
+      "compilerInputSha256": "a962576832d4540c4cd682f9251b6eed2a333c87a1ce5fa61ed5716e7091b891"
+    }
+  },
+  "keyHandling": {
+    "realKeysRequested": false,
+    "realKeysUsed": false,
+    "hiddenPromptOnly": true,
+    "keyPassedInArgv": false,
+    "keyPassedInEnvironment": false,
+    "keyWrittenToFile": false,
+    "rawSignedTransactionExportRequired": false,
+    "rawSignedTransactionsPersistedByTerminalTool": false,
+    "buffersClearedAndWalletReferencesDropped": true,
+    "guaranteedJavaScriptMemoryErasureClaimed": false
+  },
+  "acceptanceLimits": {
+    "emptyCodeCreatorOnly": true,
+    "selectedMarkerAccountQualified": false,
+    "governorKeyLoaded": false,
+    "governorTransactionsSigned": 0,
+    "publicProviderQualified": false,
+    "realUbuntuBootstrapQualified": false,
+    "realSigningQualified": false,
+    "explorerAccepted": false,
+    "comprehensiveAuthorityComplete": false,
+    "sameDeployerCrossProjectPlanQualified": false,
+    "productionPlanAccepted": false,
+    "mainnetTransactions": 0,
+    "activationAuthorized": false
+  },
+  "hostedEvidencePreserved": {
+    "manager": {
+      "run": 38958922414,
+      "artifact": 12071534584,
+      "artifactSha256": "3e8f6245e82510a3a98b4e39c4ffd023870739cdabfcd670edadc6d6953a12e6"
+    },
+    "jobs": {
+      "run": 38954500102,
+      "artifact": 12072489816,
+      "artifactSha256": "1da8f5a17978b92bf355537076125063b064c287d71b5c3e40858a9fcc33d025"
+    }
+  }
+}

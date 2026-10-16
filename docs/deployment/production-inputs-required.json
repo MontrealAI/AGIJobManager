@@ -1,0 +1,210 @@
+{
+  "schema": "ubuntu-hardhat-production-inputs-v1",
+  "creationEnvironment": "Ubuntu Terminal / Hardhat",
+  "governor": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+  "governorCustody": "Owner's Mac Studio Ledger",
+  "creationKeyInput": "Local hidden prompt; in-process memory only; never supplied to chat",
+  "deployerAddress": null,
+  "deployerProfile": "empty-code EOA required; selected marker-bearing account not qualified",
+  "mainnetInitiated": false,
+  "productionPlanAccepted": false,
+  "authorityComplete": false,
+  "activationAuthorized": false,
+  "requiredPublicInputs": [
+    "Owner-selected public deployer address, fresh canonical code/nonce/balance and account qualification",
+    "Independently reviewed Ubuntu Node executable/dependency/build closure",
+    "Production HTTPS read/submission provider and actual canonical finality acceptance",
+    "Shared actual-sender locks, project order, explicit non-overlapping nonce allocations and fresh predicted addresses",
+    "Per-operation gas, max fee, priority fee, expiration and aggregate maximum budget",
+    "Manager: production base IPFS URL, ENS/wrapper dependencies, four ordered roots, two Merkle roots, distinct settlement recipients",
+    "Alpha: exact live dependency code hashes/root controllers and reviewed stake/quorum/risk parameters",
+    "Jobs: exact reviewed tax/economics/identity configuration, native source manifest/profile/plan, non-deployer treasury/governance roles",
+    "All exact source-verification packages and complete authority/setup-interval acceptance"
+  ],
+  "projects": {
+    "manager": {
+      "commit": "d371d95cfcc44b9133cda4bba55304f727917f18",
+      "tree": "93faf6e9a6875026c1eb9bc2f0f9bdada308d296",
+      "operations": 9,
+      "token": "USDC6",
+      "operationOrder": [
+        "create:UriUtils",
+        "create:TransferUtils",
+        "create:BondMath",
+        "create:ReputationMath",
+        "create:ENSOwnership",
+        "create:NftEligibility",
+        "create:JobSettlement",
+        "create:JobValidation",
+        "create:AGIJobManager"
+      ],
+      "constructorArgumentOrder": [
+        "usdcTokenAddress",
+        "baseIpfsUrl",
+        "ensConfig",
+        "rootNodes",
+        "merkleRoots",
+        "settlementWallets",
+        "initialGovernor"
+      ],
+      "creatorTransactionNonce": "firstNonce + operationIndex; nine creator nonces",
+      "buildDigest": "e0965c57b18ace72bb9081b29976098fcc8f08b58ddd1005876d7696aeeb622d",
+      "expectedOwner": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+      "expectedPendingOwner": "0x0000000000000000000000000000000000000000",
+      "creatorPermissionProbesExpectedFalse": [
+        "moderators",
+        "additionalValidators",
+        "additionalAgents",
+        "blacklistedAgents",
+        "blacklistedValidators"
+      ]
+    },
+    "alpha": {
+      "commit": "38064bec3423218f87c6b81760ac6768b3e7d4e5",
+      "tree": "4fe59cb9b8c7e65ea087fd27b0e2abed6bf34c68",
+      "creations": 5,
+      "governorBindingsSeparate": 2,
+      "token": "$AGIALPHA18",
+      "operationOrder": [
+        "create:AscensionAccess",
+        "create:NovaSeed",
+        "create:AscensionRiskOracle",
+        "create:AscensionJobMarket",
+        "create:AscensionMark"
+      ],
+      "governorOperationOrder": [
+        "AscensionRiskOracle.bindMarketplace(new AscensionJobMarket)",
+        "AscensionJobMarket.bindMark(new AscensionMark)"
+      ],
+      "creatorTransactionNonce": "firstNonce + operationIndex; five creator nonces; governor nonces allocated separately",
+      "expectedOwners": {
+        "AscensionAccess": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "AscensionRiskOracle": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "AscensionJobMarket": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99"
+      },
+      "noProtocolOwner": [
+        "NovaSeed",
+        "AscensionMark"
+      ],
+      "initialBindingsExpectedZero": [
+        "AscensionRiskOracle.marketplace",
+        "AscensionJobMarket.mark"
+      ]
+    },
+    "jobs": {
+      "commit": "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5",
+      "tree": "720312acac83eddeeb76644e1e22f53578e91784",
+      "operations": 39,
+      "creations": 25,
+      "token": "$AGIALPHA18",
+      "operationOrder": [
+        "create:Deployer",
+        "commit",
+        "create:StakeManagerConfiguration",
+        "handover:StakeManagerConfiguration",
+        "create:StakeManagerStaking",
+        "handover:StakeManagerStaking",
+        "create:StakeManagerEscrow",
+        "handover:StakeManagerEscrow",
+        "create:StakeManagerSlashing",
+        "handover:StakeManagerSlashing",
+        "component:StakeManager",
+        "create:JobRegistryConfiguration",
+        "handover:JobRegistryConfiguration",
+        "create:JobRegistryLifecycle",
+        "handover:JobRegistryLifecycle",
+        "create:JobRegistrySettlement",
+        "handover:JobRegistrySettlement",
+        "component:JobRegistry",
+        "create:ValidationModuleConfiguration",
+        "handover:ValidationModuleConfiguration",
+        "create:ValidationModuleVoting",
+        "handover:ValidationModuleVoting",
+        "create:ValidationModuleSelection",
+        "handover:ValidationModuleSelection",
+        "component:ValidationModule",
+        "component:ReputationEngine",
+        "component:ArbitratorCommittee",
+        "component:DisputeModule",
+        "component:CertificateNFT",
+        "component:TaxPolicy",
+        "component:FeePool",
+        "component:IdentityRegistry",
+        "component:PlatformRegistry",
+        "component:JobRouter",
+        "component:PlatformIncentives",
+        "component:SystemPause",
+        "register",
+        "finalize",
+        "handover:Deployer"
+      ],
+      "creatorTransactionNonce": "firstNonce + operationIndex; 39 creator nonces",
+      "compilerInputSha256": "a962576832d4540c4cd682f9251b6eed2a333c87a1ce5fa61ed5716e7091b891",
+      "expectedOwners": {
+        "Deployer": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "StakeManagerConfiguration": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "StakeManagerStaking": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "StakeManagerEscrow": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "StakeManagerSlashing": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "JobRegistryConfiguration": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "JobRegistryLifecycle": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "JobRegistrySettlement": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "ValidationModuleConfiguration": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "ValidationModuleVoting": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "ValidationModuleSelection": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "StakeManager": "new:SystemPause",
+        "JobRegistry": "new:SystemPause",
+        "ValidationModule": "new:SystemPause",
+        "ReputationEngine": "new:SystemPause",
+        "DisputeModule": "new:SystemPause",
+        "CertificateNFT": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "PlatformRegistry": "new:SystemPause",
+        "JobRouter": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "PlatformIncentives": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "FeePool": "new:SystemPause",
+        "TaxPolicy": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "IdentityRegistry": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "SystemPause": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "ArbitratorCommittee": "new:SystemPause"
+      },
+      "managedBySystemPause": [
+        "StakeManager",
+        "JobRegistry",
+        "ValidationModule",
+        "ReputationEngine",
+        "DisputeModule",
+        "PlatformRegistry",
+        "FeePool",
+        "ArbitratorCommittee"
+      ],
+      "creatorPermissionProbesExpectedFalse": {
+        "StakeManager": [
+          "treasuryAllowlist",
+          "validatorLockManagers"
+        ],
+        "FeePool": [
+          "treasuryAllowlist",
+          "rewarders"
+        ],
+        "JobRegistry": [
+          "acknowledgers"
+        ],
+        "ReputationEngine": [
+          "callers"
+        ],
+        "PlatformRegistry": [
+          "registrars"
+        ],
+        "JobRouter": [
+          "registrars"
+        ],
+        "TaxPolicy": [
+          "acknowledgerAllowed"
+        ]
+      }
+    }
+  },
+  "containsLiveProductionValues": false,
+  "authorityAcceptancePolicy": "Expected core topology and listed probes are bounded checks, not complete setup-history/indirect/external authority clearance. All pending owners, roles, aliases, approvals and external controllers require complete review before zero residual deployer privileges can be accepted.",
+  "crossProjectPlanAcceptance": "Not yet accepted. Fix actual-sender order/nonces and explicit native session/lock handoffs; no single-deployer cross-project lock-release qualification is inferred from separate project rehearsals."
+}
