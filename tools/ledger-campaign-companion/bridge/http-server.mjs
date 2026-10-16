@@ -29,7 +29,37 @@ function headers(response, { signer, parentOrigin, signerOrigin, api = false }) 
 }
 const send = (response, status, value) => { response.statusCode = status; response.end(JSON.stringify(value)); };
 function listen(server, port) { return new Promise((resolve, rejectListen) => { server.once('error', rejectListen); server.listen({ host: '127.0.0.1', port, exclusive: true }, () => { server.removeListener('error', rejectListen); resolve(server.address().port); }); }); }
-const stop = server => new Promise(resolve => { server.close(() => resolve()); server.closeIdleConnections?.(); });
+function shutdownControl(server) {
+  const sockets = new Map(); let stopping = false, completion;
+  server.on('connection', socket => {
+    sockets.set(socket, 0); socket.once('close', () => sockets.delete(socket));
+    if (stopping) socket.destroy();
+  });
+  server.prependListener('request', (request, response) => {
+    const socket = request.socket;
+    sockets.set(socket, (sockets.get(socket) ?? 0) + 1);
+    let finished = false;
+    const release = () => {
+      if (finished) return; finished = true;
+      const count = Math.max(0, (sockets.get(socket) ?? 1) - 1);
+      if (!socket.destroyed) sockets.set(socket, count);
+      if (stopping && count === 0) socket.destroySoon();
+    };
+    response.once('finish', release); response.once('close', release);
+  });
+  return () => {
+    if (completion) return completion;
+    stopping = true;
+    completion = new Promise(resolve => { server.close(() => resolve()); });
+    server.closeIdleConnections?.();
+    // Browser preconnect sockets have not sent a request and are not always
+    // classified as idle HTTP connections by Node. They must not block restart.
+    // Accepted requests drain first; their durable signing/relay state is owned
+    // by the engine and is never changed or retried by transport shutdown.
+    for (const [socket, active] of sockets) if (active === 0) socket.destroy();
+    return completion;
+  };
+}
 
 export async function createBridgeServer({ engine, staticRoot, port = 0, signerPort = 0, sessionTtlMs = 15 * 60 * 1000, now = Date.now }) {
   if (![port, signerPort].every(value => Number.isSafeInteger(value) && value >= 0 && value <= 65535) || !Number.isSafeInteger(sessionTtlMs) || sessionTtlMs < 1000 || sessionTtlMs > 60 * 60 * 1000) reject('INVALID_SERVER_CONFIGURATION');
@@ -69,6 +99,7 @@ export async function createBridgeServer({ engine, staticRoot, port = 0, signerP
     } catch (error) { if (!response.headersSent) { response.setHeader('Content-Type', 'application/json; charset=utf-8'); send(response, error instanceof BridgeError && error.code === 'SESSION_REQUIRED' ? 401 : 400, publicError(error)); } else response.destroy(); }
   };
   const parent = http.createServer({ maxHeaderSize: 8192 }, handler(false)), signer = http.createServer({ maxHeaderSize: 8192 }, handler(true));
+  const stopParent = shutdownControl(parent), stopSigner = shutdownControl(signer);
   for (const server of [parent, signer]) {
     server.requestTimeout = 15_000; server.headersTimeout = 10_000; server.keepAliveTimeout = 1000;
     server.on('clientError', (_error, socket) => { socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n'); });
@@ -76,6 +107,6 @@ export async function createBridgeServer({ engine, staticRoot, port = 0, signerP
   try {
     parentOrigin = `http://127.0.0.1:${await listen(parent, port)}`;
     signerOrigin = `http://127.0.0.1:${await listen(signer, signerPort)}`;
-  } catch (error) { await Promise.all([stop(parent), stop(signer)]); throw error; }
-  return Object.freeze({ parentOrigin, signerOrigin, close: async () => { token = null; tokenExpiry = 0; await Promise.all([stop(parent), stop(signer)]); } });
+  } catch (error) { await Promise.all([stopParent(), stopSigner()]); throw error; }
+  return Object.freeze({ parentOrigin, signerOrigin, close: async () => { token = null; tokenExpiry = 0; await Promise.all([stopParent(), stopSigner()]); } });
 }

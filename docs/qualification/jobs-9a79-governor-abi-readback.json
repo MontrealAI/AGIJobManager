@@ -1,0 +1,45 @@
+{
+  "schema": "jobs-governor-abi-readback-v1",
+  "source": "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5",
+  "governor": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+  "chainTransactions": 0,
+  "approval": false,
+  "rows": [
+    {
+      "contract": "IdentityRegistry",
+      "method": "acceptOwnership()",
+      "selector": "0x79ba5097",
+      "artifactSha256": "676df678d9567df1cfc1bdc2dbbce874bd56c43d1e9614cec30740e1b7b3207f"
+    },
+    {
+      "contract": "TaxPolicy",
+      "method": "acceptOwnership()",
+      "selector": "0x79ba5097",
+      "artifactSha256": "557af2200753973f4e9ca84080acbf7449d688920311493eb045cdbafb8af465"
+    },
+    {
+      "contract": "SystemPause",
+      "method": "executeGovernanceCall(address,bytes)",
+      "selector": "0xa64cfe10",
+      "artifactSha256": "1cc770b5aef7309c5575b4b3cc7e398c0c079a5384011552dd4b513da88205f1"
+    },
+    {
+      "contract": "FeePool",
+      "method": "setGovernance(address)",
+      "selector": "0xab033ea9",
+      "artifactSha256": "34619eabf9a80614abe484ef310e960d38150101f165558f6ae55f903fff4a06"
+    },
+    {
+      "contract": "FeePool",
+      "method": "setTreasuryAllowlist(address,bool)",
+      "selector": "0x2d4610da",
+      "artifactSha256": "34619eabf9a80614abe484ef310e960d38150101f165558f6ae55f903fff4a06"
+    },
+    {
+      "contract": "FeePool",
+      "method": "setTreasury(address)",
+      "selector": "0xf0f44260",
+      "artifactSha256": "34619eabf9a80614abe484ef310e960d38150101f165558f6ae55f903fff4a06"
+    }
+  ]
+}

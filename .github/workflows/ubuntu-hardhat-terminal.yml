@@ -1,0 +1,122 @@
+name: Ubuntu Hardhat terminal disposable qualification
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/ubuntu-hardhat-terminal.yml'
+      - 'scripts/ubuntu-hardhat/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ubuntu-terminal-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    name: Hidden terminal and exact disposable 9 + 5 + 39 operations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    env:
+      CI: 'true'
+      HARDHAT_DISABLE_TELEMETRY_PROMPT: 'true'
+      DOTENV_CONFIG_QUIET: 'true'
+      CYPRESS_INSTALL_BINARY: '0'
+    steps:
+      - name: Checkout reviewed tooling
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: tooling
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout exact Manager source
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          repository: MontrealAI/AGIJobManager
+          ref: d371d95cfcc44b9133cda4bba55304f727917f18
+          path: native-manager
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout exact Alpha source
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          repository: MontrealAI/AGI-Alpha-Agent-v0
+          ref: 38064bec3423218f87c6b81760ac6768b3e7d4e5
+          path: native-alpha
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout exact Jobs source
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          repository: MontrealAI/AGIJobsv0
+          ref: 9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5
+          path: native-jobs
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup qualified Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.23.3
+      - name: Install qualified npm
+        run: npm install --global npm@10.8.2 --ignore-scripts --no-audit --fund=false
+      - name: Install exact Manager dependencies and compatibility sources
+        working-directory: native-manager
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --prefix hardhat --ignore-scripts --no-audit --no-fund
+          node scripts/security/patch-openzeppelin-compiler.cjs
+          npm --prefix hardhat run compile
+      - name: Install and compile exact Alpha contracts
+        working-directory: native-alpha/tests/contracts
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run compile:strict
+      - name: Install and compile exact Jobs contracts
+        working-directory: native-jobs
+        run: |
+          ./scripts/ci/npm-ci.sh --no-audit --prefer-offline --progress=false
+          npm run compile
+          node scripts/ci/check-solidity-build.cjs
+      - name: Run terminal security and transport cases
+        id: unit
+        working-directory: tooling
+        env:
+          UBUNTU_TEST_MANAGER_ROOT: ${{ github.workspace }}/native-manager
+        run: |
+          ulimit -c 0
+          mkdir -p "$RUNNER_TEMP/ubuntu-terminal/public"
+          node --test scripts/ubuntu-hardhat/test/*.test.cjs > "$RUNNER_TEMP/ubuntu-terminal/public/terminal-tests.tap" 2>&1
+      - name: Run actual hidden-terminal CLI
+        id: cli
+        working-directory: tooling
+        run: |
+          ulimit -c 0
+          node scripts/ubuntu-hardhat/test/rehearsal.cjs --disposable-cli-only \
+            "$GITHUB_WORKSPACE/native-manager" "$GITHUB_WORKSPACE/native-alpha" "$GITHUB_WORKSPACE/native-jobs" \
+            "$RUNNER_TEMP/ubuntu-terminal/cli" > "$RUNNER_TEMP/ubuntu-terminal/public/cli.log" 2>&1
+      - name: Run every exact disposable deployment and native closeout
+        id: native
+        working-directory: tooling
+        run: |
+          ulimit -c 0
+          node --max-old-space-size=4096 scripts/ubuntu-hardhat/test/rehearsal.cjs --disposable-only \
+            "$GITHUB_WORKSPACE/native-manager" "$GITHUB_WORKSPACE/native-alpha" "$GITHUB_WORKSPACE/native-jobs" \
+            "$RUNNER_TEMP/ubuntu-terminal/native" > "$RUNNER_TEMP/ubuntu-terminal/public/native.log" 2>&1
+      - name: Collect only public qualification evidence
+        if: always() && steps.unit.outcome != 'skipped'
+        working-directory: tooling
+        env:
+          QUALIFIED_TOOLING_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/ubuntu-hardhat/test/hosted-summary.cjs "$RUNNER_TEMP/ubuntu-terminal"
+      - name: Retain public evidence only
+        if: always() && steps.unit.outcome != 'skipped'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ubuntu-hardhat-terminal-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/ubuntu-terminal/public
+          if-no-files-found: error
+          retention-days: 14

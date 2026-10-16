@@ -237,57 +237,409 @@
     "Alpha arbitrary governor calls or policy changes beyond two new-graph bindings",
     "Factories, contract wallets, wrappers, batches, CREATE2, type4 creation, automatic-broadcast wallets",
     "Any unsupported new source commit, including owner local fixes not yet published/frozen",
-    "Jobs hardware/external signature adapter (separate inventory; not completed by raw export)",
+    "Jobs optional companion Ledger/browser transport and marker-bearing creator; exact native external-manual route is separately accepted",
     "Real Ledger/provider/explorer/authority activation certification inferred from synthetic tests"
   ],
   "jobs": {
-    "schema": "manual-ledger/jobs-interface-summary/v1",
-    "reference": {
-      "commit": "fed83bc183753e871621fc1cb3aa8510bd38f642",
-      "tree": "a49fa5d32272555e62431363f1ffd36b84ea87be",
-      "trackedFiles": 5052,
-      "trackedBytesAndModesMatch": true,
-      "untrackedFilesChecked": false
-    },
-    "externalSigningSupported": false,
-    "packetSchema": null,
-    "workflowSuccessesObserved": 56,
-    "adapterTests": {
-      "pass": 7,
-      "fail": 0,
-      "node": "22.23.3"
-    },
-    "actualSourceToolingTests": {
-      "pass": 11,
-      "fail": 0,
-      "node": "22.23.3"
-    },
-    "genuineReadOnlyCliProbe": "jobs-interface-cli-probe.json",
-    "physicalQualified": false,
-    "deploymentRerun": false,
-    "authorityComplete": false,
-    "activationReady": false,
-    "filesSha256": {
-      "config/implementation-modules.json": "ebb99bfbf615b67a3801656da6060a83a9d8af8079ef6bbc6c7b33517393414a",
-      "config/solidity-compiler.json": "48b1584546fa588b961eff8534daba37d7fea69ad557c85c599757213a53efdf",
-      "package-lock.json": "9941cb118e1257a32d5e85509346920d5e30bf11882dac6f36725d0d2fb744fa",
-      "package.json": "4f118177592fae78bd8adf18cfa24a776780afd307fed1180e6b0ae0d165e963",
-      "scripts/deploy/authority-audit.cjs": "0d17fcb9af17d92dbbed6d998a2fb18ff4dc2c127f12c4b32d3d34056663b102",
-      "scripts/deploy/authority-handover.cjs": "68f9f4886538bb0584f2ad21803e16c0c358fdc4a80198af908b38ad559f0544",
-      "scripts/deploy/authority-runtime.cjs": "825e35a2a708becce4a0210396827df05638e85efcb558ac2478f6f32e13b386",
-      "scripts/deploy/implementations.cjs": "d7df798d67de1eec8422ea9b73e5fcc544018c39cd988390d53d7cf0c76624db",
-      "scripts/deploy/stage-protocol.cjs": "4965f9c3ce512de1a224c71855230e70cf287093e0af34cd3cd033f2797915ea",
-      "scripts/v2/deployDefaults.ts": "d230593e518564cfdaada5417c9e3b4e91416fcf12958193ddf45c58d469f999",
-      "scripts/v2/lib/deployment-candidate.cjs": "d8e92dd04da1f4c8f506abfd6158ed2eb0b725fc8bb0382e598373d48c2a6f04",
-      "scripts/v2/plan-deploy.ts": "2ea3fac4a28c012178e2e2dcf35080a2dd59e46d96a88bfe6c4eaa2128687b62"
-    },
+    "schema": "manual-ledger/jobs-interface-summary/v2",
     "repository": "MontrealAI/AGIJobsv0",
-    "unsupportedInterfaces": [
-      "Versioned immutable unsigned handoff",
-      "Durable actor-locked prepare-only intent",
-      "External signed raw import",
-      "Exact acknowledgement and one-shot relay",
-      "Signer-free canonical observe/recovery"
-    ]
+    "commit": "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5",
+    "tree": "720312acac83eddeeb76644e1e22f53578e91784",
+    "externalSigningSupported": true,
+    "supportScope": "Original pinned native CLI/profile/command API only; optional companion browser transport remains unqualified",
+    "profile": "jobs-external-manual-v1",
+    "packetSchema": "jobs-external-envelope-v1",
+    "nodeVersions": [
+      "22.23.3"
+    ],
+    "creatorProfile": "empty-code-eoa-type2",
+    "selectedMarkerCreatorQualified": false,
+    "nativeQualification": {
+      "runId": 38954500102,
+      "artifactId": 12072489816,
+      "archiveSha256": "1da8f5a17978b92bf355537076125063b064c287d71b5c3e40858a9fcc33d025",
+      "memberSha256": "26f188a32c1bf62464c2239d3fad7ea729d1179265d24d5391ac66f23826787d",
+      "passed": true,
+      "operations": 39,
+      "creations": 25,
+      "readback": "docs/qualification/jobs-9a79-hosted-38954500102.json"
+    },
+    "productionPlanAccepted": false,
+    "physicalQualified": false,
+    "bootstrapQualified": false,
+    "providerQualified": false,
+    "authorityComplete": false,
+    "productionApproved": false,
+    "activationReady": false,
+    "companionTransportQualified": false,
+    "historicalEvidence": {
+      "schema": "manual-ledger/jobs-interface-summary/v1",
+      "reference": {
+        "commit": "fed83bc183753e871621fc1cb3aa8510bd38f642",
+        "tree": "a49fa5d32272555e62431363f1ffd36b84ea87be",
+        "trackedFiles": 5052,
+        "trackedBytesAndModesMatch": true,
+        "untrackedFilesChecked": false
+      },
+      "externalSigningSupported": false,
+      "packetSchema": null,
+      "workflowSuccessesObserved": 56,
+      "adapterTests": {
+        "pass": 7,
+        "fail": 0,
+        "node": "22.23.3"
+      },
+      "actualSourceToolingTests": {
+        "pass": 11,
+        "fail": 0,
+        "node": "22.23.3"
+      },
+      "genuineReadOnlyCliProbe": "jobs-interface-cli-probe.json",
+      "physicalQualified": false,
+      "deploymentRerun": false,
+      "authorityComplete": false,
+      "activationReady": false,
+      "filesSha256": {
+        "config/implementation-modules.json": "ebb99bfbf615b67a3801656da6060a83a9d8af8079ef6bbc6c7b33517393414a",
+        "config/solidity-compiler.json": "48b1584546fa588b961eff8534daba37d7fea69ad557c85c599757213a53efdf",
+        "package-lock.json": "9941cb118e1257a32d5e85509346920d5e30bf11882dac6f36725d0d2fb744fa",
+        "package.json": "4f118177592fae78bd8adf18cfa24a776780afd307fed1180e6b0ae0d165e963",
+        "scripts/deploy/authority-audit.cjs": "0d17fcb9af17d92dbbed6d998a2fb18ff4dc2c127f12c4b32d3d34056663b102",
+        "scripts/deploy/authority-handover.cjs": "68f9f4886538bb0584f2ad21803e16c0c358fdc4a80198af908b38ad559f0544",
+        "scripts/deploy/authority-runtime.cjs": "825e35a2a708becce4a0210396827df05638e85efcb558ac2478f6f32e13b386",
+        "scripts/deploy/implementations.cjs": "d7df798d67de1eec8422ea9b73e5fcc544018c39cd988390d53d7cf0c76624db",
+        "scripts/deploy/stage-protocol.cjs": "4965f9c3ce512de1a224c71855230e70cf287093e0af34cd3cd033f2797915ea",
+        "scripts/v2/deployDefaults.ts": "d230593e518564cfdaada5417c9e3b4e91416fcf12958193ddf45c58d469f999",
+        "scripts/v2/lib/deployment-candidate.cjs": "d8e92dd04da1f4c8f506abfd6158ed2eb0b725fc8bb0382e598373d48c2a6f04",
+        "scripts/v2/plan-deploy.ts": "2ea3fac4a28c012178e2e2dcf35080a2dd59e46d96a88bfe6c4eaa2128687b62"
+      },
+      "repository": "MontrealAI/AGIJobsv0",
+      "unsupportedInterfaces": [
+        "Versioned immutable unsigned handoff",
+        "Durable actor-locked prepare-only intent",
+        "External signed raw import",
+        "Exact acknowledgement and one-shot relay",
+        "Signer-free canonical observe/recovery"
+      ]
+    }
+  },
+  "followOnQualification": {
+    "schema": "manual-ledger-native-compatibility-follow-on-v1",
+    "observedAt": "2026-10-16T18:28:35.534028+00:00",
+    "earlierEntriesAndEvidence": "Preserved above; they do not certify the new revisions.",
+    "profiles": [
+      {
+        "id": "manager-c2f-empty",
+        "repository": "MontrealAI/AGIJobManager",
+        "commit": "c2f72180d2f0d6ecd5b92d8e5197c5344be2c699",
+        "tree": "8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f",
+        "nodeVersions": [
+          "24.19.0"
+        ],
+        "creatorProfiles": [
+          "empty-eoa-direct-create.v1"
+        ],
+        "packetSchema": "manager-external-signing-handoff-v1",
+        "signedImport": "JSON {raw}; full private capability remains separate",
+        "operationCount": 9,
+        "verificationTargetCount": 9,
+        "runtimeEvidenceCount": 9,
+        "acceptanceStatus": "ACTUAL_NATIVE_COMPANION_MECHANICS_PASSED",
+        "productionStatus": "NO_GO_NATIVE_ENS_ROOT_ORDER_CORRECTION_REQUIRED",
+        "evidenceFileName": "manager-c2f-companion-acceptance-final.json",
+        "evidenceSha256": "ea6cc396608c838c52f744bb23c111ca249594c338725b83f2696a25310d7b1a",
+        "acceptanceCodeSha256": {
+          "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+          "coordinators/manager.mjs": "bb97b227b16d39f3516693df8ac1fc4d0f754cb5cc5031d329a261608b2f07f6",
+          "verification/configuration.mjs": "f6880a939e1db8552a61dfb880c1f9b8aba2348c4382e6fd3661bf6a2715276a",
+          "verification/explorer.mjs": "37713b91d54e105b4e4da800133de07fc98f0f757d53cd92550b98435719b70d",
+          "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+          "coordinators/runtime-evidence.mjs": "f55a9a173b88f26616232f7438cdfa1458632dfd9ad4f41721db4a4c9f00769a",
+          "coordinators/native-runtime-snapshot.cjs": "152257035d3cf1dc831746feea5856be8189186f04ff590e82ea409d931cc453",
+          "bridge/campaign-engine.mjs": "e007308c4ce9b0663a8c048823a2f1f037141c0f7f7ab83246510d448adaa188",
+          "bridge/private-store.mjs": "f2d4f6500291c5ec537c58d19b9e864e3b5fd16b9f2438d7cb6342eb377330c5",
+          "trust/local-build.mjs": "c8a81a093d6d08f762ff246415e1d51e264e6f8968352ed47373cf2497b31a75",
+          "trust/prepare-review.mjs": "f2973bee875ec5fe7a5dbfb179a091186ac5184b37ec5b39d562f7dc471a5108",
+          "trust/soljson-driver.cjs": "8af8df9dd5d4176caddfb2ae1e95049ef1b250c739aa24d2ce3faefd1a63f383",
+          "verification/authority.mjs": "3ea9b8f855bff154385b894180cbd4edaad43f593d48ccd5053652ea60bd9be1",
+          "scripts/accept-local-trust.mjs": "b0b130a4b3880a87cef19c5d49f8bcf96b811757d950860ea3fb2cf5d898637a",
+          "scripts/accept-manager-coordinator.mjs": "4fb6eb21fb0c3a1f1f76bf6d85cbd3fd2e4051c8b50526ded303662ade0f0e60"
+        },
+        "scope": "Unforked disposable Osaka with real source CLI subprocesses and synthetic signatures; finalized=latest and EIP1898 fixture adaptation are not public-provider or consensus proof",
+        "actualTrustedCompilerReproduction": true,
+        "actualD76CoreAuthorityMatches": true,
+        "mainnetTransactions": 0,
+        "physicalLedger": false,
+        "knownBlockers": [
+          "Native verifier swaps agentRootNode and alphaClubRootNode for distinct roots. Zero/equal-root fixtures do not qualify this. Production launcher blocks the candidate; owner correction plus distinct-root regression and new exact-source acceptance are required.",
+          "Existing-marker creator policies have not passed this companion acceptance. Select an independently reviewed empty-code Ledger creator before signing and regenerate all affected plans, or obtain exact marker-profile acceptance without changing existing delegation.",
+          "Live provider, physical Ledger, exact explorer acceptance and external dependency/controller inventory remain separate."
+        ]
+      },
+      {
+        "id": "alpha-380-empty",
+        "repository": "MontrealAI/AGI-Alpha-Agent-v0",
+        "commit": "38064bec3423218f87c6b81760ac6768b3e7d4e5",
+        "tree": "4fe59cb9b8c7e65ea087fd27b0e2abed6bf34c68",
+        "nodeVersions": [
+          "22.17.1"
+        ],
+        "creatorProfiles": [
+          "empty-eoa-direct-create.v1"
+        ],
+        "packetSchema": "agialpha.external-signing-handoff.v1",
+        "signedImport": "Raw transaction text; full private capability remains separate",
+        "operationCount": 7,
+        "verificationTargetCount": 5,
+        "runtimeEvidenceCount": 5,
+        "acceptanceStatus": "ACTUAL_NATIVE_COMPANION_MECHANICS_PASSED",
+        "productionStatus": "NO_GO_PENDING_PHYSICAL_PROVIDER_EXPLORER_AND_EXTERNAL_AUTHORITY_ACCEPTANCE",
+        "evidenceFileName": "alpha-380-companion-acceptance-final.json",
+        "evidenceSha256": "fcf2b1d113e993b28639c0f9c694928f84a47ed83015595ee5ee06bb6e577fbb",
+        "acceptanceCodeSha256": {
+          "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+          "coordinators/alpha.mjs": "328d47d8408a2376f910645f3f60110882878280db95f2509b03ef698024d66b",
+          "verification/configuration.mjs": "f6880a939e1db8552a61dfb880c1f9b8aba2348c4382e6fd3661bf6a2715276a",
+          "verification/explorer.mjs": "37713b91d54e105b4e4da800133de07fc98f0f757d53cd92550b98435719b70d",
+          "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+          "coordinators/runtime-evidence.mjs": "f55a9a173b88f26616232f7438cdfa1458632dfd9ad4f41721db4a4c9f00769a",
+          "coordinators/native-runtime-snapshot.cjs": "152257035d3cf1dc831746feea5856be8189186f04ff590e82ea409d931cc453",
+          "bridge/campaign-engine.mjs": "e007308c4ce9b0663a8c048823a2f1f037141c0f7f7ab83246510d448adaa188",
+          "bridge/private-store.mjs": "f2d4f6500291c5ec537c58d19b9e864e3b5fd16b9f2438d7cb6342eb377330c5",
+          "trust/local-build.mjs": "c8a81a093d6d08f762ff246415e1d51e264e6f8968352ed47373cf2497b31a75",
+          "trust/prepare-review.mjs": "f2973bee875ec5fe7a5dbfb179a091186ac5184b37ec5b39d562f7dc471a5108",
+          "trust/soljson-driver.cjs": "8af8df9dd5d4176caddfb2ae1e95049ef1b250c739aa24d2ce3faefd1a63f383",
+          "verification/authority.mjs": "3ea9b8f855bff154385b894180cbd4edaad43f593d48ccd5053652ea60bd9be1",
+          "scripts/accept-local-trust.mjs": "b0b130a4b3880a87cef19c5d49f8bcf96b811757d950860ea3fb2cf5d898637a",
+          "scripts/accept-alpha-coordinator.mjs": "eabb065ee6767b75b17db0bfdfc4420dc51b856002fe3836c3cdc66a7f1edd04"
+        },
+        "scope": "Unforked disposable Osaka, synthetic keys and mock dependencies, normal child-scoped local TLS, finalized=latest; not physical Ledger/public-provider/finality qualification",
+        "actualSyntheticGovernorSignedOperations": 7,
+        "actualD76GovernorSignatures": 0,
+        "separateD76UnsignedTrustedCompilerBindings": 7,
+        "separateD76ActualInitialCreations": 5,
+        "separateD76InitialUncommissionedStateMatches": true,
+        "separateD76GovernorBindingsExecuted": 0,
+        "governorBindingsPending": [
+          "AscensionRiskOracle.marketplace",
+          "AscensionJobMarket.mark"
+        ],
+        "mainnetTransactions": 0,
+        "physicalLedger": false,
+        "knownBlockers": [
+          "Physical Ledger and live provider acceptance remain pending; synthetic known-key governor signatures do not qualify d76 hardware custody or device approvals.",
+          "The separate d76 graph is uncommissioned with both one-time graph bindings unset. Alpha has no global pause switch.",
+          "No native plan expiry exists in this revision. Companion wall-clock expiry does not invalidate an Ethereum signature.",
+          "Exact explorer acceptance and external token/proxy/ENS/controller permissions remain unverified.",
+          "Existing-marker creator policies require exact additional companion acceptance; no delegation is changed."
+        ],
+        "laterImplementationIntegration": [
+          {
+            "id": "alpha-380-shared-d371-implementation-integration",
+            "reason": "Additive exact d371 Manager authority pin changed the shared authority module. The same exact Alpha380 source was independently rerun; historical acceptance above remains unchanged.",
+            "evidenceFileName": "alpha-380-d371-integration-final.json",
+            "evidenceSha256": "6665253492d1b09a349a71a3535674fd728e7f86aa256e6d98c025ec671be7bc",
+            "acceptanceCodeSha256": {
+              "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+              "coordinators/alpha.mjs": "328d47d8408a2376f910645f3f60110882878280db95f2509b03ef698024d66b",
+              "verification/configuration.mjs": "f6880a939e1db8552a61dfb880c1f9b8aba2348c4382e6fd3661bf6a2715276a",
+              "verification/explorer.mjs": "37713b91d54e105b4e4da800133de07fc98f0f757d53cd92550b98435719b70d",
+              "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+              "coordinators/runtime-evidence.mjs": "f55a9a173b88f26616232f7438cdfa1458632dfd9ad4f41721db4a4c9f00769a",
+              "coordinators/native-runtime-snapshot.cjs": "152257035d3cf1dc831746feea5856be8189186f04ff590e82ea409d931cc453",
+              "bridge/campaign-engine.mjs": "e007308c4ce9b0663a8c048823a2f1f037141c0f7f7ab83246510d448adaa188",
+              "bridge/private-store.mjs": "f2d4f6500291c5ec537c58d19b9e864e3b5fd16b9f2438d7cb6342eb377330c5",
+              "trust/local-build.mjs": "c8a81a093d6d08f762ff246415e1d51e264e6f8968352ed47373cf2497b31a75",
+              "trust/prepare-review.mjs": "f2973bee875ec5fe7a5dbfb179a091186ac5184b37ec5b39d562f7dc471a5108",
+              "trust/soljson-driver.cjs": "8af8df9dd5d4176caddfb2ae1e95049ef1b250c739aa24d2ce3faefd1a63f383",
+              "verification/authority.mjs": "4385aa543a6860597b74c62326fb88daad29f4de9a39ff45e08e3c02cda29365",
+              "scripts/accept-local-trust.mjs": "b0b130a4b3880a87cef19c5d49f8bcf96b811757d950860ea3fb2cf5d898637a",
+              "scripts/accept-alpha-coordinator.mjs": "eabb065ee6767b75b17db0bfdfc4420dc51b856002fe3836c3cdc66a7f1edd04"
+            },
+            "acceptanceStatus": "ACTUAL_NATIVE_COMPANION_MECHANICS_PASSED",
+            "actualSyntheticGovernorSignedOperations": 7,
+            "verificationTargetCount": 5,
+            "runtimeEvidenceCount": 5,
+            "separateD76UnsignedTrustedCompilerBindings": 7,
+            "separateD76ActualInitialCreations": 5,
+            "separateD76InitialUncommissionedStateMatches": true,
+            "actualD76GovernorSignatures": 0,
+            "separateD76GovernorBindingsExecuted": 0,
+            "rawRelayRequests": 7,
+            "scope": "Unforked disposable Osaka, synthetic keys and mock dependencies, normal child-scoped local TLS, finalized=latest; not physical Ledger/public-provider/finality qualification",
+            "physicalLedger": false,
+            "mainnetTransactions": 0,
+            "productionApproved": false
+          }
+        ]
+      },
+      {
+        "id": "manager-d371-empty",
+        "repository": "MontrealAI/AGIJobManager",
+        "commit": "d371d95cfcc44b9133cda4bba55304f727917f18",
+        "tree": "93faf6e9a6875026c1eb9bc2f0f9bdada308d296",
+        "nodeVersions": [
+          "24.19.0"
+        ],
+        "creatorProfiles": [
+          "empty-eoa-direct-create.v1"
+        ],
+        "packetSchema": "manager-external-signing-handoff-v1",
+        "signedImport": "JSON {raw}; full private capability remains separate",
+        "operationCount": 9,
+        "verificationTargetCount": 9,
+        "runtimeEvidenceCount": 9,
+        "acceptanceStatus": "ACTUAL_NATIVE_COMPANION_MECHANICS_AND_DISTINCT_ENS_ROOTS_PASSED",
+        "productionStatus": "NO_GO_EXACT_OWNER_NATIVE_QUALIFICATION_HANDOFF_PHYSICAL_PROVIDER_EXPLORER_AND_EXTERNAL_AUTHORITY_PENDING",
+        "evidenceFileName": "manager-d371-companion-acceptance-final.json",
+        "evidenceSha256": "4741008d4e73c468408f8870039a5ae1b54ce2f8037bd43ebdd0f32db0899811",
+        "acceptanceCodeSha256": {
+          "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+          "coordinators/manager.mjs": "3e8d05abda3d77e78cc04fc0a3d73f8582ab40ebbf3526792bf8d3e5a49cb4f3",
+          "verification/configuration.mjs": "f6880a939e1db8552a61dfb880c1f9b8aba2348c4382e6fd3661bf6a2715276a",
+          "verification/explorer.mjs": "37713b91d54e105b4e4da800133de07fc98f0f757d53cd92550b98435719b70d",
+          "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+          "coordinators/runtime-evidence.mjs": "f55a9a173b88f26616232f7438cdfa1458632dfd9ad4f41721db4a4c9f00769a",
+          "coordinators/native-runtime-snapshot.cjs": "152257035d3cf1dc831746feea5856be8189186f04ff590e82ea409d931cc453",
+          "bridge/campaign-engine.mjs": "e007308c4ce9b0663a8c048823a2f1f037141c0f7f7ab83246510d448adaa188",
+          "bridge/private-store.mjs": "f2d4f6500291c5ec537c58d19b9e864e3b5fd16b9f2438d7cb6342eb377330c5",
+          "trust/local-build.mjs": "c8a81a093d6d08f762ff246415e1d51e264e6f8968352ed47373cf2497b31a75",
+          "trust/prepare-review.mjs": "f2973bee875ec5fe7a5dbfb179a091186ac5184b37ec5b39d562f7dc471a5108",
+          "trust/soljson-driver.cjs": "8af8df9dd5d4176caddfb2ae1e95049ef1b250c739aa24d2ce3faefd1a63f383",
+          "verification/authority.mjs": "4385aa543a6860597b74c62326fb88daad29f4de9a39ff45e08e3c02cda29365",
+          "scripts/accept-local-trust.mjs": "b0b130a4b3880a87cef19c5d49f8bcf96b811757d950860ea3fb2cf5d898637a",
+          "scripts/accept-manager-coordinator.mjs": "cba8e5d98976b47b08cc305a724c597e07df436433d53a2c130a7eb7ba377a13"
+        },
+        "scope": "Unforked disposable Osaka with real source CLI subprocesses and synthetic signatures; finalized=latest and EIP1898 fixture adaptation are not public-provider or consensus proof",
+        "actualTrustedCompilerReproduction": true,
+        "trustedCompilerInputSourceUnits": 91,
+        "trustedCompilerOperationBindings": 9,
+        "actualD76CoreAuthorityMatches": true,
+        "comprehensiveAuthorityComplete": false,
+        "distinctEnsRootNames": [
+          "club.agi.eth",
+          "agent.agi.eth",
+          "alpha.club.agi.eth",
+          "alpha.agent.agi.eth"
+        ],
+        "distinctEnsRoots": [
+          "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16",
+          "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d",
+          "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e",
+          "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e"
+        ],
+        "actualEnsRootReadback": {
+          "clubRootNode": "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16",
+          "agentRootNode": "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d",
+          "alphaClubRootNode": "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e",
+          "alphaAgentRootNode": "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e"
+        },
+        "ensRootMismatchRefusals": [
+          "clubRootNode",
+          "agentRootNode",
+          "alphaClubRootNode",
+          "alphaAgentRootNode",
+          "swapped-agent-and-alphaClub"
+        ],
+        "rawRelayRequests": 9,
+        "genuineEngineFacadeOperations": 1,
+        "mainnetTransactions": 0,
+        "physicalLedger": false,
+        "knownBlockers": [
+          "The implementation owner exact full native qualification handoff for d371 remains separately required; companion acceptance cannot replace it. Production launcher blocks pending that handoff.",
+          "Existing-marker creator policies have not passed this companion acceptance. Select an independently reviewed empty-code Ledger creator before signing and regenerate every affected nonce, prediction and binding, or obtain exact marker-profile acceptance without changing existing delegation.",
+          "Physical Ledger, live independent provider, exact explorer success and full external token/proxy/ENS/controller inventory remain pending."
+        ]
+      }
+    ],
+    "jobs": "Exact9a79/tree720312 native handoff received with hash-verified complete hosted run38954500102. Original CLI available for separately approved empty-code creator/plan; marker account and optional companion transport remain unqualified.",
+    "walletPrebindingHelper": {
+      "status": "ACTUAL_FIVE_CREATE_PREBINDING_NATIVE_HELPER_PASSED",
+      "source": {
+        "repository": "MontrealAI/AGI-Alpha-Agent-v0",
+        "commit": "38064bec3423218f87c6b81760ac6768b3e7d4e5",
+        "tree": "4fe59cb9b8c7e65ea087fd27b0e2abed6bf34c68"
+      },
+      "evidenceFileName": "alpha-380-wallet-prebinding-acceptance-final.json",
+      "evidenceSha256": "946e5ddfc7bb21b78823207c11d957b70141c1f9b40b59578d384ba05ef33f59",
+      "acceptanceCodeSha256": {
+        "verification/native-wallet-snapshot.cjs": "90a365a22d99dc76bc4e93c48bd785e5bb70477f85e238fcff24fcc6b8555f96",
+        "verification/wallet-configuration.mjs": "278405f78d43378376ac14ffed498651b4f52c01a068b97244e6d5e21c576eab",
+        "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+        "verification/authority.mjs": "3ea9b8f855bff154385b894180cbd4edaad43f593d48ccd5053652ea60bd9be1",
+        "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+        "scripts/accept-wallet-configuration.mjs": "99f8955c88f801b7c925f02ba2486a0bc8d7c9aefa169a7eface30268f372b02"
+      },
+      "actualCreations": 5,
+      "verificationTargetCount": 5,
+      "runtimeEvidenceCount": 5,
+      "initialUncommissionedStateMatches": true,
+      "requiredGovernorBindings": [
+        "AscensionRiskOracle.marketplace",
+        "AscensionJobMarket.mark"
+      ],
+      "nativeSigningSessionCreated": false,
+      "nativeActorLocksCreated": false,
+      "repeatedReadOnlySnapshotStable": true,
+      "changedCanonicalReceiptRejected": true,
+      "helperBroadcastRequests": 0,
+      "governorSignatures": 0,
+      "governorBindingSubmissions": 0,
+      "explorerServiceCalls": 0,
+      "physicalLedger": false,
+      "scope": "Disposable unforked Osaka with actual current native modules; synthetic creator, exact d76 constructor governor, five real CREATEs and two unsigned unexecuted d76 bindings. TLS finalized=latest is a fixture adaptation, not consensus proof.",
+      "limitation": "Receipt/source/runtime verification and exact unsigned call descriptions only. No wallet transaction-envelope enforcement, physical signing, full authority or activation acceptance is inferred.",
+      "laterImplementationIntegration": [
+        {
+          "id": "alpha-380-wallet-prebinding-shared-d371-implementation-integration",
+          "reason": "Same exact Alpha380 native prebinding helper rerun after additive d371 authority pin; all historical evidence preserved.",
+          "evidenceFileName": "alpha-380-wallet-prebinding-d371-integration-final.json",
+          "evidenceSha256": "243cbaad2ee7f0248f4ac615a554b16addf738a2b146e466b75934ec49794f7a",
+          "acceptanceCodeSha256": {
+            "verification/native-wallet-snapshot.cjs": "90a365a22d99dc76bc4e93c48bd785e5bb70477f85e238fcff24fcc6b8555f96",
+            "verification/wallet-configuration.mjs": "278405f78d43378376ac14ffed498651b4f52c01a068b97244e6d5e21c576eab",
+            "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+            "verification/authority.mjs": "4385aa543a6860597b74c62326fb88daad29f4de9a39ff45e08e3c02cda29365",
+            "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+            "scripts/accept-wallet-configuration.mjs": "99f8955c88f801b7c925f02ba2486a0bc8d7c9aefa169a7eface30268f372b02"
+          },
+          "status": "ACTUAL_FIVE_CREATE_PREBINDING_NATIVE_HELPER_PASSED",
+          "actualCreations": 5,
+          "verificationTargetCount": 5,
+          "runtimeEvidenceCount": 5,
+          "initialUncommissionedStateMatches": true,
+          "changedCanonicalReceiptRejected": true,
+          "repeatedReadOnlySnapshotStable": true,
+          "nativeSigningSessionCreated": false,
+          "nativeActorLocksCreated": false,
+          "helperBroadcastRequests": 0,
+          "governorSignatures": 0,
+          "governorBindingSubmissions": 0,
+          "explorerServiceCalls": 0,
+          "physicalLedger": false,
+          "mainnetTransactions": 0,
+          "productionApproved": false,
+          "scope": "Disposable unforked Osaka with actual current native modules; synthetic creator, exact d76 constructor governor, five real CREATEs and two unsigned unexecuted d76 bindings. TLS finalized=latest is a fixture adaptation, not consensus proof."
+        }
+      ]
+    },
+    "correctedManagerFollowOn": {
+      "observedAt": "2026-10-16T19:07:32.170Z",
+      "supersedesNewCampaignTarget": "manager-c2f-empty",
+      "selectedManagerProfile": "manager-d371-empty",
+      "earlierEntriesAndEvidence": "All earlier records above are retained unchanged as historical evidence. No c2f or eb6 acceptance certifies d371.",
+      "ownerNativeQualification": "PENDING_SEPARATE_EXACT_OWNER_HANDOFF",
+      "productionApproved": false,
+      "currentImplementationIntegration": {
+        "bindingEvidenceFileName": "native-d371-integration-current-code-bindings.json",
+        "bindingEvidenceSha256": "fdb478306c0586ea84b522ee1c92d3f989022c1870ff51ce7e12a82cb08463c3",
+        "managerNineOperationsPassed": true,
+        "alphaSevenOperationsPassed": true,
+        "alphaFivePrebindingPassed": true,
+        "allCurrentGuardedCodeMatches": true,
+        "ownerFullNativeQualificationHandoff": "PENDING_SEPARATE_SCOPE",
+        "productionApproved": false
+      }
+    }
   }
 }

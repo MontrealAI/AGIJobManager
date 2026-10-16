@@ -2,6 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import net from 'node:net';
 import * as fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -16,3 +17,22 @@ test('API bounds and transport restrictions reject oversized, compressed and wro
 test('rotated or expired session cannot call engine; authorized exact status can',()=>fixture(async({s,clock,calls})=>{const first=await session(s),second=await session(s);assert.notEqual(first,second);assert.equal((await request(s.parentOrigin,'/api/status',{headers:{Authorization:`Bearer ${first}`}})).status,401);assert.equal((await request(s.parentOrigin,'/api/status',{headers:{Authorization:`Bearer ${second}`}})).status,200);assert.deepEqual(calls,['status']);clock.value+=1000;assert.equal((await request(s.parentOrigin,'/api/status',{headers:{Authorization:`Bearer ${second}`}})).status,401);assert.deepEqual(calls,['status']);}));
 test('signer origin exposes no API even with parent bearer and exact parent Origin',()=>fixture(async({s,calls})=>{const token=await session(s);for(const pathname of ['/api/status','/api/import','/api/relay'])assert.equal((await request(s.signerOrigin,pathname,{headers:{Origin:s.parentOrigin,Authorization:`Bearer ${token}`}})).status,400);assert.deepEqual(calls,[]);}));
 test('static allowlist rejects symlinks and query strings',()=>fixture(async({s,dir})=>{const outside=path.join(dir,'outside.js');await fs.writeFile(outside,'fixture');await fs.unlink(path.join(dir,'campaign-app.js'));await fs.symlink(outside,path.join(dir,'campaign-app.js'));assert.equal((await request(s.parentOrigin,'/campaign-app.js',{method:'GET'})).status,400);assert.equal((await request(s.parentOrigin,'/campaign.html?raw=forbidden',{method:'GET'})).status,400);}));
+async function preconnect(origin) {const socket=net.connect(Number(new URL(origin).port),'127.0.0.1');await new Promise((resolve,reject)=>{socket.once('connect',resolve);socket.once('error',reject);});return socket;}
+test('restart closes prerequest browser preconnects on both origins without invoking any engine action',()=>fixture(async({s,calls})=>{
+  const sockets=await Promise.all([preconnect(s.parentOrigin),preconnect(s.signerOrigin)]);
+  let closed=false;const closing=s.close().then(()=>{closed=true;});
+  try{await Promise.race([closing,new Promise(resolve=>setTimeout(resolve,500))]);assert.equal(closed,true);assert.deepEqual(calls,[]);}
+  finally{for(const socket of sockets)socket.destroy();await closing;}
+}));
+test('restart drains one already accepted API request while closing speculative connections and never repeats it',async()=>{
+  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'companion-http-drain-'));
+  let begin,release;const entered=new Promise(resolve=>{begin=resolve;}),gate=new Promise(resolve=>{release=resolve;});let actions=0;
+  const s=await createBridgeServer({staticRoot:dir,engine:{async status(){actions++;begin();await gate;return{durable:true};}}});
+  let socket,closing;
+  try{
+    const token=await session(s),pending=request(s.parentOrigin,'/api/status',{headers:{Authorization:`Bearer ${token}`}});await entered;
+    socket=await preconnect(s.signerOrigin);let closed=false;closing=s.close().then(()=>{closed=true;});await new Promise(resolve=>setTimeout(resolve,20));assert.equal(closed,false);
+    release();const response=await pending;assert.equal(response.status,200);assert.equal(JSON.parse(response.body).durable,true);
+    await Promise.race([closing,new Promise(resolve=>setTimeout(resolve,500))]);assert.equal(closed,true);assert.equal(actions,1);
+  }finally{release();socket?.destroy();await (closing??s.close());await fs.rm(dir,{recursive:true,force:true});}
+});

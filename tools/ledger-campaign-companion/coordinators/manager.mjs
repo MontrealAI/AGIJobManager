@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { exportRuntimeEvidence } from './runtime-evidence.mjs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { keccak256 } from 'ethers';
@@ -6,63 +7,67 @@ import { describeCreation } from '../verification/configuration.mjs';
 import { execute, evaluateOffline, need, readJson, sha256, canonical, directory, privateWrite, reviewed, reviewedOperation, comparePacket, validateSignedRaw, publicSummary } from './common.mjs';
 
 export const MANAGER_SUPPORTED = Object.freeze({ id: 'manager', repository: 'MontrealAI/AGIJobManager', commit: 'eb6f725e0b40ac81e50a374304e54a5ff6859fcf', tree: '73347842e4a81767ef14686a607b7aceb4f5d70c', nodeVersions: Object.freeze(['24.19.0']), packetSchema: 'manager-external-signing-handoff-v1', configurationScope: 'Nine core CREATEs only; no governor configuration, ENS changes, funding or activation' });
+export const MANAGER_CURRENT = Object.freeze({ ...MANAGER_SUPPORTED, commit: 'c2f72180d2f0d6ecd5b92d8e5197c5344be2c699', tree: '8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f', runtimeEvidenceRequired: true, creatorProfiles: Object.freeze(['empty-eoa-direct-create.v1']) });
+export const MANAGER_CORRECTED = Object.freeze({ ...MANAGER_CURRENT, commit: 'd371d95cfcc44b9133cda4bba55304f727917f18', tree: '93faf6e9a6875026c1eb9bc2f0f9bdada308d296' });
+export const MANAGER_COMPATIBILITY = Object.freeze([MANAGER_SUPPORTED, MANAGER_CURRENT, MANAGER_CORRECTED]);
+function createPinnedManagerAdapter(supported) {
 const COUNT = 9;
 function paths(config, privateDir) {
   directory(privateDir, config.checkout); directory(path.dirname(config.sessionPath), config.checkout); directory(config.lockDirectory, config.checkout);
   need(typeof config.catalogSha256 === 'string' && /^[a-f0-9]{64}$/.test(config.catalogSha256) && typeof config.buildId === 'string', 'EXPLICIT_QUALIFIED_CATALOG_REQUIRED');
 }
 async function command(campaign, privateDir, action, fields = {}) {
-  const { config } = reviewed(campaign, MANAGER_SUPPORTED, COUNT); paths(config, privateDir);
+  const { config } = reviewed(campaign, supported, COUNT); paths(config, privateDir);
   const output = path.join(privateDir, `${crypto.randomUUID()}-manager-${action}.json`);
   const args = [action, '--catalog', config.catalogPath, '--catalog-sha', config.catalogSha256, '--build-id', config.buildId, '--out', output];
   if (action === 'start') args.push('--plan', config.planPath, '--session', config.sessionPath, '--lock-directory', config.lockDirectory);
   else if (action === 'preflight') args.push('--plan', config.planPath);
   else args.push('--session', config.sessionPath);
   for (const [key, value] of Object.entries(fields)) args.push(`--${key}`, value);
-  await execute(config, MANAGER_SUPPORTED, path.join(config.checkout, 'hardhat/scripts/core-session.cjs'), args,
+  await execute(config, supported, path.join(config.checkout, 'hardhat/scripts/core-session.cjs'), args,
     { MANAGER_READ_RPC_URL: config.readRpcUrl, ...(action === 'relay' ? { MANAGER_RELAY_RPC_URL: config.relayRpcUrl } : {}) });
   return readJson(output);
 }
 async function status(campaign) {
-  const { config } = reviewed(campaign, MANAGER_SUPPORTED, COUNT);
+  const { config } = reviewed(campaign, supported, COUNT);
   const code = "const path=require('node:path');const root=process.argv[1],session=process.argv[2];const P=require(path.join(root,'hardhat/scripts/core-creation-plan.cjs'));P.observedRevision();const s=require(path.join(root,'hardhat/scripts/deployment-session.cjs')).readSession(session);console.log(JSON.stringify({planSha256:s.plan.payloadSha256,states:s.state.map(x=>({status:x.status,transactionHash:x.transactionHash||null})),released:s.released}));";
-  const state = JSON.parse(await execute(config, MANAGER_SUPPORTED, '-e', [code, config.checkout, config.sessionPath]));
+  const state = JSON.parse(await execute(config, supported, '-e', [code, config.checkout, config.sessionPath]));
   need(state.planSha256 === campaign.reviewedManifest.planSha256 && state.states?.length === COUNT, 'SESSION_PLAN_MISMATCH');
   return state;
 }
 async function verifyPrefix(campaign) {
-  const { config } = reviewed(campaign, MANAGER_SUPPORTED, COUNT);
+  const { config } = reviewed(campaign, supported, COUNT);
   const code = "(async()=>{const path=require('node:path');const [root,session,catalog,catalogSha,buildId]=process.argv.slice(1);const P=require(path.join(root,'hardhat/scripts/core-creation-plan.cjs')),source=P.observedRevision();const q=require(path.join(root,'hardhat/scripts/qualified-build-catalog.cjs')).loadQualifiedBuild({catalogPath:catalog,catalogSha256:catalogSha,buildId,expectedRevision:source});const s=require(path.join(root,'hardhat/scripts/deployment-session.cjs')).readSession(session);P.checkPlan(s.plan,q,source);const r=require(path.join(root,'hardhat/scripts/deployment-rpc.cjs'));const rpc=r.createReadRpc(process.env.MANAGER_READ_RPC_URL,{scope:r.scopeFor(s.plan)});const hashes=s.state.filter(x=>x.status==='finalized').map(x=>x.transactionHash);const result=await require(path.join(root,'hardhat/scripts/core-creation-verifier.cjs')).verifyPrefix(s.plan,q,source,rpc,hashes);console.log(JSON.stringify(result));})().catch(()=>{console.error('COORDINATOR_PREFIX_RECHECK_FAILED');process.exitCode=1;});";
-  return JSON.parse(await execute(config, MANAGER_SUPPORTED, '-e', [code, config.checkout, config.sessionPath, config.catalogPath, config.catalogSha256, config.buildId], { MANAGER_READ_RPC_URL: config.readRpcUrl }));
+  return JSON.parse(await execute(config, supported, '-e', [code, config.checkout, config.sessionPath, config.catalogPath, config.catalogSha256, config.buildId], { MANAGER_READ_RPC_URL: config.readRpcUrl }));
 }
 function expected(state, step, operationId, campaign) {
   need(campaign.reviewedManifest.operations[step]?.operationId === operationId, 'OPERATION_ID_MISMATCH');
   need(state.states.slice(0, step).every(x => x.status === 'finalized'), 'CANONICAL_PREFIX_REQUIRED');
   return state.states[step];
 }
-export function createManagerAdapter() {
+
   return Object.freeze({
-    id: 'manager', supported: MANAGER_SUPPORTED,
-    inspectCampaign(campaign) { const { plan, config } = reviewed(campaign, MANAGER_SUPPORTED, COUNT);
+    id: 'manager', supported: supported,
+    inspectCampaign(campaign) { const { plan, config } = reviewed(campaign, supported, COUNT);
       const code = "const path=require('node:path');const [root,planFile,catalog,catalogSha,buildId]=process.argv.slice(1),P=require(path.join(root,'hardhat/scripts/core-creation-plan.cjs')),source=P.observedRevision(),q=require(path.join(root,'hardhat/scripts/qualified-build-catalog.cjs')).loadQualifiedBuild({catalogPath:catalog,catalogSha256:catalogSha,buildId,expectedRevision:source}),plan=JSON.parse(require('node:fs').readFileSync(planFile));P.checkPlan(plan,q,source);console.log(JSON.stringify(plan.operations.map(x=>({abi:q.records[x.name].artifact.abi,linkedBytecode:P.linkedCreation(q.records[x.name].artifact,plan.libraries).toLowerCase()}))));";
-      const records = evaluateOffline(config, MANAGER_SUPPORTED, code, [config.checkout, config.planPath, config.catalogPath, config.catalogSha256, config.buildId]);
-      return { ...publicSummary(campaign, MANAGER_SUPPORTED, COUNT), route: { token: 'USDC', decimals: 6, address: plan.config.constructorArgs.usdcTokenAddress }, creator: plan.creator, governor: plan.governor,
+      const records = evaluateOffline(config, supported, code, [config.checkout, config.planPath, config.catalogPath, config.catalogSha256, config.buildId]);
+      return { ...publicSummary(campaign, supported, COUNT), route: { token: 'USDC', decimals: 6, address: plan.config.constructorArgs.usdcTokenAddress }, creator: plan.creator, governor: plan.governor,
       feeWallets: plan.config.constructorArgs.settlementWallets, ensDependencies: plan.config.constructorArgs.ensConfig, maximumTotalFeeWei: plan.config.maximumTotalFeeWei, expiresAfterBlock: plan.config.expiresAfterBlock,
       graph: plan.operations.map((x, index) => ({ name: x.name, address: x.predictedAddress, constructorArguments: x.constructorArguments, libraries: x.libraries,
         ...describeCreation({ unsignedHex: campaign.reviewedManifest.operations[index].unsignedHex, abi: records[index].abi, linkedBytecode: records[index].linkedBytecode, expectedLinkedBytecodeHash: keccak256(records[index].linkedBytecode), constructorArguments: x.constructorArguments }),
         displayScope: 'HOST_DECODED_NOT_DEVICE_CONFIRMED', expectedPostState: { address: x.predictedAddress, runtime: { verification: 'Exact pinned compiler artifact and new-graph library links', qualifiedName: x.qualifiedName, catalogSha256: plan.catalogSha256, buildDigest: plan.buildDigest },
-          ...(x.name === 'AGIJobManager' ? { owner: plan.governor, pendingOwner: '0x0000000000000000000000000000000000000000', paused: true, settlementPaused: false, ensJobPages: '0x0000000000000000000000000000000000000000', usdcToken: plan.config.constructorArgs.usdcTokenAddress, wallet30: plan.config.constructorArgs.settlementWallets[0], wallet10: plan.config.constructorArgs.settlementWallets[1], creatorModerator: false, creatorAdditionalAgent: false, creatorAdditionalValidator: false, nextJobId: '0', activationAuthorized: false } : {}) } })) }; },
+          ...(x.name === 'AGIJobManager' ? { owner: plan.governor, pendingOwner: '0x0000000000000000000000000000000000000000', paused: true, settlementPaused: false, ensJobPages: '0x0000000000000000000000000000000000000000', usdcToken: plan.config.constructorArgs.usdcTokenAddress, wallet30: plan.config.constructorArgs.settlementWallets[0], wallet10: plan.config.constructorArgs.settlementWallets[1], clubRootNode: plan.config.constructorArgs.rootNodes[0], agentRootNode: plan.config.constructorArgs.rootNodes[1], alphaClubRootNode: plan.config.constructorArgs.rootNodes[2], alphaAgentRootNode: plan.config.constructorArgs.rootNodes[3], creatorModerator: false, creatorAdditionalAgent: false, creatorAdditionalValidator: false, nextJobId: '0', activationAuthorized: false } : {}) } })) }; },
     async prepare({ campaign, step, privateDir }) {
-      const checked = reviewedOperation(campaign, MANAGER_SUPPORTED, COUNT, step); paths(checked.config, privateDir);
+      const checked = reviewedOperation(campaign, supported, COUNT, step); paths(checked.config, privateDir);
       if (!fs.existsSync(checked.config.sessionPath)) await command(campaign, privateDir, 'start');
       const current = expected(await status(campaign), step, checked.operation.operationId, campaign);
       need(current.status === 'planned', 'RECOVERY_REQUIRED_EXISTING_SIGNING_INTENT');
       const packet = await command(campaign, privateDir, 'handoff');
-      comparePacket(packet, checked, MANAGER_SUPPORTED, step);
+      comparePacket(packet, checked, supported, step);
       return { packet, operationId: checked.operation.operationId, prepared: checked.prepared, state: 'awaiting-owner-approval' };
     },
     async importSigned({ campaign, step, operationId, raw, privateDir }) {
-      const checked = reviewedOperation(campaign, MANAGER_SUPPORTED, COUNT, step);
+      const checked = reviewedOperation(campaign, supported, COUNT, step);
       need(operationId === checked.operation.operationId, 'OPERATION_ID_MISMATCH'); paths(checked.config, privateDir);
       const hash = validateSignedRaw(raw, checked.prepared), current = expected(await status(campaign), step, operationId, campaign);
       need(current.status === 'handed-off', 'RECOVERY_REQUIRED_NO_IMPORTABLE_INTENT');
@@ -72,7 +77,7 @@ export function createManagerAdapter() {
       return { operationId, transactionHash: hash, state: 'signed', acknowledgement: result.relayAcknowledgement };
     },
     async relayOne({ campaign, step, operationId, acknowledgement, privateDir }) {
-      const checked = reviewedOperation(campaign, MANAGER_SUPPORTED, COUNT, step); paths(checked.config, privateDir);
+      const checked = reviewedOperation(campaign, supported, COUNT, step); paths(checked.config, privateDir);
       const current = expected(await status(campaign), step, operationId, campaign);
       need(current.status === 'signed', 'RELAY_ALREADY_ATTEMPTED_OR_UNSIGNED');
       const saved = await command(campaign, privateDir, 'retrieve-handoff');
@@ -81,7 +86,7 @@ export function createManagerAdapter() {
       return { operationId, transactionHash: current.transactionHash, state: 'submitted', submissionAttempted: true };
     },
     async observe({ campaign, step, operationId, privateDir }) {
-      const checked = reviewedOperation(campaign, MANAGER_SUPPORTED, COUNT, step, { allowExpired: true }); paths(checked.config, privateDir);
+      const checked = reviewedOperation(campaign, supported, COUNT, step, { allowExpired: true }); paths(checked.config, privateDir);
       let current = expected(await status(campaign), step, operationId, campaign);
       if (current.status === 'planned') return { operationId, state: 'blocked', verified: false, finalized: false };
       if (current.status !== 'finalized') {
@@ -89,10 +94,10 @@ export function createManagerAdapter() {
         try { await command(campaign, privateDir, 'recover'); } catch {
           if (current.status === 'signed' && !checked.prepared.expired) {
             const original = await command(campaign, privateDir, 'retrieve-handoff');
-            if (original.index === step && original.transactionHash === current.transactionHash && original.status === 'signed' && original.relayAlreadyAttempted === false && original.relayAcknowledgement)
-              return { operationId, transactionHash: current.transactionHash, state: 'signed', verified: false, finalized: false, relayAlreadyAttempted: false, canonicalReceipt: 'NOT_ESTABLISHED', signingAuthorization: false };
+            if (original.schema === 'manager-retrieved-handoff-v1' && original.planSha256 === checked.manifest.planSha256 && original.unsignedSerialized === checked.prepared.unsignedHex && original.index === step && original.transactionHash === current.transactionHash && original.status === 'signed' && original.relayAlreadyAttempted === false && original.relayAcknowledgement)
+              return { operationId, transactionHash: current.transactionHash, state: 'signed', verified: false, finalized: false, relayAlreadyAttempted: false, acknowledgement: original.relayAcknowledgement, canonicalReceipt: 'NOT_ESTABLISHED', signingAuthorization: false };
           }
-          return { operationId, transactionHash: current.transactionHash, state: 'recovery-required', verified: false, finalized: false };
+          return { operationId, ...(current.transactionHash ? { transactionHash: current.transactionHash } : {}), state: 'recovery-required', verified: false, finalized: false };
         }
         await command(campaign, privateDir, 'reconcile');
       }
@@ -110,12 +115,12 @@ export function createManagerAdapter() {
     },
     async exportVerification({ campaign, step, privateDir }) {
       need(step === COUNT - 1, 'VERIFICATION_EXPORT_AWAITS_ALL_NINE_CREATIONS');
-      const checked = reviewedOperation(campaign, MANAGER_SUPPORTED, COUNT, step, { allowExpired: true }); paths(checked.config, privateDir);
+      const checked = reviewedOperation(campaign, supported, COUNT, step, { allowExpired: true }); paths(checked.config, privateDir);
       need(typeof checked.config.licenseType === 'string' && /^[1-9][0-9]?$/.test(checked.config.licenseType), 'EXPLICIT_EXPLORER_LICENSE_REQUIRED');
       need((await status(campaign)).states.every(x => x.status === 'finalized'), 'ALL_NINE_FINALIZED_RECEIPTS_REQUIRED');
       const proof = await verifyPrefix(campaign); need(proof.proofs.length === COUNT, 'COMPLETE_CANONICAL_PREFIX_REQUIRED');
       const packagePath = path.join(privateDir, `${crypto.randomUUID()}-manager-verification`), config = checked.config;
-      await execute(config, MANAGER_SUPPORTED, path.join(config.checkout, 'hardhat/scripts/export-verification-package.cjs'), ['--catalog', config.catalogPath, '--catalog-sha256', config.catalogSha256, '--build-id', config.buildId, '--plan', config.planPath, '--output', packagePath, '--source-root', config.checkout]);
+      await execute(config, supported, path.join(config.checkout, 'hardhat/scripts/export-verification-package.cjs'), ['--catalog', config.catalogPath, '--catalog-sha256', config.catalogSha256, '--build-id', config.buildId, '--plan', config.planPath, '--output', packagePath, '--source-root', config.checkout]);
       const manifest = readJson(path.join(packagePath, 'manifest.json'));
       need(manifest.schema === 'manager-offline-verification-package-v1' && manifest.receiptProven === false, 'NATIVE_EXPORT_SCOPE_MISMATCH');
       const tasks = manifest.contracts.map((contract, index) => {
@@ -125,8 +130,23 @@ export function createManagerAdapter() {
           standardInputSha256: sha256(JSON.stringify(canonical(standardInput))), constructorArguments: contract.constructor.etherscanHexWithoutPrefix, libraries: contract.libraries,
           creation: { transactionHash: creation.transactionHash, blockHash: creation.block.hash, blockNumber: creation.block.number, canonical: true, finalized: true, runtimeVerified: true }, licenseType: config.licenseType };
       });
-      return { tasks, packagePath, nativePackageScope: 'Predicted export retained unchanged; canonical receipt proof separately reverified', explorerAcceptance: 'NOT_OBSERVED', activationAllowed: false };
+      const runtimeEvidence = supported.runtimeEvidenceRequired ? await exportRuntimeEvidence({ campaign, supported, privateDir, tasks, proofs: proof.proofs }) : null;
+      return { tasks, ...(runtimeEvidence ? { runtimeEvidence } : {}), packagePath, nativePackageScope: 'Predicted export retained unchanged; canonical receipt proof separately reverified', explorerAcceptance: 'NOT_OBSERVED', activationAllowed: false };
     }
+  });
+}
+
+export function createManagerAdapter() {
+  const adapters = MANAGER_COMPATIBILITY.map(createPinnedManagerAdapter);
+  const select = campaign => {
+    const source = campaign?.reviewedManifest?.source;
+    const selected = adapters.find(adapter => source?.repository === adapter.supported.repository && source.commit === adapter.supported.commit && source.tree === adapter.supported.tree);
+    need(selected, 'UNREVIEWED_COORDINATOR_SOURCE'); return selected;
+  };
+  return Object.freeze({ id: 'manager', supported: MANAGER_SUPPORTED, compatibility: MANAGER_COMPATIBILITY,
+    forCampaign(campaign) { return select(campaign); },
+    inspectCampaign(campaign) { return select(campaign).inspectCampaign(campaign); },
+    ...Object.fromEntries(['prepare', 'importSigned', 'relayOne', 'observe', 'exportVerification'].map(method => [method, request => select(request?.campaign)[method](request)]))
   });
 }
 export default createManagerAdapter();

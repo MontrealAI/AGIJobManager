@@ -1,0 +1,386 @@
+{
+  "schema": "ubuntu-hardhat-terminal-acceptance-v1",
+  "status": "PASS_DISPOSABLE_FUNCTIONAL_PRODUCTION_NOT_ACCEPTED",
+  "preparedFromToolingBase": "644feb032b6d03ca8b0a0aa02dae8b6c0bccdeed",
+  "environment": {
+    "os": "Ubuntu 24.04.3 LTS",
+    "node": "22.23.3",
+    "hardhat": "3.17.0",
+    "ethers": "6.17.0",
+    "nodeExecutableSha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48",
+    "scope": "Local tests on Ubuntu 24.04.3; hosted qualification separately records Ubuntu 24.04.5."
+  },
+  "toolSourceSha256": "baee8cccb754215546d72779febad1a67c5cab16f7a64e94414e1b2d7a9356e0",
+  "productionSourceFiles": {
+    "hardhat.cjs": "539be27e6fa2099070cb8145ed21a2a89a6ca4d866760b54d4a753297d033460",
+    "native.cjs": "c6fec5d0b1f73976fb7109f5daaf860c01c84122d4cd8cbf9b421a3ec36b8533",
+    "prompt.cjs": "de7fae38b00f87985425e8c01e5fa20c80914ff488e7a166525972a6cf9d84d9",
+    "safety.cjs": "e9bfb1fb43c17a758fe1e47d7d1dab3f26dad82019d936a69f467c87864a2353",
+    "send.cjs": "94a00db7db63a1a00c7e301cc0f293a497d254d2b2f7490df85279cbec623935",
+    "terminal.cjs": "6d839dc89b8f56dc1ead2ec8b290e2df682a92a130ea539f24779232e0624acb"
+  },
+  "tests": {
+    "terminalSecurityAndTransport": {
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "tapSha256": "11cec4c0a8b63661543dadf031fdfaf00251f2128e4ec31fb7918adb2673f4dd",
+      "hosted": {
+        "failed": 0,
+        "passed": 24,
+        "skipped": 0,
+        "tapSha256": "76c9e3e53808e3a56321782f12f437fdb5d6590f23dd90fbd9b5e2e2bbe16f84",
+        "tests": 24
+      }
+    },
+    "existingCompanionRequiredCompilerSuite": {
+      "passed": 448,
+      "failed": 0,
+      "skipped": 0,
+      "tapSha256": "69eb1e49feb45f47cbe6344c96797bc53c7ac880705ad65e846b8b6bd07d9654"
+    },
+    "releaseGates": {
+      "passed": 99,
+      "failed": 0,
+      "logSha256": "be2670279f50db77eb6350617aa07affdddc62ba73a8223331c05d8c33aad17b",
+      "scope": "Re-run after hosted qualification evidence/runbook update; production terminal source unchanged."
+    },
+    "actualHiddenTerminalCLI": {
+      "status": "PASS",
+      "reportSha256": "446cbdf1b5fd232ec5fd6ee75f47aa5b8096d23472b530cd90f208a92a6737ed",
+      "scope": {
+        "backendSubmissions": 1,
+        "eip1898": "canonical hash verified then adapted to numbered local EDR read",
+        "finality": "synthetic finalized=latest",
+        "governorSignatures": 0,
+        "localOnly": true,
+        "publicProviderCalls": 0,
+        "realKeys": false,
+        "reports": [
+          {
+            "echoRestored": true,
+            "hiddenTerminalSendCommand": true,
+            "keyAbsentFromCapturedOutput": true,
+            "operations": 1,
+            "project": "manager",
+            "reconciliationCommand": true,
+            "reviewCommand": true,
+            "toolSourceSha256": "baee8cccb754215546d72779febad1a67c5cab16f7a64e94414e1b2d7a9356e0",
+            "transactionHash": "0xc4053cda639ee3d2e13978d0cbc37f27c0c2a75fe122560a66e69fffd9a2daf4"
+          }
+        ],
+        "status": "PASS"
+      },
+      "hosted": {
+        "status": "PASS",
+        "backendSubmissions": 1,
+        "qualificationMemberSha256": "400458226ba95dd12a372c1b45a2fe9d2c340bf901d2407be67736d8369a3df5",
+        "echoRestored": true,
+        "keyAbsentFromCapturedOutput": true
+      }
+    },
+    "coreAuthorityPositiveAndNegativeControls": {
+      "status": "PASS",
+      "readOnlyChecks": 5,
+      "governorSignatures": 0,
+      "chainTransactionsForChecks": 0,
+      "reportSha256": "e353d353840e9e9a04032945a91533bb6ec466e5c41c2e246bbc510b501d406c",
+      "scope": {
+        "backendSubmissions": 14,
+        "eip1898": "canonical hash verified then adapted to numbered local EDR read",
+        "finality": "synthetic finalized=latest",
+        "governorSignatures": 0,
+        "localOnly": true,
+        "publicProviderCalls": 0,
+        "realKeys": false,
+        "reports": [
+          {
+            "authorityDenials": {
+              "chainTransactions": 0,
+              "checks": [
+                {
+                  "chainMutation": false,
+                  "contract": "AGIJobManager",
+                  "creatorDenied": true,
+                  "method": "transferOwnership",
+                  "ownerPositiveControl": true
+                },
+                {
+                  "chainMutation": false,
+                  "contract": "AGIJobManager",
+                  "creatorDenied": true,
+                  "method": "addModerator",
+                  "ownerPositiveControl": true
+                }
+              ],
+              "comprehensiveAuthorityComplete": false,
+              "governorSignatures": 0,
+              "schema": "ubuntu-hardhat-disposable-authority-denials-v1",
+              "snapshot": {
+                "hash": "0x648d9b6ac414b80220b54e42c5af14dcfd80e327b7b9d8db0f52466801ec78ec",
+                "number": 10
+              }
+            },
+            "creations": 9,
+            "deployerPrivileges": "constructor governor; pending owner zero; deployer moderator false; native exact runtime/state verification passed",
+            "explorerAccepted": false,
+            "governor": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+            "nativeCompletion": "CORE_CREATED_PAUSED_CONFIGURATION_SEPARATE",
+            "operations": 9,
+            "project": "manager",
+            "source": "d371d95cfcc44b9133cda4bba55304f727917f18"
+          },
+          {
+            "authorityDenials": {
+              "chainTransactions": 0,
+              "checks": [
+                {
+                  "chainMutation": false,
+                  "contract": "AscensionAccess",
+                  "creatorDenied": true,
+                  "method": "transferOwnership",
+                  "ownerPositiveControl": true
+                },
+                {
+                  "chainMutation": false,
+                  "contract": "AscensionRiskOracle",
+                  "creatorDenied": true,
+                  "method": "transferOwnership",
+                  "ownerPositiveControl": true
+                },
+                {
+                  "chainMutation": false,
+                  "contract": "AscensionJobMarket",
+                  "creatorDenied": true,
+                  "method": "transferOwnership",
+                  "ownerPositiveControl": true
+                }
+              ],
+              "comprehensiveAuthorityComplete": false,
+              "governorSignatures": 0,
+              "schema": "ubuntu-hardhat-disposable-authority-denials-v1",
+              "snapshot": {
+                "hash": "0x0a0d460c83fc39dae6ad493d154505c8062dbc4b3bc99542209aa30b8e5f3717",
+                "number": 15
+              }
+            },
+            "creations": 5,
+            "explorerAccepted": false,
+            "globallyPaused": false,
+            "governor": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+            "governorBindings": 0,
+            "nativePrefixPassed": true,
+            "operations": 5,
+            "project": "alpha",
+            "source": "38064bec3423218f87c6b81760ac6768b3e7d4e5",
+            "uncommissioned": true
+          }
+        ],
+        "status": "PASS"
+      }
+    }
+  },
+  "nativeDisposableRehearsal": {
+    "environment": "Hosted Ubuntu 24.04.5 disposable unforked EVM",
+    "totalOperations": 53,
+    "totalCreations": 39,
+    "manager": {
+      "status": "PASS",
+      "operations": 9,
+      "creations": 9,
+      "source": "d371d95cfcc44b9133cda4bba55304f727917f18",
+      "nativeCompletion": "CORE_CREATED_PAUSED_CONFIGURATION_SEPARATE",
+      "governor": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99"
+    },
+    "alpha": {
+      "status": "PASS",
+      "operations": 5,
+      "creations": 5,
+      "source": "38064bec3423218f87c6b81760ac6768b3e7d4e5",
+      "governorBindings": 0,
+      "nativeFiveCreationPrefixPassed": true,
+      "uncommissioned": true
+    },
+    "jobs": {
+      "status": "PASS_CREATOR_PHASE_GOVERNOR_COMMISSIONING_SEPARATE",
+      "operations": 39,
+      "creations": 25,
+      "source": "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5",
+      "compilerInputSha256": "a962576832d4540c4cd682f9251b6eed2a333c87a1ce5fa61ed5716e7091b891",
+      "nativeCloseout": "awaiting-commissioning",
+      "sourceRecords": 25,
+      "creatorPermissionChecksPassed": 9,
+      "boundedAuthorityChecksComplete": false,
+      "boundedBlockers": [
+        "TaxPolicy.owner",
+        "IdentityRegistry.owner",
+        "IdentityRegistry.pendingOwner",
+        "TaxPolicy.pendingOwner",
+        "FeePool.treasury",
+        "FeePool.governance",
+        "FeePool.treasuryAllowlist(0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99)"
+      ],
+      "authorityComplete": false,
+      "normalizedEnsSha256": "395ea0a49d70f8e6777c0d611c40546cc7dc24ab1b71eeafbb765099fed8eb61",
+      "stagedWriterExecution": "Original TypeScript entrypoint in process; explicit read-only contract runner and owned HRE backend; not a fresh-CLI qualification claim"
+    }
+  },
+  "keyHandling": {
+    "realKeysRequested": false,
+    "realKeysUsed": false,
+    "hiddenPromptOnly": true,
+    "keyPassedInArgv": false,
+    "keyPassedInEnvironment": false,
+    "keyWrittenToFile": false,
+    "rawSignedTransactionExportRequired": false,
+    "rawSignedTransactionsPersistedByTerminalTool": false,
+    "buffersClearedAndWalletReferencesDropped": true,
+    "guaranteedJavaScriptMemoryErasureClaimed": false,
+    "malformedInputHiddenUntilEnter": true,
+    "nodeDebugStreamLoggingRejected": true
+  },
+  "acceptanceLimits": {
+    "emptyCodeCreatorOnly": true,
+    "selectedMarkerAccountQualified": false,
+    "governorKeyLoaded": false,
+    "governorTransactionsSigned": 0,
+    "publicProviderQualified": false,
+    "realUbuntuBootstrapQualified": false,
+    "realSigningQualified": false,
+    "explorerAccepted": false,
+    "comprehensiveAuthorityComplete": false,
+    "sameDeployerCrossProjectPlanQualified": false,
+    "productionPlanAccepted": false,
+    "mainnetTransactions": 0,
+    "activationAuthorized": false
+  },
+  "hostedEvidencePreserved": {
+    "manager": {
+      "run": 38958922414,
+      "artifact": 12071534584,
+      "artifactSha256": "3e8f6245e82510a3a98b4e39c4ffd023870739cdabfcd670edadc6d6953a12e6"
+    },
+    "jobs": {
+      "run": 38954500102,
+      "artifact": 12072489816,
+      "artifactSha256": "1da8f5a17978b92bf355537076125063b064c287d71b5c3e40858a9fcc33d025"
+    }
+  },
+  "priorRehearsalDiagnostic": {
+    "scope": "Disposable test HRE reader adapter only",
+    "status": "Stopped after paused-finalization preparation by forbidden eth_accounts query",
+    "logSha256": "11f78a50932a219ef458ce214e12e1694d2f09f6d5abfce2ef03347693e00da4",
+    "fix": "The test HRE getContractAt supplies the explicit read-only provider instead of discovering a signer. Original contract/native API source is unchanged. Successful full hosted rerun 38975488543 supersedes this diagnostic; the failed local run is not counted as a pass."
+  },
+  "receiptRecheckPolicy": "First Jobs prefix verification in each process checks every receipt; reuse is in memory only and requires an identical head/view plus fresh native canonical last-receipt validation. Any drift/failure or process restart requires full verification.",
+  "hostedQualification": {
+    "status": "PASS_DISPOSABLE_FUNCTIONAL",
+    "workflow": ".github/workflows/ubuntu-hardhat-terminal.yml",
+    "repository": "MontrealAI/AGIJobManager",
+    "qualifiedToolingHead": "97bcb531c673a60ee7f8e94922748377a9999a43",
+    "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/38975488543",
+    "runId": 38975488543,
+    "runAttempt": 1,
+    "event": "pull_request",
+    "conclusion": "success",
+    "jobId": 117223796500,
+    "allJobStepsSucceeded": true,
+    "artifactId": 12080725444,
+    "artifactName": "ubuntu-hardhat-terminal-97bcb531c673a60ee7f8e94922748377a9999a43-38975488543",
+    "archiveBytes": 4822,
+    "archiveSha256": "1a96a0ad80bdf4681ee8e67c4f8af207d1defc401dc7e335367ec29ba714e81d",
+    "githubArtifactDigestMatched": true,
+    "downloadedArchiveVerified": true,
+    "allInventoryMemberHashesMatched": true,
+    "publicMemberSha256": {
+      "SHA256SUMS.json": "3b6797dd2671a03cb32ad990452db8c701b4b8007c3dbd1ca895492f257b7e4a",
+      "cli.log": "26445f06f9cdf691bf14fb91e4bdbdb027ffef23557097d1b4c7c87c8c00f1a9",
+      "native.log": "617d9d133ab717da9d7b485a9591f28e0d4af2e4bf2b73a6537ab0c527a51957",
+      "qualification.json": "400458226ba95dd12a372c1b45a2fe9d2c340bf901d2407be67736d8369a3df5",
+      "terminal-tests.tap": "76c9e3e53808e3a56321782f12f437fdb5d6590f23dd90fbd9b5e2e2bbe16f84"
+    },
+    "publicSummaryFile": "ubuntu-hardhat-hosted-38975488543.json",
+    "publicSummaryCopiedByteForByte": true,
+    "node": "v22.23.3",
+    "nodeExecutableSha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48",
+    "os": "Ubuntu 24.04.5 LTS",
+    "unit": {
+      "failed": 0,
+      "passed": 24,
+      "skipped": 0,
+      "tapSha256": "76c9e3e53808e3a56321782f12f437fdb5d6590f23dd90fbd9b5e2e2bbe16f84",
+      "tests": 24
+    },
+    "actualCliSubmissions": 1,
+    "nativeOperations": 53,
+    "creations": 39,
+    "readOnlyAdministrativeDenialChecks": 5,
+    "jobsCreatorPermissionChecksPassed": 9,
+    "jobsSourceRecords": 25,
+    "sourceBuilds": [
+      "d371d95cfcc44b9133cda4bba55304f727917f18",
+      "38064bec3423218f87c6b81760ac6768b3e7d4e5",
+      "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5"
+    ],
+    "governorSignatures": 0,
+    "publicProviderCalls": 0,
+    "realKeys": false,
+    "finality": "synthetic finalized=latest",
+    "eip1898": "canonical hash verified then adapted to numbered local EDR read",
+    "otherQualifiedHeadWorkflows": [
+      {
+        "id": 38975488462,
+        "name": "Docs Integrity",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "97bcb531c673a60ee7f8e94922748377a9999a43"
+      },
+      {
+        "id": 38975488315,
+        "name": "Mainnet USDC Fork Qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "97bcb531c673a60ee7f8e94922748377a9999a43"
+      },
+      {
+        "id": 38975488357,
+        "name": "Security Verification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "97bcb531c673a60ee7f8e94922748377a9999a43"
+      },
+      {
+        "id": 38975488370,
+        "name": "Ledger companion real-browser acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "97bcb531c673a60ee7f8e94922748377a9999a43"
+      },
+      {
+        "id": 38975488385,
+        "name": "UI CI",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "97bcb531c673a60ee7f8e94922748377a9999a43"
+      }
+    ],
+    "mainnetAuthorized": false
+  },
+  "manualGovernorAbiReadback": {
+    "file": "jobs-9a79-governor-abi-readback.json",
+    "sha256": "9e99c234118b32853d49126e98d7518f36c2522fbcc9382f120302a98066c192",
+    "chainTransactions": 0,
+    "approval": false,
+    "scope": "Exact 9a79 artifact ABI/method-selector readback only; no governor execution qualification."
+  },
+  "recordedAt": "2026-10-16T23:05:56.246484+00:00",
+  "qualifiedToolingHead": "97bcb531c673a60ee7f8e94922748377a9999a43",
+  "priorLocalFullRehearsal": {
+    "status": "INTERRUPTED_BY_EXECUTION_ENVIRONMENT_RESET",
+    "jobsAcceptedOperations": 14,
+    "jobsPreparedOperations": 15,
+    "complete": false,
+    "countedAsPass": false,
+    "supersededBySuccessfulHostedRun": 38975488543
+  }
+}

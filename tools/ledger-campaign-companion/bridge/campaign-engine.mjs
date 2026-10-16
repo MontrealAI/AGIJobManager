@@ -64,10 +64,14 @@ function checkedCapability(prepared, capability, now) {
   return { transactionHash: rebuilt.transactionHash, expired: current.expired || capability.status === 'EXPIRED_SIGNED_CAPABILITY_DO_NOT_RELAY' || rebuilt.status === 'EXPIRED_SIGNED_CAPABILITY_DO_NOT_RELAY' };
 }
 
-export async function createCampaignEngine({ campaign: suppliedCampaign, adapter, privateDirectory, forbiddenRoots = [], relayEnabled = false, now = Date.now, afterVerified, recoverDeadOwner = false }) {
+export async function createCampaignEngine({ campaign: suppliedCampaign, adapter, privateDirectory, forbiddenRoots = [], relayEnabled = false, now = Date.now, afterVerified, recoverDeadOwner = false, trustedContext }) {
   const campaign = deepFreeze(copy(suppliedCampaign));
+  if (typeof adapter?.forCampaign === 'function') adapter = adapter.forCampaign(campaign);
   if (!adapter || !Object.isFrozen(adapter) || !['inspectCampaign', 'prepare', 'importSigned', 'observe', 'relayOne'].every(method => typeof adapter[method] === 'function')) reject('UNSUPPORTED_COORDINATOR');
   validateCampaign(campaign, adapter, now());
+  if (trustedContext !== undefined && (!Object.isFrozen(trustedContext) || typeof trustedContext.assertUnchanged !== 'function' || !/^[0-9a-f]{64}$/.test(trustedContext.receipt?.policySha256 ?? '') || trustedContext.receipt.campaignSha256 !== sha256(campaign) || trustedContext.receipt.exactTransactionBytesValidated !== true || trustedContext.receipt.locallyRecompiled !== true)) reject('TRUSTED_LOCAL_CONTEXT_REQUIRED');
+  const checkTrust = async () => { if (trustedContext) await trustedContext.assertUnchanged(); };
+  await checkTrust();
   if (typeof relayEnabled !== 'boolean' || (relayEnabled && (campaign.relayPolicy?.enabled !== true || campaign.relayPolicy?.acknowledgementMode !== 'EXACT_COORDINATOR_PER_STEP'))) reject('RELAY_NOT_REVIEW_ENABLED');
   if (campaign.relayPolicy !== undefined) exactFields(campaign.relayPolicy, ['enabled', 'acknowledgementMode']);
   let inspection, sourceBlocked = false;
@@ -75,6 +79,11 @@ export async function createCampaignEngine({ campaign: suppliedCampaign, adapter
   const display = sourceBlocked ? { ...fields(campaign, ['campaignId', 'network', 'route', 'actors', 'maxTotalFeeWei', 'expiresAt']), coordinatorDetails: { configurationScope: 'SOURCE_INSPECTION_BLOCKED_READ_ONLY_RECOVERY' }, qualification: Object.fromEntries(['source','browser','coordinator','physical','provider','configuration','explorer','authority'].map(key => [key, 'SOURCE_INSPECTION_BLOCKED_READ_ONLY_RECOVERY'])) } : checkedDisplay(campaign, inspection);
   const store = await openPrivateStore({ directory: privateDirectory, campaign, forbiddenRoots: [...forbiddenRoots, campaign.coordinator?.checkout].filter(Boolean), recoverDeadOwner });
   let state = store.snapshot ?? { steps: campaign.reviewedManifest.operations.map((_operation, index) => sourceBlocked || inspection?.canPrepare === false || inspection?.state === 'blocked' ? { index, state: 'blocked', blocker: sourceBlocked ? 'SOURCE_INSPECTION_BLOCKED' : 'COORDINATOR_UNSUPPORTED' } : { index, state: 'awaiting-owner-approval' }), verificationTasks: {} };
+  if (state.trustPolicySha256 && !trustedContext) { await store.close(); reject('TRUSTED_LOCAL_CONTEXT_REQUIRED'); }
+  if (trustedContext) {
+    if (store.snapshot && state.trustPolicySha256 !== trustedContext.receipt.policySha256) { await store.close(); reject('TRUST_POLICY_CHANGED_RECONCILE_ORIGINAL_CAMPAIGN'); }
+    state.trustPolicySha256 = trustedContext.receipt.policySha256;
+  }
   if (!store.snapshot) await store.append(state);
   if (store.recoveredOwner) { state.bridgeRecoveryRequired = true; await store.append(state); }
   for (const retained of await store.readCapabilities()) {
@@ -108,16 +117,33 @@ export async function createCampaignEngine({ campaign: suppliedCampaign, adapter
       return { ...copy(operation), ...(actual ? { purpose: `${actual.name} — CREATE`, decodedArguments: copy(actual.constructorArguments), expectedPostState: copy(actual.expectedPostState ?? { status: 'NOT_SUPPLIED_BY_SUPPORTED_COORDINATOR' }), displayScope: actual.displayScope ?? 'HOST_DECODED_NOT_DEVICE_CONFIRMED', deviceSemanticsConfirmed: false } : governance ? { purpose: `${governance.name} — ${governance.method}`, decodedArguments: fields(governance, ['method', 'arguments', 'argument', 'from', 'to', 'data', 'value']), expectedPostState: copy(governance.expectedPostState ?? { status: 'NOT_SUPPLIED_BY_SUPPORTED_COORDINATOR' }), displayScope: governance.displayScope ?? 'HOST_DECODED_NOT_DEVICE_CONFIRMED', deviceSemanticsConfirmed: false } : {}), envelope: copy(validateIntent(campaign.reviewedManifest.operations[index].unsignedHex, campaign.reviewedManifest.operations[index].expectedUnsignedHash, campaign.reviewedManifest.operations[index].review, campaign.reviewedManifest.operations[index].expectedPolicyHash, now(), { allowExpired: true }).summary) };
     }),
     identity: { ...campaign.reviewedManifest.source, packetSchema: campaign.packetSchema, sourceSha256: campaign.reviewedManifest.sourceSha256, planSha256: campaign.reviewedManifest.planSha256, ...(campaign.coordinator?.buildId ? { buildId: campaign.coordinator.buildId } : {}) }
-  }, steps: state.steps.map(publicStep), relayEnabled: relayEnabled && !sourceBlocked && !state.bridgeRecoveryRequired, sourceBlocked, bridgeRecoveryRequired: state.bridgeRecoveryRequired === true, readiness: { authorityComplete: false, activationReady: false, physicalQualified: false } });
+  }, steps: state.steps.map(publicStep), relayEnabled: relayEnabled && !sourceBlocked && !state.bridgeRecoveryRequired, sourceBlocked, bridgeRecoveryRequired: state.bridgeRecoveryRequired === true, ...(trustedContext ? { trustedLocalBuild: fields(trustedContext.receipt, ['schema','platform','policySha256','source','campaignSha256','planSha256','locallyRecompiled','exactTransactionBytesValidated']) } : {}), readiness: { authorityComplete: false, activationReady: false, physicalQualified: false } });
   const readOnlyObserve = async (index, operationId) => {
     const step = stepAt(index, operationId);
     let result;
     try {
+      await checkTrust();
       result = await adapter.observe({ campaign, step: index, operationId: campaign.reviewedManifest.operations[index].operationId, privateDir: store.root });
       if (!result || !stateNames.has(result.state)) reject('COORDINATOR_RESULT_REJECTED');
       if (result.transactionHash !== undefined && (!hashPattern.test(result.transactionHash) || (step.transactionHash && step.transactionHash !== result.transactionHash))) reject('CANONICAL_RESULT_CHANGED');
       if (result.state === 'verified' && (result.verified !== true || result.finalized !== true || !step.transactionHash)) reject('COORDINATOR_RESULT_REJECTED');
     } catch (error) { step.state = 'recovery-required'; step.blocker = 'CANONICAL_OBSERVATION_UNAVAILABLE'; await append(); throw error; }
+    if (result.state === 'signed') {
+      // Recovery may restore only the original native acknowledgement for an
+      // already preserved exact signed capability. It never authorizes a retry.
+      delete step.acknowledgement;
+      if (step.relayAttempted || result.relayAlreadyAttempted === true || sourceBlocked || now() >= Date.parse(campaign.expiresAt)) {
+        delete step.acknowledgement;
+        result = { ...result, state: 'recovery-required', blocker: 'RELAY_RECOVERY_BLOCKED_NO_RETRY' };
+      } else if (result.acknowledgement !== undefined) {
+        if (!step.transactionHash || result.transactionHash !== step.transactionHash || result.operationId !== campaign.reviewedManifest.operations[index].operationId || result.relayAlreadyAttempted !== false || typeof result.acknowledgement !== 'string' || !/^[\x20-\x7e]{1,256}$/.test(result.acknowledgement)) {
+          delete step.acknowledgement; step.state = 'recovery-required'; step.blocker = 'RELAY_ACK_RECOVERY_REJECTED'; await append(); reject('RELAY_ACK_RECOVERY_REJECTED');
+        }
+        step.acknowledgement = result.acknowledgement;
+      } else {
+        result = { ...result, state: 'recovery-required', blocker: 'EXACT_NATIVE_RELAY_ACK_UNAVAILABLE' };
+      }
+    }
     if (result.state === 'verified') { step.state = 'verified'; delete step.blocker; }
     else { step.state = result.state; step.blocker = result.blocker && /^[A-Z_]{1,96}$/.test(result.blocker) ? result.blocker : 'CANONICAL_RESULT_NOT_VERIFIED'; }
     if (result.transactionHash) step.transactionHash = result.transactionHash;
@@ -157,6 +183,7 @@ export async function createCampaignEngine({ campaign: suppliedCampaign, adapter
     status: () => serial(async () => status()),
     prepare: request => serial(async () => {
       exactFields(request, ['step']); if (sourceBlocked) reject('SOURCE_INSPECTION_BLOCKED'); if (state.bridgeRecoveryRequired) reject('BRIDGE_OWNER_READ_ONLY_RECOVERY_REQUIRED'); freshness(); const step = stepAt(request.step);
+      await checkTrust();
       checkedDisplay(campaign, await adapter.inspectCampaign(campaign));
       for (let earlier = 0; earlier < request.step; earlier += 1) if (state.steps[earlier].state === 'verified') await readOnlyObserve(earlier, campaign.reviewedManifest.operations[earlier].operationId);
       nextOnly(request.step);
@@ -168,20 +195,21 @@ export async function createCampaignEngine({ campaign: suppliedCampaign, adapter
         const pinned = campaign.reviewedManifest.operations[request.step];
         const prepared = fields(result?.prepared, ['unsignedHex', 'expectedUnsignedHash', 'expectedPolicyHash', 'review']);
         if (result?.operationId !== pinned.operationId || canonical(prepared) !== canonical(fields(pinned, ['unsignedHex', 'expectedUnsignedHash', 'expectedPolicyHash', 'review']))) reject('COORDINATOR_PACKET_MISMATCH');
-        validateIntent(prepared.unsignedHex, prepared.expectedUnsignedHash, prepared.review, prepared.expectedPolicyHash, now()); freshness();
+        validateIntent(prepared.unsignedHex, prepared.expectedUnsignedHash, prepared.review, prepared.expectedPolicyHash, now()); freshness(); await checkTrust();
         step.prepared = prepared; step.operationId = result.operationId; step.state = 'signing-requested'; step.signingRequestedAt = new Date(now()).toISOString(); delete step.blocker; await append();
         return { step: request.step, operationId: step.operationId, state: step.state, prepared: copy(step.prepared) };
       } catch (error) { step.state = 'recovery-required'; step.blocker = 'PREPARE_OUTCOME_UNKNOWN'; await append(); throw error; }
     }),
     importSigned: request => serial(async () => {
       exactFields(request, ['step', 'operationId', 'capability']); const step = stepAt(request.step, request.operationId);
-      if (!step.prepared || !step.signingRequestedAt || step.transactionHash || !['signing-requested', 'recovery-required'].includes(step.state)) reject('READ_ONLY_RECOVERY_REQUIRED');
+      if (!step.prepared || !step.signingRequestedAt || step.transactionHash || step.relayAttempted || !['signing-requested', 'pending', 'recovery-required'].includes(step.state)) reject('READ_ONLY_RECOVERY_REQUIRED');
       const checked = checkedCapability(step.prepared, request.capability, now());
       const capabilityFile = await store.capability(request.step, request.capability);
       step.capabilityFile = capabilityFile; step.transactionHash = checked.transactionHash; step.state = 'signed'; step.blocker = 'SIGNED_NOT_SUBMITTED'; await append();
       if (checked.expired || now() >= Date.parse(campaign.expiresAt) || sourceBlocked) {
         step.state = 'recovery-required'; step.blocker = sourceBlocked ? 'SOURCE_INSPECTION_BLOCKED_DO_NOT_RELAY' : 'EXPIRED_SIGNED_CAPABILITY_DO_NOT_RELAY'; await append(); return { ...publicStep(step), durable: true };
       }
+      try { await checkTrust(); } catch { step.state = 'recovery-required'; step.blocker = 'TRUSTED_BUILD_CHANGED_DO_NOT_RELAY'; delete step.acknowledgement; await append(); return { ...publicStep(step), durable: true }; }
       let raw;
       try { raw = coordinatorImport(step.prepared, request.capability, now()).raw; } catch { reject('SIGNED_ENVELOPE_MISMATCH'); }
       step.state = 'recovery-required'; step.blocker = 'IMPORT_OUTCOME_UNKNOWN'; await append();
@@ -197,11 +225,12 @@ export async function createCampaignEngine({ campaign: suppliedCampaign, adapter
     relayOne: request => serial(async () => {
       exactFields(request, ['step', 'operationId', 'acknowledgement']); const step = stepAt(request.step, request.operationId);
       if (!relayEnabled) reject('RELAY_DISABLED_PENDING_REVIEW'); if (sourceBlocked) reject('SOURCE_INSPECTION_BLOCKED'); if (state.bridgeRecoveryRequired) reject('BRIDGE_OWNER_READ_ONLY_RECOVERY_REQUIRED'); freshness(); nextOnly(request.step);
+      await checkTrust();
       if (step.state !== 'signed' || !step.transactionHash || step.relayAttempted || !step.acknowledgement || request.acknowledgement !== step.acknowledgement) reject('EXACT_COORDINATOR_ACK_REQUIRED');
       checkedDisplay(campaign, await adapter.inspectCampaign(campaign));
       validateIntent(step.prepared.unsignedHex, step.prepared.expectedUnsignedHash, step.prepared.review, step.prepared.expectedPolicyHash, now());
       for (let earlier = 0; earlier < request.step; earlier += 1) await readOnlyObserve(earlier, campaign.reviewedManifest.operations[earlier].operationId);
-      nextOnly(request.step); freshness();
+      nextOnly(request.step); freshness(); await checkTrust();
       step.relayAttempted = true; step.state = 'recovery-required'; step.blocker = 'RELAY_OUTCOME_UNKNOWN'; await append();
       try {
         const result = await adapter.relayOne({ campaign, step: request.step, operationId: request.operationId, acknowledgement: request.acknowledgement, privateDir: store.root });

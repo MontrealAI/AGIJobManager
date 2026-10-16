@@ -1,35 +1,45 @@
-# Real browser acceptance
+# Browser, recovery and trusted-Mac acceptance
 
-The original 122 deterministic tests remain `npm test`. Those tests and a DOM fixture do not establish browser acceptance. `test/browser-acceptance.mjs` runs Chromium with its sandbox enabled and builds a separate, temporary synthetic-device alias. Production code contains no browser hook for device injection; `scripts/browser-check-production.mjs` rejects fixture markers in production output. The test alias is never copied into `dist/` and no USB API is called.
+The hosted job uses **macOS 15**, Node **22.23.2**, isolated Playwright **1.62.1** and its matched Chromium with `chromiumSandbox:true`. Production Ledger SDK pins remain unchanged. The workflow checks out the exact PR head and binds retained metadata to that commit and run ID. No test asks for a real USB device, signs with a physical Ledger or contacts an Ethereum RPC.
 
-Use the exact isolated test toolchain, without changing production Ledger SDK pins:
+Reproduce on a supported host:
 
 ```sh
 npm ci --ignore-scripts --no-fund --no-audit
 npm ci --prefix scripts/browser-toolchain --ignore-scripts --no-fund --no-audit
 node scripts/browser-toolchain/node_modules/playwright/cli.js install --with-deps chromium
-npm test
+node scripts/browser-regression-check.mjs
 npm run build
 node scripts/browser-check-production.mjs
 node test/browser-acceptance.mjs
 ```
 
-`test/browser-smoke.mjs` additionally loads the real production bundle without requesting device access. Start `node scripts/serve.mjs` in another terminal before running that smoke. The workflow captures deterministic test output privately and emits only sanitized totals, so assertion failures cannot leak synthetic capability bytes into hosted logs. The workflow template performs both tests on an macOS 15 GitHub-hosted runner and uploads only `manual-ledger-evidence/browser-acceptance.json`. The runner must support Chromium sandboxing; do not add `--no-sandbox`, change identity, disable sandbox controls, or weaken CSP to make a blocked test pass.
+For the production page/CSP smoke, start `node scripts/serve.mjs` in another terminal, then run `node test/browser-smoke.mjs`. The exact hosted steps are in `scripts/browser-acceptance.workflow.yml`. Do not disable sandboxing, weaken CSP, replace SDK context or add a runtime device stub to force a pass.
 
-The campaign cases use the actual local HTTP bridge and durable campaign engine with a frozen **synthetic test adapter**. They check UI integration and local recovery. They do not constitute genuine coordinator, provider, explorer, or physical Ledger qualification. The separate genuine-coordinator suite must provide that evidence. Large CREATE transport chunks in this fixture are a byte-integrity model, not real Ledger APDU/device acceptance.
+`test/browser-acceptance.mjs` builds a temporary synthetic-device alias. Production output excludes that alias and `scripts/browser-check-production.mjs` checks for fixture markers. The isolated signer uses a separate numeric-loopback origin and `connect-src 'none'`; the browser suite verifies that it cannot fetch the dashboard API or an external endpoint. Test-only capabilities stay in process memory or owner-only temporary directories removed after successful cleanup. A watchdog interruption can leave owner-only temporary state; it is never uploaded. Source-bound metadata is written atomically before and after each case, including the active case name. A 60-second test-only watchdog records TEST_CASE_TIMEOUT and exits without claiming a pass; cleanup has the same bound. Do not publish traces, HARs, capability screenshots, console dumps or arbitrary crash artifacts.
 
-The browser suite checks production-style CSP blocking, two numeric loopback origins, no signer network access to the bridge, source/account/path and recovered-signer failures, fixed error text, expiry before and after signature, private recovery and minimal import, blocked downloads, duplicate requests, loss of the import response, refresh/recovery, stale auth sessions, canonical-result changes, and manually approved progression. Every synthetic capability remains in process memory or an owner-only temporary directory which is removed after the case. Test output and retained evidence include only fixed case names, counters and pass/fail metadata. Do not enable traces, HAR files, console dumps, screenshots of signed bytes, or arbitrary crash artifacts for these tests.
+Campaign browser cases exercise the real HTTP server and durable campaign engine with a frozen **synthetic coordinator adapter**. Known packet-schema strings test Manager JSON versus Alpha raw-text export formatting; they do not reproduce a native revision. Acceptance covers cancellation, disconnection, changed account/path/source, expiry before and after signature, blocked downloads, repeated clicks, unsigned observation, browser reload, bridge restart, lost import acknowledgement, interrupted relay and lost relay response. Restart checks preserve the exact capability file and every earlier journal record; recovery neither reimports nor resubmits. A lost import response can require a browser reload after read-only acknowledgement recovery before a separately authorized first relay is offered. No missing receipt authorizes another submission.
 
-Local environment on 2026-10-16: matched Playwright 1.62.1 browser installation returned an invalid/truncated download from the official CDN. A pre-existing cached Chromium was also tested with sandboxing enabled and refused the root environment before page load. No browser assertions ran locally. See `manual-ledger-evidence/browser-environment.json`; the reproducible supported CI workflow is the fallback, and is not evidence of a pass until its actual run is recorded.
+The native coordinator suite and physical-device sheet are separate. A synthetic transport-chunk test establishes byte integrity in that model; it does not qualify Ledger APDUs, display semantics or the largest real CREATE. Physical Ledger acceptance is **NOT PERFORMED**; see `PHYSICAL_ACCEPTANCE_EN_FR.md`.
 
-# Acceptation dans un navigateur réel
+## Independent compiler check
 
-Les 122 tests déterministes sont conservés; ils ne prouvent pas l'acceptation du navigateur. La suite Chromium active le bac à sable et utilise un appareil synthétique uniquement dans une compilation de test temporaire. Aucun appel USB, aucune signature réelle ni aucun envoi réseau Ethereum n'est effectué. La compilation de production exclut ce dispositif.
+The hosted Mac job also downloads the fixed official soljson distribution from `argotorg/solc-bin` commit `8d513ea2ab6b4f6c29ee3373125080bed89224be`, checks SHA-256 `d73fead3cbc860438f56f4d1723677499cdef212d0f8890241748d2d5afc1c5f`, then runs:
 
-Le tableau de bord et le signataire utilisent deux origines numériques de bouclage distinctes. Les cas de campagne passent par le vrai serveur et le moteur durable locaux avec un adaptateur synthétique. La validation du coordinateur réel, du fournisseur, de l'explorateur et de l'appareil physique reste distincte. Les capacités signées synthétiques ne figurent jamais dans les résultats publics.
+```sh
+COMPANION_TEST_SOLJSON=/absolute/path/to/official-soljson.cjs COMPANION_REQUIRE_COMPILER=1 node --test --test-concurrency=1 test/trusted-mac.test.mjs
+```
 
-L'environnement local a bloqué Chromium avant le chargement de la page. La tâche CI fournie installe la version exacte du navigateur sur un exécuteur GitHub macOS compatible. Aucun résultat CI ne doit être annoncé avant son exécution réelle. Ne désactivez jamais le bac à sable ni la politique CSP pour transformer un blocage en réussite.
+This uses a genuine compiler and synthetic Solidity source to test independent reproduction, linked libraries, immutable references, exact CREATE binding and tamper/restart guards. It is not native Manager or Alpha contract qualification. Without the explicit compiler path, optional compiler cases are skipped; the sanitized regression report exposes skipped, cancelled and todo counts. Required compiler acceptance fails when the compiler is absent. After checking the official hash, the hosted job preserves that compiler path and required-compiler flag for the following full regression suite. It does not require or invent a native macOS compiler pin; native-only comparison cases remain explicitly skipped. A native-compiler equality case runs only when `COMPANION_TEST_NATIVE_SOLC` is supplied and otherwise appears as skipped.
 
-Hosted Ubuntu 24.04 attempt on head `a8f9f161abb8086ea8b6859b0a0b210b2fa41e7f`, run `38927525745`: dependencies, matched browser installation, 279 deterministic tests and production build passed. Chromium then stopped before page load with **No usable sandbox**, citing Ubuntu AppArmor/user-namespace restrictions. No security controls were changed. The revised job uses a standard supported macOS 15 hosted runner with `chromiumSandbox:true` and unchanged CSP; acceptance remains pending its actual run.
+Only sanitized browser, regression and compiler metadata are uploaded. Assertion output stays redacted. The compiler distribution is pinned to official release bytes; another distribution reporting the same Solidity version has a different identity and needs its own independently reviewed pin.
 
-The initializer resolves the runner temporary directory to its own canonical path before strict no-symlink tests. macOS commonly exposes that same directory through a `/var` alias. This changes only test environment path spelling; path guards, permissions, private-store checks and Chromium sandboxing stay enabled. Production source is unchanged.
+## Evidence history
+
+The earlier exact head `6eeac125ae69d68c6a67291604541fd887f76a85` passed 38 synthetic-device browser cases on macOS 15, run `38929422465`. That historical result does not certify this changed source. Initial head `221eb22247e6273c303d2d5875de7fcf2b11786b` then passed 46/48 cases in run `38945434956`; two recovery cases timed out because the dashboard retained its pre-prepare snapshot. The correction reads back the exact durable operation before displaying the signer; it requires its own completed hosted run. An earlier Ubuntu 24.04 run `38927525745` stopped before page load with no usable Chromium sandbox; no security controls were disabled. Local execution in this workspace still blocks before page load and executes zero browser assertions. Only an actual completed run on the new source can qualify its browser cases.
+
+## Français
+
+La tâche macOS 15 utilise les versions exactes de Node, Playwright et Chromium, avec le bac à sable activé. Les tests du navigateur emploient un appareil et un adaptateur de coordinateur synthétiques dans une compilation temporaire. Ils testent le vrai serveur local et le journal durable, sans USB réel ni RPC Ethereum. Les deux formats d'import, les annulations, déconnexions, changements de compte/source, expirations, accusés perdus et redémarrages sont vérifiés séparément des coordinateurs natifs et de l'appareil physique.
+
+Le compilateur officiel est téléchargé depuis un commit fixe et son empreinte est vérifiée avant les essais de reproduction sur source Solidity synthétique. Les essais ignorés restent visibles dans les compteurs. Ces résultats ne qualifient pas les contrats natifs. Aucune qualification physique n'est déclarée; aucun échec de sandbox ou de CSP n'est contourné. Une reprise en lecture seule conserve la capacité et la tentative exactes; elle n'importe ni n'envoie de nouveau automatiquement.

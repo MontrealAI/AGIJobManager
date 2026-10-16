@@ -39,6 +39,28 @@ jobs:
           npm ci --prefix scripts/browser-toolchain --ignore-scripts --no-fund --no-audit
       - name: Install Playwright-matched Chromium and operating-system dependencies
         run: node scripts/browser-toolchain/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Trusted Mac compiler acceptance with fixed official compiler bytes
+        run: |
+          COMPANION_SOLJSON_FILE="${RUNNER_TEMP}/companion-soljson-0.8.37.cjs"
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 --max-time 45 --retry 2 --retry-max-time 120 'https://raw.githubusercontent.com/argotorg/solc-bin/8d513ea2ab6b4f6c29ee3373125080bed89224be/bin/soljson-v0.8.37+commit.f401782d.js' --output "$COMPANION_SOLJSON_FILE"
+          COMPANION_TEST_SOLJSON="$COMPANION_SOLJSON_FILE" COMPANION_REQUIRE_COMPILER=1 node --input-type=module <<'JS'
+          import { createHash } from 'node:crypto';
+          import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
+          import { spawnSync } from 'node:child_process';
+          const filename=process.env.COMPANION_TEST_SOLJSON;
+          const expected='d73fead3cbc860438f56f4d1723677499cdef212d0f8890241748d2d5afc1c5f';
+          const bytes=readFileSync(filename),actual=createHash('sha256').update(bytes).digest('hex');
+          if(actual!==expected)throw new Error('OFFICIAL_COMPILER_SHA256_MISMATCH');
+          if(!process.env.GITHUB_ENV||/[\r\n]/.test(filename))throw new Error('COMPILER_ENVIRONMENT_BINDING_REQUIRED');
+          appendFileSync(process.env.GITHUB_ENV,`COMPANION_TEST_SOLJSON=${filename}\nCOMPANION_REQUIRE_COMPILER=1\n`);
+          const child=spawnSync(process.execPath,['--test','--test-concurrency=1','--test-reporter=tap','test/trusted-mac.test.mjs'],{env:process.env,encoding:'utf8',maxBuffer:4*1024*1024,timeout:180000});
+          const output=(child.stdout??'')+(child.stderr??'');
+          const total=key=>Number(output.match(new RegExp(`^# ${key} (\\d+)$`,'m'))?.[1]??0);
+          const result={schema:'manual-ledger-trusted-mac-compiler-evidence-v1',status:child.status===0?'PASS':'FAIL',sourceCommit:process.env.COMPANION_SOURCE_COMMIT,workflowRunId:process.env.GITHUB_RUN_ID,compiler:'0.8.37+commit.f401782d',compilerSha256:actual,compilerSourceCommit:'8d513ea2ab6b4f6c29ee3373125080bed89224be',scope:'GENUINE_COMPILER_SYNTHETIC_SOURCE_NOT_NATIVE_CONTRACT_QUALIFICATION',tests:total('tests'),pass:total('pass'),fail:total('fail'),skipped:total('skipped'),cancelled:total('cancelled'),todo:total('todo'),outputRedacted:true,physicalAcceptance:'NOT_PERFORMED'};
+          writeFileSync('manual-ledger-evidence/trusted-mac-compiler-acceptance.json',JSON.stringify(result,null,2)+'\n');
+          process.stdout.write(`Trusted Mac compiler acceptance ${result.status}: ${result.pass}/${result.tests} passed; ${result.skipped} skipped; ${result.cancelled} cancelled; ${result.todo} todo; output redacted.\n`);
+          if(result.status!=='PASS')process.exit(1);
+          JS
       - name: Preserve deterministic regression tests and build production source
         id: production
         run: |
@@ -59,6 +81,9 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ledger-companion-browser-evidence-${{ github.event.pull_request.head.sha || github.sha }}
-          path: tools/ledger-campaign-companion/manual-ledger-evidence/browser-acceptance.json
+          path: |
+            tools/ledger-campaign-companion/manual-ledger-evidence/browser-acceptance.json
+            tools/ledger-campaign-companion/manual-ledger-evidence/browser-deterministic-regressions.json
+            tools/ledger-campaign-companion/manual-ledger-evidence/trusted-mac-compiler-acceptance.json
           if-no-files-found: error
           retention-days: 30

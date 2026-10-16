@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, readFile } from 'node:fs/promises';
+import { mkdtemp, rm, readFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 import { createBrowserCampaignFixture } from './fixtures/browser/campaign.mjs';
 export async function runCampaignBrowserTests({browser,directory,test,rawMarkers,logs,remoteRequests,errors}) {
   async function fixture(options, run) {
@@ -18,11 +19,22 @@ export async function runCampaignBrowserTests({browser,directory,test,rawMarkers
   }
   async function prepare(p) {await p.locator('#campaignAck').check();await p.locator('#prepareNext').click();await p.waitForFunction(()=>{const f=document.getElementById('signFrame');return !f.hidden&&f.src.includes('campaign-signer.html');});const frame=p.frameLocator('#signFrame');await frame.locator('#signerSummary').filter({hasText:'Ethereum Mainnet'}).waitFor();return frame;}
   async function sign(frame) {await frame.locator('#path').fill("44'/60'/0'/0/0");await frame.locator('#deviceAck').check();await frame.locator('#signCampaign').click();}
+  async function retained(privateDirectory) {
+    const entries={};
+    for(const name of (await readdir(privateDirectory)).filter(name=>/^(state-[0-9]{8}|signed-step-[0-9]{4}-[a-f0-9]{64})\.json$/.test(name)).sort()) {
+      const content=await readFile(resolve(privateDirectory,name));entries[name]=createHash('sha256').update(content).digest('hex');
+      if(name.startsWith('signed-step-'))rawMarkers.add(JSON.parse(content).signedTransaction);
+    }
+    return entries;
+  }
+  function exactPreservation(before,after) {for(const [name,digest] of Object.entries(before))assert.equal(after[name],digest,'PRIVATE_RECORD_BYTES_CHANGED');assert.equal(Object.keys(after).filter(name=>name.startsWith('signed-step-')).length,Object.keys(before).filter(name=>name.startsWith('signed-step-')).length);}
+  async function recoveryPage(p,origin) {await p.goto(origin);await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Existing durable operation'));assert.equal(await p.locator('#prepareNext').isDisabled(),true);assert.equal(await p.locator('#signFrame').isHidden(),true);}
+  async function privateDownload(p,frame,selector) {const event=p.waitForEvent('download');await frame.locator(selector).click();const download=await event,stream=await download.createReadStream();let text='';for await(const part of stream)text+=part;return {text,filename:download.suggestedFilename()};}
   await test('campaign-two-origin-isolation-and-truthful-qualification',()=>fixture({},async({p,server,counters})=>{
     assert.match(await p.locator('#campaignSummary').textContent(),/USDC · 6 decimals/);assert.match(await p.locator('#qualification').textContent(),/SYNTHETIC_ADAPTER_REAL_BRIDGE_ENGINE/);assert.match(await p.locator('#qualification').textContent(),/false/);
     const frame=await prepare(p);assert.notEqual(server.parentOrigin,server.signerOrigin);assert.equal(await p.evaluate(()=>document.getElementById('signFrame').contentDocument),null);
     const source=await frame.locator('html').evaluate(()=>({origin:location.origin,parentMeta:document.querySelector('meta[name="campaign-parent-origin"]').content}));assert.equal(source.origin,server.signerOrigin);assert.equal(source.parentMeta,server.parentOrigin);
-    assert.equal(counters.prepare,1);assert.equal(counters.import,0);assert.equal(counters.relay,0);
+    assert.equal(counters.prepare,1);assert.equal(counters.import,0);assert.equal(counters.relay,0);assert.equal(await p.locator('#recoverCampaign').isEnabled(),true);
   }));
   await test('campaign-signer-csp-denies-parent-api-and-external-egress',()=>fixture({},async({p,server})=>{
     const frame=await prepare(p);
@@ -80,5 +92,46 @@ export async function runCampaignBrowserTests({browser,directory,test,rawMarkers
   }));
   await test('campaign-browser-parent-has-no-arbitrary-child-dom-or-api-proxy',()=>fixture({},async({p,server,counters})=>{
     await prepare(p);const result=await p.evaluate(signerOrigin=>{let isolated=false;try{document.getElementById('signFrame').contentWindow.document.body;}catch(e){isolated=e.name==='SecurityError';}document.getElementById('signFrame').contentWindow.postMessage({format:'mainnet-ledger-campaign-channel-v1',nonce:'f'.repeat(64),type:'prepare',prepared:{raw:'PRIVATE_DEVICE_RESPONSE_MUST_NOT_APPEAR_0xdeadbeef'}},signerOrigin);return isolated;},server.signerOrigin);assert.equal(result,true);assert.equal(counters.import,0);assert.equal(counters.relay,0);
+  }));
+
+  for(const [packetSchema,extension] of [['manager-external-signing-handoff-v1','json'],['agialpha.external-signing-handoff.v1','raw']])await test(`campaign-${extension}-coordinator-import-exact-private-bytes`,()=>fixture({packetSchema},async({p,counters})=>{
+    const frame=await prepare(p);await sign(frame);await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Signed capability durably'));
+    await frame.locator('html').evaluate(()=>{const create=URL.createObjectURL.bind(URL);URL.createObjectURL=blob=>{__COMPANION_BROWSER_TEST__.lastDownloadType=blob.type;return create(blob);};});
+    const recovery=JSON.parse((await privateDownload(p,frame,'#downloadRecovery')).text);rawMarkers.add(recovery.signedTransaction);
+    const imported=await privateDownload(p,frame,'#downloadImport');assert.ok(imported.filename.endsWith(`.private.${extension}`));
+    if(extension==='raw'){assert.equal(imported.text,recovery.signedTransaction);assert.equal(await frame.locator('html').evaluate(()=>__COMPANION_BROWSER_TEST__.lastDownloadType),'text/plain');}
+    else {assert.deepEqual(JSON.parse(imported.text),{raw:recovery.signedTransaction});assert.equal(await frame.locator('html').evaluate(()=>__COMPANION_BROWSER_TEST__.lastDownloadType),'application/json');}
+    assert.equal(counters.import,1);assert.equal(counters.relay,0);
+  }));
+  await test('campaign-unknown-schema-refuses-minimal-export-keeps-full-capability',()=>fixture({packetSchema:'unknown-test-only-schema'},async({p,counters})=>{
+    const frame=await prepare(p);await sign(frame);await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Signed capability durably'));assert.equal(await frame.locator('#downloadImport').isDisabled(),true);assert.equal(await frame.locator('#downloadRecovery').isEnabled(),true);const recovery=JSON.parse((await privateDownload(p,frame,'#downloadRecovery')).text);rawMarkers.add(recovery.signedTransaction);assert.equal(counters.import,1);assert.equal(counters.relay,0);
+  }));
+  await test('campaign-native-import-ack-loss-read-only-recovery-keeps-exact-capability',()=>fixture({relayEnabled:true,mode:'native-import-ack-lost'},async({p,counters,engine,privateDirectory})=>{
+    const frame=await prepare(p);await sign(frame);await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.includes('SYNTHETIC_NATIVE_ACK_LOST'));
+    const before=await engine.status(),records=await retained(privateDirectory);assert.equal(before.steps[0].state,'recovery-required');assert.equal(counters.import,1);assert.equal(await frame.locator('#downloadRecovery').isEnabled(),true);
+    await p.locator('#recoverCampaign').click();await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Read-only observation complete'));
+    const after=await engine.status();assert.equal(after.steps[0].transactionHash,before.steps[0].transactionHash);assert.equal(after.steps[0].signingRequestedAt,before.steps[0].signingRequestedAt);assert.equal(after.steps[0].acknowledgement,'SYNTHETIC_EXACT_COORDINATOR_ACK_ONLY');exactPreservation(records,await retained(privateDirectory));assert.equal(counters.import,1);assert.equal(counters.prepare,1);assert.equal(counters.relay,0);assert.equal(await frame.locator('#signCampaign').isDisabled(),true);
+    // A reload is a read-only UI recovery action, never permission for an automatic send.
+    await p.reload();await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Existing durable operation'));assert.equal(await p.locator('#relayExact').isEnabled(),true);assert.equal(counters.relay,0);
+  }));
+  await test('campaign-native-import-ack-loss-bridge-restart-retains-capability-and-intent',()=>fixture({relayEnabled:true,mode:'native-import-ack-lost'},async({p,counters,engine,privateDirectory,restart})=>{
+    const frame=await prepare(p);await sign(frame);await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.includes('SYNTHETIC_NATIVE_ACK_LOST'));const before=await engine.status(),records=await retained(privateDirectory),reopened=await restart();
+    await recoveryPage(p,reopened.server.parentOrigin);exactPreservation(records,await retained(privateDirectory));const restored=await reopened.engine.status();assert.equal(restored.steps[0].transactionHash,before.steps[0].transactionHash);assert.equal(restored.steps[0].operationId,before.steps[0].operationId);assert.equal(restored.steps[0].signingRequestedAt,before.steps[0].signingRequestedAt);
+    await p.locator('#recoverCampaign').click();await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Read-only observation complete'));assert.equal(await p.locator('#relayExact').isEnabled(),true);assert.equal(counters.import,1);assert.equal(counters.prepare,1);assert.equal(counters.relay,0);exactPreservation(records,await retained(privateDirectory));
+  }));
+  await test('campaign-lost-relay-response-bridge-restart-keeps-attempt-and-never-retries',()=>fixture({relayEnabled:true,mode:'lost-relay-response'},async({p,counters,engine,privateDirectory,restart})=>{
+    const frame=await prepare(p);await sign(frame);await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Signed capability durably'));await p.locator('#relayExact').click();await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.includes('SYNTHETIC_RELAY_RESPONSE_LOST'));const before=await engine.status(),records=await retained(privateDirectory);assert.equal(before.steps[0].relayAttempted,true);
+    const reopened=await restart();await recoveryPage(p,reopened.server.parentOrigin);await p.locator('#recoverCampaign').click();await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Read-only observation complete'));const after=await reopened.engine.status();assert.equal(after.steps[0].transactionHash,before.steps[0].transactionHash);assert.equal(after.steps[0].relayAttempted,true);assert.equal(await p.locator('#relayExact').isDisabled(),true);await p.locator('#relayExact').dispatchEvent('click');assert.equal(counters.relay,1);assert.equal(counters.import,1);assert.equal(counters.prepare,1);exactPreservation(records,await retained(privateDirectory));
+  }));
+  await test('campaign-interrupted-native-relay-keeps-attempt-across-restart',()=>fixture({relayEnabled:true,mode:'native-relay-response-lost'},async({p,counters,engine,privateDirectory,restart})=>{
+    const frame=await prepare(p);await sign(frame);await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Signed capability durably'));await p.locator('#relayExact').click();await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.includes('RELAY_OUTCOME_UNKNOWN_NO_RETRY'));const before=await engine.status(),records=await retained(privateDirectory);assert.equal(before.steps[0].relayAttempted,true);assert.equal(before.steps[0].state,'recovery-required');
+    const reopened=await restart();await recoveryPage(p,reopened.server.parentOrigin);await p.locator('#recoverCampaign').click();await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Read-only observation complete'));const after=await reopened.engine.status();assert.equal(after.steps[0].transactionHash,before.steps[0].transactionHash);assert.equal(after.steps[0].relayAttempted,true);assert.equal(await p.locator('#relayExact').isDisabled(),true);await p.locator('#relayExact').dispatchEvent('click');assert.equal(counters.relay,1);assert.equal(counters.import,1);assert.equal(counters.prepare,1);exactPreservation(records,await retained(privateDirectory));
+  }));
+  await test('campaign-unsigned-observation-and-restart-cannot-reprepare-device-intent',()=>fixture({},async({p,counters,engine,privateDirectory,restart})=>{
+    await prepare(p);const before=await engine.status(),records=await retained(privateDirectory);await p.locator('#recoverCampaign').click();await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Read-only observation complete'));assert.equal(await p.locator('#prepareNext').isDisabled(),true);const reopened=await restart();await recoveryPage(p,reopened.server.parentOrigin);const after=await reopened.engine.status();assert.equal(after.steps[0].signingRequestedAt,before.steps[0].signingRequestedAt);assert.equal(after.steps[0].operationId,before.steps[0].operationId);assert.equal(counters.prepare,1);assert.equal(counters.import,0);assert.equal(counters.relay,0);exactPreservation(records,await retained(privateDirectory));
+  }));
+  for(const gate of ['expired','source-changed'])await test(`campaign-native-ack-recovery-${gate}-cannot-authorize-relay`,()=>fixture({relayEnabled:true,mode:'native-import-ack-lost'},async({p,state,counters,privateDirectory,restart})=>{
+    const frame=await prepare(p);await sign(frame);await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.includes('SYNTHETIC_NATIVE_ACK_LOST'));const records=await retained(privateDirectory);if(gate==='expired')state.now=Date.parse(JSON.parse(await frame.locator('#signerSummary').textContent()).expiresAt)+1;else state.drift=true;
+    const reopened=await restart();await recoveryPage(p,reopened.server.parentOrigin);await p.locator('#recoverCampaign').click();await p.waitForFunction(()=>document.getElementById('campaignStatus').textContent.startsWith('Read-only observation complete'));const status=await reopened.engine.status();assert.equal(status.steps[0].state,'recovery-required');assert.equal(status.steps[0].acknowledgement,undefined);assert.equal(await p.locator('#relayExact').isDisabled(),true);assert.equal(counters.prepare,1);assert.equal(counters.import,1);assert.equal(counters.relay,0);exactPreservation(records,await retained(privateDirectory));
   }));
 }

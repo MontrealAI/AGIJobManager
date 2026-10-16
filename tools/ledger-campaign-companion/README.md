@@ -1,34 +1,93 @@
-# Manual Ledger campaign companion — 0.2.0-candidate.1
+# Manual Ledger campaign companion — 0.2.0-candidate.2
 
-This review candidate adds a local English/French campaign dashboard, an isolated USB Ledger signing frame, durable private recovery, bounded adapters for the existing Manager and Alpha coordinators, and exact-source verification automation. The owner must approve every exact transaction on the physical Ledger. This assignment authorizes implementation and disposable acceptance tests; it does not authorize a real signature, broadcast, funding, governance action, ENS change or activation.
+This review candidate adds a local English/French campaign dashboard, an isolated USB Ledger signing frame, durable private recovery, bounded adapters for the existing Manager and Alpha coordinators, and exact-source verification automation. The owner must approve every exact transaction on the physical Ledger. Starting this package grants no Mainnet permission. Each real transaction requires the owner's explicit review and manual physical signature; funding, governance, ENS changes and activation are separate decisions. Disposable local-chain acceptance is identified separately.
 
-**NO-GO for a real Mainnet campaign.** Physical Ledger acceptance is pending. Local browser execution is blocked by the available Chromium installation/sandbox environment; the separate pinned hosted-browser workflow must supply real browser evidence. Disposable coordinator and deterministic tests are separate evidence scopes. Live explorer service acceptance is pending. Jobs has no compatible external-signing coordinator and is explicitly refused.
+**Mainnet deployment requires a separate decision for each exact contract set.** This package is a review candidate, with physical Ledger/macOS and live explorer acceptance still pending. Real-browser tests with synthetic devices, native disposable-chain acceptance and deterministic tests establish distinct scopes. Earlier passing runs do not qualify this changed source. The exact Jobs native external-manual handoff is now received and separately qualified; its real signing/production plan and optional companion transport retain their own status.
 
-## Exact source interfaces
+## Jobs exact native handoff received
+
+Jobs PR #3986 at `9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5` / tree `720312acac83eddeeb76644e1e22f53578e91784` passed [complete fresh-CLI qualification](https://github.com/MontrealAI/AGIJobsv0/actions/runs/38954500102): all nine stages, 39 operations and 25 creations on a disposable chain. Artifact12072489816 and its public member were downloaded and hash-verified. See [native protocol, integration and EN/FR operator flow](JOBS_NATIVE_EN_FR.md).
+
+The pinned native CLI is available independently of the optional companion. `coordinators/jobs-native.mjs` registers the exact interface and exposes the original native profile/command API to a trusted local caller; it adds no signer or network relay. The original historical Jobs inventory is retained. The current profile requires an **empty-code creator**; the selected marker-bearing account is not qualified. Real signing, the Mac/bootstrap/provider and production plan remain separate. The optional browser companion reports `JOBS_COMPANION_TRANSPORT_NOT_QUALIFIED`; that is not a missing native adapter or a prerequisite for using the native route. Raw-signature export is not imposed when an existing supported wallet route safely verifies the exact transaction.
+
+## Primary configuration path: existing Ledger wallet + Etherscan
+
+Initial contract creation is separate. For supported configuration calls, use the owner's existing Ledger-backed wallet with Etherscan after every deployed component has exact source/runtime verification. The custom companion is **optional**, and is not a prerequisite for wallet-supported calls. No new signing application, key import, delegation, blanket approval or automatic signature is required by this path. The standalone wallet-config utility is optional: it automates independent checks but does not mediate or replace the wallet, and equivalent independent exact Mac evidence may be supplied instead.
+
+The bounded configuration review must show the exact new target, method, arguments, complete calldata, value, designated governor, source/plan and expected state before the owner opens the explorer write interface. The owner checks Ethereum Mainnet and the governor account, compares the reviewed exact call and manually approves each transaction on the physical Ledger. Record its transaction hash, then independently reconcile exact transaction bytes, canonical receipt and post-state. A successful explorer submission is separate from this acceptance. Unknown outcomes stop; they never permit automatic resend or replacement.
+
+The supported Alpha configuration consists of the two exact native bindings only. Creation proofs and explicit approved policy must identify their new targets and arguments. Unsupported Manager/Alpha administration requires a separate exact reviewed policy and implementation; economic settings, treasuries and ENS eligibility are not invented by the workflow. Wallet-generated transactions are independent evidence. Do not claim they were imported into, or completed, a native seven-operation session without exact native acceptance of that interface.
+
+| New receipt-proven target | Exact method | Argument from the same new graph | Required resulting getter |
+|---|---|---|---|
+| `AscensionRiskOracle` | `bindMarketplace(address)` | New `AscensionJobMarket` | `marketplace()` equals that market |
+| `AscensionJobMarket` | `bindMark(address)` | New `AscensionMark` | `mark()` equals that MARK |
+
+Both are one-time, governor-only bindings. Contract-side checks also require consistent access/oracle/job dependencies; independent Mac readback must prove those links before approval; the optional utility automates that check. Do not substitute historical addresses or change parameters to bypass a failed check.
+
+For the optional standalone utility, `trust/prepare-wallet-review.mjs` creates the local five-contract build-policy proposal directly from the independently reviewed wallet input and native plan. It performs no RPC, uses no signing session/bridge/actor locks and does not require a seven-operation campaign. The supplied compiler/Node pins and exact Alpha source are checked locally; its generated policy and integrity digest remain unapproved until independently reviewed. Five unit cases and actual Linux offline compilation of the five native Alpha contracts with their 55-source closure passed; the production Mac CLI and physical wallet remain separate acceptance. See the wallet runbook for the exact command.
+
+See `START_HERE_EN_FR.txt` for the short bilingual operator flow and `verification/WALLET_CONFIGURATION_EN_FR.md` for the exact bounded `export`, `submit-source`, `verify` and `reconcile` commands and review schema. Each appended owner transaction hash requires a freshly reviewed complete input digest; the local build binding stays stable. Preserve the same private explorer journal across fresh report directories. The optional companion's preparation, signing and recovery details follow below.
+
+## Exact source dependencies
+
+The new review targets are Manager PR #1586 `d371d95cfcc44b9133cda4bba55304f727917f18` (tree `93faf6e9a6875026c1eb9bc2f0f9bdada308d296`) and Alpha PR #4827 `38064bec3423218f87c6b81760ac6768b3e7d4e5`. Their fresh bounded native/companion acceptance is recorded separately for the corrected Manager9, Alpha7 and five-creation wallet path; it does not substitute for the missing complete Manager owner-native handoff or real Mainnet acceptance. `COORDINATOR_COMPATIBILITY.json` is the revision inventory; inspect its exact acceptance state and linked evidence. The following entries preserve the earlier accepted interface baseline.
+
+The corrected Manager `d371d95c…` candidate fixes the native verifier root ordering and adds a regression using four distinct nonzero ENS roots. Only three owner files changed; Solidity, compiler and dependency locks are unchanged. Its fresh bounded native/companion mechanics **passed 9/9 operations and 19 checks**: four distinct nonzero original roots matched actual getters, each wrong root and the swap were rejected by the genuine verifier, and all nine runtime/source tasks matched. The fresh build compiled 62 project Solidity files, produced 91 artifacts and reproduced the 91-source-unit Standard JSON closure including dependencies. This disposable proof is separate from the owner's complete exact native qualification handoff and real Mainnet acceptance. Legacy `eb6f725e…` and `c2f72180…` remain blocked for production because their verifier reverses two root expectations; their adapters/evidence remain for recovery and historical fixtures. No zero/equal-root fixture pass qualifies the corrected source, and no historical version is a production fallback.
+
+The [owner's complete exact d371 native qualification handoff](https://github.com/MontrealAI/AGIJobManager/pull/1586#issuecomment-6222703147) remains a separate requirement. The production launcher reports `MANAGER_EXACT_NATIVE_QUALIFICATION_HANDOFF_REQUIRED` for the corrected source until that evidence is supplied. Disposable companion acceptance cannot substitute for it.
 
 | Adapter | Supported source | Native import | Supported operations |
 |---|---|---|---|
 | Manager | MontrealAI/AGIJobManager, commit `eb6f725e0b40ac81e50a374304e54a5ff6859fcf`, tree `73347842e4a81767ef14686a607b7aceb4f5d70c` (PR #1587 correction on #1586) | Private JSON `{raw}` | Nine core CREATEs |
 | Alpha | MontrealAI/AGI-Alpha-Agent-v0, commit `d69cdd3ddc0f36933d07f0f64abfe15e742bf68c` | Private raw transaction text | Five CREATEs and two existing governor bindings |
-| Jobs | MontrealAI/AGIJobsv0, merged candidate `fed83bc183753e871621fc1cb3aa8510bd38f642` | Unsupported | Read-only inventory and refusal |
+| Jobs native | MontrealAI/AGIJobsv0, `9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5`, tree `720312acac83eddeeb76644e1e22f53578e91784` | Native envelope-v1 and private JSON `{raw}` when that route is selected | 39 operations through paused handover; empty-code creator only; optional companion transport separate |
+
+Historical Jobs main inspected at `bd45f34de1c1e58986aafb4b0e5c48bc155839ca` has tree `a49fa5d32272555e62431363f1ffd36b84ea87be`, identical to the historical `fed83…` inventory. That historical tree does not supply the new external-manual adapter. The accepted native9a79 handoff above is separate; no qualification is backdated to the old source.
 
 Unknown revisions and packet schemas fail closed. Manager #1586's uncorrected `3c974ad3cb1d828e5c89464fd8424d8ae853d9dd` is an inspected candidate, not this adapter's supported operational source. Owner changes require a new frozen revision and qualification. Previous constructor evidence cannot certify new source.
 
-Current Alpha has no native `expiresAfterBlock` policy. This companion enforces the independently reviewed wall-clock expiry before presentation/import/relay and retains late signatures for recovery. Local expiry cannot cancel Ethereum signed bytes. Native block expiry remains a coordinator limitation.
+The historical Alpha `d69cdd3…` interface has no native `expiresAfterBlock` policy. Inspect the selected exact revision before relying on any later native expiry correction. The companion additionally enforces the independently reviewed wall-clock expiry before presentation/import/relay and retains late signatures for recovery. Neither local nor native off-chain expiry cancels signed Ethereum bytes.
+
+## Trusted Mac preparation
+
+The Mac Studio is authoritative for source validation, reproducible compilation, the complete native plan, unsigned transaction bytes, native sessions, shared nonce locks, capabilities and attempt records. Ubuntu Terminal/Hardhat is an optional experimental preparation station. An Ubuntu-provided artifact, source hash or verdict is only a proposal. Obtain the exact source and compiler independently on the Mac and reproduce the pinned Standard JSON build there.
+
+`trust/local-build.mjs` uses an explicitly reviewed local compiler and a fixed C API driver; it compares ABI, creation/runtime bytecode, links and immutable references with the exact native artifacts. The separately reviewed local trust policy pins source/build/plan/campaign and tool identities. The launcher requires `--trust-policy` and `--reviewed-trust-policy-sha256`, then validates the local build before opening the dashboard. It does not trust a self-authenticating hash written by an untrusted preparation environment. Runtime must match the receipt-bound deployed code, including only legitimate compiler-declared immutable substitutions. A successful build establishes byte identity; contract qualification and approval remain separate.
+
+To generate a review proposal on the Mac, create a fresh owner-only directory (0700) and run:
+
+```sh
+node trust/prepare-review.mjs --campaign /absolute/private/reviewed-campaign.json --reviewed-campaign-sha256 EXACT_REVIEWED_CAMPAIGN_DIGEST --compiler /absolute/reviewed/soljson-v0.8.37.js --compiler-sha256 EXACT_REVIEWED_COMPILER_DIGEST --node /absolute/reviewed/node --node-sha256 EXACT_REVIEWED_NODE_DIGEST --out /absolute/private/fresh-review/mac-trust-policy.json
+```
+
+This recompiles and binds the native plan, then writes an **unapproved review proposal** and prints an integrity digest. The owner must independently review that exact policy before supplying its reviewed digest at launch. A printed digest is not approval. Existing outputs are never overwritten: preserve each failed attempt and use a fresh private review directory. No compiler, account or fee policy is selected automatically.
+
+Select the deployer before preparing the campaign. A different deployer requires regeneration and review of the full native plan, every affected nonce/predicted address, constructor and governed binding, and a new immutable campaign. This package does not edit an existing plan in place. Existing signing markers, signed capabilities, imports or submissions must first be reconciled read-only. Do not clear locks or erase attempt records to make a changed campaign proceed.
+
+The optional Mac-only creator-selection helper generates a **new unapproved proposal**, preserving the prior campaign and fixed economic/ENS/governor policy:
+
+```sh
+node trust/prepare-campaign.mjs --campaign /absolute/private/reviewed-template.json --reviewed-campaign-sha256 EXACT_REVIEWED_TEMPLATE_DIGEST --creator SELECTED_DEPLOYER --prior-state /absolute/private/original-campaign-state --output-directory /absolute/private/new-empty-review-directory
+```
+
+The output directory must be a fresh ordinary 0700 directory. Native nonce/preflight checks and temporary shared actor locks must succeed; existing signing/submission evidence requires reconciliation. Prior relay/explorer authorization is not transferred. Cross-project journals stop for an explicit handoff. Eight unit cases and fresh Linux disposable HTTPS native-planner/preflight acceptance passed for corrected Manager d371 (nine replanned creations preserving four distinct ENS roots) and Alpha380 (seven reviewed operations) under the updated helper. These do not qualify the real Mac CLI, physical device or Mainnet provider. The Mac acceptance remains separate. Independently review the new plan/campaign and generate a fresh local trust policy before any optional companion launch.
 
 ## Install and review
 
 ```sh
 npm ci --ignore-scripts --no-audit --no-fund
-node scripts/browser-regression-check.mjs
+COMPANION_REQUIRE_COMPILER=1 COMPANION_TEST_SOLJSON=/absolute/reviewed/soljson-v0.8.37.js node scripts/browser-regression-check.mjs
 npm run build
 node scripts/browser-check-production.mjs
 node bridge/start.mjs --help
 ```
 
+Replace the compiler path with the independently verified official soljson 0.8.37 file used by the trust policy. Required compiler acceptance must set `COMPANION_REQUIRE_COMPILER=1`; runs without that compiler can skip its tests and cannot qualify the Mac trust path. No compiler download or trust decision is inferred from a local filename.
+
 The isolated browser toolchain is pinned in `scripts/browser-toolchain/package-lock.json`. See `scripts/browser-README.md` for the supported sandbox-enabled run. Synthetic devices are bundled only into separate test output and excluded from production.
 
-A launch requires a private, independently reviewed campaign JSON and separately supplied canonical SHA-256 digest, external private state directory, exact coordinator checkout/build/plan/session, reviewed Node executable identity and shared actor-lock directory registration. The campaign binds source/build, every exact unsigned envelope and policy digest, actors, route, fees, dependencies, expiry and post-state. There is no default account path, creator, fee ceiling, treasury or economics. The production governor is pinned to `0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99`; the creator must differ. A checksum establishes integrity, not approval.
+A launch requires private, independently reviewed campaign and Mac trust-policy JSON files with separately supplied canonical SHA-256 digests, an external private state directory, exact coordinator checkout/build/plan/session, reviewed Node/compiler identities and shared actor-lock directory registration. The campaign binds source/build, every exact unsigned envelope and policy digest, actors, route, fees, dependencies, expiry and post-state. There is no default account path, creator, fee ceiling, treasury or economics. The production governor is pinned to `0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99`; the creator must differ. A checksum establishes integrity, not approval.
 
 See `START_HERE_EN_FR.txt` and `PHYSICAL_ACCEPTANCE_EN_FR.md`. No approved production campaign or live endpoint configuration is supplied.
 
@@ -42,15 +101,17 @@ The first connection or actor change requires on-device address verification. A 
 
 Relay defaults to off. A later authorized launch must explicitly add `--relay` and enable the immutable exact per-step coordinator acknowledgement policy. This candidate requires an additional relay click for each signed transaction. It invokes only the existing coordinator's one-shot relay after durably recording its own attempt. Lost responses require canonical known-hash observation, never resubmission. Bounded monitoring revalidates prior canonical results before preparing the next approved operation. The next signature always requires manual Ledger approval.
 
+Manual import downloads follow the exact campaign adapter: Manager uses JSON `{raw}`; Alpha uses raw transaction text. Unknown adapter formats disable the import download; full private recovery stays available. Read-only recovery can restore only the original native acknowledgement for the same privately retained signed hash: the historical Manager eb6f interface uses `retrieve-handoff`, while Alpha d69 uses fresh `status` plus its preserved raw file. Later exact revisions require their own acceptance of those commands. Expiry, source inspection failure, native command/attempt gates and the bridge attempt marker prohibit restoration or relay. An unavailable acknowledgement is shown as recovery-required, never synthesized. Recovery does not sign, reimport or relay; any first relay still requires its explicit exact per-step click.
+
 Explicit dead bridge-owner recovery can retire only this companion's private owner record after verifying campaign, host/boot/PID identity and conclusively dead PID. It never removes native actor locks. Unknown identity or a live/ambiguous owner stops recovery. Read-only canonical recovery remains required before another operation.
 
 ## Configuration and explorer verification
 
-Only native operations are supported: Manager's nine CREATEs; Alpha's five CREATEs plus `bindMarketplace(address)` and `bindMark(address)`. There is no arbitrary-call escape hatch. Configuration must bind receipt-proven new targets to explicit approved arguments. ENS changes, funding, unpausing and other administration remain unsupported.
+Only the exact accepted native operations are supported: Manager's nine CREATEs; Alpha's five CREATEs plus `bindMarketplace(address)` and `bindMark(address)`. There is no arbitrary-call escape hatch. Configuration must bind receipt-proven new targets to explicit approved arguments. ENS changes, funding, unpausing and other administration remain unsupported.
 
 At completion the automation requests the genuine coordinator's export and independently rechecks canonical creation proofs. Manager's native export is predicted-only; preserve it and combine separate reverified receipts, never relabel it. Offline exact Standard JSON source packages work without a key.
 
-Explorer submission additionally requires explicit campaign/plan-bound service authorization and a locally supplied `ETHERSCAN_API_KEY`. Never paste a key into chat, campaign, browser, log or attachment. The server uses only the fixed Etherscan V2 endpoint, persists a one-attempt marker before submission, polls with bounded read-only retries, and compares exact source/compiler/settings/libraries/constructor data. Similar matches fail. Unknown outcomes never trigger another POST. Explorer success does not establish final authority or activation. See `verification/README.md`.
+Explorer submission additionally requires explicit campaign/plan-bound service authorization and a locally supplied `ETHERSCAN_API_KEY`. Never paste a key into chat, campaign, browser, log or attachment. The server uses only the fixed Etherscan V2 endpoint, persists a one-attempt marker before submission, polls with bounded read-only retries, and compares exact source/compiler/settings/libraries/constructor data. Similar matches fail. Unknown outcomes never trigger another POST. Explorer success does not establish final authority or activation. See `verification/README.md` and `verification/AUTHORITY_SCOPE_EN_FR.md`. The authority report covers ownership/pending ownership, roles, upgrade/configuration powers and external dependency permissions, while distinguishing source expectations from live observations. Manager core creation remains a separate commissioning boundary. Alpha has no global pause switch; its initial uncommissioned state must be described through actual bindings, configuration and permissions, never as globally paused. ENS eligibility and the USDC / $AGIALPHA economics remain unchanged.
 
 ## Evidence and dependencies
 

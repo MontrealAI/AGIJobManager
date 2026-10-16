@@ -1,6 +1,19 @@
 import { Transaction } from 'ethers';
 import { GateError, validateIntent } from './envelope.mjs';
 
+export function coordinatorImportFormat(packetSchema) {
+  if (packetSchema === 'manager-external-signing-handoff-v1') return 'manager-json';
+  if (packetSchema === 'agialpha.external-signing-handoff.v1') return 'alpha-raw';
+  return null;
+}
+export function coordinatorImportFile(prepared, capability, format, now = Date.now()) {
+  if (!['manager-json', 'alpha-raw'].includes(format)) throw new GateError('UNSUPPORTED_COORDINATOR_IMPORT_FORMAT');
+  const value = coordinatorImport(prepared, capability, now);
+  return format === 'alpha-raw'
+    ? { text: value.raw, mimeType: 'text/plain', extension: 'raw' }
+    : { text: JSON.stringify(value, null, 2), mimeType: 'application/json', extension: 'json' };
+}
+
 const fields = ['format', 'status', 'signedAt', 'transactionHash', 'unsignedTransaction', 'expectedUnsignedHash', 'expectedPolicyHash', 'review', 'signedTransaction'];
 const fail = code => { throw new GateError(code); };
 export function coordinatorImport(prepared, capability, now = Date.now()) {

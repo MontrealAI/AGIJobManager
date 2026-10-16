@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { mkdtemp, readFile, rm, mkdir, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, mkdir, writeFile, rename } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve, extname } from 'node:path';
 import { createRequire } from 'node:module';
@@ -15,14 +15,37 @@ const { chromium } = module.default ?? module;
 const version = require(require.resolve('playwright/package.json', { paths: [resolve('scripts/browser-toolchain')] })).version;
 assert.equal(version, '1.62.1', 'EXACT_PLAYWRIGHT_VERSION_REQUIRED');
 const results = [];
-const evidence = { schema: 'ledger-companion-browser-evidence-v1', playwright: version, chromiumSandbox: true, syntheticDeviceOnly: true, physicalAcceptance: 'NOT_PERFORMED', sourceCommit: /^[a-f0-9]{40}$/.test(process.env.COMPANION_SOURCE_COMMIT ?? '') ? process.env.COMPANION_SOURCE_COMMIT : null, workflowRunId: /^[0-9]+$/.test(process.env.GITHUB_RUN_ID ?? '') ? process.env.GITHUB_RUN_ID : null, tests: results };
+const CASE_TIMEOUT_MS = 60000;
+let acceptanceTimedOut = false, evidenceWrites = Promise.resolve();
+const evidence = { schema: 'ledger-companion-browser-evidence-v1', playwright: version, chromiumSandbox: true, syntheticDeviceOnly: true, incrementalReporting: true, caseTimeoutMs: CASE_TIMEOUT_MS, physicalAcceptance: 'NOT_PERFORMED', sourceCommit: /^[a-f0-9]{40}$/.test(process.env.COMPANION_SOURCE_COMMIT ?? '') ? process.env.COMPANION_SOURCE_COMMIT : null, workflowRunId: /^[0-9]+$/.test(process.env.GITHUB_RUN_ID ?? '') ? process.env.GITHUB_RUN_ID : null, tests: results };
 const evidenceDirectory = resolve(process.env.COMPANION_BROWSER_EVIDENCE ?? 'manual-ledger-evidence');
 await mkdir(evidenceDirectory, { recursive: true });
 const directory = await mkdtemp(resolve(tmpdir(), 'companion-browser-'));
 let browser, server;
 const rawMarkers = new Set(['PRIVATE_DEVICE_RESPONSE_MUST_NOT_APPEAR_0xdeadbeef']);
 const logs = [], remoteRequests = [], errors = [];
-async function test(name, fn) { try { await fn(); results.push({ name, status: 'PASS' }); } catch (error) { results.push({ name, status: 'FAIL', failureKind: error?.code === 'ERR_ASSERTION' ? 'ASSERTION_FAILED' : error?.name === 'TimeoutError' ? 'BROWSER_WAIT_TIMED_OUT' : 'TEST_OPERATION_FAILED' }); process.stdout.write(`Browser case failed: ${name}\n`); process.exitCode = 1; } }
+async function persistEvidence() {
+  evidence.passCount = results.filter(value => value.status === 'PASS').length;
+  evidence.failCount = results.filter(value => value.status === 'FAIL').length;
+  const body = `${JSON.stringify(evidence, null, 2)}\n`;
+  evidenceWrites = evidenceWrites.then(async () => { const pending = resolve(evidenceDirectory, '.browser-acceptance.pending.json'); await writeFile(pending, body, { mode: 0o600 }); await rename(pending, resolve(evidenceDirectory, 'browser-acceptance.json')); });
+  return evidenceWrites;
+}
+async function timedStop(name, failureKind) {
+  if (acceptanceTimedOut) return;
+  acceptanceTimedOut = true; evidence.status = 'FAIL'; evidence.harness = failureKind;
+  if (name) { evidence.activeCase = name; results.push({ name, status: 'FAIL', failureKind }); }
+  try { await persistEvidence(); } catch { /* The last complete source-bound progress file remains authoritative. */ }
+  process.stdout.write(`Browser acceptance stopped: ${failureKind}${name ? ` (${name})` : ''}; no physical device operation.\n`);
+  process.exit(2);
+}
+async function test(name, fn) {
+  evidence.status = 'RUNNING'; evidence.phase = 'case'; evidence.activeCase = name; await persistEvidence();
+  const watchdog = setTimeout(() => { void timedStop(name, 'TEST_CASE_TIMEOUT'); }, CASE_TIMEOUT_MS);
+  try { await fn(); if (!acceptanceTimedOut) results.push({ name, status: 'PASS' }); }
+  catch (error) { if (!acceptanceTimedOut) { results.push({ name, status: 'FAIL', failureKind: error?.code === 'ERR_ASSERTION' ? 'ASSERTION_FAILED' : error?.name === 'TimeoutError' ? 'BROWSER_WAIT_TIMED_OUT' : 'TEST_OPERATION_FAILED' }); process.stdout.write(`Browser case failed: ${name}\n`); process.exitCode = 1; } }
+  finally { clearTimeout(watchdog); if (!acceptanceTimedOut) { delete evidence.activeCase; await persistEvidence(); } }
+}
 const sender = computeAddress(new SigningKey(`0x${'19'.repeat(32)}`).publicKey);
 function packet({ data = '0x60006000f3', expiry = Date.now() + 3600000 } = {}) {
   const unsigned = Transaction.from({ type: 2, chainId: 1, nonce: 1, to: null, data, value: 0, gasLimit: 16000000, maxFeePerGas: 10000000000n, maxPriorityFeePerGas: 1000000000n, accessList: [] }).unsignedSerialized;
@@ -68,6 +91,7 @@ async function download(p, selector) {
   return parsed;
 }
 try {
+  evidence.status = 'RUNNING'; evidence.phase = 'fixture-build'; await persistEvidence();
   await buildBrowserFixture(directory);
   server = createServer(async (request,response) => {
     const files = new Map([['/','index.html'],['/app.js','app.js'],['/style.css','style.css']]);
@@ -80,6 +104,7 @@ try {
   });
   await new Promise(resolve => server.listen(0,'127.0.0.1',resolve));
   try {
+    evidence.phase = 'browser-launch'; await persistEvidence();
     browser = await chromium.launch({ headless: true, chromiumSandbox: true });
   } catch (error) {
     evidence.launch = 'BLOCKED_BEFORE_PAGE_LOAD';
@@ -137,9 +162,12 @@ try {
   }
 } catch { evidence.harness = 'FAIL'; process.exitCode = 1; }
 finally {
-  await browser?.close(); await new Promise(resolve => server ? server.close(resolve) : resolve()); await rm(directory,{recursive:true,force:true});
-  evidence.status = evidence.harness==='FAIL' ? 'FAIL' : evidence.launch !== 'PASS' ? 'BLOCKED' : results.every(value => value.status==='PASS') ? 'PASS' : 'FAIL';
+  evidence.phase = 'cleanup'; await persistEvidence();
+  const cleanupWatchdog = setTimeout(() => { void timedStop(null, 'HARNESS_CLEANUP_TIMEOUT'); }, CASE_TIMEOUT_MS);
+  try { await browser?.close(); await new Promise(resolve => server ? server.close(resolve) : resolve()); await rm(directory,{recursive:true,force:true}); } finally { clearTimeout(cleanupWatchdog); }
+  evidence.phase = 'complete';
+  evidence.status = evidence.harness ? 'FAIL' : evidence.launch !== 'PASS' ? 'BLOCKED' : results.every(value => value.status==='PASS') ? 'PASS' : 'FAIL';
   evidence.passCount = results.filter(value => value.status==='PASS').length; evidence.failCount = results.filter(value => value.status==='FAIL').length;
-  await writeFile(resolve(evidenceDirectory,'browser-acceptance.json'),`${JSON.stringify(evidence,null,2)}\n`);
+  await persistEvidence();
   process.stdout.write(`Browser acceptance ${evidence.status}: ${evidence.passCount} passed, ${evidence.failCount} failed; physical acceptance NOT_PERFORMED.\n`);
 }

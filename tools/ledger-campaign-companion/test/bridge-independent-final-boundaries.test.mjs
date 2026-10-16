@@ -15,3 +15,42 @@ test('operator registry rejects symlink directory and permissive registry file',
 test('operator policy location is obtained from OS account rather than HOME environment',()=>{const original=process.env.HOME;try{process.env.HOME='/not-an-operator-home-fixture';assert.ok(operatorPolicyDirectory().startsWith(os.userInfo().homedir+path.sep));assert.equal(operatorPolicyDirectory().includes('not-an-operator-home-fixture'),false);}finally{if(original===undefined)delete process.env.HOME;else process.env.HOME=original;}});
 test('runtime pin validates exact executable hash and actual version; bad pins fail before coordinator load',async()=>{const nodePath=await fs.realpath(process.execPath),bytes=await fs.readFile(nodePath),nodeSha256=createHash('sha256').update(bytes).digest('hex'),nodeVersion=process.versions.node,config={nodePath,nodeSha256,nodeVersion},supported={nodeVersions:[nodeVersion]};assert.doesNotThrow(()=>runtime(config,supported));assert.throws(()=>runtime({...config,nodeSha256:'f'.repeat(64)},supported));assert.throws(()=>runtime({...config,nodeVersion:'0.0.0'},supported));assert.throws(()=>runtime(config,{nodeVersions:['0.0.0']}));});
 test('startup malformed flags expose only fixed error and do not create state or claim actor policy',()=>temp(async dir=>{const result=spawnSync(process.execPath,[path.join(root,'bridge/start.mjs'),'--campaign',path.join(dir,'missing.json'),'--reviewed-campaign-sha256','f'.repeat(64),'--actor-lock-directory',path.join(dir,'actors'),'--state',path.join(dir,'state'),'--policy-directory',path.join(dir,'forbidden')],{encoding:'utf8',env:cleanEnvironment()});assert.equal(result.status,1);assert.equal(result.stdout,'');assert.match(result.stderr,/^COMPANION_START_BLOCKED: preserve private state and review the exact campaign\/source configuration\.\n$/);assert.deepEqual(await fs.readdir(dir),[]);}));
+test('production startup requires independently reviewed trust policy and rejects non-Mac hosts before reading or creating campaign state',()=>temp(async dir=>{
+  const flags=['--campaign',path.join(dir,'missing.json'),'--reviewed-campaign-sha256','a'.repeat(64),'--actor-lock-directory',path.join(dir,'actors'),'--state',path.join(dir,'state')];
+  for(const args of [flags,[...flags,'--trust-policy',path.join(dir,'policy.json'),'--reviewed-trust-policy-sha256','b'.repeat(64)]]){
+    const result=spawnSync(process.execPath,[path.join(root,'bridge/start.mjs'),...args],{encoding:'utf8',env:cleanEnvironment()});
+    assert.equal(result.status,1);assert.equal(result.stdout,'');
+    const validFlags=args.length>flags.length;
+    const expectedCode=validFlags?(process.platform==='darwin'?'ENOENT\n':'TRUSTED_MAC_SIGNING_HOST_REQUIRED\n'):'';
+    assert.equal(result.stderr,expectedCode+'COMPANION_START_BLOCKED: preserve private state and review the exact campaign/source configuration.\n');
+    assert.deepEqual(await fs.readdir(dir),[]);
+  }
+}));
+
+import { pathToFileURL } from 'node:url';
+import { MANAGER_SUPPORTED, MANAGER_CURRENT, MANAGER_CORRECTED } from '../coordinators/manager.mjs';
+import { sha256 } from '../bridge/private-store.mjs';
+async function syntheticDarwinManagerLaunch(dir, source) {
+  const preload = path.join(dir, 'synthetic-darwin-test-only.cjs');
+  await fs.writeFile(preload, "Object.defineProperty(process, 'platform', { value: 'darwin' });\n", { mode: 0o600 });
+  const campaignPath = path.join(dir, 'synthetic-campaign.json');
+  const campaign = { adapter: 'manager', reviewedManifest: { source }, actors: { governor: '0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99', creator: '0x1111111111111111111111111111111111111111' }, nativeQualification: { status: 'SELF_CLAIMED_PASS_DOES_NOT_AUTHORIZE' }, authorityComplete: true };
+  await fs.writeFile(campaignPath, JSON.stringify(campaign), { mode: 0o600 });
+  return spawnSync(process.execPath, ['--import', pathToFileURL(preload).href, path.join(root, 'bridge/start.mjs'), '--campaign', campaignPath, '--reviewed-campaign-sha256', sha256(campaign), '--trust-policy', path.join(dir, 'missing-policy.json'), '--reviewed-trust-policy-sha256', 'b'.repeat(64), '--actor-lock-directory', path.join(dir, 'actors'), '--state', path.join(dir, 'state')], { encoding: 'utf8', env: cleanEnvironment() });
+}
+for (const [label, supported, code] of [
+  ['historical eb6', MANAGER_SUPPORTED, 'MANAGER_NATIVE_ENS_ROOT_ORDER_CORRECTION_REQUIRED'],
+  ['historical c2', MANAGER_CURRENT, 'MANAGER_NATIVE_ENS_ROOT_ORDER_CORRECTION_REQUIRED'],
+  ['corrected d371 awaiting exact owner qualification', MANAGER_CORRECTED, 'MANAGER_EXACT_NATIVE_QUALIFICATION_HANDOFF_REQUIRED'],
+]) test(`synthetic Darwin launcher guard: ${label} remains blocked before native policy, actor locks or campaign state`, () => temp(async dir => {
+  const { repository, commit, tree } = supported;
+  const result = await syntheticDarwinManagerLaunch(dir, { repository, commit, tree });
+  assert.equal(result.status, 1); assert.equal(result.stdout, '');
+  assert.equal(result.stderr, code + '\nCOMPANION_START_BLOCKED: preserve private state and review the exact campaign/source configuration.\n');
+  assert.deepEqual((await fs.readdir(dir)).sort(), ['synthetic-campaign.json', 'synthetic-darwin-test-only.cjs']);
+}));
+test('synthetic Darwin launcher guard: corrected commit with an unreviewed tree is rejected before qualification classification', () => temp(async dir => {
+  const result = await syntheticDarwinManagerLaunch(dir, { repository: MANAGER_CORRECTED.repository, commit: MANAGER_CORRECTED.commit, tree: 'f'.repeat(40) });
+  assert.equal(result.status, 1); assert.equal(result.stdout, ''); assert.match(result.stderr, /^UNREVIEWED_COORDINATOR_SOURCE\nCOMPANION_START_BLOCKED:/);
+  assert.deepEqual((await fs.readdir(dir)).sort(), ['synthetic-campaign.json', 'synthetic-darwin-test-only.cjs']);
+}));

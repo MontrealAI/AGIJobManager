@@ -125,7 +125,8 @@ test('explicit same-host dead bridge-owner recovery preserves caps and actor loc
     await assert.rejects(reopened.prepare({ step: 0 }), { code: 'BRIDGE_OWNER_READ_ONLY_RECOVERY_REQUIRED' });
     assert.deepEqual(await fs.readFile(path.join(f.options.privateDirectory, cap)), capBefore); assert.equal(await fs.readFile(actorLock, 'utf8'), 'COORDINATOR-OWNED-DO-NOT-TOUCH');
     assert.equal((await fs.readdir(f.options.privateDirectory)).filter(name => name.startsWith('retired-bridge-owner-')).length, 1);
-    f.controls.observeState = 'signed'; await reopened.observe({ step: 0, operationId: prepared.operationId }); assert.equal((await reopened.status()).bridgeRecoveryRequired, false);
+    f.controls.observeState = 'signed'; await reopened.observe({ step: 0, operationId: prepared.operationId }); assert.equal((await reopened.status()).bridgeRecoveryRequired, true);
+    f.controls.observeState = 'verified'; await reopened.observe({ step: 0, operationId: prepared.operationId }); assert.equal((await reopened.status()).bridgeRecoveryRequired, false);
     await assert.rejects(reopened.prepare({ step: 0 }), { code: 'READ_ONLY_RECOVERY_REQUIRED' });
   } finally { await reopened.close(); }
 });
@@ -134,4 +135,57 @@ test('unknown host/boot owner records are never retired, even with a conclusivel
   owner.pid = 2147483646; owner.hostContext = { platform: 'other-host', host: 'unknown', boot: 'unknown' }; await fs.writeFile(ownerFile, JSON.stringify(owner), { mode: 0o600 });
   await assert.rejects(createCampaignEngine({ ...f.options, recoverDeadOwner: true }), { code: 'BRIDGE_OWNER_RECOVERY_BLOCKED' });
   assert.equal((await fs.readdir(f.options.privateDirectory)).some(name => name.startsWith('retired-bridge-owner-')), false);
+});
+
+async function interruptedImport(t, mutate = value => value, options = {}) {
+  const base = await fs.mkdtemp(path.join(os.tmpdir(), 'companion-ack-recovery-'));
+  const campaign = campaignFixture(); campaign.relayPolicy = { enabled: true, acknowledgementMode: 'EXACT_COORDINATOR_PER_STEP' };
+  let hash, time = fixtureTime, relayCalls = 0, inspectBlocked = false;
+  const tools = adapterFixture(campaign);
+  const adapter = Object.freeze({ ...tools.adapter,
+    inspectCampaign() { if (inspectBlocked) throw new Error('source changed'); return {}; },
+    async importSigned(args) { const imported = await tools.adapter.importSigned(args); hash = imported.transactionHash; throw new Error('synthetic response loss after native import'); },
+    async observe() { return mutate({ operationId: campaign.reviewedManifest.operations[0].operationId, transactionHash: hash, state: 'signed', verified: false, finalized: false, relayAlreadyAttempted: false, acknowledgement: 'EXACT_NATIVE_ACK' }); },
+    async relayOne() { relayCalls++; return { state: 'submitted', transactionHash: hash }; }
+  });
+  const settings = { campaign, adapter, privateDirectory: path.join(base, 'private'), relayEnabled: true, now: () => time };
+  let engine = await createCampaignEngine(settings);
+  const prepared = await engine.prepare({ step: 0 });
+  await assert.rejects(engine.importSigned({ step: 0, operationId: prepared.operationId, capability: signedFixture(prepared.prepared) }), { code: 'COORDINATOR_IMPORT_BLOCKED' });
+  await engine.close(); if (options.expired) time += 60_000; inspectBlocked = options.sourceBlocked === true;
+  engine = await createCampaignEngine(settings);
+  t.after(async () => { await engine.close(); await fs.rm(base, { recursive: true, force: true }); });
+  return { engine, operationId: prepared.operationId, relayCalls: () => relayCalls, tools };
+}
+test('lost native import acknowledgement recovers exact existing capability after restart, with explicit one-shot relay only', async t => {
+  const f = await interruptedImport(t);
+  const request = { step: 0, operationId: f.operationId };
+  const recovered = await f.engine.observe(request); assert.equal(recovered.state, 'signed'); assert.equal(recovered.acknowledgement, 'EXACT_NATIVE_ACK'); assert.equal(f.relayCalls(), 0);
+  await f.engine.observe(request); assert.equal(f.tools.calls.importSigned, 1); assert.equal(f.tools.calls.prepare, 1);
+  await assert.rejects(f.engine.prepare({ step: 0 }), { code: 'READ_ONLY_RECOVERY_REQUIRED' });
+  await assert.rejects(f.engine.relayOne({ ...request, acknowledgement: 'STALE_ACK' }), { code: 'EXACT_COORDINATOR_ACK_REQUIRED' });
+  await f.engine.relayOne({ ...request, acknowledgement: 'EXACT_NATIVE_ACK' }); assert.equal(f.relayCalls(), 1);
+  // Even a stale observer reporting signed/unattempted cannot override the bridge marker.
+  const stale = await f.engine.observe(request); assert.equal(stale.state, 'recovery-required'); assert.equal(stale.acknowledgement, undefined);
+  await assert.rejects(f.engine.relayOne({ ...request, acknowledgement: 'EXACT_NATIVE_ACK' }), { code: 'EXACT_COORDINATOR_ACK_REQUIRED' }); assert.equal(f.relayCalls(), 1);
+});
+for (const [label, mutate, options] of [
+  ['no native acknowledgement', value => { delete value.acknowledgement; return value; }, {}],
+  ['native attempt marker', value => ({ ...value, relayAlreadyAttempted: true }), {}],
+  ['expired', value => value, { expired: true }],
+  ['source inspection blocked', value => value, { sourceBlocked: true }]
+]) test(`acknowledgement recovery stays blocked: ${label}`, async t => {
+  const f = await interruptedImport(t, mutate, options), request = { step: 0, operationId: f.operationId };
+  const result = await f.engine.observe(request); assert.equal(result.state, 'recovery-required'); assert.equal(result.acknowledgement, undefined);
+  await assert.rejects(f.engine.relayOne({ ...request, acknowledgement: 'EXACT_NATIVE_ACK' })); assert.equal(f.relayCalls(), 0);
+});
+for (const [label, mutate] of [
+  ['wrong operation', value => ({ ...value, operationId: 'other' })],
+  ['wrong hash', value => ({ ...value, transactionHash: '0x' + '12'.repeat(32) })],
+  ['missing native attempt proof', value => { delete value.relayAlreadyAttempted; return value; }],
+  ['invalid acknowledgement', value => ({ ...value, acknowledgement: 'line\nbreak' })]
+]) test(`acknowledgement recovery rejects ${label}`, async t => {
+  const f = await interruptedImport(t, mutate), request = { step: 0, operationId: f.operationId };
+  await assert.rejects(f.engine.observe(request)); const state = (await f.engine.status()).steps[0]; assert.equal(state.state, 'recovery-required'); assert.equal(state.acknowledgement, undefined);
+  await assert.rejects(f.engine.relayOne({ ...request, acknowledgement: 'EXACT_NATIVE_ACK' })); assert.equal(f.relayCalls(), 0);
 });

@@ -9,10 +9,14 @@ import jobs, { JOBS_COMPATIBILITY, inspectJobsSource } from '../coordinators/job
 
 test('Jobs dashboard keeps hardware, authority and activation blocked with exact observed identity', () => {
   const report = jobs.inspectCampaign(new Proxy({}, { get() { throw new Error('untrusted campaign was accessed'); } }));
-  assert.equal(report.compatibility.commit, 'fed83bc183753e871621fc1cb3aa8510bd38f642');
-  assert.equal(report.compatibility.tree, 'a49fa5d32272555e62431363f1ffd36b84ea87be');
-  assert.equal(report.compatibility.packetSchema, null);
+  assert.equal(report.compatibility.commit, '9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5');
+  assert.equal(report.compatibility.tree, '720312acac83eddeeb76644e1e22f53578e91784');
+  assert.equal(report.compatibility.packetSchema, 'jobs-external-envelope-v1');
   assert.equal(report.state, 'blocked');
+  assert.equal(report.nativeQualificationAccepted, true);
+  assert.equal(report.compatibility.externalSigningSupported, true);
+  assert.equal(report.compatibility.markerCreatorQualified, false);
+  assert.equal(report.compatibility.companionTransportQualified, false);
   for (const flag of ['canPrepare', 'canSign', 'canImport', 'canRelay', 'authorityComplete', 'activationReady', 'productionApproved']) assert.equal(report[flag], false);
   assert.equal(Object.isFrozen(report), true);
   assert.equal(Object.isFrozen(JOBS_COMPATIBILITY.missingInterfaces), true);
@@ -21,7 +25,7 @@ test('Jobs dashboard keeps hardware, authority and activation blocked with exact
 
 for (const method of ['prepare', 'importSigned', 'observe', 'relayOne']) test(`Jobs ${method} refuses before argument access, provider/device use or raw disclosure`, () => {
   const input = new Proxy({}, { get() { throw new Error('PRIVATE_PAYLOAD_SENTINEL'); } });
-  assert.throws(() => jobs[method](input), error => error.code === 'JOBS_EXTERNAL_SIGNING_UNSUPPORTED' && !error.message.includes('PRIVATE_PAYLOAD_SENTINEL'));
+  assert.throws(() => jobs[method](input), error => error.code === 'JOBS_COMPANION_TRANSPORT_NOT_QUALIFIED' && !error.message.includes('PRIVATE_PAYLOAD_SENTINEL'));
 });
 
 test('read-only inventory refuses an unrelated directory without creating files', () => {
@@ -41,6 +45,6 @@ test('CLI accepts no transaction, raw import, custom command or relay arguments'
     assert.equal(run.status, 1);
     assert.equal(run.stdout, '');
     const applicationLines = run.stderr.trim().split('\n').filter(line => !/^\(node:\d+\) \[UNDICI-EHPA\] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time\.$/.test(line) && line !== '(Use `node --trace-warnings ...` to show where the warning was created)');
-    assert.deepEqual(applicationLines, ['JOBS_EXTERNAL_SIGNING_UNSUPPORTED']);
+    assert.deepEqual(applicationLines, ['JOBS_COMPANION_TRANSPORT_NOT_QUALIFIED']);
   }
 });

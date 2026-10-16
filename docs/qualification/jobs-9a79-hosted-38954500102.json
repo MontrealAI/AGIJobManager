@@ -1,0 +1,690 @@
+{
+  "schema": "jobs-native-qualified-handoff-readback-v1",
+  "recordedAt": "2026-10-16T20:45:19.022186+00:00",
+  "source": {
+    "repository": "MontrealAI/AGIJobsv0",
+    "commit": "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5",
+    "tree": "720312acac83eddeeb76644e1e22f53578e91784"
+  },
+  "workflow": {
+    "url": "https://github.com/MontrealAI/AGIJobsv0/actions/runs/38954500102",
+    "runId": 38954500102,
+    "attempt": 1,
+    "conclusion": "success",
+    "artifactId": 12072489816,
+    "archiveSha256": "1da8f5a17978b92bf355537076125063b064c287d71b5c3e40858a9fcc33d025",
+    "member": "qualification.json",
+    "memberSha256": "26f188a32c1bf62464c2239d3fad7ea729d1179265d24d5391ac66f23826787d"
+  },
+  "qualificationPassed": true,
+  "nodeVersion": "v22.23.3",
+  "sourceGate": {
+    "baseline": "bd45f34de1c1e58986aafb4b0e5c48bc155839ca",
+    "baseTip": "bd45f34de1c1e58986aafb4b0e5c48bc155839ca",
+    "head": "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5",
+    "generatedSourceBaseline": "e207b8528d655b8638661bd7292d64657ce6e719",
+    "compilerSourceBaseline": "e207b8528d655b8638661bd7292d64657ce6e719",
+    "preservedHistoricalEvidence": true,
+    "reviewedSourceReconciled": true,
+    "transitionCount": 67
+  },
+  "canonicalCompiler": {
+    "compiler": "0.8.37+commit.f401782d",
+    "projectSourceWarnings": 0,
+    "reviewedUpstreamWarningCount": 13,
+    "sizeGatePassed": true,
+    "evidenceSha256": "c9de11d2d1d4586183d4e134a714581bf004affed5609c8a935745f7324c98a2"
+  },
+  "compilerReader": {
+    "compiler": "0.8.37+commit.f401782d",
+    "compilerInputSha256": "a962576832d4540c4cd682f9251b6eed2a333c87a1ce5fa61ed5716e7091b891",
+    "coordinatorBytecodeHash": "0x3a8e9400f1157e1916104b35688d51a2b9fd02fb5fddce5d1ee4bbfb62986fa3",
+    "coordinatorRuntimeHash": "0x32e244c804fad21f616ac27f4e7a13a06e683d3f44219b2e1006d814e577894e"
+  },
+  "stages": [
+    {
+      "label": "source-preservation",
+      "passed": true,
+      "processGroupEmpty": true,
+      "unexpectedRemainingGroupMembers": false,
+      "code": 0,
+      "signal": null
+    },
+    {
+      "label": "focused-node-84",
+      "passed": true,
+      "processGroupEmpty": true,
+      "unexpectedRemainingGroupMembers": false,
+      "code": 0,
+      "signal": null,
+      "counts": {
+        "tests": 84,
+        "passed": 84,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "label": "child-completion-43",
+      "passed": true,
+      "processGroupEmpty": true,
+      "unexpectedRemainingGroupMembers": false,
+      "code": 0,
+      "signal": null,
+      "counts": {
+        "tests": 43,
+        "passed": 43,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "label": "public-export-tests",
+      "passed": true,
+      "processGroupEmpty": true,
+      "unexpectedRemainingGroupMembers": false,
+      "code": 0,
+      "signal": null,
+      "counts": {
+        "tests": 33,
+        "passed": 33,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "label": "canonical-compile",
+      "passed": true,
+      "processGroupEmpty": true,
+      "unexpectedRemainingGroupMembers": false,
+      "code": 0,
+      "signal": null
+    },
+    {
+      "label": "canonical-compiler-validation",
+      "passed": true,
+      "processGroupEmpty": true,
+      "unexpectedRemainingGroupMembers": false,
+      "code": 0,
+      "signal": null
+    },
+    {
+      "label": "normalize-ens-fixture",
+      "passed": true,
+      "processGroupEmpty": true,
+      "unexpectedRemainingGroupMembers": false,
+      "code": 0,
+      "signal": null
+    },
+    {
+      "label": "direct-v1-22",
+      "passed": true,
+      "processGroupEmpty": true,
+      "unexpectedRemainingGroupMembers": false,
+      "code": 0,
+      "signal": null,
+      "counts": {
+        "tests": 22,
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "label": "external-cli-39",
+      "passed": true,
+      "processGroupEmpty": true,
+      "unexpectedRemainingGroupMembers": false,
+      "code": 0,
+      "signal": null
+    }
+  ],
+  "fixtureCounts": {
+    "chainId": 31337,
+    "signatures": 39,
+    "manualRelayInvocations": 39,
+    "completedOperations": 39,
+    "creations": 25
+  },
+  "operations": [
+    {
+      "index": 0,
+      "key": "create:Deployer",
+      "unsignedHash": "0xba153e1d7370fbcbc54b8df6bb98012a0d1ce1c67b67e17812c8c582c2c9e4c1",
+      "policyHash": "0x8b2f203b4fb02d93789e19ff3cb1a7c7f931691f5697645c71455cf0850d89f6",
+      "transactionHash": "0xa7fbc1d7a03ee2e833701c7c2330dc6520547a452c56905f9797cd1258bddeb6",
+      "status": 1,
+      "nonce": 0,
+      "blockNumber": 1,
+      "blockHash": "0xad55875a8087426bccfe778d38957d03421f853cfa8b92831e178a84680bc682",
+      "gasUsed": "2763605"
+    },
+    {
+      "index": 1,
+      "key": "commit",
+      "unsignedHash": "0x1b8a1e4128d2364ab9b73a66d53478375ccb0b9444e64923bc96d9e7358de485",
+      "policyHash": "0xc6bbd4d814a0d4b341febe43eaa809f454adbd92b2a65f858ce86fa0a9cdabc6",
+      "transactionHash": "0x41b5460f4e8e19fd403ac10c924ca64d650f208e41e0115a1fcf024c10ae57f7",
+      "status": 1,
+      "nonce": 1,
+      "blockNumber": 2,
+      "blockHash": "0xde8647666c7347f6d33d8fcc73cc14e76b81020ac73e4da48e37a5498c33ad95",
+      "gasUsed": "49738"
+    },
+    {
+      "index": 2,
+      "key": "create:StakeManagerConfiguration",
+      "unsignedHash": "0x4a1923adc2244190019c823ccd5a1972a791d8447c19c2e38922e855f61241ed",
+      "policyHash": "0xc54340eb0c2be84eda55f1685223600ea73ad35f5dbcd232d7f42d77f41f7245",
+      "transactionHash": "0x52b64ad8ec5d2a12448833c48343ad66edb87a7da2f1cc15a73ddffab172c720",
+      "status": 1,
+      "nonce": 2,
+      "blockNumber": 3,
+      "blockHash": "0x7fdbe778297ef15e28c7e0a299cd0d3eb8adf28fbd17ca6a88c33cf4c9cde9fb",
+      "gasUsed": "3701649"
+    },
+    {
+      "index": 3,
+      "key": "handover:StakeManagerConfiguration",
+      "unsignedHash": "0xda12cdf452dc2e9fef223f50f54fb18fb3581d9adca29d7196a3c28e586320ef",
+      "policyHash": "0x7524c4d17c7c309989d772fa4a49608e1ebe516d9da867e67f11763f90fa0af7",
+      "transactionHash": "0x8dd271c6f41cfd221c23b89a074257f3fe0320d64b2c120cc8b71fccad79c242",
+      "status": 1,
+      "nonce": 3,
+      "blockNumber": 4,
+      "blockHash": "0x843379d63fccd891784554bab844f854a40e39ff302bdaae976eb884e686c1da",
+      "gasUsed": "31771"
+    },
+    {
+      "index": 4,
+      "key": "create:StakeManagerStaking",
+      "unsignedHash": "0x10fe57b59b781e6660fbf4d4c90dcf52c51add4ebab3ea059f8a269081a41e3d",
+      "policyHash": "0xf3af34dda2c762dc551eb2f6af02cd0274e4b81226dbb545ece5aa8e3e750767",
+      "transactionHash": "0x697fdb3fb88b16d7225729df41c73462f5b99ca1601b1c98368ac32ca7974db1",
+      "status": 1,
+      "nonce": 4,
+      "blockNumber": 5,
+      "blockHash": "0x16c884c3085d90106ae93ce580cd7a42c0025d5ec8bb15c61b1bb615b1b6f0d3",
+      "gasUsed": "2615031"
+    },
+    {
+      "index": 5,
+      "key": "handover:StakeManagerStaking",
+      "unsignedHash": "0x3e83fb0e300c0a65a7e9db74929bd1833a272fab6add1b0b6ffa5e33a7992982",
+      "policyHash": "0xa72068fede3c08c2df2f627e0c30862a0134aaeee0804f149e489027eb7b0296",
+      "transactionHash": "0x177f8c2fb8002fdb2372a863ff8fee813f5e20dd2c3a6c551b9be0eb4d2a240a",
+      "status": 1,
+      "nonce": 5,
+      "blockNumber": 6,
+      "blockHash": "0x13cd1ae84aedf9a1bbb4cb38902722219f65b64923b49fe31aed849696d29699",
+      "gasUsed": "31209"
+    },
+    {
+      "index": 6,
+      "key": "create:StakeManagerEscrow",
+      "unsignedHash": "0xbf25eae16b3c3e4dfcbfb09897c62e99af4f55df47e8b6d66b1372d34d3b1899",
+      "policyHash": "0xa5408af061cf0e9ffdd16608b3f51d0137083274fb4f28f5197352cff4254b8e",
+      "transactionHash": "0xaaa8c91e339609a3615ea9f5ca8c92092c0470396a3e75da7c32361e36a42c3a",
+      "status": 1,
+      "nonce": 6,
+      "blockNumber": 7,
+      "blockHash": "0x201a24fecdbab70498a4e37b8197e40c6cde16e9ad68f1007070e5239d9ca930",
+      "gasUsed": "3164971"
+    },
+    {
+      "index": 7,
+      "key": "handover:StakeManagerEscrow",
+      "unsignedHash": "0xd50ddea9549f8bdd843e0a8c94146933c493f753608040640ccb574406e1d0e1",
+      "policyHash": "0x84138ec6f14d4e421a683ebf89075d39ca74765e6f9f1aa00b5f549b35eca85b",
+      "transactionHash": "0xc5c82fd65a0dc1c453fcef60f475449cec751e616ede1b5421432c2d36755f25",
+      "status": 1,
+      "nonce": 7,
+      "blockNumber": 8,
+      "blockHash": "0xce0f85d92e139f5a5b47a9432f014dadc020ae2e68a91e98641e573077bbe3d8",
+      "gasUsed": "31216"
+    },
+    {
+      "index": 8,
+      "key": "create:StakeManagerSlashing",
+      "unsignedHash": "0x7dd5a46a0d55ac94b0d0b6b7c471a00b3e43209c4e63e87c40fe24227706fa45",
+      "policyHash": "0x1fe69ddd820774d9d49c238bdef2965e403dac1685334217edcc06e1ea5c11de",
+      "transactionHash": "0x18e48e234071d8a40ff27cce82b4dbb5c7ffa47c15ee49d14305b539f3e56b10",
+      "status": 1,
+      "nonce": 8,
+      "blockNumber": 9,
+      "blockHash": "0xd4cc441396aabfec881c67823741a99386bbce471e12efaf9ce6baf3fb81acce",
+      "gasUsed": "3729441"
+    },
+    {
+      "index": 9,
+      "key": "handover:StakeManagerSlashing",
+      "unsignedHash": "0x30240add0220a5597a8832398b36604c0bab44c8e15ce35f41bd651593299ff1",
+      "policyHash": "0x4c6ba31c64dde205fd31b2c7e5de69f9f9cc444f3bf455a60b957db23a6b6bf1",
+      "transactionHash": "0xfc1ef7df7f40f7448f7010444c934d0aa633805b436cb588b0a3ed6c805e6b53",
+      "status": 1,
+      "nonce": 9,
+      "blockNumber": 10,
+      "blockHash": "0x8e8d79c0486dded66b2c790152cef745727925a791f70dd1b97acff9aedb460c",
+      "gasUsed": "31033"
+    },
+    {
+      "index": 10,
+      "key": "component:StakeManager",
+      "unsignedHash": "0x7332bd7e3ccda87f17168177eaef70985d90efe367dbd40f6a9dead36f011f92",
+      "policyHash": "0xd02da00cba965bcfea43a8e9af0205ece5d59f0f7e3dcf163689fb147a2f059c",
+      "transactionHash": "0x4ba6039a24b502cd21c2a1965075a569acb6053a3261e4c9fc9ea752511aac01",
+      "status": 1,
+      "nonce": 10,
+      "blockNumber": 11,
+      "blockHash": "0x8cb498358eb7a012691121fcdd665d81b5609589fb60179e50b65826097d9e31",
+      "gasUsed": "2195443"
+    },
+    {
+      "index": 11,
+      "key": "create:JobRegistryConfiguration",
+      "unsignedHash": "0x995a930d70e1032fd80cff8e095f5aa056563834827f212ed0ff2df4ad02675a",
+      "policyHash": "0x040a448e7a7be8ed1dc82391d2a59cfd5f23e98e33e91725bbbf082ec351dc06",
+      "transactionHash": "0xc0bcc9ad2f3430ad4986c17eedf7d7fefe606189b927270fb4e3174fd373a4f3",
+      "status": 1,
+      "nonce": 11,
+      "blockNumber": 12,
+      "blockHash": "0x767e2267f65b426bd0a63e9b45638d37c5c2e6cbc4ec9f4529a6eed54367cc02",
+      "gasUsed": "3764706"
+    },
+    {
+      "index": 12,
+      "key": "handover:JobRegistryConfiguration",
+      "unsignedHash": "0x3d8a31577ddc908d2f0284db8a62d6458135d4783548f5ffd71d3fa5fc2bb86f",
+      "policyHash": "0x0c7247e5ce7b67b6dc825b327b47cdb093c56eacacd737768bd0128e5b89750f",
+      "transactionHash": "0x94f53e1482a7c8d7b585fc350cdca6a36e95320805edf645ef281de9b8bb59dd",
+      "status": 1,
+      "nonce": 12,
+      "blockNumber": 13,
+      "blockHash": "0xf3e5ebb6e2d50e950b30d0b431cbbd4a2ed09a387d72debb59e9ec6bcacc23d8",
+      "gasUsed": "31448"
+    },
+    {
+      "index": 13,
+      "key": "create:JobRegistryLifecycle",
+      "unsignedHash": "0x92dd4cca4c557ca824ee613f6e9e1566d716971521d9f01f237b41ab9012c1ac",
+      "policyHash": "0x860d4a44b7159c86c72b89cd3154a60407b1b2bb8c8178aa797e0dc199f50f1f",
+      "transactionHash": "0x183ff270ff1d3918553e07cc2100400a703b28758fb15f48a91c1775591e2fe7",
+      "status": 1,
+      "nonce": 13,
+      "blockNumber": 14,
+      "blockHash": "0xc78a70a3ca833cd3230ec5212f055302736aa25dea51a2a681c3ad1af0190a2e",
+      "gasUsed": "5135740"
+    },
+    {
+      "index": 14,
+      "key": "handover:JobRegistryLifecycle",
+      "unsignedHash": "0xd44be9e1656dd1cf1faad13276c9adde747712941eaf31b76e0a0fa3f8625365",
+      "policyHash": "0xd1d1f94aa2a32261dd9f079ba5ae1c8444972f38617c271faf05bd448d5f2a0e",
+      "transactionHash": "0x6c0ab05f44e348ad898250a16cd10dae89fe6bb5892248aca570ea2732721b59",
+      "status": 1,
+      "nonce": 14,
+      "blockNumber": 15,
+      "blockHash": "0xad382a1a58747beb8ddbb998f7248c10f152612356d75d73787482cb0193d258",
+      "gasUsed": "31006"
+    },
+    {
+      "index": 15,
+      "key": "create:JobRegistrySettlement",
+      "unsignedHash": "0xf9871d7981895b499821c28f08c4c9ba0071b20c855659f11bd08c18c8317475",
+      "policyHash": "0x510907ec8de58964a0c7657a6e76bacd910c74f916118d9c47cc4313da41c788",
+      "transactionHash": "0xc644e76faa7d4c4137ae7a3de1762e785b996eb7c4ec5c6c1e1a020b9b62fe7c",
+      "status": 1,
+      "nonce": 15,
+      "blockNumber": 16,
+      "blockHash": "0xbbb66ae7fa0e16d8631748a81fda0971ec5c90c2b3fd8135510db5545909d203",
+      "gasUsed": "4625007"
+    },
+    {
+      "index": 16,
+      "key": "handover:JobRegistrySettlement",
+      "unsignedHash": "0x4d8d2b8677a189ee97f88e93a4dfebbae59d69d77302573f631dde4c68b40044",
+      "policyHash": "0x67159e2f7175efbb34b732bd723fa175de117ba7c8a3c8b977d191d7f3dabf10",
+      "transactionHash": "0x746d05b1e6f75d20e9e5d23c068a6702b3f5526405440bfcaec687a25fa0b1c3",
+      "status": 1,
+      "nonce": 16,
+      "blockNumber": 17,
+      "blockHash": "0x64373169bc32f5cdbb78110d43b584a723e18144b0835498521f6e99dee2bdd0",
+      "gasUsed": "31096"
+    },
+    {
+      "index": 17,
+      "key": "component:JobRegistry",
+      "unsignedHash": "0x8ad685fac06efaa2abad036e45b7f3afa6e5afbe61989fed2b3429714ce18ffa",
+      "policyHash": "0xf367cbf0f66a3c6bf1fd7dd376b4fb09cdd943b4dde5dcfa5bcfad00bfb9a3ad",
+      "transactionHash": "0x7efe9ed38b95202f9573a2e237b58e100432e078aee06986336f859c6e6b8ed3",
+      "status": 1,
+      "nonce": 17,
+      "blockNumber": 18,
+      "blockHash": "0x6a5f24547cb0e6839760aeee83a2120f8af6db4c8ccfc2775198add9516f4710",
+      "gasUsed": "2124656"
+    },
+    {
+      "index": 18,
+      "key": "create:ValidationModuleConfiguration",
+      "unsignedHash": "0xc65e8fdf9a61aa4cea3aacfa7fffa124eedb8d150f5c881a28c88da3dedee133",
+      "policyHash": "0x6727bafb5a9310b4d7949366187a497c69b07c4e95dc680350b0050447dc6626",
+      "transactionHash": "0x8627424b1c0a905dbaa8eefe6b33cde48d7d87790d8205f608b8942f77678060",
+      "status": 1,
+      "nonce": 18,
+      "blockNumber": 19,
+      "blockHash": "0x1135cb3120bdbe7e93c6a62354598300b7f5eeb819509786b3fd4f43b85f8702",
+      "gasUsed": "3059428"
+    },
+    {
+      "index": 19,
+      "key": "handover:ValidationModuleConfiguration",
+      "unsignedHash": "0xbabca2da1f4ad3ef3aae74bdbed2cb62da63be70c5664a6c7bdae39cb705cefa",
+      "policyHash": "0xb8be315ad186eaf5e38c8dc3fb7141db107460bbfdb725c53bc0cc99a052d43c",
+      "transactionHash": "0xbc55e9059976b18820c0902575a1cadb6d73cfbc8c7ea117fba24eaf1c98ea3a",
+      "status": 1,
+      "nonce": 19,
+      "blockNumber": 20,
+      "blockHash": "0x2f8dbff4e78277ae5296a6a87d30b7e6f1c2ccb173f873215a8ab8b60dc448a8",
+      "gasUsed": "30836"
+    },
+    {
+      "index": 20,
+      "key": "create:ValidationModuleVoting",
+      "unsignedHash": "0xf356ec3723ec6c6d859d810b6e267e93e30d9bece459ccc62c17391820489228",
+      "policyHash": "0xdd38c5e74e3f9ee4989ac3193b043e310e2881f98293d68cc5c912fc4f988be8",
+      "transactionHash": "0xe1283827e4f0f77529c8822632e8d42275516fc52b9fe2197b71af6e96018485",
+      "status": 1,
+      "nonce": 20,
+      "blockNumber": 21,
+      "blockHash": "0xed631003781de96ee99e0867cc6bc4284049be4a3daf32ba5eb28d9a11f86367",
+      "gasUsed": "3675905"
+    },
+    {
+      "index": 21,
+      "key": "handover:ValidationModuleVoting",
+      "unsignedHash": "0x2f586b96852f6b242cc120ff25703e3d1ab8e35f4bd7a0f50a2713df74bf319a",
+      "policyHash": "0x70463bf6f2c20b4ecd53846628d5593108fa6b63068b77680db9a9b3e8530d29",
+      "transactionHash": "0x4fe3f4f63a8bad6f71832a6e6fee31db22ab033f0c2128e9e4bfed40a04e0f44",
+      "status": 1,
+      "nonce": 21,
+      "blockNumber": 22,
+      "blockHash": "0xc0af2dcf19c8d92737faa2013eecceabb7889db3c7bff0730ff5ba1f48ee74b1",
+      "gasUsed": "30836"
+    },
+    {
+      "index": 22,
+      "key": "create:ValidationModuleSelection",
+      "unsignedHash": "0x4ac5df03ba87e69b4b1256398d03475967f97b4fd1e3961a94594eb5e3a5941c",
+      "policyHash": "0xdbf4b4def96cfa113e909fe371dca5034165fcda906c4e6d38b3e9825f0f22f6",
+      "transactionHash": "0xcfd96a6236f0662edea35219b49c3f0ed6dfb09e646e1ca51c9b3824e01bfd5a",
+      "status": 1,
+      "nonce": 22,
+      "blockNumber": 23,
+      "blockHash": "0x9023a509aee24401001351fe79e1f31f4c6f8ff5cedbed0ebe0c5fd2d46d570f",
+      "gasUsed": "3197572"
+    },
+    {
+      "index": 23,
+      "key": "handover:ValidationModuleSelection",
+      "unsignedHash": "0x8ba748edb6b29b05e05cf974e1c3232ea1b6b21f97b091fd150efbb1ae997571",
+      "policyHash": "0x1fb46983ca0514bbe643d0ead5ea0be3d33b5e360f75d2ae166651efaadeeb07",
+      "transactionHash": "0x3ef8336b6b8c1d86348c0545c12026d9f1379ca42ccbf72fc8af777a7aa8025d",
+      "status": 1,
+      "nonce": 23,
+      "blockNumber": 24,
+      "blockHash": "0xaab5bc4b8d8c3c522ac65de1dc807cf9690eab6ceca2246c79ed0056079f0526",
+      "gasUsed": "30836"
+    },
+    {
+      "index": 24,
+      "key": "component:ValidationModule",
+      "unsignedHash": "0xc154e918c1c8ceb9fcb269f86e94228809646f1ba4945ec98bb8f2152bc92dc6",
+      "policyHash": "0xb00e4116de4881e158f46daabc59bf41b5d6be7047f03d69b77d8b8ca585b5e6",
+      "transactionHash": "0x90c0ac7d488c5972049bfcc0059d119bb94a0ee0b149bf1eb350ae837fda1ead",
+      "status": 1,
+      "nonce": 24,
+      "blockNumber": 25,
+      "blockHash": "0x8b7eaecda37c97353204ed797b8ff35afad9fb9d163139c7e1a831b46f4911ea",
+      "gasUsed": "2079111"
+    },
+    {
+      "index": 25,
+      "key": "component:ReputationEngine",
+      "unsignedHash": "0x1e6645a43090052c58f1ca40b1a680e7dd5a4623df71bd9e7dd5eb80b7287fb8",
+      "policyHash": "0xe52217f63b6453183c5b51613f8cfa31a7441273ad539aa346b3d32a8100b4e1",
+      "transactionHash": "0x83c5736a27a0fbd01c55b94b3b285207c4a28a01bf1b0bba4c9fd026c5375b1a",
+      "status": 1,
+      "nonce": 25,
+      "blockNumber": 26,
+      "blockHash": "0x0674adfe435baccc3c414eaf46019499995ba146621d01248ee298c9df91521b",
+      "gasUsed": "1756117"
+    },
+    {
+      "index": 26,
+      "key": "component:ArbitratorCommittee",
+      "unsignedHash": "0x45cb69dee79c34cbae30f342913489363cf0e61c21081e595a1fa8d2671b2bb3",
+      "policyHash": "0xc97aec43d4004997ae81fe0b6ad298b5a0ebfc76101a066e572e67206971c872",
+      "transactionHash": "0xd5b8984047a8854e8c9ac58cfcf4a140ad06c12cfe6903503aa5083fa8398456",
+      "status": 1,
+      "nonce": 26,
+      "blockNumber": 27,
+      "blockHash": "0x9985cc81f706a5dd4cb34a413d8e29b60bb85ccb9d2361e1c634632ebcbf3b65",
+      "gasUsed": "1299505"
+    },
+    {
+      "index": 27,
+      "key": "component:DisputeModule",
+      "unsignedHash": "0x693bd3f3066bb9d7a0ddfb93fcfe4b341f82584b8d0a4343426231575043ba2f",
+      "policyHash": "0x3cab1dd8949577d12469f77f0a95c8e81bf4d5274e9506687dbecb70dcc506bd",
+      "transactionHash": "0xe8995d4e49dda70aa456571fe7367ea6d4f0c77267c945e368ab48c61f923a8f",
+      "status": 1,
+      "nonce": 27,
+      "blockNumber": 28,
+      "blockHash": "0x9fd4db25166c2d9da28fca06e7aff926cda77ba0d90ca0bcee48521191a64f8e",
+      "gasUsed": "2530945"
+    },
+    {
+      "index": 28,
+      "key": "component:CertificateNFT",
+      "unsignedHash": "0xaffbf9d9973d7c5a7abf65e6ecfb24c42f4a5c1159418a06ed24803f9301bdc1",
+      "policyHash": "0x1bcc8811bf4886539bf9f6619f92a9e0c734a159f1d57f0f7b44506436e07140",
+      "transactionHash": "0xbcc75fbc5415d95a822d84f6cfdf7598f2d6fe8b838a2f163e63af87f3f94bb8",
+      "status": 1,
+      "nonce": 28,
+      "blockNumber": 29,
+      "blockHash": "0xfda115f45dc3782281941cca4c486c9257946707105e0a7bcaaae7f9579f73df",
+      "gasUsed": "2036226"
+    },
+    {
+      "index": 29,
+      "key": "component:TaxPolicy",
+      "unsignedHash": "0xe0bfa404bc231579c7496cbf7bbcbfbe34e142aa3b1285d6ed06fa03980b3e9a",
+      "policyHash": "0xe3df9cd931430a4343e0b90f78f6017784dba2f953a59c62e90d8f36b34fc8fa",
+      "transactionHash": "0xe0f2c9fdfd6ac4aa32ee94d0a6c92580478b2b7784b0808e71325e47d9330ee7",
+      "status": 1,
+      "nonce": 29,
+      "blockNumber": 30,
+      "blockHash": "0x18cf248814faaacc60cb0a7aae3b78fd9f7e2d324ab0f9322b57ad05f3830ab1",
+      "gasUsed": "1270618"
+    },
+    {
+      "index": 30,
+      "key": "component:FeePool",
+      "unsignedHash": "0x0d03353cc172e0b440a943d54cdd33648235881942766a4b6aeb46cce8b7ebf7",
+      "policyHash": "0xd4223e8f7aa097ddfb264404e00b3bb31832ac45060d289ffd2a002355df9f15",
+      "transactionHash": "0xbf8fdc9728e78998d1c302fe905efe1e05b709c5974fe13f51c9ecd29ba0a5eb",
+      "status": 1,
+      "nonce": 30,
+      "blockNumber": 31,
+      "blockHash": "0x6ebbd9bc487e32b390447f854d9be821c4294c67c85314c696db43a4291f86cd",
+      "gasUsed": "2124752"
+    },
+    {
+      "index": 31,
+      "key": "component:IdentityRegistry",
+      "unsignedHash": "0xf480fa6d05ddb50701707420a2161145692b7d9ddb095de6afcf7770ebe0f080",
+      "policyHash": "0x0696e0e56033d693738b3f1abd3cbd60ed1d233c1724e8272197c6a646eb729b",
+      "transactionHash": "0x51bf76766f4fedcd1220d6949828fd98b9ba3ef76109325d3b9d468baeb3c401",
+      "status": 1,
+      "nonce": 31,
+      "blockNumber": 32,
+      "blockHash": "0x64a82af6a1acfb602553c8e0d69ec66ed78b187470f43e4b91178f9d06a443a3",
+      "gasUsed": "4655992"
+    },
+    {
+      "index": 32,
+      "key": "component:PlatformRegistry",
+      "unsignedHash": "0x13ee313b0e05602c1a2a3839067844532815477c63f186b7164ee755aed5d053",
+      "policyHash": "0xe081759ff9f18706532c974cdef82b99f51a147c51dccf197f584224b670e672",
+      "transactionHash": "0x6f20966da3ec3174374ba121d718e01c6910c7d96b4aa63ffdef9798c4ccdaa2",
+      "status": 1,
+      "nonce": 32,
+      "blockNumber": 33,
+      "blockHash": "0x0c6477a5d4129e24b2e41d415d851ac1c85047ce7ffc66ad120586d829cc2c0d",
+      "gasUsed": "1953088"
+    },
+    {
+      "index": 33,
+      "key": "component:JobRouter",
+      "unsignedHash": "0x8847908507b807494aad139376f6e2bed9aef3cd947f4558b4528b1745f8a431",
+      "policyHash": "0x17186d6d5a792a89ed777d410f56b4a4573aab35a888d973d8f4e4208a2153e8",
+      "transactionHash": "0x115c36d2c5a162d42d35ff3e7bba37ae32de8faa080942768fb808f653950c6b",
+      "status": 1,
+      "nonce": 33,
+      "blockNumber": 34,
+      "blockHash": "0x57dc985ccb6011e21d69397faa1c857c058bf7e62c61b944bb6e988dbb661b06",
+      "gasUsed": "1067520"
+    },
+    {
+      "index": 34,
+      "key": "component:PlatformIncentives",
+      "unsignedHash": "0xc56aae77d683688c79738d232c64419a68db01b02d1d72890b9977b3f4c931a8",
+      "policyHash": "0x01bac14160e5830da59b04c2d60250d0637907ba26047814d21c93eb829dd367",
+      "transactionHash": "0x9b5aae317b38e4c2f463d3916450b11807f2a536b9039929e8b53d6c92b74f11",
+      "status": 1,
+      "nonce": 34,
+      "blockNumber": 35,
+      "blockHash": "0x519ca3e3c9e8e56f81ed5351d55b43ba945938612588dcea45a98b4445c6fd8b",
+      "gasUsed": "834330"
+    },
+    {
+      "index": 35,
+      "key": "component:SystemPause",
+      "unsignedHash": "0x21a26434c4736774fec7bb589aa3c25ef6c06730eecb5bf4e918289ca809343a",
+      "policyHash": "0x57370c853f0943467c94eefc05ee1029cef09b45ecd3f5098524cf7536389c73",
+      "transactionHash": "0x982bf108ad6c3accb4e7bf193e43191c072089357308068423e86dc4ec5a99ee",
+      "status": 1,
+      "nonce": 35,
+      "blockNumber": 36,
+      "blockHash": "0xa346302cc1cc381dd2c8fc0b5c478803ed28455cbd10a2ae6418ee546dab9dd3",
+      "gasUsed": "2426483"
+    },
+    {
+      "index": 36,
+      "key": "register",
+      "unsignedHash": "0x93d9afffa181abc17abef654e43f3b7b61fa89989b5de549017bca0176a22147",
+      "policyHash": "0xa9c01492a501e649998f715b497e4f43674f4bc99ca64bd224896fb67f69e30c",
+      "transactionHash": "0xfc8530bd30d7da715ba37af55109473e31f18e603a19d952d497cb9936c9e103",
+      "status": 1,
+      "nonce": 36,
+      "blockNumber": 37,
+      "blockHash": "0x5588292bb2c3c65dd0f2730e80e23f327e36d322e779512b690987c58ccfd1a4",
+      "gasUsed": "499133"
+    },
+    {
+      "index": 37,
+      "key": "finalize",
+      "unsignedHash": "0x84933a3b7fc08a9dfd5b5bbba876c5d2dcad5c6ed39e6004ffff6289b0b30926",
+      "policyHash": "0x7babb76acd66966ba72423e299b025631f7b319b764b989fc63c6c9e6f78d111",
+      "transactionHash": "0xdeeac56e4dc01be413ddec69dcea903e7cd01a5b6587577dcd97495cb65e9083",
+      "status": 1,
+      "nonce": 37,
+      "blockNumber": 38,
+      "blockHash": "0xbd6f25c281ef9615828e6c94047a988d9775c7d6425197f24e193b39a0018119",
+      "gasUsed": "1254514"
+    },
+    {
+      "index": 38,
+      "key": "handover:Deployer",
+      "unsignedHash": "0x5297753477fb95287939378b945a38e580017c08ccd75b9bc3778b6230a33cab",
+      "policyHash": "0x81f8863de6ec411972925e1f26be2c58b69f9022c3b303cf7ee8e7ebdd7b295b",
+      "transactionHash": "0x68b6532b3e099b304364a056bc262a344df5f8d8d714913b56b7d348560f72fb",
+      "status": 1,
+      "nonce": 38,
+      "blockNumber": 39,
+      "blockHash": "0x5b6165895ba954a42df923156e7715a2adf40eaaec49e956c1d9fa20d4748f08",
+      "gasUsed": "28687"
+    }
+  ],
+  "cleanup": {
+    "ownedNodeStopped": true,
+    "allOwnedFixtureChildrenStopped": true,
+    "ensOriginalRestored": true,
+    "unexpectedRemainingChildren": false,
+    "sourceIdentityUnchanged": true,
+    "trackedSourceClean": true,
+    "completedOperations": 39,
+    "finalFreeBytes": 88561119232
+  },
+  "nativeInterface": {
+    "profile": "jobs-external-manual-v1",
+    "planSchema": "jobs-external-plan-v1",
+    "packetSchema": "jobs-external-envelope-v1",
+    "stagedEntrypoint": "scripts/v2/deployDefaults.ts",
+    "commandEntrypoint": "scripts/v2/externalManual.ts",
+    "commandModule": "scripts/deploy/external-command.cjs",
+    "commands": [
+      "inspect",
+      "handoff",
+      "retrieve",
+      "import-signed",
+      "authorize-relay",
+      "observe",
+      "repair-head",
+      "recover-command"
+    ],
+    "journalVersion": 2,
+    "creatorProfile": "empty-code-eoa-type2",
+    "route": {
+      "token": "$AGIALPHA",
+      "decimals": 18
+    },
+    "relayAuthorizationBroadcasts": false,
+    "markerCreatorQualified": false,
+    "companionTransportQualified": false
+  },
+  "authority": {
+    "fixtureGovernor": "0xa0Ee7A142d267C1f36714E4a8F75612F20a79720",
+    "fixtureGovernorIsProductionGovernor": false,
+    "pausedCompletionObserved": true,
+    "sourceAuthorityApprovalIsNotImplied": true
+  },
+  "remainingAcceptance": {
+    "productionPlanAccepted": false,
+    "actualSelectedCreatorProfileAccepted": false,
+    "physicalLedgerAccepted": false,
+    "trustedMacBootstrapAccepted": false,
+    "productionProviderAccepted": false,
+    "liveExplorerAccepted": false,
+    "completeLiveAuthorityAccepted": false,
+    "productionApproved": false,
+    "activationReady": false,
+    "mainnetTransactionsAuthorized": false
+  },
+  "limitations": [
+    "Disposable unforked loopback chain 31337; public development account only.",
+    "Actual Git HEAD/tree binding and fixture source hashes are not independent approval.",
+    "Exact repository-pinned hosted Node differs from prior local Node 24.19.0 attempts.",
+    "Optional node-only source tracing is omitted; actual Jobs CLI config/artifact checks are unchanged.",
+    "No production, complete authority, explorer acceptance, hardware-wallet or two-machine qualification.",
+    "Only bounded metadata is exported; private logs, signatures, plans, acknowledgements and sessions are excluded."
+  ],
+  "sourceFilePins": {
+    "docs/deployment-external-manual.md": "3082eb0e6e39c9e800b1592327ae1756c558f9d9fb98924fabadeb936a60224a",
+    "scripts/deploy/external-command.cjs": "1ee5095c46ff269198d7c28c74013455e7db0776f36180b86771a25b023422fb",
+    "scripts/deploy/external-envelope.cjs": "553d1d8e7b83e16ee17588fc9559754864d7b3a687bcda9e4ecf23dbe003f0f2",
+    "scripts/deploy/external-profile.cjs": "2fb0793c75700ecd0121ddac9dfc81c12e454243cf18ea4c8e15354fbb546089",
+    "scripts/deploy/external-session.cjs": "1caee1549257a53da711e4f605636cbf25bd952afc5ac0667d930303536d0743",
+    "scripts/v2/externalManual.ts": "03c0c8b14d83d2e2ef09f0186aafab7d35138733ebf41ace55eaa1137c5415f0"
+  }
+}

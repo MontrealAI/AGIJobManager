@@ -28,7 +28,9 @@ export function requireMessage(value, nonce, allowed) {
   bounded(value);
   if (!value || typeof value !== 'object' || Array.isArray(value) || value.format !== CHANNEL_FORMAT || value.nonce !== channelNonce(nonce) || !allowed.includes(value.type)) fail('CHANNEL_MESSAGE_REJECTED');
   const keySets = { prepare: ['prepared'], durable: ['identity','transactionHash'], cancel: [], block: ['code'], advance: ['identity','verified'], ready: [], prepared: ['identity'], signing: ['identity'], signed: ['identity','capability','importAvailable'], recovery: ['identity','code'] };
-  const expected = ['format','nonce','type', ...(keySets[value.type] ?? [])].sort().join('|');
+  const optionalFormat = value.type === 'prepare' && Object.hasOwn(value, 'importFormat');
+  if (optionalFormat && value.importFormat !== null && !['manager-json', 'alpha-raw'].includes(value.importFormat)) fail('CHANNEL_MESSAGE_REJECTED');
+  const expected = ['format','nonce','type', ...(keySets[value.type] ?? []), ...(optionalFormat ? ['importFormat'] : [])].sort().join('|');
   if (Object.keys(value).sort().join('|') !== expected) fail('CHANNEL_MESSAGE_REJECTED');
   return value;
 }

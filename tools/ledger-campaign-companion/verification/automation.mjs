@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { canonicalJson, createExplorerVerifier, prepareVerificationTask } from './explorer.mjs';
+import { verifyRuntimeEvidence } from './runtime.mjs';
 
 const digest = value => createHash('sha256').update(canonicalJson(value)).digest('hex');
 const copy = value => JSON.parse(canonicalJson(value));
@@ -14,6 +15,7 @@ export function createVerificationAutomation({ apiKey, serviceAuthorization, fet
   let serial = Promise.resolve();
   const hook = async ({ campaign, step, operationId, transactionHash, adapter, privateDirectory, readVerificationState, transitionVerificationState }) => {
     try {
+      adapter = typeof adapter?.forCampaign === 'function' ? adapter.forCampaign(campaign) : adapter;
       const graph = campaign?.reviewedManifest?.operations;
       if (!Array.isArray(graph) || !Number.isSafeInteger(step) || step < 0 || step >= graph.length || graph[step]?.operationId !== operationId) stop();
       const counts = adapter?.id === 'manager' ? { steps: 9, creations: 9 } : adapter?.id === 'alpha' ? { steps: 7, creations: 5 } : null;
@@ -31,10 +33,16 @@ export function createVerificationAutomation({ apiKey, serviceAuthorization, fet
         if (!Array.isArray(output?.tasks) || output.tasks.length !== counts.creations || new Set(output.tasks.map(task => task.address?.toLowerCase())).size !== counts.creations || new Set(output.tasks.map(task => task.creation?.transactionHash?.toLowerCase())).size !== counts.creations || output.activationAllowed !== false || output.explorerAcceptance !== 'NOT_OBSERVED') stop();
         const packages = output.tasks.map(prepareVerificationTask);
         if (new Set(packages.map(item => item.taskId)).size !== counts.creations) stop();
-        return packages;
+        if (!adapter.supported.runtimeEvidenceRequired) return packages;
+        if (!Array.isArray(output.runtimeEvidence) || output.runtimeEvidence.length !== counts.creations || new Set(output.runtimeEvidence.map(item => item.address?.toLowerCase())).size !== counts.creations) stop();
+        return packages.map(item => {
+          const evidence = output.runtimeEvidence.find(candidate => candidate.address?.toLowerCase() === item.task.address.toLowerCase());
+          const verified = verifyRuntimeEvidence(evidence, { task: item.task, expectedSource: campaign.reviewedManifest.source });
+          return { ...item, runtimeIdentity: { compilerOutputSha256: verified.compilerOutputSha256, runtimeCodeHash: verified.runtimeCodeHash, substitutionsSha256: verified.substitutionsSha256 } };
+        });
       };
       const packages = await exports();
-      const packageSha256 = digest(packages.map(item => item.taskId));
+      const packageSha256 = digest(packages.map(item => item.runtimeIdentity ? { taskId: item.taskId, runtimeIdentity: item.runtimeIdentity } : item.taskId));
       const expected = { service: 'etherscan-v2', submitSource: true, campaignId: campaign.campaignId, planSha256: campaign.reviewedManifest.planSha256 };
       const declared = campaign.verification?.serviceAuthorization;
       const authorized = authorization && declared && canonicalJson(authorization) === canonicalJson(expected) && canonicalJson(declared) === canonicalJson(expected);
@@ -54,6 +62,8 @@ export function createVerificationAutomation({ apiKey, serviceAuthorization, fet
           // explorer result or task's own assertion cannot replace this check.
           const current = (await exports()).find(item => item.taskId === wanted.taskId);
           if (!current) stop();
+          const original = packages.find(item => item.taskId === wanted.taskId);
+          if (canonicalJson(current.runtimeIdentity || null) !== canonicalJson(original.runtimeIdentity || null)) stop();
           return { chainId: 1, address: current.task.address, ...current.task.creation, newTarget: true };
         },
       });
