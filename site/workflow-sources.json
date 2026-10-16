@@ -7,7 +7,18 @@
     "examples/successor/duplicate-conflict.csv",
     "examples/successor/malformed.csv",
     "examples/successor/tie.csv",
-    "examples/successor/website.json"
+    "examples/successor/website.json",
+    "site/assets/successor/vendor/alpha-project/examples/alpha-discovery/engine.mjs",
+    "site/assets/successor/vendor/alpha-project/examples/build-successor/model.mjs",
+    "site/assets/successor/vendor/alpha-project/examples/build-successor/vendor/agijobs/LICENSE",
+    "site/assets/successor/vendor/alpha-project/examples/build-successor/vendor/agijobs/compiler.mjs",
+    "site/assets/successor/vendor/alpha-project/examples/build-successor/vendor/agijobs/domain.mjs",
+    "site/assets/successor/vendor/alpha-project/examples/build-successor/vendor/agijobs/integrity.mjs",
+    "site/assets/successor/vendor/alpha-project/examples/build-successor/vendor/agijobs/provenance.json",
+    "site/assets/successor/vendor/alpha-project/examples/build-successor/vendor/agijobs/templates.mjs",
+    "site/assets/successor/vendor/alpha-project/examples/successor-project/engine.mjs",
+    "site/assets/successor/vendor/alpha-project/examples/successor-workbench/engine.mjs",
+    "site/assets/successor/vendor/alpha-project/examples/successor-workbench/mission-record.mjs"
   ],
   "employer": [
     "site/employers.mjs",

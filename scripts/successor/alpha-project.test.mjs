@@ -7,6 +7,8 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { importAlphaProject, inspectAlphaProject, advanceAlphaProject, ALPHA_SOURCE } from './alpha-project.mjs';
 import { canonical, sha256 } from '../../site/assets/successor/safe.mjs';
+import { builderArtifacts } from './build.mjs';
+import { importAlphaProject as browserImport, inspectAlphaProject as browserInspect, validateBrowserAlpha } from '../../site/assets/successor/alpha-project.mjs';
 import { appendEvent, continueHistory, exportCapsule, inspectCapsule } from '../../site/assets/successor/model.mjs';
 const root = process.env.SUCCESSOR_ALPHA_SOURCE;
 if (!root) throw Error('SUCCESSOR_ALPHA_SOURCE must identify the pinned, clean Alpha checkout; these integration tests never skip');
@@ -160,4 +162,13 @@ test('hidden tracked edits are rejected before loading the pinned native validat
     execFileSync('git', ['-C', root, 'worktree', 'remove', '--force', temporary], { timeout: 30000, stdio: 'pipe' });
     fs.rmSync(temporary, { recursive: true, force: true });
   }
+});
+
+test('Node and browser native receivers produce byte-identical transfers and inspect each other with trusted context', async () => {
+  const raw = await fixture(), artifacts = builderArtifacts();
+  const context = { sourceManifest: artifacts.sourceManifest, managerSource: artifacts.managerSource, validateNative: validateBrowserAlpha };
+  const fromNode = await importAlphaProject(raw, options('fr'));
+  const fromBrowser = await browserImport(raw, { language: 'fr', mappingAcknowledgement: 'alpha-public-data-to-manager-rows/v1' }, context);
+  assert.equal(fromBrowser, fromNode);
+  assert.equal(canonical(await browserInspect(fromNode, context)), canonical(await inspectAlphaProject(fromBrowser, { alphaCheckout: root })));
 });

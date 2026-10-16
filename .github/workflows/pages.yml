@@ -99,6 +99,7 @@ jobs:
       - name: SUCCESSOR browser, accessibility and isolated worker rehearsal
         run: |
           npm run successor:browser
+          node scripts/successor/alpha-project-browser-test.mjs
           node scripts/successor/history-browser-test.mjs
           npm run successor:rehearse
       - name: Retain SUCCESSOR checks and screenshots
@@ -108,6 +109,7 @@ jobs:
           name: SUCCESSOR-evidence-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             build/successor-browser/
+            build/successor-alpha-browser/
             build/successor-history-browser/
             build/successor-rehearsal/
           if-no-files-found: error

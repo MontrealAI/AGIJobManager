@@ -29,6 +29,10 @@ A **custom mission** records your goal, public sources/rights, outputs, tools/re
 
 Keep original downloads before editing. Checksums detect changes against a checkpoint you retained; local editable files do not prove authorship, independent control or tamper resistance. Restore selects local history only; it cannot restore signing authority or undo external effects. There is no migration from unknown capsule versions: keep the old reader and export, and review a future explicit migrator before use.
 
+## Continue an existing Alpha project
+
+Use **Continue your Alpha project** at the top of the Builder. Inspect the complete native Alpha JSON dossier, approve the public-data mapping and rights, run the same rows, then explicitly enter a new USDC price. Download the original dossier, actual reports and complete project history; optional Alpha browser saving has a separate explicit recovery preview. See [native project handoff](ALPHA_PROJECT_HANDOFF.md) for exact source pins and boundaries.
+
 ## Optional AGIJobManager handoff
 
 The advanced request reuses the repository's employer model and exact six-decimal USDC arithmetic. At the illustrative shared 8% review allocation, 100 USDC splits into 8 for all reviewers together, 30 and 10 for the recipients, and 52 for the Agent. The zero-validator buyer-acceptance branch gives the Agent 60. Actual job policy, rounding, bonds and claims must be read separately. Gas, provider, hosting, independent review, maintenance and unwind remain unknown until priced. A repair allowance is additional; avoid double counting costs already included by an operator.
