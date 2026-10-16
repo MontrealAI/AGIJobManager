@@ -11,7 +11,7 @@ function observedRevision(root=path.resolve(__dirname,'../..')){
  // Repository selection, alternate indexes/objects and config injection must not
  // be inherited from an operator shell. Observation is local and read-only.
  const env=Object.fromEntries(Object.entries(process.env).filter(([key])=>!key.toUpperCase().startsWith('GIT_')));
- Object.assign(env,{GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_SYSTEM:'/dev/null',GIT_CONFIG_GLOBAL:'/dev/null',GIT_NO_REPLACE_OBJECTS:'1',GIT_TERMINAL_PROMPT:'0',GIT_OPTIONAL_LOCKS:'0'});
+ Object.assign(env,{GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_SYSTEM:'/dev/null',GIT_CONFIG_GLOBAL:'/dev/null',GIT_NO_REPLACE_OBJECTS:'1',GIT_NO_LAZY_FETCH:'1',GIT_TERMINAL_PROMPT:'0',GIT_OPTIONAL_LOCKS:'0'});
  const git=(...args)=>cp.execFileSync('git',['--no-replace-objects','-c','core.fsmonitor=false','-c','core.hooksPath=/dev/null',...args],{cwd:root,encoding:'utf8',maxBuffer:64*1024*1024,env});
  T.need(fs.realpathSync(git('rev-parse','--show-toplevel').trim())===root,'Observed Git toplevel differs from the requested source root.');
  const commit=git('rev-parse','HEAD').trim(),tree=git('rev-parse','HEAD^{tree}').trim();
@@ -45,6 +45,10 @@ function observedRevision(root=path.resolve(__dirname,'../..')){
  T.need(git('rev-parse','HEAD').trim()===commit&&git('rev-parse','HEAD^{tree}').trim()===tree,'Source changed during revision observation.');checkIndex();checkBytes();
  return source;
 }
+function createSourceGuard(root=path.resolve(__dirname,'../..')){
+ root=fs.realpathSync(root);const source=Object.freeze(observedRevision(root));
+ return Object.freeze({source,assertUnchanged(){T.need(T.canonical(observedRevision(root))===T.canonical(source),'Source revision changed since command entry.');return true;}});
+}
 function revision(x){T.exact(x,['commit','tree','rootLockSha256','hardhatLockSha256']);T.need(/^[0-9a-f]{40}$/.test(x.commit)&&/^[0-9a-f]{40}$/.test(x.tree),'Exact source revision required.');T.sha(x.rootLockSha256);T.sha(x.hardhatLockSha256);return x;}
 function validateConfig(c){
  T.exact(c,['schema','chainId','creator','governor','governorAcknowledgement','nonce','block','expiresAfterBlock','constructorArgs','creatorPolicy','qualificationEvidence','envelopes','maximumTotalFeeWei']);
@@ -71,7 +75,7 @@ function makePlan(config,qualified,source){
  validateConfig(config);revision(source);qualified.assertUnchanged();
  T.need(qualified.source.commit===source.commit&&qualified.source.tree===source.tree,'Pinned build does not match independently observed revision.');
  T.need(qualified.buildDigest===buildDigest(qualified.buildInfo),'Qualified compiler input digest differs.');
- A.validateEvidence(config.creatorPolicy,config.creator,config.qualificationEvidence,{source,buildId:qualified.id,buildDigest:qualified.buildDigest,catalogSha256:qualified.catalogSha256,block:config.block,executionHardfork:'osaka'});
+ if(config.creatorPolicy.mode!==A.MARKER)A.validateEvidence(config.creatorPolicy,config.creator,config.qualificationEvidence,{source,buildId:qualified.id,buildDigest:qualified.buildDigest,catalogSha256:qualified.catalogSha256,block:config.block,executionHardfork:'osaka'});
  const settings=qualified.buildInfo.input.settings;T.need(T.canonical({version:qualified.buildInfo.solcVersion,optimizer:settings.optimizer,evmVersion:settings.evmVersion,viaIR:settings.viaIR,metadata:settings.metadata,debug:settings.debug})===T.canonical(COMPILER_SETTINGS),'Core creation requires the exact reviewed compiler profile.');
  const addresses=Object.fromEntries(NAMES.map((name,i)=>[name,E.getCreateAddress({from:config.creator,nonce:config.nonce+i})]));
  const libraries=Object.fromEntries(LIBRARIES.map(n=>[FQNS[n],addresses[n]]));
@@ -86,8 +90,10 @@ function makePlan(config,qualified,source){
   T.need((artifact.deployedBytecode.length-2)/2<=24576,'Runtime exceeds EIP-170.');
   return {id:i,name,qualifiedName:r.fqn,predictedAddress:addresses[name],constructorArguments,libraries,envelope};
  });
+ // The marker-only profile binds the completed exact graph, including all linked initcode and envelopes.
+ if(config.creatorPolicy.mode===A.MARKER)A.validateEvidence(config.creatorPolicy,config.creator,config.qualificationEvidence,{source,buildId:qualified.id,buildDigest:qualified.buildDigest,catalogSha256:qualified.catalogSha256,block:config.block,executionHardfork:'osaka',operations});
  const payload={schema:'manager-core-creation-plan-v1',source,buildId:qualified.id,buildDigest:qualified.buildDigest,catalogSha256:qualified.catalogSha256,config,creator:config.creator,startNonce:config.nonce,chainId:1,governor:config.governor,libraries,operations,readyToBroadcast:false,scope:'Nine core CREATEs only. Governor configuration, optional metadata/ENS and activation require separate plans.'};
  return {...payload,payloadSha256:T.digest(payload)};
 }
 function checkPlan(plan,qualified,source){T.need(source!==undefined,'Independently observed source revision required.');T.need(T.canonical(plan)===T.canonical(makePlan(plan.config,qualified,source)),'Plan/source/envelope substitution detected.');return plan;}
-module.exports={GOVERNOR,NAMES,observedRevision,validateConfig,linkedCreation,makePlan,checkPlan};
+module.exports={GOVERNOR,NAMES,observedRevision,createSourceGuard,validateConfig,linkedCreation,makePlan,checkPlan};

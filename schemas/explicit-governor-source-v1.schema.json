@@ -1,0 +1,665 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MontrealAI/AGIJobManager/schemas/explicit-governor-source-v1.schema.json",
+  "title": "Exact explicit-governor source inputs, version 1",
+  "type": "object",
+  "required": [
+    "schema",
+    "profile",
+    "releaseIdentity",
+    "baseline",
+    "predecessor",
+    "inheritedPolicy",
+    "additiveHistory",
+    "constructorSchemas",
+    "generatedOutputSchema",
+    "evidenceReferences",
+    "claims",
+    "scope",
+    "changedContracts",
+    "inputs",
+    "reviewedInputChanges",
+    "compilerSourceClosure",
+    "compilerInstall",
+    "protectedHistory"
+  ],
+  "properties": {
+    "schema": {
+      "const": "agijobmanager/explicit-governor-source/v1"
+    },
+    "profile": {
+      "const": "manager-explicit-governor-v1"
+    },
+    "releaseIdentity": {
+      "const": {
+        "status": "unselected",
+        "version": null
+      }
+    },
+    "baseline": {
+      "const": "191cf3590e5cdc08df1bb0af500ee28a91c8b010"
+    },
+    "predecessor": {
+      "const": {
+        "commit": "3c974ad3cb1d828e5c89464fd8424d8ae853d9dd",
+        "tree": "a45070671985671c169c6bfa35c5089b1e9674b4"
+      }
+    },
+    "inheritedPolicy": {
+      "const": {
+        "checker": "scripts/release/check-v114-boundaries.py",
+        "checkerSha256": "b0b5f608d08866f5b9f66a6d0381a34fc9c1851282113ddf4de2efb4ead54807",
+        "contractInventory": "config/next-deployment-contract-changes.json",
+        "contractInventorySha256": "93f50d12f034ab8bdf6f951c48f71c3dd010fa82ab485d2d9f61c21f97d587d5",
+        "dependencyRepairs": "config/v114-dependency-repairs.json",
+        "dependencyRepairsSha256": "b14a71a49f6ad3f33f06f597cef277ffaa18d4fa0a98b14960518798c90116b2"
+      }
+    },
+    "additiveHistory": {
+      "const": {
+        "docs/qualification/history/expected-mainnet-cutover-v1.18.0.json": {
+          "sha256": "36bc8cfb2d3d8e15b04372ea1fbed3fe407a921c0d70b525d673be4447f63746",
+          "externalSourceCommit": "eb6f725e0b40ac81e50a374304e54a5ff6859fcf",
+          "externalSourcePath": "docs/qualification/history/expected-mainnet-cutover-v1.18.0.json",
+          "externalGitBlob": "88af01706186b52d648330edddd911d3fd42678e",
+          "scope": "Retained exact historical bytes; no native operator, distinct final governor, provider/wallet or activation clearance."
+        },
+        "docs/qualification/history/next-deployment-contract-changes-v1.18.0.json": {
+          "sha256": "93f50d12f034ab8bdf6f951c48f71c3dd010fa82ab485d2d9f61c21f97d587d5",
+          "externalSourceCommit": "eb6f725e0b40ac81e50a374304e54a5ff6859fcf",
+          "externalSourcePath": "docs/qualification/history/next-deployment-contract-changes-v1.18.0.json",
+          "externalGitBlob": "60c1a5e75515f6612f87dbe808c0e3ac74d94fe8",
+          "scope": "Retained exact historical bytes; no native operator, distinct final governor, provider/wallet or activation clearance."
+        },
+        "docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json": {
+          "sha256": "34d8d737fd540f83317551bdf3e190c0c8d72d7e7aaef60303d0234f4bbfb0b1",
+          "externalSourceCommit": "eb6f725e0b40ac81e50a374304e54a5ff6859fcf",
+          "externalSourcePath": "docs/qualification/mainnet-cutover-next-deployment.json",
+          "externalGitBlob": "334353dd593d147afd8fc9d44410096776fb00d5",
+          "scope": "Retained exact historical bytes; no native operator, distinct final governor, provider/wallet or activation clearance."
+        }
+      }
+    },
+    "constructorSchemas": {
+      "const": {
+        "managerLegacy": {
+          "schema": "manager-six-v1",
+          "inputs": [
+            {
+              "type": "address",
+              "name": "usdcTokenAddress"
+            },
+            {
+              "type": "string",
+              "name": "baseIpfs"
+            },
+            {
+              "type": "address[2]",
+              "name": "ensConfig"
+            },
+            {
+              "type": "bytes32[4]",
+              "name": "rootNodes"
+            },
+            {
+              "type": "bytes32[2]",
+              "name": "merkleRoots"
+            },
+            {
+              "type": "address[2]",
+              "name": "settlementWallets"
+            }
+          ],
+          "stateMutability": "nonpayable"
+        },
+        "managerExplicit": {
+          "schema": "manager-seven-explicit-governor-v2",
+          "inputs": [
+            {
+              "type": "address",
+              "name": "usdcTokenAddress"
+            },
+            {
+              "type": "string",
+              "name": "baseIpfs"
+            },
+            {
+              "type": "address[2]",
+              "name": "ensConfig"
+            },
+            {
+              "type": "bytes32[4]",
+              "name": "rootNodes"
+            },
+            {
+              "type": "bytes32[2]",
+              "name": "merkleRoots"
+            },
+            {
+              "type": "address[2]",
+              "name": "settlementWallets"
+            },
+            {
+              "type": "address",
+              "name": "initialGovernor"
+            }
+          ],
+          "stateMutability": "nonpayable"
+        },
+        "ensLegacy": {
+          "schema": null,
+          "inputs": [
+            {
+              "type": "address",
+              "name": "ensAddress"
+            },
+            {
+              "type": "address",
+              "name": "nameWrapperAddress"
+            },
+            {
+              "type": "address",
+              "name": "publicResolverAddress"
+            },
+            {
+              "type": "bytes32",
+              "name": "rootNode"
+            },
+            {
+              "type": "string",
+              "name": "rootName"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "classification": "unversioned-ens-five-recovery-only"
+        },
+        "ensExplicit": {
+          "schema": "ens-job-pages-constructor-v2",
+          "inputs": [
+            {
+              "type": "address",
+              "name": "ensAddress"
+            },
+            {
+              "type": "address",
+              "name": "nameWrapperAddress"
+            },
+            {
+              "type": "address",
+              "name": "publicResolverAddress"
+            },
+            {
+              "type": "bytes32",
+              "name": "rootNode"
+            },
+            {
+              "type": "string",
+              "name": "rootName"
+            },
+            {
+              "type": "address",
+              "name": "initialGovernor"
+            }
+          ],
+          "stateMutability": "nonpayable"
+        },
+        "routerLegacy": {
+          "schema": null,
+          "inputs": [
+            {
+              "type": "string",
+              "name": "baseMetadataURI_"
+            },
+            {
+              "type": "string",
+              "name": "externalUrlBase_"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "classification": "reviewed-job-pages-v1-recovery-only"
+        },
+        "routerExplicit": {
+          "schema": "agi-job-pages-constructor-v2",
+          "inputs": [
+            {
+              "type": "string",
+              "name": "baseMetadataURI_"
+            },
+            {
+              "type": "string",
+              "name": "externalUrlBase_"
+            },
+            {
+              "type": "address",
+              "name": "initialGovernor"
+            }
+          ],
+          "stateMutability": "nonpayable"
+        },
+        "library": {
+          "schema": "library-zero-v1",
+          "inputs": [],
+          "stateMutability": "nonpayable"
+        }
+      }
+    },
+    "generatedOutputSchema": {
+      "const": {
+        "schema": "agijobmanager/explicit-governor-build-inventory/v1",
+        "status": "NOT_GENERATED_BY_SOURCE_BOUNDARIES",
+        "coreCatalogSchema": "manager-qualified-build-catalog-v1",
+        "coreArtifactCount": 9,
+        "coreArtifacts": [
+          "UriUtils",
+          "TransferUtils",
+          "BondMath",
+          "ReputationMath",
+          "ENSOwnership",
+          "NftEligibility",
+          "JobSettlement",
+          "JobValidation",
+          "AGIJobManager"
+        ],
+        "optionalArtifacts": "SEPARATE_EXPLICIT_SELECTION",
+        "requiredStages": [
+          "compiled-template",
+          "reviewed-linked-initcode-prediction",
+          "canonical-observed-full-runtime"
+        ],
+        "observedRuntimePolicy": "Exact even hexadecimal full deployed bytes with canonical receipt/block, immutable substitutions and library identities; never compiler-template masking.",
+        "fullAbiStorageAndSizeValidation": "REQUIRES_SEPARATE_BUILD_SLICE"
+      }
+    },
+    "evidenceReferences": {
+      "const": {
+        "legacy-baseline-06add": {
+          "sourceCommit": "06add2a669f3ed1eb03019ab95cad1cb2095a2c8",
+          "sourceTree": "47123ade3e386481f6de1d5f4830c86c016accd3",
+          "evidenceOnlySuccessor": "84468f612764bfbae948a07796ca6e734bc99e0d",
+          "retainedReport": "docs/qualification/mainnet-cutover-next-deployment.json",
+          "reportSha256": "36bc8cfb2d3d8e15b04372ea1fbed3fe407a921c0d70b525d673be4447f63746",
+          "scope": "Original six/five/two constructors and historical recovery evidence only; never explicit-governor qualification."
+        },
+        "candidate-compatibility-3c974": {
+          "sourceCommit": "3c974ad3cb1d828e5c89464fd8424d8ae853d9dd",
+          "sourceTree": "a45070671985671c169c6bfa35c5089b1e9674b4",
+          "workflowRun": "38913906237",
+          "job": "117016350388",
+          "attempt": 1,
+          "artifact": "12051257988",
+          "archiveSha256": "53a39586290cb064b707a678bdf4f220fa8a6fe8ce805aae6a931b830015d385",
+          "reportSha256": "34d8d737fd540f83317551bdf3e190c0c8d72d7e7aaef60303d0234f4bbfb0b1",
+          "workflowConclusion": "failure",
+          "retainedExternally": true,
+          "retainedPath": "docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json",
+          "scope": "11 USDC and 23 cutover compatibility cases executed; creator-as-governor then old handover. No distinct final governor, native session, provider/transport or live signer-control qualification."
+        },
+        "explicit-governor-creation-v1": {
+          "status": "PENDING_SEPARATELY_EXECUTED_EXPECTATION",
+          "fallbackAllowed": false,
+          "scope": "Requires its own actual execution report and complete source binding; no relabeled historical reports."
+        }
+      }
+    },
+    "claims": {
+      "const": {
+        "sourceBoundaries": "INPUT_IDENTITY_ONLY",
+        "finalCleanSourceBinding": "EXTERNAL_BINDING_REQUIRED",
+        "generatedBuildInventory": "PENDING_SEPARATE_SLICE",
+        "packageAndRelease": "BLOCKED_VERSION_UNSELECTED",
+        "candidateCompatibility": "HISTORICAL_SCOPED_EXECUTION_WORKFLOW_FAILED",
+        "distinctGovernorFork": "NOT_QUALIFIED",
+        "nativeSession": "REQUIRES_SEPARATELY_BOUND_EXECUTION",
+        "providerTransportHardware": "NOT_QUALIFIED",
+        "governorConfigurationAndActivation": "NOT_PERFORMED",
+        "independentAudit": "OMITTED_OWNER_ACCEPTED",
+        "sepolia": "OMITTED_OWNER_ACCEPTED"
+      }
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changedContracts": {
+      "type": "object",
+      "required": [
+        "contracts/AGIJobManager.sol",
+        "contracts/ens/ENSJobPages.sol",
+        "contracts/periphery/AGIJobPages.sol",
+        "contracts/test/MockENS.sol",
+        "contracts/utils/ENSOwnership.sol"
+      ],
+      "properties": {
+        "contracts/AGIJobManager.sol": {
+          "type": "object",
+          "required": [
+            "originalGitBlob",
+            "beforeSha256",
+            "afterSha256",
+            "mode",
+            "reason"
+          ],
+          "properties": {
+            "originalGitBlob": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "beforeSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "afterSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "mode": {
+              "enum": [
+                "100644",
+                "100755"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "contracts/ens/ENSJobPages.sol": {
+          "type": "object",
+          "required": [
+            "originalGitBlob",
+            "beforeSha256",
+            "afterSha256",
+            "mode",
+            "reason"
+          ],
+          "properties": {
+            "originalGitBlob": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "beforeSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "afterSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "mode": {
+              "enum": [
+                "100644",
+                "100755"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "contracts/periphery/AGIJobPages.sol": {
+          "type": "object",
+          "required": [
+            "originalGitBlob",
+            "beforeSha256",
+            "afterSha256",
+            "mode",
+            "reason"
+          ],
+          "properties": {
+            "originalGitBlob": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "beforeSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "afterSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "mode": {
+              "enum": [
+                "100644",
+                "100755"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "contracts/test/MockENS.sol": {
+          "type": "object",
+          "required": [
+            "originalGitBlob",
+            "beforeSha256",
+            "afterSha256",
+            "mode",
+            "reason"
+          ],
+          "properties": {
+            "originalGitBlob": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "beforeSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "afterSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "mode": {
+              "enum": [
+                "100644",
+                "100755"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "contracts/utils/ENSOwnership.sol": {
+          "type": "object",
+          "required": [
+            "originalGitBlob",
+            "beforeSha256",
+            "afterSha256",
+            "mode",
+            "reason"
+          ],
+          "properties": {
+            "originalGitBlob": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "beforeSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "afterSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "mode": {
+              "enum": [
+                "100644",
+                "100755"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "inputs": {
+      "type": "object",
+      "minProperties": 1,
+      "patternProperties": {
+        "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[A-Za-z0-9_.@/\\[\\]-]+$": {
+          "type": "object",
+          "required": [
+            "mode",
+            "sha256",
+            "predecessorGitBlob",
+            "predecessorSha256",
+            "reviewReason"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "100644",
+                "100755",
+                "120000"
+              ]
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "predecessorGitBlob": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "predecessorSha256": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "reviewReason": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "reviewedInputChanges": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "docs/DEPLOYMENT_CONFIGURATION.md",
+          "docs/REPO_MAP.md",
+          "docs/deployment/core-external-signing.md",
+          "docs/deployment/direct-origination-profile.md",
+          "docs/qualification/CORE_SESSION_NATIVE.md",
+          "docs/qualification/history/expected-mainnet-cutover-v1.18.0.json",
+          "docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json",
+          "docs/qualification/history/next-deployment-contract-changes-v1.18.0.json",
+          "forge-test/harness/AGIJobManagerHarness.sol",
+          "forge-test/unit/AGIJobManagerSecurityVerification.t.sol",
+          "forge-test/unit/AGIJobManagerV091Security.t.sol",
+          "hardhat/.env.example",
+          "hardhat/scripts/actor-policy.cjs",
+          "hardhat/scripts/core-creation-plan.cjs",
+          "hardhat/scripts/core-creation-verifier.cjs",
+          "hardhat/scripts/core-session.cjs",
+          "hardhat/scripts/deployment-session.cjs",
+          "hardhat/scripts/export-verification-package.cjs",
+          "hardhat/scripts/operator-paths.cjs",
+          "hardhat/test/core-session-docs.test.cjs",
+          "hardhat/test/core-session-output.test.cjs",
+          "hardhat/test/core-session-revalidation.test.cjs",
+          "hardhat/test/core-session.test.js",
+          "hardhat/test/direct-origin-policy.test.cjs",
+          "hardhat/test/direct-origin-trace.test.js",
+          "hardhat/test/helpers/native-core-rpc.cjs",
+          "hardhat/test/native-core-session.test.cjs",
+          "hardhat/test/operator-private-state.regression.test.cjs",
+          "hardhat/test/source-qualification.test.cjs",
+          "schemas/explicit-governor-source-v1.schema.json",
+          "scripts/docs/generate-repo-map.mjs",
+          "scripts/qualification/core-session-native.mjs",
+          "scripts/qualification/prepare-core-catalog.mjs",
+          "scripts/release/check-explicit-governor-boundaries.py",
+          "scripts/release/check-source-boundaries.py",
+          "scripts/release/test-source-boundary-dispatch.py"
+        ]
+      }
+    },
+    "compilerSourceClosure": {
+      "type": "object",
+      "minProperties": 1,
+      "patternProperties": {
+        "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[A-Za-z0-9_.@/\\[\\]-]+$": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "compilerInstall": {
+      "type": "object",
+      "minProperties": 1,
+      "patternProperties": {
+        "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[A-Za-z0-9_.@/\\[\\]-]+$": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "protectedHistory": {
+      "type": "object",
+      "minProperties": 1,
+      "patternProperties": {
+        "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[A-Za-z0-9_.@/\\[\\]-]+$": {
+          "type": "object",
+          "required": [
+            "originalCommit",
+            "originalPath",
+            "retainedPath",
+            "sha256"
+          ],
+          "properties": {
+            "originalCommit": {
+              "const": "3c974ad3cb1d828e5c89464fd8424d8ae853d9dd"
+            },
+            "originalPath": {
+              "type": "string",
+              "minLength": 1
+            },
+            "retainedPath": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -17,7 +17,7 @@ The transport is SDK-independent. A hardware application may return a signature 
 
 ## Required operator inputs
 
-1. An independently reviewed **clean Git checkout**, expected commit/tree, both lockfile hashes and pinned catalog SHA-256/build ID. The CLI observes its own actual checkout; it cannot trust a revision supplied only by the plan. Catalogs bind exact standard-JSON compiler input/output, all compiler source files, all nine artifacts and constructor schemas. No newest-artifact selection or fallback build is allowed.
+1. An independently reviewed **clean Git checkout**, expected commit/tree, both lockfile hashes and pinned catalog SHA-256/build ID. The CLI observes its own actual checkout; it cannot trust a revision supplied only by the plan. All Git objects needed for source observation must already exist locally: implicit partial-clone fetching is disabled, and a missing required object stops the offline command. Catalogs bind exact standard-JSON compiler input/output, all compiler source files, all nine artifacts and constructor schemas. No newest-artifact selection or fallback build is allowed.
 2. An explicit creator address, starting nonce, sender policy and (for delegated mode) three independently reviewed evidence reports. Their exact scope includes creator/target/runtime, complete state checks, source/lock hashes, catalog/build digest, canonical block number/hash and Osaka execution fork.
 3. Explicit acknowledgement of the requested d76 governor; canonical mainnet USDC; base URI; ENS registry/wrapper; four membership roots; two Merkle roots; and the two settlement fee wallets. Existing membership dependencies are read-only inputs. No treasury or ENS custody change is inferred from these fields.
 4. A reviewed canonical pin and expiry (at most 2,048 blocks later), nine exact gas/fee envelopes and a maximum aggregate fee budget. Each transaction is type 2, chain 1, `to: null`, value zero and empty access list. Gas must be at most 16,777,216 and fit the observed block limit. No fee bump is automatic. Funding is the user's responsibility.
@@ -63,3 +63,54 @@ Governor configuration, role inventory beyond the creator, arbitrary mapping exh
 ## Test interpretation
 
 Tests use disposable keys and a local Osaka EVM with the ordinary 30-million block gas limit and no coverage gas-cap override. They install a synthetic local delegation using a genuine type-4 transaction, then exercise outgoing type-2 creation. EDR lacks EIP-1898 tags and real finalized consensus: a clearly test-only adapter brackets genuine numbered EVM calls with canonical hash checks and maps finalized to local latest. Production has neither fallback. These tests do not qualify a public provider, consensus/finality, real delegate, Ledger, explorer, or external independent audit, which remains an expressly accepted omission rather than a completed check.
+
+## Local input stability during a command
+
+The native CLI observes the real source checkout at command entry and re-observes
+its raw Git/index/worktree state after asynchronous checks, before issuing a
+signing handoff, recording a relay attempt, transmitting the validated raw bytes,
+finalizing a receipt or releasing the creator lock. The selected catalog, compiler
+input/output, source closure and artifact pins are rechecked at these boundaries.
+Detected drift stops the operation. A handoff/attempt already durably recorded is
+never erased to make a retry look safe; use the existing read-only recovery path.
+Direct session-module callers must supply an explicit synchronous source guard;
+the native CLI always constructs it from its own actual checkout and has no
+trust-source or guard-disable option. Synthetic guards in module tests are not
+native source qualification.
+
+These checks require a trusted local execution environment. They do not make a
+mutable filesystem immutable, prevent an adversarial writer from changing and
+restoring bytes between checks, or close every filesystem time-of-check/time-of-use
+window. Keep the reviewed checkout, build descriptors and private operator state
+under operator control and do not edit them during a command. No filesystem
+permission change or immutable-mount setup is performed by the tool.
+
+Loaded qualified build objects are deeply frozen, and creation envelopes are
+derived from their validated in-memory bytes. A relay sends the exact previously
+decoded raw transaction string; it does not reopen a mutable signed file after
+awaiting preflight. Revalidation detects observed drift rather than accepting new
+bytes as a replacement. Actual provider, wallet and final reviewed-source
+qualification remain separate requirements.
+
+Private state also has command-time identity pins: the real directory ancestor
+chain, command gate and owner file, creator lock or release tombstone, session
+child directories, plan/session files, exact event membership and bytes, and head
+identity/bytes are checked before append, attempt, relay or completion cleanup.
+Directory and file device/inode/type identities matter; copying the same owner
+JSON does not authorize replacing a lock during a command. A detected replacement
+or concurrent journal change preserves the entries and command gate for explicit
+manual reconciliation. Completion carries the captured identity through its
+atomic release rename and refuses newly appearing release destinations or locks.
+These pins are local to one command. They do not authenticate reconstructed files
+across process restarts or coordinate another machine. The operator must provide
+exclusive, trusted filesystem control throughout the campaign; no claim is made
+against a hostile administrator, complete rollback, or swaps between checks.
+
+The CLI also pins each reserved report file and its real parent ancestor identities.
+After awaited work, it requires that same file, inode and reservation bytes before
+replacing the reservation with a successful report. Parent/file substitutions,
+symlinks and edits stop reporting without overwriting or deleting the replacement.
+There is no automatic report cleanup. If a chain action or durable handoff already
+occurred before output failure, recover the existing session; never repeat it to
+obtain another report. This is another point-in-time check under the same trusted,
+exclusive-filesystem assumptions, not an atomic guarantee against hostile swaps.

@@ -125,5 +125,5 @@ function main(argv = process.argv.slice(2)) {
   const result = exportVerificationPackage({ build, plan, observedRevision: revision, outputDirectory: args.output });
   process.stdout.write(`${stable({ outputDirectory: result.outputDirectory, manifestSha256: result.manifestSha256, warning: WARNING })}\n`);
 }
-if (require.main === module) { try { main(); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 1; } }
+if (require.main === module) { try { main(); } catch { process.stderr.write('MANAGER_VERIFICATION_EXPORT_FAILED: Stop and preserve private inputs and any incomplete export. No explorer acceptance or activation was established.\n'); process.exitCode = 1; } }
 module.exports = { EXPORT_SCHEMA, WARNING, exportVerificationPackage, exportPackage: exportVerificationPackage, neededLibraries, main };

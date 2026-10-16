@@ -36,7 +36,7 @@ async function verifyPrefix(plan,qualified,source,rpc,hashes){
  for(let i=0;i<hashes.length;i++){const p=await verifyReceipt(plan,qualified,rpc,i,hashes[i],finalBlock);if(proofs.length){const old=proofs.at(-1);T.need(p.block.number>old.block.number||(p.block.number===old.block.number&&p.transactionIndex>old.transactionIndex),'Creation order differs.');}proofs.push(p);}
  const latest=await A.pin(rpc,'latest');await A.observeActor(rpc,plan.config,latest);
  for(let i=0;i<hashes.length;i++)await verifyRuntime(plan,qualified,rpc,i,latest);
- await A.canonicalCheck(rpc,finalBlock);await A.canonicalCheck(rpc,latest);return {proofs,finalBlock,latest,activationAuthorized:false,configurationAuthorized:false};
+ await A.canonicalCheck(rpc,finalBlock);await A.canonicalCheck(rpc,latest);checkPlan(plan,qualified,source);return {proofs,finalBlock,latest,activationAuthorized:false,configurationAuthorized:false};
 }
 async function preflight(plan,qualified,source,rpc,hashes=[]){
  const result=await verifyPrefix(plan,qualified,source,rpc,hashes),latest=result.latest;
@@ -55,6 +55,7 @@ async function preflight(plan,qualified,source,rpc,hashes=[]){
   estimate=String(BigInt(await rpc('eth_estimateGas',[tx,at])));T.need(BigInt(estimate)>0n&&BigInt(estimate)<=BigInt(e.gasLimit),'Creation estimate exceeds reviewed gas limit.');
  }
  const end=await A.pin(rpc,'latest');T.need(end.hash===latest.hash,'Latest block changed during preflight; repeat read-only checks.');
+ checkPlan(plan,qualified,source);
  return {...result,nextIndex:hashes.length,nextNonce:nonce,estimatedGas:estimate,preflightPassed:true,readyToBroadcast:false};
 }
 async function recoverHash(plan,index,rpc,startBlock,knownHash){

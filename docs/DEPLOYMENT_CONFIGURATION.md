@@ -158,3 +158,14 @@ The creator is explicitly selected in the core reviewed profile as `creator.addr
 | `AUTHORITY_REPORT` | New read-only direct authority report. Passing direct checks remains `finalized:false`, `activationAuthorized:false`, exit 3 while comprehensive setup, ENS/controller/operator, signing and approval gates remain. |
 
 Optional router configuration uses `ROUTER_CONFIG`, `ROUTER_JOURNAL`, `ROUTER_REVERIFY` and `ROUTER_REPORT`; archived two-argument router recovery additionally names `ROUTER_LEGACY_ARTIFACT` and `ROUTER_LEGACY_BUILD_INFO`. New router schemas bind creator separately from owner and append the explicit governor to constructor arguments. No metadata pointer, root custody, approval, fee wallet or intake state is changed by optional CREATE/verification.
+
+## Core external-signing endpoint inputs
+
+The unreleased [core external-signing CLI](deployment/core-external-signing.md) starts directly with Node and does not load `.env`. Export the needed endpoint explicitly in the command's launch environment. The empty example entries document these names; copying the example to `.env` does not configure this CLI. Keep endpoint credentials private and out of plans, reports and source control.
+
+| Setting | Exact scope |
+| --- | --- |
+| `MANAGER_READ_RPC_URL` | Explicit HTTPS endpoint for the bounded read-only transport used by preflight, start, handoff, recover, reconcile, complete and relay's pre-send checks. Production requires canonical EIP-1898 block tags; no numbered-block fallback is allowed. |
+| `MANAGER_RELAY_RPC_URL` | Separate explicit HTTPS endpoint used only by the user-run `relay` command, after its exact acknowledgement and durable attempt record. It submits the already checked raw transaction once; it does not sign, retry or bump fees. |
+
+The offline `plan`, `import`, `retrieve-handoff`, `inspect-journal`, `repair-journal` and verification-export commands do not need either endpoint. Retrieval and journal repair operate only on the saved local evidence. Both transports reject embedded username/password credentials, URL fragments and non-HTTPS URLs. Supplying an endpoint grants no signing, configuration or activation approval; all source, actor, envelope and receipt checks remain required.

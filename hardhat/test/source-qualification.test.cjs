@@ -82,3 +82,25 @@ test('source observation rejects staged changes and untracked files without cont
  const staged=repo(t);fs.writeFileSync(path.join(staged.directory,'tracked.txt'),'staged change\n');staged.git('add','tracked.txt');assert.throws(()=>P.observedRevision(staged.directory),/index differs/);
  const untracked=repo(t);fs.writeFileSync(path.join(untracked.directory,'new.txt'),'unreviewed');assert.throws(()=>P.observedRevision(untracked.directory),/untracked files/);
 });
+test('source observation forces no lazy fetch in every Git subprocess despite an inherited override',t=>{
+ const r=repo(t),original=cp.execFileSync;let calls=0;
+ cp.execFileSync=function(command,args,options){
+  if(command==='git'){calls++;assert.equal(options.env.GIT_NO_LAZY_FETCH,'1','Offline source observation must prohibit implicit object fetches');}
+  return original.call(this,command,args,options);
+ };
+ try{withGitEnv({GIT_NO_LAZY_FETCH:'0'},()=>P.observedRevision(r.directory));assert(calls>0);}
+ finally{cp.execFileSync=original;}
+});
+test('a missing promised tree fails closed without invoking even a local fetch transport',t=>{
+ const r=repo(t),tree=r.git('rev-parse','HEAD^{tree}');
+ const sentinel=path.join(r.directory,'.git','FETCH_ATTEMPTED'),upload=path.join(r.directory,'.git','local-upload-pack');
+ fs.writeFileSync(upload,`#!/bin/sh\nprintf attempted > '${sentinel}'\nexit 1\n`,{mode:0o700});
+ // A local-only promisor transport proves no fetch occurs. No network address,
+ // provider, credential or external service is used by this regression.
+ r.git('config','extensions.partialClone','origin');r.git('config','remote.origin.promisor','true');
+ r.git('config','remote.origin.url',r.directory);r.git('config','remote.origin.uploadpack',upload);
+ r.git('config','protocol.file.allow','always');
+ fs.unlinkSync(path.join(r.directory,'.git','objects',tree.slice(0,2),tree.slice(2)));
+ assert.throws(()=>P.observedRevision(r.directory));
+ assert.equal(fs.existsSync(sentinel),false,'A missing source object must never invoke a lazy-fetch transport');
+});
