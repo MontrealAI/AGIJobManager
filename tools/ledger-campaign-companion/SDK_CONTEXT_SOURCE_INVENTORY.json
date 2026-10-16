@@ -1,0 +1,36 @@
+{
+  "format": "ledger-sdk-context-source-inventory-v1",
+  "scope": "source inspection, not browser/device evidence",
+  "files": [
+    {
+      "path": "node_modules/@ledgerhq/device-signer-kit-ethereum/lib/esm/api/SignerEthBuilder.js",
+      "sha256": "137db06c497192aa22ca9355796c29910eb3d115c722d32d144ac9faa61721d2",
+      "bytes": 791
+    },
+    {
+      "path": "node_modules/@ledgerhq/device-signer-kit-ethereum/lib/types/api/SignerEthBuilder.d.ts",
+      "sha256": "3f012cbb1e2963b0f2e05555e700e7ed3f25110a5fdc40d37eee9e3b7131f2ee",
+      "bytes": 1563
+    },
+    {
+      "path": "node_modules/@ledgerhq/context-module/lib/esm/src/ContextModuleBuilder.js",
+      "sha256": "89d52caa61ba651511ebb82f7d6c2e6cbd7f19fe507026e473502a0142b7cf1c",
+      "bytes": 1972
+    },
+    {
+      "path": "node_modules/@ledgerhq/context-module/lib/esm/src/DefaultContextModule.js",
+      "sha256": "f89d56ec212773944db1fbb9dbdae0f82c307f8fd586a0513609846edd9725f7",
+      "bytes": 5567
+    },
+    {
+      "path": "node_modules/@ledgerhq/device-management-kit/lib/esm/src/api/DeviceManagementKitBuilder.js",
+      "sha256": "6d1d34423085926e67761146fa719d5e1ff8b1f1822d3926e80b544668b7bfe6",
+      "bytes": 848
+    },
+    {
+      "path": "node_modules/@ledgerhq/device-signer-kit-ethereum/lib/esm/internal/app-binder/task/BuildBaseContexts.js",
+      "sha256": "eb2c10bc5dab19361acec1fc63a3f594445a8c1bcaa0a5050c55ceb760c622fd",
+      "bytes": 4534
+    }
+  ]
+}

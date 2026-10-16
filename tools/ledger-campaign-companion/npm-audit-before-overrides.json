@@ -1,0 +1,260 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@ledgerhq/context-module": {
+      "name": "@ledgerhq/context-module",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@ledgerhq/device-management-kit",
+        "ethers"
+      ],
+      "effects": [],
+      "range": "<=0.0.0-zzz-solana-20251204140055 || >=1.0.0",
+      "nodes": [
+        "node_modules/@ledgerhq/context-module"
+      ],
+      "fixAvailable": {
+        "name": "@ledgerhq/context-module",
+        "version": "1.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@ledgerhq/device-contacts-kit": {
+      "name": "@ledgerhq/device-contacts-kit",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@ledgerhq/device-management-kit",
+        "@ledgerhq/signer-utils"
+      ],
+      "effects": [
+        "@ledgerhq/device-signer-kit-ethereum"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@ledgerhq/device-contacts-kit"
+      ],
+      "fixAvailable": {
+        "name": "@ledgerhq/device-signer-kit-ethereum",
+        "version": "1.1.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@ledgerhq/device-management-kit": {
+      "name": "@ledgerhq/device-management-kit",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "uuid"
+      ],
+      "effects": [
+        "@ledgerhq/context-module",
+        "@ledgerhq/device-contacts-kit",
+        "@ledgerhq/device-signer-kit-ethereum",
+        "@ledgerhq/signer-utils"
+      ],
+      "range": "<=0.5.1 || >=0.7.0",
+      "nodes": [
+        "node_modules/@ledgerhq/device-management-kit"
+      ],
+      "fixAvailable": {
+        "name": "@ledgerhq/device-management-kit",
+        "version": "0.6.5",
+        "isSemVerMajor": true
+      }
+    },
+    "@ledgerhq/device-signer-kit-ethereum": {
+      "name": "@ledgerhq/device-signer-kit-ethereum",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@ledgerhq/context-module",
+        "@ledgerhq/device-contacts-kit",
+        "@ledgerhq/device-management-kit",
+        "@ledgerhq/signer-utils",
+        "ethers"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@ledgerhq/device-signer-kit-ethereum"
+      ],
+      "fixAvailable": {
+        "name": "@ledgerhq/device-signer-kit-ethereum",
+        "version": "1.1.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@ledgerhq/device-transport-kit-web-hid": {
+      "name": "@ledgerhq/device-transport-kit-web-hid",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@ledgerhq/device-management-kit",
+        "uuid"
+      ],
+      "effects": [],
+      "range": "<=0.0.0-zzz-solana-20251204140055 || >=1.2.0",
+      "nodes": [
+        "node_modules/@ledgerhq/device-transport-kit-web-hid"
+      ],
+      "fixAvailable": {
+        "name": "@ledgerhq/device-transport-kit-web-hid",
+        "version": "1.1.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@ledgerhq/signer-utils": {
+      "name": "@ledgerhq/signer-utils",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@ledgerhq/device-management-kit"
+      ],
+      "effects": [
+        "@ledgerhq/device-signer-kit-ethereum"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@ledgerhq/signer-utils"
+      ],
+      "fixAvailable": {
+        "name": "@ledgerhq/device-signer-kit-ethereum",
+        "version": "1.1.0",
+        "isSemVerMajor": true
+      }
+    },
+    "ethers": {
+      "name": "ethers",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "ws"
+      ],
+      "effects": [
+        "@ledgerhq/context-module",
+        "@ledgerhq/device-signer-kit-ethereum"
+      ],
+      "range": "6.0.0-beta.1 - 6.16.0",
+      "nodes": [
+        "node_modules/@ledgerhq/context-module/node_modules/ethers",
+        "node_modules/@ledgerhq/device-signer-kit-ethereum/node_modules/ethers"
+      ],
+      "fixAvailable": {
+        "name": "@ledgerhq/context-module",
+        "version": "1.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "uuid": {
+      "name": "uuid",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1119441,
+          "name": "uuid",
+          "dependency": "uuid",
+          "title": "uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-787",
+            "CWE-1285"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+          },
+          "range": "<11.1.1"
+        }
+      ],
+      "effects": [
+        "@ledgerhq/device-management-kit",
+        "@ledgerhq/device-transport-kit-web-hid"
+      ],
+      "range": "<11.1.1",
+      "nodes": [
+        "node_modules/uuid"
+      ],
+      "fixAvailable": {
+        "name": "@ledgerhq/device-management-kit",
+        "version": "0.6.5",
+        "isSemVerMajor": true
+      }
+    },
+    "ws": {
+      "name": "ws",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1119108,
+          "name": "ws",
+          "dependency": "ws",
+          "title": "ws: Uninitialized memory disclosure",
+          "url": "https://github.com/advisories/GHSA-58qx-3vcg-4xpx",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-908"
+          ],
+          "cvss": {
+            "score": 4.4,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=8.0.0 <8.20.1"
+        },
+        {
+          "source": 1123259,
+          "name": "ws",
+          "dependency": "ws",
+          "title": "ws: Memory exhaustion DoS from tiny fragments and data chunks",
+          "url": "https://github.com/advisories/GHSA-96hv-2xvq-fx4p",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-770",
+            "CWE-1050"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=8.0.0 <8.21.0"
+        }
+      ],
+      "effects": [
+        "ethers"
+      ],
+      "range": "8.0.0 - 8.20.1",
+      "nodes": [
+        "node_modules/@ledgerhq/context-module/node_modules/ws",
+        "node_modules/@ledgerhq/device-signer-kit-ethereum/node_modules/ws"
+      ],
+      "fixAvailable": {
+        "name": "@ledgerhq/context-module",
+        "version": "1.0.0",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 8,
+      "high": 1,
+      "critical": 0,
+      "total": 9
+    },
+    "dependencies": {
+      "prod": 52,
+      "dev": 26,
+      "optional": 25,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 77
+    }
+  }
+}

@@ -1,0 +1,5 @@
+node_modules/
+dist/
+manual-ledger-evidence/
+*.private.json
+*.private.txt

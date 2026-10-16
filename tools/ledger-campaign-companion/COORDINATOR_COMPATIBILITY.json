@@ -1,0 +1,293 @@
+{
+  "schema": "manual-ledger-current-coordinator-interface-inventory-v1",
+  "observedAt": "2026-10-16T15:39:22.662477+00:00",
+  "scope": "Read-only GitHub PR retrieval and isolated exact clean checkouts; no remote source mutation or real signing/submission",
+  "manager": {
+    "ownerCandidate": {
+      "pr": "https://github.com/MontrealAI/AGIJobManager/pull/1586",
+      "commit": "3c974ad3cb1d828e5c89464fd8424d8ae853d9dd",
+      "tree": "a45070671985671c169c6bfa35c5089b1e9674b4",
+      "operationalAdapterAccepted": false,
+      "reason": "Four reproduced operator-boundary defects; owner is reconciling fixes"
+    },
+    "adapterCandidate": {
+      "pr": "https://github.com/MontrealAI/AGIJobManager/pull/1587",
+      "commit": "eb6f725e0b40ac81e50a374304e54a5ff6859fcf",
+      "tree": "73347842e4a81767ef14686a607b7aceb4f5d70c",
+      "status": "Independent narrow draft; complete release/hardware/provider qualification remains pending",
+      "childRuntime": "24.19.0"
+    },
+    "planSchema": "manager-core-creation-plan-v1",
+    "configSchema": "manager-core-creation-config-v1",
+    "handoffSchema": "manager-external-signing-handoff-v1",
+    "retrievalSchema": "manager-retrieved-handoff-v1",
+    "sessionSchema": "manager-core-session-v1",
+    "catalogSchema": "manager-qualified-build-catalog-v1",
+    "constructorSchema": "manager-seven-explicit-governor-v2",
+    "cli": "hardhat/scripts/core-session.cjs COMMAND --catalog PATH --catalog-sha SHA256 --build-id ID --out NEW_PRIVATE_REPORT [exact command flags]",
+    "commands": [
+      "plan",
+      "preflight",
+      "start",
+      "handoff",
+      "import",
+      "relay",
+      "recover",
+      "reconcile",
+      "complete",
+      "retrieve-handoff",
+      "inspect-journal",
+      "repair-journal"
+    ],
+    "signedImport": {
+      "format": "JSON",
+      "exactFields": [
+        "raw"
+      ],
+      "inputFlag": "--signed-file"
+    },
+    "rpcEnvironment": {
+      "read": "MANAGER_READ_RPC_URL",
+      "relay": "MANAGER_RELAY_RPC_URL"
+    },
+    "relayAcknowledgement": "RELAY_MANAGER_CORE:<planSha256>:<index>:<exactTransactionHash> obtained only from genuine durable signed state; immutable attempt marker suppresses acknowledgement",
+    "locks": {
+      "actor": "creator only for nine core CREATEs",
+      "namespace": "creator-nonce-lock-v1",
+      "key": "1-<lowercase actual creator>",
+      "automaticStaleBreak": false
+    },
+    "expiry": {
+      "nativeBlockCutoff": true,
+      "maximumIntervalBlocks": 2048,
+      "companionWallClock": "Explicit owner-selected campaign.expiresAt and same per-operation review.expiresAt required; no default"
+    },
+    "operationCount": 9,
+    "graph": [
+      "UriUtils",
+      "TransferUtils",
+      "BondMath",
+      "ReputationMath",
+      "ENSOwnership",
+      "NftEligibility",
+      "JobSettlement",
+      "JobValidation",
+      "AGIJobManager"
+    ],
+    "configurationSupported": [],
+    "completion": "CORE_CREATED_PAUSED_CONFIGURATION_SEPARATE",
+    "activationAllowed": false,
+    "export": "Genuine offline predicted package retained unchanged; independently reverified canonical prefix supplies separate receipt/runtime task bindings. All nine creations required by companion export."
+  },
+  "alpha": {
+    "pr": "https://github.com/MontrealAI/AGI-Alpha-Agent-v0/pull/4826",
+    "commit": "d69cdd3ddc0f36933d07f0f64abfe15e742bf68c",
+    "tree": "721aae37b0f337029de98325d6ba3de1b1b1a7bd",
+    "prBodyStaleCommit": "70a7a3699755b9e612a97f3d946e3569bc3ae67f",
+    "planSchema": "agialpha.mainnet.unsigned-plan.v2",
+    "configSchema": "agialpha.mainnet.config.v2",
+    "handoffSchema": "agialpha.external-signing-handoff.v1",
+    "sessionSchema": "agialpha.new-graph-session.v1",
+    "cli": "tests/contracts/scripts/authority-session.js ACTION PRIVATE_COMMAND.json NEW_PRIVATE_REPORT.json",
+    "actions": {
+      "start": [
+        "plan",
+        "journal",
+        "mode"
+      ],
+      "prepare": [
+        "plan",
+        "journal",
+        "governorEnvelope"
+      ],
+      "handoff": [
+        "plan",
+        "journal"
+      ],
+      "import": [
+        "plan",
+        "journal",
+        "signedRawFile"
+      ],
+      "relay": [
+        "plan",
+        "journal",
+        "signedRawFile",
+        "acknowledgement"
+      ],
+      "recover": [
+        "plan",
+        "journal",
+        "transactionHash"
+      ],
+      "reconcile": [
+        "plan",
+        "journal",
+        "transactionHash"
+      ],
+      "finish": [
+        "plan",
+        "journal"
+      ],
+      "status": [
+        "plan",
+        "journal"
+      ]
+    },
+    "signedImport": {
+      "format": "RAW TEXT",
+      "maximumCharacters": 200002,
+      "commandField": "signedRawFile",
+      "oldPreviewJsonRawIsDirectlyCompatible": false
+    },
+    "rpcEnvironment": {
+      "read": "ALPHA_READ_ONLY_RPC_URL",
+      "relay": "ALPHA_RAW_RELAY_RPC_URL",
+      "relaySwitch": "ALPHA_ENABLE_USER_RUN_RAW_RELAY=I_REVIEWED_THIS_EXACT_TRANSACTION",
+      "locks": "DEPLOYMENT_LOCK_DIRECTORY"
+    },
+    "relayAcknowledgement": "Genuine status result relayAcknowledgement digest of relay-exact-raw-once/deployment/plan/index/intent/hash; no acknowledgement after attempted state or blocked command gate",
+    "locks": {
+      "actors": [
+        "creator",
+        "governor"
+      ],
+      "namespace": "creator-nonce-lock-v1",
+      "key": "1-<lowercase actual sender>",
+      "order": "deduplicated lexical order",
+      "automaticStaleBreak": false
+    },
+    "expiry": {
+      "nativeBlockCutoff": false,
+      "status": "Missing integration-owner native expiry correction; do not add unsupported config fields",
+      "companionWallClock": "Explicit owner-selected campaign.expiresAt and same per-operation review.expiresAt; does not revoke Ethereum signatures"
+    },
+    "sourceBoundary": {
+      "requiresStandaloneGitDirectory": true,
+      "requiresCompleteNonShallowHistory": true,
+      "linkedWorktreesSupported": false,
+      "alternateObjectsSupported": false,
+      "configIncludesSupported": false
+    },
+    "operationCount": 7,
+    "graph": [
+      "AscensionAccess",
+      "NovaSeed",
+      "AscensionRiskOracle",
+      "AscensionJobMarket",
+      "AscensionMark"
+    ],
+    "configurationSupported": [
+      "receipt-bound AscensionRiskOracle.bindMarketplace(new AscensionJobMarket)",
+      "receipt-bound AscensionJobMarket.bindMark(new AscensionMark)"
+    ],
+    "activationAllowed": false,
+    "export": "Genuine receipts mode requires complete five creation + two governor-binding evidence and independently re-verifies exact source/current runtime/state. Companion emits five contract tasks after complete seven-operation campaign.",
+    "childRuntime": "22.17.1"
+  },
+  "adapterContract": {
+    "modules": [
+      "coordinators/common.mjs",
+      "coordinators/manager.mjs",
+      "coordinators/alpha.mjs"
+    ],
+    "serverOnlyCampaignConfiguration": [
+      "checkout",
+      "nodePath",
+      "planPath",
+      "sessionPath",
+      "lockDirectory",
+      "readRpcUrl",
+      "relayRpcUrl",
+      "mode",
+      "catalogPath",
+      "catalogSha256",
+      "buildId",
+      "licenseType",
+      "extraCaCertificates (test local fixture CA only in acceptance)",
+      "nodeVersion (exact supported runtime)",
+      "nodeSha256 (separately reviewed executable fingerprint)"
+    ],
+    "reviewedManifest": [
+      "source{repository,commit,tree}",
+      "planSha256",
+      "sourceSha256",
+      "operations[{operationId,unsignedHex,expectedUnsignedHash,expectedPolicyHash,review}]"
+    ],
+    "methods": [
+      "inspectCampaign(campaign)",
+      "prepare({campaign,step,privateDir})",
+      "importSigned({campaign,step,operationId,raw,privateDir})",
+      "relayOne({campaign,step,operationId,acknowledgement,privateDir})",
+      "observe({campaign,step,operationId,privateDir})",
+      "exportVerification({campaign,step,privateDir})"
+    ],
+    "numericStepOnly": true,
+    "operationSource": "Separately reviewed exact immutable unsigned manifest AND actual coordinator durable locked intent, compared byte-for-byte",
+    "freshObserve": "Every verified result re-runs genuine canonical prefix/state/runtime checks; cached local finalized status alone is insufficient",
+    "existingHandoff": "No new signing authorization. Stop for recovery; private preserved capability takes precedence.",
+    "expiry": "Read-only canonical recovery/export remains available after local expiry; signing/import/relay stop. Ethereum capability is not revoked.",
+    "rawCapabilityPublicArtifacts": false,
+    "arbitraryShellOrRpcAPI": false,
+    "unknownSourceOrSchemaAccepted": false,
+    "hostDecodedMetadata": "Genuine offline plan/catalog inspection plus configuration.describeCreation and decodeSupportedBinding; HOST_DECODED_NOT_DEVICE_CONFIRMED"
+  },
+  "unsupported": [
+    "Manager governor configuration, optional helpers/routers/metadata/ENS custody/funding/activation",
+    "Alpha arbitrary governor calls or policy changes beyond two new-graph bindings",
+    "Factories, contract wallets, wrappers, batches, CREATE2, type4 creation, automatic-broadcast wallets",
+    "Any unsupported new source commit, including owner local fixes not yet published/frozen",
+    "Jobs hardware/external signature adapter (separate inventory; not completed by raw export)",
+    "Real Ledger/provider/explorer/authority activation certification inferred from synthetic tests"
+  ],
+  "jobs": {
+    "schema": "manual-ledger/jobs-interface-summary/v1",
+    "reference": {
+      "commit": "fed83bc183753e871621fc1cb3aa8510bd38f642",
+      "tree": "a49fa5d32272555e62431363f1ffd36b84ea87be",
+      "trackedFiles": 5052,
+      "trackedBytesAndModesMatch": true,
+      "untrackedFilesChecked": false
+    },
+    "externalSigningSupported": false,
+    "packetSchema": null,
+    "workflowSuccessesObserved": 56,
+    "adapterTests": {
+      "pass": 7,
+      "fail": 0,
+      "node": "22.23.3"
+    },
+    "actualSourceToolingTests": {
+      "pass": 11,
+      "fail": 0,
+      "node": "22.23.3"
+    },
+    "genuineReadOnlyCliProbe": "jobs-interface-cli-probe.json",
+    "physicalQualified": false,
+    "deploymentRerun": false,
+    "authorityComplete": false,
+    "activationReady": false,
+    "filesSha256": {
+      "config/implementation-modules.json": "ebb99bfbf615b67a3801656da6060a83a9d8af8079ef6bbc6c7b33517393414a",
+      "config/solidity-compiler.json": "48b1584546fa588b961eff8534daba37d7fea69ad557c85c599757213a53efdf",
+      "package-lock.json": "9941cb118e1257a32d5e85509346920d5e30bf11882dac6f36725d0d2fb744fa",
+      "package.json": "4f118177592fae78bd8adf18cfa24a776780afd307fed1180e6b0ae0d165e963",
+      "scripts/deploy/authority-audit.cjs": "0d17fcb9af17d92dbbed6d998a2fb18ff4dc2c127f12c4b32d3d34056663b102",
+      "scripts/deploy/authority-handover.cjs": "68f9f4886538bb0584f2ad21803e16c0c358fdc4a80198af908b38ad559f0544",
+      "scripts/deploy/authority-runtime.cjs": "825e35a2a708becce4a0210396827df05638e85efcb558ac2478f6f32e13b386",
+      "scripts/deploy/implementations.cjs": "d7df798d67de1eec8422ea9b73e5fcc544018c39cd988390d53d7cf0c76624db",
+      "scripts/deploy/stage-protocol.cjs": "4965f9c3ce512de1a224c71855230e70cf287093e0af34cd3cd033f2797915ea",
+      "scripts/v2/deployDefaults.ts": "d230593e518564cfdaada5417c9e3b4e91416fcf12958193ddf45c58d469f999",
+      "scripts/v2/lib/deployment-candidate.cjs": "d8e92dd04da1f4c8f506abfd6158ed2eb0b725fc8bb0382e598373d48c2a6f04",
+      "scripts/v2/plan-deploy.ts": "2ea3fac4a28c012178e2e2dcf35080a2dd59e46d96a88bfe6c4eaa2128687b62"
+    },
+    "repository": "MontrealAI/AGIJobsv0",
+    "unsupportedInterfaces": [
+      "Versioned immutable unsigned handoff",
+      "Durable actor-locked prepare-only intent",
+      "External signed raw import",
+      "Exact acknowledgement and one-shot relay",
+      "Signer-free canonical observe/recovery"
+    ]
+  }
+}
