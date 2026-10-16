@@ -1135,6 +1135,145 @@
       "log_sha256": "bc2fba2340a07960f62b2f0c788d8fd0c0d3251230e6b2f0cec67410b1311bad"
     }
   },
+  "corrected_scanner": {
+    "detector_order": "sort exact selected classes by (IMPACT,ARGUMENT); focused invocation only",
+    "six_run_experiment": [
+      {
+        "seed": 0,
+        "success": true,
+        "error": null,
+        "count": 30,
+        "High": 1,
+        "balance": true,
+        "checks": {
+          "reentrancy-balance": 1,
+          "reentrancy-no-eth": 1,
+          "reentrancy-benign": 2,
+          "reentrancy-events": 26
+        },
+        "json_sha256": "df809ff7fb5b7581dbb67347ab3f5554a4261bedd3f2a18432424db6eff6144e"
+      },
+      {
+        "seed": 1,
+        "success": true,
+        "error": null,
+        "count": 30,
+        "High": 1,
+        "balance": true,
+        "checks": {
+          "reentrancy-balance": 1,
+          "reentrancy-no-eth": 1,
+          "reentrancy-benign": 2,
+          "reentrancy-events": 26
+        },
+        "json_sha256": "df809ff7fb5b7581dbb67347ab3f5554a4261bedd3f2a18432424db6eff6144e"
+      },
+      {
+        "seed": 2,
+        "success": true,
+        "error": null,
+        "count": 30,
+        "High": 1,
+        "balance": true,
+        "checks": {
+          "reentrancy-balance": 1,
+          "reentrancy-no-eth": 1,
+          "reentrancy-benign": 2,
+          "reentrancy-events": 26
+        },
+        "json_sha256": "df809ff7fb5b7581dbb67347ab3f5554a4261bedd3f2a18432424db6eff6144e"
+      },
+      {
+        "seed": 3,
+        "success": true,
+        "error": null,
+        "count": 30,
+        "High": 1,
+        "balance": true,
+        "checks": {
+          "reentrancy-balance": 1,
+          "reentrancy-no-eth": 1,
+          "reentrancy-benign": 2,
+          "reentrancy-events": 26
+        },
+        "json_sha256": "df809ff7fb5b7581dbb67347ab3f5554a4261bedd3f2a18432424db6eff6144e"
+      },
+      {
+        "seed": 4,
+        "success": true,
+        "error": null,
+        "count": 30,
+        "High": 1,
+        "balance": true,
+        "checks": {
+          "reentrancy-balance": 1,
+          "reentrancy-no-eth": 1,
+          "reentrancy-benign": 2,
+          "reentrancy-events": 26
+        },
+        "json_sha256": "df809ff7fb5b7581dbb67347ab3f5554a4261bedd3f2a18432424db6eff6144e"
+      },
+      {
+        "seed": 5,
+        "success": true,
+        "error": null,
+        "count": 30,
+        "High": 1,
+        "balance": true,
+        "checks": {
+          "reentrancy-balance": 1,
+          "reentrancy-no-eth": 1,
+          "reentrancy-benign": 2,
+          "reentrancy-events": 26
+        },
+        "json_sha256": "df809ff7fb5b7581dbb67347ab3f5554a4261bedd3f2a18432424db6eff6144e"
+      }
+    ],
+    "reports": {
+      "slither-extended.json": {
+        "entries": 12,
+        "sha256": "17cf34a4e162060f49fd402680bef4075259d5f6116c0a0d79a44b68023547cf"
+      },
+      "slither-reentrancy.json": {
+        "entries": 30,
+        "sha256": "5701380d1abe473dee3d17676f86ae59f46f7e78297ed12a21e8f8ed4400cbea"
+      },
+      "slither-all.json": {
+        "entries": 122,
+        "sha256": "5802d5872bf15a0f900364fdd43779d2a841806fc0dbae4be1cdc58f3f6c58e0"
+      }
+    },
+    "source_binding": {
+      "scripts/security/run-slither-extended.sh": "d1f9747d1695e6d19e558b59f660e40925a3b68c6da48124a334fc3ea5f17722",
+      "scripts/security/run-slither-deterministic.py": "f29076dd22046c72661b888e50eacbd5475da5ce8f3e737e160a172473d4ea7e"
+    },
+    "independent_wrapper_review": {
+      "wrapper_sha256": "f29076dd22046c72661b888e50eacbd5475da5ce8f3e737e160a172473d4ea7e",
+      "tests": "8/8 pass",
+      "success": true,
+      "focused_count": 30,
+      "original_focused_count": 29,
+      "added_ids": [
+        "1afa160c1dbc377bd9b174d8014bccbb5fe931426b88debef19adb4780dbd35a"
+      ],
+      "removed_ids": [],
+      "every_focused_finding_full_field_equal_to_original_all_scan": true,
+      "added_findings": [
+        {
+          "id": "1afa160c1dbc377bd9b174d8014bccbb5fe931426b88debef19adb4780dbd35a",
+          "check": "reentrancy-balance",
+          "impact": "High",
+          "description": "Reentrancy in AGIReviewEscrow.fundReview(uint256,address,bytes32,uint256,uint64) (contracts/periphery/AGIReviewEscrow.sol#90-109):\n\tExternal call allowing reentrancy:\n\t- usdcToken.safeTransferFrom(msg.sender,address(this),fee) (contracts/periphery/AGIReviewEscrow.sol#106)\n\tBalance read before the call:\n\t- beforeBalance = usdcToken.balanceOf(address(this)) (contracts/periphery/AGIReviewEscrow.sol#105)\n\tPossible stale balance used after the call in a condition:\n\t- usdcToken.balanceOf(address(this)) != beforeBalance + fee (contracts/periphery/AGIReviewEscrow.sol#107)\n\t\t- stale variable `beforeBalance`\n"
+        }
+      ]
+    },
+    "regression": {
+      "test_count": 8,
+      "passed": 8,
+      "fails_when_sort_removed": true,
+      "without_fix_log_sha256": "3dbccd0ab87ca2c358bfc92a6e6fa48c71b7d54c9912429f74a7b417b067339c"
+    }
+  },
   "standalone_balance_review": {
     "schema": 1,
     "commit": "e1ed5027955aeee4c6ac14a8ab4b39b4388b8328",
@@ -1153,14 +1292,20 @@
   },
   "historical_acceptance_sha256": "2769b2c2d752771d19e2f1ae3345703b9c0986716d3af5dd659921a21f309209",
   "acceptance_validation": {
-    "positive_retained_and_fresh_report_gate": "pass",
+    "corrected_report_gate": "pass",
+    "incomplete_retained_report": "rejected",
     "historical_record_unchanged": true,
-    "verifier_only_change": "candidate acceptance record filename",
+    "verifier_changes": "candidate record filename and additional ordering-wrapper source binding; previous checks unchanged",
     "negative_checks": [
       {
         "case": "historical acceptance rejects exact candidate",
         "result": "rejected",
-        "reason": "Reviewed source changed: contracts/AGIJobManager.sol, contracts/ens/ENSJobPages.sol, contracts/periphery/AGIJobPages.sol"
+        "reason": "The production source/configuration file set changed; repeat the review"
+      },
+      {
+        "case": "incomplete retained focused report",
+        "result": "rejected",
+        "reason": "slither-reentrancy.json: review required; new=[], removed=['1afa160c1dbc377bd9b174d8014bccbb5fe931426b88debef19adb4780dbd35a'], changed=[]"
       },
       {
         "case": "source drift contracts/AGIJobManager.sol",
@@ -1183,6 +1328,11 @@
         "reason": "Reviewed source changed: scripts/security/slither-all.config.json"
       },
       {
+        "case": "source drift scripts/security/run-slither-deterministic.py",
+        "result": "rejected",
+        "reason": "Reviewed source changed: scripts/security/run-slither-deterministic.py"
+      },
+      {
         "case": "removed high",
         "result": "rejected",
         "reason": "slither-all.json: review required; new=[], removed=['1afa160c1dbc377bd9b174d8014bccbb5fe931426b88debef19adb4780dbd35a'], changed=[]"
@@ -1203,12 +1353,12 @@
         "reason": "slither-all.json: review required; new=[], removed=[], changed=['1afa160c1dbc377bd9b174d8014bccbb5fe931426b88debef19adb4780dbd35a']"
       }
     ],
-    "fresh_unchanged_runner": {
+    "fresh_corrected_runner": {
       "exit_code": 0,
-      "log_sha256": "6824fd8798a4ef4f1d09baf931f43e4796810011150cfa7dc82b1e2ebbc8636d",
+      "log_sha256": "25e5087246e885f023c6bb040feebcfa3ae8866705a4c9fc0590308334c6810d",
       "reports": {
         "slither-extended.json": "17cf34a4e162060f49fd402680bef4075259d5f6116c0a0d79a44b68023547cf",
-        "slither-reentrancy.json": "c9cd30c1dc5c41612c7a800d966e43ce9f466d6e130ee6b595736e69c1c037ad",
+        "slither-reentrancy.json": "5701380d1abe473dee3d17676f86ae59f46f7e78297ed12a21e8f8ed4400cbea",
         "slither-all.json": "5802d5872bf15a0f900364fdd43779d2a841806fc0dbae4be1cdc58f3f6c58e0"
       }
     }

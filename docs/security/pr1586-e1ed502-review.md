@@ -2,7 +2,7 @@
 
 Reviewed source: `e1ed5027955aeee4c6ac14a8ab4b39b4388b8328` (tree `72a5c5810717ada48281ca493bf3ed856816ecdd`). Comparison source: `6484d09afbba64d7de24cd18ae4dbd246caffd17`, which reproduces the historical v1.18.0 acceptance record.
 
-**Decision for the original commit: NO-GO for deployment/release clearance.** Its mandatory security gate correctly fails because its acceptance record binds earlier source. The source review below supports accepting the candidate's complete static-analysis inventory; it identifies no concrete exploitable Solidity defect requiring a production-code change. The accompanying acceptance change requires its own exact-head CI. It does not turn the original failed workflow green or authorize a Mainnet transaction.
+**Decision for the original commit: NO-GO for deployment/release clearance.** Its mandatory security gate correctly fails because its acceptance record binds earlier source. Independent reproduction also exposes an inherited detector-ordering defect in the focused scanner. The source review below supports accepting the candidate's complete static-analysis inventory; it identifies no concrete exploitable Solidity defect requiring a production-code change. The accompanying scanner correction and acceptance change require their own exact-head CI. They do not turn the original failed workflow green or authorize a Mainnet transaction.
 
 This is an independent re-examination of the available source and analyzer evidence, using automated analysis and focused regressions. It is not an external audit certificate or proof of production commissioning. The previously reported 947 tooling tests, 80 focused tests, five CLI cases and 18 disposable CREATE receipts are separate evidence, not represented here as newly executed checks.
 
@@ -27,7 +27,11 @@ Fresh execution of the unchanged three-scan runner reproduces **every finding fi
 
 These are **122 distinct findings and 163 overlapping report entries**, not 163 independent defects. The high `reentrancy-balance` finding remains explicitly present and reviewed in both the extended and all-detector reports. There are no detector exclusions in the all-detector configuration; dependency, test and legacy finding filters retain their existing scope.
 
-Slither 0.11.6 has an execution-order/shared-context limitation when explicitly selecting multiple reentrancy detectors: its focused report here omits `reentrancy-balance`, although the configuration names that detector. A separate balance-only invocation reproduces the same complete high finding (`1afa160c1dbc377bd9b174d8014bccbb5fe931426b88debef19adb4780dbd35a`). Coverage therefore depends on the mandatory extended and all-detector reports, both of which already retain it. The focused report alone is not evidence of complete reentrancy coverage. No accepted report shape or detector configuration was changed to hide this limitation.
+Slither 0.11.6 has an execution-order/shared-context limitation when explicitly selecting multiple reentrancy detectors: its focused report here omits `reentrancy-balance`, although the configuration names that detector. A separate balance-only invocation reproduces the same complete high finding (`1afa160c1dbc377bd9b174d8014bccbb5fe931426b88debef19adb4780dbd35a`). Six further cached-input runs return **30** focused findings, each exactly the historical 29 plus this same high finding. This is a concrete scan/gate reliability defect, rather than a newly introduced Solidity vulnerability. Fixing a Python string hash seed is insufficient because the unordered set contains detector class objects.
+
+The correction sorts the unchanged selected detector classes by severity and detector argument before invoking Slither's existing CLI. It is used only for the focused invocation; it preserves all selected classes, arguments, compilation inputs and emitted findings. High-impact balance analysis runs before the other reentrancy detectors populate shared analysis context. Both broad scans already use severity ordering and already retain this finding. The wrapper and changed runner are bound into the new acceptance record, and regression tests force adverse selection order and verify complete, deterministic, high-first selection and analyzer-version rejection.
+
+The corrected focused report must contain **all 30 findings**, including the high finding. The resulting acceptance record requires **164 overlapping entries across three reports, still 122 distinct findings**. It rejects the original incomplete 29-entry focused report, rather than accepting either shape or dropping the high finding. Historical 12/29/122 reports and their original gate remain preserved as historical evidence.
 
 The Manager runtime is **24,412 bytes**, 164 bytes below EIP-170; creation bytecode is 27,210 bytes before constructor arguments. ENSJobPages runtime is 15,344 bytes, AGIJobPages 4,212 bytes and AGIReviewEscrow 3,575 bytes. These are compiler artifacts, not new on-chain deployments.
 
@@ -81,16 +85,16 @@ Native USDC implementation/issuer behavior and owner-selected ENS integrations r
 
 ## Validation and acceptance boundary
 
-Fresh local validation:
+Fresh local validation of the exact candidate contracts:
 
 - 96/96 Manager, settlement, ownership, cancellation and adversarial-token cases, including both escrow callback probes.
 - 53/53 governor, metadata routing, ENS hook/helper and ABI cases (six governor cases plus 47 metadata/ENS cases).
 - 27/27 focused Forge security/settlement/timing tests, including 14 fuzz tests at 512 runs each (7,168 fuzz cases), with zero failures or skips.
-- 8/8 compiler compatibility/diagnostic checks and 11/11 existing review-gate parser/tamper tests.
-- The candidate record accepts all 163 entries in both the retained and freshly regenerated reports; a complete fresh execution of the unchanged scanner runner also exits successfully. Source/configuration and finding-drift rejection checks are recorded in the evidence manifest.
+- 8/8 compiler compatibility/diagnostic checks, 11/11 existing review-gate parser/tamper tests and 8/8 new detector-order regressions. The detector-order suite fails when the ordering correction is removed.
+- The original scanner's 12/29/122 findings reproduce the retained artifact exactly. The corrected scanner requires 12/30/122 findings, adding the already-reviewed high finding to focused coverage. A complete fresh corrected-runner execution passes all 164 required entries. Eleven negative checks reject old/incomplete evidence, changed reviewed source (including the wrapper), configuration drift and finding-set/classification drift.
 
 The schema-1 gate continues to bind the production source set and existing source/configuration/patch hashes. The fuller compiler-input and dependency provenance is supplied by this independent reconstruction and its manifest; this change does not claim that the existing verifier enforces every attestation field.
 
-No production Solidity correction was warranted by the reviewed findings. The narrowly scoped change appends this review and compiler evidence, adds the candidate-specific per-finding record and selects that record in the existing verifier. It retains the exact finding-set/severity/confidence/source/configuration/dependency checks and existing report filters. It does not alter scanner commands, remove findings, suppress detectors, weaken a gate, modify prior deployment artifacts or execute Mainnet transactions.
+No production Solidity correction was warranted by the reviewed findings. The narrowly scoped change fixes focused detector ordering with regression tests, appends this review and compiler evidence, and selects a candidate-specific per-finding record. It retains the exact finding-set/severity/confidence/source/configuration/dependency checks and existing report filters, adds the ordering wrapper to the source binding, and increases mandatory focused coverage to include the high finding. It does not remove findings, suppress detectors, weaken a gate, modify prior deployment artifacts or execute Mainnet transactions.
 
 Final exact-head CI and the separate deployment/signing/authority/verification conditions remain required. A static-analysis disposition does not authorize activation or certify paid production outcomes.

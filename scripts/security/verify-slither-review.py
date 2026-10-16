@@ -67,6 +67,7 @@ def verify(output_dir):
         "slither.config.json", "scripts/security/patch-openzeppelin-compiler.cjs",
         "scripts/security/openzeppelin-compiler-patches.json",
         "scripts/security/run-slither.sh", "scripts/security/run-slither-extended.sh",
+        "scripts/security/run-slither-deterministic.py",
     })
     if not isinstance(baseline.get("source_sha256"), dict) or sources != set(baseline["source_sha256"]):
         raise ValueError("The production source/configuration file set changed; repeat the review")
