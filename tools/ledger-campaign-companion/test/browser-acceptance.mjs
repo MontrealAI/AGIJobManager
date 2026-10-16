@@ -15,7 +15,7 @@ const { chromium } = module.default ?? module;
 const version = require(require.resolve('playwright/package.json', { paths: [resolve('scripts/browser-toolchain')] })).version;
 assert.equal(version, '1.62.1', 'EXACT_PLAYWRIGHT_VERSION_REQUIRED');
 const results = [];
-const evidence = { schema: 'ledger-companion-browser-evidence-v1', playwright: version, chromiumSandbox: true, syntheticDeviceOnly: true, physicalAcceptance: 'NOT_PERFORMED', tests: results };
+const evidence = { schema: 'ledger-companion-browser-evidence-v1', playwright: version, chromiumSandbox: true, syntheticDeviceOnly: true, physicalAcceptance: 'NOT_PERFORMED', sourceCommit: /^[a-f0-9]{40}$/.test(process.env.COMPANION_SOURCE_COMMIT ?? '') ? process.env.COMPANION_SOURCE_COMMIT : null, workflowRunId: /^[0-9]+$/.test(process.env.GITHUB_RUN_ID ?? '') ? process.env.GITHUB_RUN_ID : null, tests: results };
 const evidenceDirectory = resolve(process.env.COMPANION_BROWSER_EVIDENCE ?? 'manual-ledger-evidence');
 await mkdir(evidenceDirectory, { recursive: true });
 const directory = await mkdtemp(resolve(tmpdir(), 'companion-browser-'));
@@ -138,7 +138,7 @@ try {
 } catch { evidence.harness = 'FAIL'; process.exitCode = 1; }
 finally {
   await browser?.close(); await new Promise(resolve => server ? server.close(resolve) : resolve()); await rm(directory,{recursive:true,force:true});
-  evidence.status = evidence.launch !== 'PASS' ? 'BLOCKED' : results.every(value => value.status==='PASS') && evidence.harness!=='FAIL' ? 'PASS' : 'FAIL';
+  evidence.status = evidence.harness==='FAIL' ? 'FAIL' : evidence.launch !== 'PASS' ? 'BLOCKED' : results.every(value => value.status==='PASS') ? 'PASS' : 'FAIL';
   evidence.passCount = results.filter(value => value.status==='PASS').length; evidence.failCount = results.filter(value => value.status==='FAIL').length;
   await writeFile(resolve(evidenceDirectory,'browser-acceptance.json'),`${JSON.stringify(evidence,null,2)}\n`);
   process.stdout.write(`Browser acceptance ${evidence.status}: ${evidence.passCount} passed, ${evidence.failCount} failed; physical acceptance NOT_PERFORMED.\n`);

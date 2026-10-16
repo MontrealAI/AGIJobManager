@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { Wallet, Transaction, keccak256 } from 'ethers';
 import manager, { MANAGER_SUPPORTED } from '../coordinators/manager.mjs';
 import alpha, { ALPHA_SUPPORTED } from '../coordinators/alpha.mjs';
-import { comparePacket, validateSignedRaw, reviewedOperation } from '../coordinators/common.mjs';
+import { comparePacket, validateSignedRaw, reviewedOperation, runtime, sha256, cleanEnvironment } from '../coordinators/common.mjs';
 import { policyDigest, validateIntent } from '../src/envelope.mjs';
 
 const wallet = Wallet.createRandom(), envelope = { type: 2, chainId: 1, from: wallet.address, nonce: 7, to: null, data: '0x60006000f3', value: '0', gasLimit: '8000000', maxFeePerGas: '10000000000', maxPriorityFeePerGas: '1000000000', accessList: [] };
@@ -27,6 +28,18 @@ test('Alpha allowlist binds actual published d69 head rather than stale PR prose
 });
 test('Only numeric in-range step indexes are accepted before filesystem or subprocess work', () => {
   for (const step of [-1, 9, 1.5, '0', null]) assert.throws(() => reviewedOperation({}, MANAGER_SUPPORTED, 9, step), /UNSUPPORTED_OPERATION_INDEX/);
+});
+test('Child runtime requires an explicit supported version and exact independently selected executable hash', () => {
+  const nodePath = fs.realpathSync(process.execPath), nodeVersion = MANAGER_SUPPORTED.nodeVersions[0];
+  assert.throws(() => runtime({ nodePath }, MANAGER_SUPPORTED), /REVIEWED_NODE_RUNTIME_PIN_REQUIRED/);
+  assert.throws(() => runtime({ nodePath, nodeVersion: '0.0.0', nodeSha256: 'a'.repeat(64) }, MANAGER_SUPPORTED), /REVIEWED_NODE_RUNTIME_PIN_REQUIRED/);
+  assert.throws(() => runtime({ nodePath, nodeVersion, nodeSha256: 'a'.repeat(64) }, MANAGER_SUPPORTED), /NODE_EXECUTABLE_HASH_MISMATCH/);
+  if (process.versions.node === nodeVersion) runtime({ nodePath, nodeVersion, nodeSha256: sha256(fs.readFileSync(nodePath)) }, MANAGER_SUPPORTED);
+});
+test('Explorer API credential is not inherited by coordinator subprocess environments', () => {
+  const previous = process.env.ETHERSCAN_API_KEY; process.env.ETHERSCAN_API_KEY = 'SYNTHETIC-REDACTION-TEST';
+  try { assert.equal(Object.hasOwn(cleanEnvironment(), 'ETHERSCAN_API_KEY'), false); }
+  finally { if (previous === undefined) delete process.env.ETHERSCAN_API_KEY; else process.env.ETHERSCAN_API_KEY = previous; }
 });
 test('Genuine packet identity and exact independently reviewed unsigned envelope are all required', () => {
   comparePacket(packet, checked, MANAGER_SUPPORTED, 0);

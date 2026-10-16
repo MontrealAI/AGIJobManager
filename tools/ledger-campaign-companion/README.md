@@ -10,7 +10,7 @@ This review candidate adds a local English/French campaign dashboard, an isolate
 |---|---|---|---|
 | Manager | MontrealAI/AGIJobManager, commit `eb6f725e0b40ac81e50a374304e54a5ff6859fcf`, tree `73347842e4a81767ef14686a607b7aceb4f5d70c` (PR #1587 correction on #1586) | Private JSON `{raw}` | Nine core CREATEs |
 | Alpha | MontrealAI/AGI-Alpha-Agent-v0, commit `d69cdd3ddc0f36933d07f0f64abfe15e742bf68c` | Private raw transaction text | Five CREATEs and two existing governor bindings |
-| Jobs | MontrealAI/AGIJobs, merged candidate `fed83bc183753e871621fc1cb3aa8510bd38f642` | Unsupported | Read-only inventory and refusal |
+| Jobs | MontrealAI/AGIJobsv0, merged candidate `fed83bc183753e871621fc1cb3aa8510bd38f642` | Unsupported | Read-only inventory and refusal |
 
 Unknown revisions and packet schemas fail closed. Manager #1586's uncorrected `3c974ad3cb1d828e5c89464fd8424d8ae853d9dd` is an inspected candidate, not this adapter's supported operational source. Owner changes require a new frozen revision and qualification. Previous constructor evidence cannot certify new source.
 

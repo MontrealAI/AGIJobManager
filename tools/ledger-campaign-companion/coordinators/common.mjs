@@ -31,7 +31,7 @@ export function privateWrite(dir, value, extension = '.json', selectedName) {
   return file;
 }
 export function cleanEnvironment(config = {}) {
-  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^(GIT_|NODE_|ALPHA_|MANAGER_|DEPLOYMENT_LOCK_DIRECTORY|HARDHAT_|HTTPS?_PROXY|ALL_PROXY|SSL_CERT_)/i.test(key)));
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => key !== 'ETHERSCAN_API_KEY' && !/^(GIT_|NODE_|ALPHA_|MANAGER_|DEPLOYMENT_LOCK_DIRECTORY|HARDHAT_|HTTPS?_PROXY|ALL_PROXY|SSL_CERT_)/i.test(key)));
   Object.assign(env, { GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_SYSTEM: '/dev/null', GIT_CONFIG_GLOBAL: '/dev/null', GIT_NO_REPLACE_OBJECTS: '1', GIT_NO_LAZY_FETCH: '1', GIT_OPTIONAL_LOCKS: '0', GIT_TERMINAL_PROMPT: '0' });
   if (config.extraCaCertificates) env.NODE_EXTRA_CA_CERTS = config.extraCaCertificates;
   return env;

@@ -22,6 +22,13 @@ test('intent and signing marker are durable before packet response; duplicate pr
   assert.equal(saved.state.steps[0].state, 'signing-requested'); assert.ok(saved.state.steps[0].signingRequestedAt);
   await assert.rejects(f.engine.prepare({ step: 0 }), { code: 'READ_ONLY_RECOVERY_REQUIRED' }); assert.equal(f.calls.prepare, 1);
 });
+test('genuine adapter enriched validated intent is normalized to the exact four-field browser packet', async t => {
+  const f = await fixture(t); await f.engine.close();
+  const { validateIntent } = await import('../src/envelope.mjs'), original = f.adapter;
+  const adapter = Object.freeze({ ...original, async prepare(args) { const result = await original.prepare(args); return { ...result, prepared: validateIntent(result.prepared.unsignedHex, result.prepared.expectedUnsignedHash, result.prepared.review, result.prepared.expectedPolicyHash, fixtureTime) }; } });
+  const engine = await createCampaignEngine({ ...f.options, adapter });
+  try { const result = await engine.prepare({ step: 0 }); assert.deepEqual(Object.keys(result.prepared).sort(), ['expectedPolicyHash','expectedUnsignedHash','review','unsignedHex']); } finally { await engine.close(); }
+});
 test('signed capability is private durable before genuine import and never in public status/report', async t => {
   const f = await fixture(t); const prepared = await f.engine.prepare({ step: 0 }), cap = signedFixture(prepared.prepared);
   const result = await f.engine.importSigned({ step: 0, operationId: prepared.operationId, capability: cap });

@@ -10,7 +10,9 @@ import assert from 'node:assert/strict';
 import { Wallet, Transaction, keccak256 } from 'ethers';
 import { createAlphaAdapter, ALPHA_SUPPORTED } from '../coordinators/alpha.mjs';
 import { execute, observeSource, sha256, canonical, privateWrite, readJson } from '../coordinators/common.mjs';
-import { policyDigest } from '../src/envelope.mjs';
+import { policyDigest, attachAndValidateSignature } from '../src/envelope.mjs';
+import { prepareVerificationTask } from '../verification/explorer.mjs';
+import { createCampaignEngine } from '../bridge/campaign-engine.mjs';
 
 const root = process.env.ALPHA_ACCEPT_CHECKOUT, output = process.env.ALPHA_ACCEPT_REPORT;
 assert.ok(root && path.isAbsolute(root) && output && path.isAbsolute(output));
@@ -23,9 +25,9 @@ const report = { schema: 'manual-ledger-genuine-alpha-adapter-acceptance-v1', so
   scope: 'Unforked disposable Osaka, synthetic keys and mock dependencies, normal child-scoped local TLS, finalized=latest; not physical Ledger/public-provider/finality qualification',
   hardware: false, publicProvider: false, oldDeploymentTransactions: 0, activationAllowed: false, checks: [], operations: [] };
 const companionRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const codeHashes = () => Object.fromEntries(['coordinators/common.mjs', 'coordinators/alpha.mjs', 'scripts/accept-alpha-coordinator.mjs'].map(name => [name, sha256(fs.readFileSync(path.join(companionRoot, name)))]));
+const codeHashes = () => Object.fromEntries(['coordinators/common.mjs', 'coordinators/alpha.mjs', 'verification/configuration.mjs', 'verification/explorer.mjs', 'bridge/campaign-engine.mjs', 'bridge/private-store.mjs', 'scripts/accept-alpha-coordinator.mjs'].map(name => [name, sha256(fs.readFileSync(path.join(companionRoot, name)))]));
 report.acceptanceCodeSha256 = codeHashes();
-let server, stage = 'fixture', relayCalls = 0, readCalls = 0, loseResponse = false;
+let server, engine, stage = 'fixture', relayCalls = 0, readCalls = 0, loseResponse = false;
 const check = name => report.checks.push(name);
 try {
   const native = sourceRequire(path.join(root, 'tests/contracts/authority-test/clean-checkout-cli.cjs')), { certificate, key } = native.createFixtureCertificate(privateRoot);
@@ -78,27 +80,32 @@ try {
     return { operationId: review.operationId, unsignedHex, expectedUnsignedHash, expectedPolicyHash: policyDigest(review, expectedUnsignedHash), review };
   });
   const campaign = { expiresAt, reviewedManifest: { source: { repository: ALPHA_SUPPORTED.repository, commit: ALPHA_SUPPORTED.commit, tree: ALPHA_SUPPORTED.tree }, sourceSha256, planSha256: plan.payloadSha256, operations }, coordinator };
+  Object.assign(campaign, { format: 'manual-ledger-campaign-v1', campaignId: 'synthetic-alpha-acceptance', adapter: 'alpha', packetSchema: ALPHA_SUPPORTED.packetSchema, network: { chainId: '1' }, route: { token: plan.config.dependencies.token.address, symbol: 'AGIALPHA', decimals: 18 }, actors: { creator: creator.address, governor: governor.address, feeRecipients: [], treasuries: [] }, maxTotalFeeWei: envelopes.reduce((sum, envelope) => sum + BigInt(envelope.gasLimit) * BigInt(envelope.maxFeePerGas), 0n).toString(),
+    operations: operations.map((operation, index) => ({ index, account: index < 5 ? 'creator' : 'governor', destination: envelopes[index].to || 'CREATE', dependsOn: index ? [index - 1] : [] })), relayPolicy: { enabled: true, acknowledgementMode: 'EXACT_COORDINATOR_PER_STEP' } });
   let adapter = createAlphaAdapter(); assert.equal(adapter.inspectCampaign(campaign).route.decimals, 18); check('Actual sealed plan supplies separate AGIALPHA route and creator/governor roles');
+  engine = await createCampaignEngine({ campaign, adapter, privateDirectory: path.join(privateRoot, 'bridge'), relayEnabled: true });
   for (let step = 0; step < 7; step++) {
     stage = `operation-${step}`; const operationId = operations[step].operationId, before = relayCalls;
-    const prepared = await adapter.prepare({ campaign, step, privateDir: privateRoot }); assert.equal(relayCalls, before); assert.equal(prepared.prepared.unsignedHex, operations[step].unsignedHex);
+    const prepared = step === 0 ? await engine.prepare({ step }) : await adapter.prepare({ campaign, step, privateDir: privateRoot }); assert.equal(relayCalls, before); assert.equal(prepared.prepared.unsignedHex, operations[step].unsignedHex);
     if (step === 0) {
       await assert.rejects(adapter.prepare({ campaign, step, privateDir: privateRoot }), /RECOVERY_REQUIRED_EXISTING_SIGNING_INTENT/); check('Duplicate signing request stops on existing durable intent');
       const wrong = await Wallet.createRandom().signTransaction(Transaction.from(prepared.prepared.unsignedHex));
       await assert.rejects(adapter.importSigned({ campaign, step, operationId, raw: wrong, privateDir: privateRoot }), /SIGNED_CAPABILITY_MISMATCH/); check('Wrong actual account fails before any coordinator import');
     }
     const signer = step < 5 ? creator : governor, raw = await signer.signTransaction(Transaction.from(prepared.prepared.unsignedHex));
-    const imported = await adapter.importSigned({ campaign, step, operationId, raw, privateDir: privateRoot }); assert.equal(imported.transactionHash, keccak256(raw));
-    if (step === 0) { loseResponse = true; await assert.rejects(adapter.relayOne({ campaign, step, operationId, acknowledgement: imported.acknowledgement, privateDir: privateRoot })); }
+    const imported = step === 0 ? await engine.importSigned({ step, operationId, capability: attachAndValidateSignature(prepared.prepared, Transaction.from(raw).signature) }) : await adapter.importSigned({ campaign, step, operationId, raw, privateDir: privateRoot }); assert.equal(imported.transactionHash, keccak256(raw));
+    if (step === 0) { loseResponse = true; await assert.rejects(engine.relayOne({ step, operationId, acknowledgement: imported.acknowledgement })); }
     else await adapter.relayOne({ campaign, step, operationId, acknowledgement: imported.acknowledgement, privateDir: privateRoot });
-    await assert.rejects(adapter.relayOne({ campaign, step, operationId, acknowledgement: imported.acknowledgement, privateDir: privateRoot }));
-    const sent = relayCalls, observed = await adapter.observe({ campaign, step, operationId, privateDir: privateRoot }); assert.equal(observed.verified, true); assert.equal(relayCalls, sent);
+    if (step === 0) await assert.rejects(engine.relayOne({ step, operationId, acknowledgement: imported.acknowledgement })); else await assert.rejects(adapter.relayOne({ campaign, step, operationId, acknowledgement: imported.acknowledgement, privateDir: privateRoot }));
+    const sent = relayCalls, observed = step === 0 ? await engine.observe({ step, operationId }) : await adapter.observe({ campaign, step, operationId, privateDir: privateRoot }); assert.equal(observed.verified, true); assert.equal(relayCalls, sent);
     report.operations.push({ step, operationId, transactionHash: imported.transactionHash, status: observed.state, approvingRole: step < 5 ? 'synthetic-creator' : 'synthetic-governor' });
     console.log(`Alpha disposable operation ${step + 1}/7 verified.`);
+    if (step === 0) { await engine.close(); engine = null; report.genuineEngineFacadeOperations = 1; check('Actual engine facade persists signing request and full capability before exact coordinator relay/recovery'); }
     if (step === 5) { adapter = createAlphaAdapter(); check('New adapter instance resumes genuine durable session after binding one'); }
   }
   assert.equal(relayCalls, 7); check('Seven exact one-shot relays; lost response and duplicate calls never cause resubmission');
   const exported = await adapter.exportVerification({ campaign, step: 6, privateDir: privateRoot }); assert.equal(exported.tasks.length, 5); check('Genuine receipt-proven exporter revalidates all five creations and both governor bindings');
+  for (const task of exported.tasks) prepareVerificationTask(task); report.explorerOfflineTasksValidated = exported.tasks.length; check('All five genuine exported tasks accepted by strict explorer package validator without service calls');
   assert.deepEqual(fs.readdirSync(coordinator.lockDirectory), []); check('Both actual sender locks released only after complete durable verified result');
   report.rawRelayRequests = relayCalls; report.readOnlyRequests = readCalls; report.passed = true; report.completedAt = new Date().toISOString();
   assert.deepEqual(codeHashes(), report.acceptanceCodeSha256, 'Acceptance implementation changed during its own run');
@@ -106,4 +113,4 @@ try {
 } catch (error) {
   if (process.env.ALPHA_ACCEPT_PRIVATE_FAILURE) fs.writeFileSync(process.env.ALPHA_ACCEPT_PRIVATE_FAILURE, String(error.stack), { mode: 0o600 });
   report.passed = false; report.failure = { stage, code: error.code || 'ACCEPTANCE_STOPPED' }; fs.writeFileSync(output, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' }); console.error('Alpha genuine adapter acceptance stopped.'); process.exitCode = 1;
-} finally { if (server) await new Promise(resolve => server.close(resolve)); fs.rmSync(privateRoot, { recursive: true, force: true }); }
+} finally { if (engine) await engine.close(); if (server) await new Promise(resolve => server.close(resolve)); fs.rmSync(privateRoot, { recursive: true, force: true }); }
