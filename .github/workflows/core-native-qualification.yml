@@ -37,7 +37,7 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       HARNESS_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
-      HARNESS_PINS_SHA256: 96bb724f33ceccbf5863cba38688c1f6b0fc2e91ac54d348f5e418fd6bc36223
+      HARNESS_PINS_SHA256: 56bbf6821fd5327c8e0f67a49f4a5ebd8f6a2e06125f9158541151e542fccae7
     steps:
       - name: Check out the separately reviewed harness revision
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803

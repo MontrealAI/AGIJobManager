@@ -297,7 +297,7 @@ def source_gate(root, harness, env, logs, label, launcher=launch):
     receipt = strict_json(data)
     for key, value in {'profile': PROFILE, 'status': 'CLEAN_SOURCE_BOUNDARIES_PASSED',
             'releaseQualified': False, 'mode': 'bound', 'sourceCommit': TARGET, 'sourceTree': TREE,
-            'compilerSourceUnits': 91, 'manifestSha256': '7aced0aee4c2161f92fa507809a5084d0a7ab13e52ead31d95c916ee00f2e973'}.items():
+            'compilerSourceUnits': 91, 'manifestSha256': 'f1a2a9a9f902807cc4fd2f57665f03fedcd2e745b445abe15e517953fa5189d1'}.items():
         require(type(receipt.get(key)) is type(value) and receipt.get(key) == value, 'Invalid source selection receipt: ' + key)
     require(receipt.get('localUnqualifiedMounts') == [], 'Source has unqualified local mounts')
     return {'label': label, 'sha256': sha(data), 'receipt': receipt}

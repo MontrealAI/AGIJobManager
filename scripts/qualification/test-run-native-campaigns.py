@@ -129,6 +129,70 @@ def complete_fixture(base):
     return root, source, runner, node, report, copy.deepcopy(expected)
 
 
+# Retained actual d371 selector stdout from hosted run38952907970/job117148482284.
+# Timestamp-stripped standalone receipt matches the failed wrapper's recorded
+# before-full stdout SHA256 exactly. Replaying it is a receipt-level regression,
+# not a fresh selector execution or native qualification.
+ACTUAL_D371_SELECTOR_RECEIPT = b'{\n  "compilerSourceUnits": 91,\n  "inputs": 1427,\n  "localUnqualifiedMounts": [],\n  "manifestSha256": "f1a2a9a9f902807cc4fd2f57665f03fedcd2e745b445abe15e517953fa5189d1",\n  "mode": "bound",\n  "profile": "manager-explicit-governor-v1",\n  "releaseQualified": false,\n  "reviewedChanges": [\n    "docs/DEPLOYMENT_CONFIGURATION.md",\n    "docs/REPO_MAP.md",\n    "docs/deployment/core-external-signing.md",\n    "docs/deployment/direct-origination-profile.md",\n    "docs/qualification/CORE_SESSION_NATIVE.md",\n    "docs/qualification/history/expected-mainnet-cutover-v1.18.0.json",\n    "docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json",\n    "docs/qualification/history/next-deployment-contract-changes-v1.18.0.json",\n    "forge-test/harness/AGIJobManagerHarness.sol",\n    "forge-test/unit/AGIJobManagerSecurityVerification.t.sol",\n    "forge-test/unit/AGIJobManagerV091Security.t.sol",\n    "hardhat/.env.example",\n    "hardhat/scripts/actor-policy.cjs",\n    "hardhat/scripts/core-creation-plan.cjs",\n    "hardhat/scripts/core-creation-verifier.cjs",\n    "hardhat/scripts/core-session.cjs",\n    "hardhat/scripts/deployment-session.cjs",\n    "hardhat/scripts/export-verification-package.cjs",\n    "hardhat/scripts/operator-paths.cjs",\n    "hardhat/test/core-session-docs.test.cjs",\n    "hardhat/test/core-session-output.test.cjs",\n    "hardhat/test/core-session-revalidation.test.cjs",\n    "hardhat/test/core-session.test.js",\n    "hardhat/test/direct-origin-policy.test.cjs",\n    "hardhat/test/direct-origin-trace.test.js",\n    "hardhat/test/helpers/native-core-rpc.cjs",\n    "hardhat/test/native-core-session.test.cjs",\n    "hardhat/test/operator-private-state.regression.test.cjs",\n    "hardhat/test/source-qualification.test.cjs",\n    "schemas/explicit-governor-source-v1.schema.json",\n    "scripts/docs/generate-repo-map.mjs",\n    "scripts/qualification/core-session-native.mjs",\n    "scripts/qualification/prepare-core-catalog.mjs",\n    "scripts/release/check-explicit-governor-boundaries.py",\n    "scripts/release/check-source-boundaries.py",\n    "scripts/release/test-source-boundary-dispatch.py"\n  ],\n  "sourceCommit": "d371d95cfcc44b9133cda4bba55304f727917f18",\n  "sourceTree": "93faf6e9a6875026c1eb9bc2f0f9bdada308d296",\n  "status": "CLEAN_SOURCE_BOUNDARIES_PASSED"\n}\n'
+
+
+class SourceSelectionReceipt(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix='source-selection-receipt-')
+        self.root = Path(self.temp.name)
+        self.calls = []
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def check(self, data, exit_code=0, timed_out=False):
+        def launcher(command, cwd, env, log_base, timeout):
+            self.calls.append(command)
+            put(log_base.parent, log_base.name + '.stdout.raw.log', data)
+            put(log_base.parent, log_base.name + '.stderr.raw.log', b'')
+            return {'exitCode': exit_code, 'timedOut': timed_out}
+        return M.source_gate(self.root, HARNESS, {}, self.root, 'before-full', launcher)
+
+    def test_actual_d371_receipt_passes_real_source_gate(self):
+        self.assertEqual(M.sha(ACTUAL_D371_SELECTOR_RECEIPT), '65747f8a0e12ff305d6c303038159ec33650d5ff0e6e71b4857444d2012822ae')
+        result = self.check(ACTUAL_D371_SELECTOR_RECEIPT)
+        target = json.loads((HARNESS / 'config/reviewed-d371-target.json').read_text())
+        for field in ('sourceCommit', 'sourceTree', 'manifestSha256'):
+            self.assertEqual(result['receipt'][field], target[field])
+        self.assertEqual(result['sha256'], M.sha(ACTUAL_D371_SELECTOR_RECEIPT))
+        command = self.calls[0]
+        self.assertEqual(command[command.index('--target-manifest-sha256') + 1], M.sha((HARNESS / 'config/reviewed-d371-target.json').read_bytes()))
+        self.assertEqual(command[command.index('--review-binding-sha256') + 1], M.sha((HARNESS / 'config/d371-source-review-binding.json').read_bytes()))
+
+    def test_predecessor_c2_manifest_is_rejected(self):
+        receipt = json.loads(ACTUAL_D371_SELECTOR_RECEIPT)
+        receipt['manifestSha256'] = '7aced0aee4c2161f92fa507809a5084d0a7ab13e52ead31d95c916ee00f2e973'
+        with self.assertRaisesRegex(M.CampaignError, 'Invalid source selection receipt: manifestSha256'):
+            self.check(encoded(receipt))
+
+    def test_every_checked_identity_and_type_stays_fail_closed(self):
+        changes = {'profile': 'legacy-v114', 'status': 'PASS', 'releaseQualified': True,
+            'mode': 'staged', 'sourceCommit': 'c2f72180d2f0d6ecd5b92d8e5197c5344be2c699',
+            'sourceTree': '8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f', 'compilerSourceUnits': '91',
+            'manifestSha256': '0' * 64}
+        for field, value in changes.items():
+            with self.subTest(field=field):
+                receipt = json.loads(ACTUAL_D371_SELECTOR_RECEIPT); receipt[field] = value
+                with self.assertRaisesRegex(M.CampaignError, 'Invalid source selection receipt: ' + field):
+                    self.check(encoded(receipt))
+
+    def test_unqualified_mount_remains_rejected(self):
+        receipt = json.loads(ACTUAL_D371_SELECTOR_RECEIPT); receipt['localUnqualifiedMounts'] = ['foreign']
+        with self.assertRaisesRegex(M.CampaignError, 'unqualified local mounts'):
+            self.check(encoded(receipt))
+
+    def test_failed_or_timed_out_selector_cannot_supply_valid_receipt(self):
+        for code, timeout in ((1, False), (0, True)):
+            with self.subTest(code=code, timed_out=timeout):
+                with self.assertRaisesRegex(M.CampaignError, 'Bound source selector failed'):
+                    self.check(ACTUAL_D371_SELECTOR_RECEIPT, code, timeout)
+
+
 class SyntheticBoundaries(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix='native-wrapper-boundary-')
@@ -410,9 +474,7 @@ class SyntheticBoundaries(unittest.TestCase):
                 self.assert_rejected(lambda: M.verify_pins(HARNESS, path, M.sha(path.read_bytes())))
 
     def test_mocked_selector_receipt_negative_groups(self):
-        baseline = {'profile': M.PROFILE, 'status': 'CLEAN_SOURCE_BOUNDARIES_PASSED', 'releaseQualified': False,
-            'mode': 'bound', 'sourceCommit': M.TARGET, 'sourceTree': M.TREE, 'compilerSourceUnits': 91,
-            'manifestSha256': '7aced0aee4c2161f92fa507809a5084d0a7ab13e52ead31d95c916ee00f2e973', 'localUnqualifiedMounts': []}
+        baseline = json.loads(ACTUAL_D371_SELECTOR_RECEIPT)
         variants = [('positive-wiring', None, None), ('staged', 'mode', 'staged'), ('wrong-source', 'sourceCommit', '1' * 40),
             ('wrong-tree', 'sourceTree', '1' * 40), ('unqualified-mount', 'localUnqualifiedMounts', ['source-probe']),
             ('missing-compiler-unit', 'compilerSourceUnits', 90), ('wrong-manifest', 'manifestSha256', '0' * 64),
