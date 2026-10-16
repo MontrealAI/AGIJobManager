@@ -1,0 +1,220 @@
+{
+  "schema": "agijobmanager-hosted-qualification-readback-v1",
+  "recordedAt": "2026-10-16T20:26:32.023504+00:00",
+  "scope": "Complete selected hosted disposable functional campaigns; production plan and manual wallet acceptance remain separate.",
+  "workflow": {
+    "runId": 38958922414,
+    "runAttempt": 1,
+    "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/38958922414",
+    "status": "completed",
+    "conclusion": "success",
+    "requiredCampaignOutcomeGate": "Require both complete guarded campaign outcomes: success"
+  },
+  "productionSource": {
+    "commit": "d371d95cfcc44b9133cda4bba55304f727917f18",
+    "tree": "93faf6e9a6875026c1eb9bc2f0f9bdada308d296",
+    "rootLockSha256": "cdd3b46e8de3be61efb0a60648eb1915f8127db0ed2ea01eb69cf2b6898e18f0",
+    "hardhatLockSha256": "ebdb3e307e42e6ea0739451252f2606789cdc9f47a21044dea095f6ab4b5638a"
+  },
+  "separateHarness": {
+    "commit": "d95372bc79a7a08baf5b7b659d4e97226e96e3b4",
+    "parents": [
+      "233b11dfe63ec53f81602faee8a1d08235b3f6bb"
+    ],
+    "tree": "b0555112f0ef256e0c46ebc36ddd2807fd763647"
+  },
+  "artifact": {
+    "id": 12071534584,
+    "name": "manager-d371-native-functional-d95372bc79a7a08baf5b7b659d4e97226e96e3b4",
+    "sizeInBytes": 5792983,
+    "sha256": "3e8f6245e82510a3a98b4e39c4ffd023870739cdabfcd670edadc6d6953a12e6",
+    "downloadedArchiveHashMatched": true,
+    "memberInventories": [
+      {
+        "inventory": "manager-d371-native-full/shareable/campaign-summary.SHA256SUMS",
+        "entriesMatched": 1,
+        "failures": []
+      },
+      {
+        "inventory": "manager-d371-native-full/shareable/full/SHA256SUMS",
+        "entriesMatched": 1544,
+        "failures": []
+      },
+      {
+        "inventory": "manager-d371-native-full/shareable/full/scenarios/delegated-eoa-nine-create/verification/SHA256SUMS",
+        "entriesMatched": 30,
+        "failures": []
+      },
+      {
+        "inventory": "manager-d371-native-full/shareable/full/scenarios/empty-eoa-nine-create/verification/SHA256SUMS",
+        "entriesMatched": 30,
+        "failures": []
+      },
+      {
+        "inventory": "manager-d371-native-marker/shareable/campaign-summary.SHA256SUMS",
+        "entriesMatched": 1,
+        "failures": []
+      },
+      {
+        "inventory": "manager-d371-native-marker/shareable/marker/SHA256SUMS",
+        "entriesMatched": 554,
+        "failures": []
+      },
+      {
+        "inventory": "manager-d371-native-marker/shareable/marker/scenarios/marker-eoa-nine-create/verification/SHA256SUMS",
+        "entriesMatched": 30,
+        "failures": []
+      }
+    ]
+  },
+  "campaigns": [
+    {
+      "suite": "full",
+      "label": "deployment-and-recovery",
+      "counts": {
+        "cases": 96,
+        "passed": 96,
+        "failed": 0,
+        "commands": 355,
+        "positiveCoreReceipts": 18
+      },
+      "report": "manager-d371-native-full/shareable/full/report.json",
+      "reportSha256": "7c70c2a0173f3f138852d1ce6fe54aec6e1207247c5eed72073c6e3449fadd85",
+      "reportStatus": "PASS_IMPLEMENTED_CASES",
+      "summarySha256": "48ef18ad1aeaf74b82a47dcc237fda20850d04417392d9afc634a94c97c9f3de",
+      "summaryStatus": "PASS_SELECTED_FUNCTIONAL_CAMPAIGNS",
+      "selectedCampaignsComplete": true,
+      "reportedFunctionalCampaignsComplete": false,
+      "process": {
+        "elapsedSeconds": 394.995,
+        "exitCode": 0,
+        "timedOut": false
+      },
+      "reportedAcceptanceComplete": false,
+      "reportedNativeCLIQualified": false,
+      "limitations": {
+        "localOnly": true,
+        "syntheticDelegatedEvidence": true,
+        "eip1898AdapterUsed": true,
+        "finalizedMappedToLatest": true,
+        "publicProviderQualified": false,
+        "actualWalletQualified": false,
+        "historical6c8DelegateQualified": false,
+        "explorerAcceptanceObserved": false,
+        "configurationAuthorized": false,
+        "activationAuthorized": false,
+        "externalIndependentAudit": "OWNER_ACCEPTED_OMISSION_NOT_PASS",
+        "sepolia": "OWNER_ACCEPTED_OMISSION_NOT_PASS"
+      }
+    },
+    {
+      "suite": "marker",
+      "label": "account-profile",
+      "counts": {
+        "cases": 30,
+        "passed": 30,
+        "failed": 0,
+        "commands": 118,
+        "positiveCoreReceipts": 9
+      },
+      "report": "manager-d371-native-marker/shareable/marker/report.json",
+      "reportSha256": "b72a8240ac26e250b45c097beed526b028af8c54f9aaa8c16cd1bedc05bd87d4",
+      "reportStatus": "PASS_IMPLEMENTED_CASES",
+      "summarySha256": "aa57f33e906915a88e95ec2ea0a72b40fd4c2f1a040bc4b477bcca9110421c42",
+      "summaryStatus": "PASS_SELECTED_FUNCTIONAL_CAMPAIGNS",
+      "selectedCampaignsComplete": true,
+      "reportedFunctionalCampaignsComplete": false,
+      "process": {
+        "elapsedSeconds": 127.271,
+        "exitCode": 0,
+        "timedOut": false
+      },
+      "reportedAcceptanceComplete": false,
+      "reportedNativeCLIQualified": false,
+      "limitations": {
+        "localOnly": true,
+        "syntheticDelegatedEvidence": true,
+        "syntheticMarkerInputEvidence": true,
+        "markerInitialStateTestOnly": true,
+        "independentConsensusReviewEstablished": false,
+        "keyCustodyEstablished": false,
+        "eip1898AdapterUsed": true,
+        "finalizedMappedToLatest": true,
+        "publicProviderQualified": false,
+        "actualWalletQualified": false,
+        "historical6c8DelegateQualified": false,
+        "explorerAcceptanceObserved": false,
+        "configurationAuthorized": false,
+        "activationAuthorized": false,
+        "externalIndependentAudit": "OWNER_ACCEPTED_OMISSION_NOT_PASS",
+        "sepolia": "OWNER_ACCEPTED_OMISSION_NOT_PASS"
+      }
+    }
+  ],
+  "combinedObservedTotals": {
+    "cases": 126,
+    "passed": 126,
+    "failed": 0,
+    "commands": 473,
+    "positiveCoreReceipts": 27
+  },
+  "hostedBuild": {
+    "catalogSha256": "5f7d6e265bf74780b156d54e2466f9b02175c01110fa779ab0a3037d6861ce4d",
+    "buildId": "reviewed-core-d371",
+    "buildDigest": "e0965c57b18ace72bb9081b29976098fcc8f08b58ddd1005876d7696aeeb622d",
+    "inputSha256": "5cf1c87cab0fb6c0b0ad184c18d882522c51ad9da020aa41ea6ef8296fdc4f48",
+    "outputSha256": "725fccf4df13f8890250b6df9b085c5b4f87cf0ee5b3129c9cf55991c88a6105",
+    "compiler": {
+      "version": "0.8.37",
+      "longVersion": "0.8.37+commit.f401782d"
+    },
+    "tools": {
+      "node": "v22.23.2",
+      "ethers": "6.17.0",
+      "solc": "0.8.37+commit.f401782d.Emscripten.clang",
+      "hardhat": "3.17.0",
+      "openssl": "OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)"
+    }
+  },
+  "manualBroadcastRecoveryEvidence": {
+    "case": "hashless-external-broadcast-recovered-by-canonical-sender-nonce",
+    "status": "PASS",
+    "commandSequences": [
+      228,
+      229,
+      230,
+      231,
+      232,
+      233
+    ],
+    "nativeCommandStages": [
+      "plan",
+      "start",
+      "handoff",
+      "recover",
+      "reconcile"
+    ],
+    "externalDisposableSigningAndBroadcast": true,
+    "nativeRawSignatureImportRequiredInCase": false,
+    "nativeRelayUsedInCase": false,
+    "physicalLedgerOrMetaMaskAcceptanceProvenByCase": false,
+    "completeNineOperationManualWalletRouteProvenByCase": false
+  },
+  "decision": {
+    "managerHostedFunctionalCampaigns": "PASS",
+    "productionPlanComplete": false,
+    "physicalMacLedgerRouteAccepted": false,
+    "productionProviderAccepted": false,
+    "liveExplorerAcceptanceObserved": false,
+    "actualHistorical6c8DelegateQualified": false,
+    "liveAuthorityFinalizationComplete": false,
+    "mainnetTransactionsAuthorized": false,
+    "configurationAuthorized": false,
+    "activationAuthorized": false,
+    "externalAudit": "OWNER_ACCEPTED_OMISSION_NOT_PASS",
+    "sepolia": "OWNER_ACCEPTED_OMISSION_NOT_PASS",
+    "rawSignatureExportRequiredForEquivalentVerifiedManualWalletRoute": false,
+    "optionalCompanionRequiredForEquivalentVerifiedManualWalletRoute": false,
+    "nativeAcceptanceFlagsChanged": false
+  }
+}
