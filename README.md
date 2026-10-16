@@ -42,6 +42,10 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 **En français :** l’intégration ENS est vérifiée dans le relevé daté, mais l’ouverture des travaux payants reste suspendue. Ce relevé ne constitue ni un état en temps réel ni une autorisation de paiement.
 
+## Ideas behind the work
+
+[Read four selected essays](https://montrealai.github.io/AGIJobManager/#reading) on choosing workers, public work history and delivery evidence. Each article links to its current guide. [Reading notes and version context](docs/READING.md) · Articles en anglais, résumés français disponibles.
+
 ## For developers, operators and release reviewers
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
