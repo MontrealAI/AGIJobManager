@@ -34,7 +34,7 @@ export async function runCampaignBrowserTests({browser,directory,test,rawMarkers
     assert.match(await p.locator('#campaignSummary').textContent(),/USDC · 6 decimals/);assert.match(await p.locator('#qualification').textContent(),/SYNTHETIC_ADAPTER_REAL_BRIDGE_ENGINE/);assert.match(await p.locator('#qualification').textContent(),/false/);
     const frame=await prepare(p);assert.notEqual(server.parentOrigin,server.signerOrigin);assert.equal(await p.evaluate(()=>document.getElementById('signFrame').contentDocument),null);
     const source=await frame.locator('html').evaluate(()=>({origin:location.origin,parentMeta:document.querySelector('meta[name="campaign-parent-origin"]').content}));assert.equal(source.origin,server.signerOrigin);assert.equal(source.parentMeta,server.parentOrigin);
-    assert.equal(counters.prepare,1);assert.equal(counters.import,0);assert.equal(counters.relay,0);
+    assert.equal(counters.prepare,1);assert.equal(counters.import,0);assert.equal(counters.relay,0);assert.equal(await p.locator('#recoverCampaign').isEnabled(),true);
   }));
   await test('campaign-signer-csp-denies-parent-api-and-external-egress',()=>fixture({},async({p,server})=>{
     const frame=await prepare(p);

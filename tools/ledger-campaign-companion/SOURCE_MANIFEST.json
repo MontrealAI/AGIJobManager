@@ -10,13 +10,18 @@
     },
     {
       "path": "COORDINATOR_COMPATIBILITY.json",
-      "bytes": 11830,
-      "sha256": "814c95cb6944b8ef61cdaf6c8dba0caad0bf3409201a58750dbb623092bdb3cd"
+      "bytes": 22254,
+      "sha256": "39022c11062678ab1ef642f26073433d2966d26cee8e5800dba1977aeb92f6e8"
     },
     {
       "path": "DEPENDENCIES.json",
       "bytes": 29326,
       "sha256": "ce0baceaa7f3b208d1aaa6c09bb26e41710827e5f56b7fb8a83620552aa802a7"
+    },
+    {
+      "path": "DEPLOYMENT_DECISION_EN_FR.md",
+      "bytes": 12945,
+      "sha256": "cbbd279c26e433fbc8517a3e6667beeb54bc638cd804689c30464e61b9b589c6"
     },
     {
       "path": "LEGACY_SOURCE_PREVIEW_2_START_HERE_EN_FR.txt",
@@ -35,8 +40,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 13843,
-      "sha256": "2bc1c3f20c3ba0797385beaaa48819c1f55bd5cbd7a467a60a9d0c7a7cac0919"
+      "bytes": 18904,
+      "sha256": "752fe7e9a7316cc3d0d263f38d07853818c459654f73b6cfa4ec271a65b0e263"
     },
     {
       "path": "SDK_CONTEXT_POLICY_EN_FR.md",
@@ -55,8 +60,8 @@
     },
     {
       "path": "START_HERE_EN_FR.txt",
-      "bytes": 6556,
-      "sha256": "5e4247fbef79fb9f554c782fb65e2459e7849b85f7db9b11cb3863bb63bb9803"
+      "bytes": 7679,
+      "sha256": "afa495bcd1cca8a496e5b46ab0d0c8a4c4b38e573cb597804d26915d20ee9bba"
     },
     {
       "path": "THIRD_PARTY.md",
@@ -65,8 +70,8 @@
     },
     {
       "path": "VALIDATION.md",
-      "bytes": 6017,
-      "sha256": "c7f8254fe523a35d1f87da78747cdd5f645b21400ec651d5e1c25696045032a7"
+      "bytes": 8687,
+      "sha256": "c2fd213bb69ef56a2d4f1db72a6a530ad869ac14178189e6a502691a4f9fe776"
     },
     {
       "path": "bridge/README.md",
@@ -100,8 +105,8 @@
     },
     {
       "path": "bridge/start.mjs",
-      "bytes": 6940,
-      "sha256": "77d91523abf477a5c8d12979b7d2047ed4583ad491449766249ddd997d4280bd"
+      "bytes": 6848,
+      "sha256": "f3816d862c0ac44e07bbf60e5731cc2dcfeebb060682cde6a32e1e8ad49daec5"
     },
     {
       "path": "campaign-signer.html",
@@ -189,19 +194,34 @@
       "sha256": "4fb6eb21fb0c3a1f1f76bf6d85cbd3fd2e4051c8b50526ded303662ade0f0e60"
     },
     {
+      "path": "scripts/accept-prepare-campaign.mjs",
+      "bytes": 15340,
+      "sha256": "69c915f2e62dccca5c4c349ff6962843bfa53e5e22c2a03bf81decaa68f295de"
+    },
+    {
       "path": "scripts/accept-source-checkout.mjs",
       "bytes": 2182,
       "sha256": "212bbbc2d1b3cb4beacecea1e1d44e25ec027b2bfe63f4e0b9addd4c0e42dabf"
     },
     {
+      "path": "scripts/accept-wallet-configuration.mjs",
+      "bytes": 12902,
+      "sha256": "99f8955c88f801b7c925f02ba2486a0bc8d7c9aefa169a7eface30268f372b02"
+    },
+    {
+      "path": "scripts/accept-wallet-review-policy.mjs",
+      "bytes": 6381,
+      "sha256": "73bf6c31cca4b4863abd046c8c17394f39601c4d4302c325f0c94e23726017f7"
+    },
+    {
       "path": "scripts/browser-README.md",
-      "bytes": 5755,
-      "sha256": "66bc37ad252bf4e6d8240bc4fd825984c782260b7eff99ef6173f60ebcd5030d"
+      "bytes": 6330,
+      "sha256": "36a5dd014938aa837e1645f4d5394fa59fa4e39c9ae00d67a8a646945890d4f8"
     },
     {
       "path": "scripts/browser-acceptance.workflow.yml",
-      "bytes": 5495,
-      "sha256": "46b0333f3b44f735a318e5c5a0c70b2aa905d3e798d09f7d5aaa196bd7d1d141"
+      "bytes": 5750,
+      "sha256": "66d333ea8edd67cd794a0fe606a1264ac62da6654608ad1327a7a91a25d41267"
     },
     {
       "path": "scripts/browser-build.mjs",
@@ -220,8 +240,8 @@
     },
     {
       "path": "scripts/browser-regression-check.mjs",
-      "bytes": 1490,
-      "sha256": "dcb34535c7531f6fb225cb591953ea094978b1cdc163d62598e3f66b8bf9cf6f"
+      "bytes": 1699,
+      "sha256": "fdd4b1875ad2ed7c6ff75ee95ba520ce4a5226cfeeea762ac687e8011fa55e1a"
     },
     {
       "path": "scripts/browser-toolchain/package-lock.json",
@@ -265,8 +285,8 @@
     },
     {
       "path": "src/campaign-app.mjs",
-      "bytes": 18558,
-      "sha256": "d0513f1c00c70cf1a1e347be7c9e26b4e507ab12ae6ed0685248258307f3c470"
+      "bytes": 18876,
+      "sha256": "fb62fdddd6bcdb20a0099445391af7787ab173c887c188b32ec7ffdd4cd93827"
     },
     {
       "path": "src/campaign-model.mjs",
@@ -330,8 +350,8 @@
     },
     {
       "path": "test/bridge-independent-final-boundaries.test.mjs",
-      "bytes": 3848,
-      "sha256": "37f9f763ee281c0cc2461674591f6510878cc29e1befef1214ff7d5cd03f695a"
+      "bytes": 4844,
+      "sha256": "3c1e4e59062f5fccd36559ae12b1f9ff0b26a9761c5e8a7cf4eee777d05ce6c7"
     },
     {
       "path": "test/bridge-independent-http.test.mjs",
@@ -350,8 +370,8 @@
     },
     {
       "path": "test/browser-campaign.mjs",
-      "bytes": 27976,
-      "sha256": "0a329055e005a9f561013328144f2b04d07eee9a2c14373296ff1bcc019331c8"
+      "bytes": 28043,
+      "sha256": "9e8769e821ec5883b1c4d10df8bdd0c6fcad945f009ca1522f5c9975504cffd5"
     },
     {
       "path": "test/browser-smoke.mjs",
@@ -434,9 +454,19 @@
       "sha256": "9744ff3e3ba812d3faf76dec22db86752fc2c15c6454014b221c0d2935dba04c"
     },
     {
+      "path": "test/independent-wallet-configuration.test.mjs",
+      "bytes": 20311,
+      "sha256": "1a60522b518c97907a673148e31f2ad91b4293e9c9de187614612db8b489b587"
+    },
+    {
       "path": "test/jobs-adapter.test.mjs",
       "bytes": 3164,
       "sha256": "d46b238afeb7e4c32d263d22772a93d5e4f40e44e3d238457a7216ec0826c7e8"
+    },
+    {
+      "path": "test/private-explorer-journal.test.mjs",
+      "bytes": 5171,
+      "sha256": "aeffc3f23105f4dd17c3a821597b794b89e8242281263e8c9132a0f84fce61e6"
     },
     {
       "path": "test/runtime.test.mjs",
@@ -444,14 +474,29 @@
       "sha256": "7332e8a950abeb5969f82880e71c51be9f8edb0b4acab5adeb64871099a05d80"
     },
     {
+      "path": "test/trusted-mac-selection.test.mjs",
+      "bytes": 8083,
+      "sha256": "1752a5006a071852dbe030425a6280a6b52b547d5f07821eaf9c2bea66a69e5b"
+    },
+    {
       "path": "test/trusted-mac.test.mjs",
       "bytes": 13010,
       "sha256": "8bd9d89ec4dc930d2f28c2ae7b8fd4a611c0aece318884fe501148aa83d00877"
     },
     {
+      "path": "test/trusted-wallet-review.test.mjs",
+      "bytes": 2323,
+      "sha256": "241e91bfd62fc68ef942ab0a76714995fe2665c74b6ec66c8e3935ffb054ee6d"
+    },
+    {
       "path": "test/verification-automation.test.mjs",
       "bytes": 10545,
       "sha256": "68863f39009455709bd5d33873606c77d02ab043104341626d70b5565545b4d2"
+    },
+    {
+      "path": "test/wallet-configuration.test.mjs",
+      "bytes": 5411,
+      "sha256": "6c553dd727451e778fb76030586b92247ab722ee75fda0eade6abfb5b5acddc0"
     },
     {
       "path": "third-party-licenses/@adraffy__ens-normalize@1.10.1-LICENSE",
@@ -684,9 +729,19 @@
       "sha256": "c8a81a093d6d08f762ff246415e1d51e264e6f8968352ed47373cf2497b31a75"
     },
     {
+      "path": "trust/prepare-campaign.mjs",
+      "bytes": 19250,
+      "sha256": "216207285425b70f3cdad510b1c767429c0aa3304ed32c0d8d48c035c97d2278"
+    },
+    {
       "path": "trust/prepare-review.mjs",
       "bytes": 9580,
       "sha256": "f2973bee875ec5fe7a5dbfb179a091186ac5184b37ec5b39d562f7dc471a5108"
+    },
+    {
+      "path": "trust/prepare-wallet-review.mjs",
+      "bytes": 7500,
+      "sha256": "624e1c73ff9f64f5719d4f3091dc2cae3f0ded459e2a394dc102060df2cffe97"
     },
     {
       "path": "trust/soljson-driver.cjs",
@@ -702,6 +757,11 @@
       "path": "verification/README.md",
       "bytes": 10071,
       "sha256": "d2f84a03a692cd7148b1adec9d92d0f4fbf1a367776e330e0543423d3e4ba268"
+    },
+    {
+      "path": "verification/WALLET_CONFIGURATION_EN_FR.md",
+      "bytes": 11255,
+      "sha256": "a250c7b5e61528a148fea631152da8c5a93d58d6604b80bd9325847d2321ba90"
     },
     {
       "path": "verification/authority.mjs",
@@ -724,9 +784,29 @@
       "sha256": "37713b91d54e105b4e4da800133de07fc98f0f757d53cd92550b98435719b70d"
     },
     {
+      "path": "verification/native-wallet-snapshot.cjs",
+      "bytes": 8401,
+      "sha256": "90a365a22d99dc76bc4e93c48bd785e5bb70477f85e238fcff24fcc6b8555f96"
+    },
+    {
+      "path": "verification/private-explorer-journal.mjs",
+      "bytes": 4249,
+      "sha256": "c04e13bf084e8f1b8a760ac9cd1eaf0146515ef1d437e81108442b8f13fc4967"
+    },
+    {
       "path": "verification/runtime.mjs",
       "bytes": 7949,
       "sha256": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52"
+    },
+    {
+      "path": "verification/wallet-config.mjs",
+      "bytes": 18677,
+      "sha256": "53ac62970de8b52b2b1cc92f91ffc8dcbcffeccf0f31878f65b68c91bd8069e7"
+    },
+    {
+      "path": "verification/wallet-configuration.mjs",
+      "bytes": 7198,
+      "sha256": "278405f78d43378376ac14ffed498651b4f52c01a068b97244e6d5e21c576eab"
     }
   ]
 }

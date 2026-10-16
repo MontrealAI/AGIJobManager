@@ -289,5 +289,156 @@
       "Exact acknowledgement and one-shot relay",
       "Signer-free canonical observe/recovery"
     ]
+  },
+  "followOnQualification": {
+    "schema": "manual-ledger-native-compatibility-follow-on-v1",
+    "observedAt": "2026-10-16T18:28:35.534028+00:00",
+    "earlierEntriesAndEvidence": "Preserved above; they do not certify the new revisions.",
+    "profiles": [
+      {
+        "id": "manager-c2f-empty",
+        "repository": "MontrealAI/AGIJobManager",
+        "commit": "c2f72180d2f0d6ecd5b92d8e5197c5344be2c699",
+        "tree": "8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f",
+        "nodeVersions": [
+          "24.19.0"
+        ],
+        "creatorProfiles": [
+          "empty-eoa-direct-create.v1"
+        ],
+        "packetSchema": "manager-external-signing-handoff-v1",
+        "signedImport": "JSON {raw}; full private capability remains separate",
+        "operationCount": 9,
+        "verificationTargetCount": 9,
+        "runtimeEvidenceCount": 9,
+        "acceptanceStatus": "ACTUAL_NATIVE_COMPANION_MECHANICS_PASSED",
+        "productionStatus": "NO_GO_NATIVE_ENS_ROOT_ORDER_CORRECTION_REQUIRED",
+        "evidenceFileName": "manager-c2f-companion-acceptance-final.json",
+        "evidenceSha256": "ea6cc396608c838c52f744bb23c111ca249594c338725b83f2696a25310d7b1a",
+        "acceptanceCodeSha256": {
+          "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+          "coordinators/manager.mjs": "bb97b227b16d39f3516693df8ac1fc4d0f754cb5cc5031d329a261608b2f07f6",
+          "verification/configuration.mjs": "f6880a939e1db8552a61dfb880c1f9b8aba2348c4382e6fd3661bf6a2715276a",
+          "verification/explorer.mjs": "37713b91d54e105b4e4da800133de07fc98f0f757d53cd92550b98435719b70d",
+          "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+          "coordinators/runtime-evidence.mjs": "f55a9a173b88f26616232f7438cdfa1458632dfd9ad4f41721db4a4c9f00769a",
+          "coordinators/native-runtime-snapshot.cjs": "152257035d3cf1dc831746feea5856be8189186f04ff590e82ea409d931cc453",
+          "bridge/campaign-engine.mjs": "e007308c4ce9b0663a8c048823a2f1f037141c0f7f7ab83246510d448adaa188",
+          "bridge/private-store.mjs": "f2d4f6500291c5ec537c58d19b9e864e3b5fd16b9f2438d7cb6342eb377330c5",
+          "trust/local-build.mjs": "c8a81a093d6d08f762ff246415e1d51e264e6f8968352ed47373cf2497b31a75",
+          "trust/prepare-review.mjs": "f2973bee875ec5fe7a5dbfb179a091186ac5184b37ec5b39d562f7dc471a5108",
+          "trust/soljson-driver.cjs": "8af8df9dd5d4176caddfb2ae1e95049ef1b250c739aa24d2ce3faefd1a63f383",
+          "verification/authority.mjs": "3ea9b8f855bff154385b894180cbd4edaad43f593d48ccd5053652ea60bd9be1",
+          "scripts/accept-local-trust.mjs": "b0b130a4b3880a87cef19c5d49f8bcf96b811757d950860ea3fb2cf5d898637a",
+          "scripts/accept-manager-coordinator.mjs": "4fb6eb21fb0c3a1f1f76bf6d85cbd3fd2e4051c8b50526ded303662ade0f0e60"
+        },
+        "scope": "Unforked disposable Osaka with real source CLI subprocesses and synthetic signatures; finalized=latest and EIP1898 fixture adaptation are not public-provider or consensus proof",
+        "actualTrustedCompilerReproduction": true,
+        "actualD76CoreAuthorityMatches": true,
+        "mainnetTransactions": 0,
+        "physicalLedger": false,
+        "knownBlockers": [
+          "Native verifier swaps agentRootNode and alphaClubRootNode for distinct roots. Zero/equal-root fixtures do not qualify this. Production launcher blocks the candidate; owner correction plus distinct-root regression and new exact-source acceptance are required.",
+          "Existing-marker creator policies have not passed this companion acceptance. Select an independently reviewed empty-code Ledger creator before signing and regenerate all affected plans, or obtain exact marker-profile acceptance without changing existing delegation.",
+          "Live provider, physical Ledger, exact explorer acceptance and external dependency/controller inventory remain separate."
+        ]
+      },
+      {
+        "id": "alpha-380-empty",
+        "repository": "MontrealAI/AGI-Alpha-Agent-v0",
+        "commit": "38064bec3423218f87c6b81760ac6768b3e7d4e5",
+        "tree": "4fe59cb9b8c7e65ea087fd27b0e2abed6bf34c68",
+        "nodeVersions": [
+          "22.17.1"
+        ],
+        "creatorProfiles": [
+          "empty-eoa-direct-create.v1"
+        ],
+        "packetSchema": "agialpha.external-signing-handoff.v1",
+        "signedImport": "Raw transaction text; full private capability remains separate",
+        "operationCount": 7,
+        "verificationTargetCount": 5,
+        "runtimeEvidenceCount": 5,
+        "acceptanceStatus": "ACTUAL_NATIVE_COMPANION_MECHANICS_PASSED",
+        "productionStatus": "NO_GO_PENDING_PHYSICAL_PROVIDER_EXPLORER_AND_EXTERNAL_AUTHORITY_ACCEPTANCE",
+        "evidenceFileName": "alpha-380-companion-acceptance-final.json",
+        "evidenceSha256": "fcf2b1d113e993b28639c0f9c694928f84a47ed83015595ee5ee06bb6e577fbb",
+        "acceptanceCodeSha256": {
+          "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+          "coordinators/alpha.mjs": "328d47d8408a2376f910645f3f60110882878280db95f2509b03ef698024d66b",
+          "verification/configuration.mjs": "f6880a939e1db8552a61dfb880c1f9b8aba2348c4382e6fd3661bf6a2715276a",
+          "verification/explorer.mjs": "37713b91d54e105b4e4da800133de07fc98f0f757d53cd92550b98435719b70d",
+          "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+          "coordinators/runtime-evidence.mjs": "f55a9a173b88f26616232f7438cdfa1458632dfd9ad4f41721db4a4c9f00769a",
+          "coordinators/native-runtime-snapshot.cjs": "152257035d3cf1dc831746feea5856be8189186f04ff590e82ea409d931cc453",
+          "bridge/campaign-engine.mjs": "e007308c4ce9b0663a8c048823a2f1f037141c0f7f7ab83246510d448adaa188",
+          "bridge/private-store.mjs": "f2d4f6500291c5ec537c58d19b9e864e3b5fd16b9f2438d7cb6342eb377330c5",
+          "trust/local-build.mjs": "c8a81a093d6d08f762ff246415e1d51e264e6f8968352ed47373cf2497b31a75",
+          "trust/prepare-review.mjs": "f2973bee875ec5fe7a5dbfb179a091186ac5184b37ec5b39d562f7dc471a5108",
+          "trust/soljson-driver.cjs": "8af8df9dd5d4176caddfb2ae1e95049ef1b250c739aa24d2ce3faefd1a63f383",
+          "verification/authority.mjs": "3ea9b8f855bff154385b894180cbd4edaad43f593d48ccd5053652ea60bd9be1",
+          "scripts/accept-local-trust.mjs": "b0b130a4b3880a87cef19c5d49f8bcf96b811757d950860ea3fb2cf5d898637a",
+          "scripts/accept-alpha-coordinator.mjs": "eabb065ee6767b75b17db0bfdfc4420dc51b856002fe3836c3cdc66a7f1edd04"
+        },
+        "scope": "Unforked disposable Osaka, synthetic keys and mock dependencies, normal child-scoped local TLS, finalized=latest; not physical Ledger/public-provider/finality qualification",
+        "actualSyntheticGovernorSignedOperations": 7,
+        "actualD76GovernorSignatures": 0,
+        "separateD76UnsignedTrustedCompilerBindings": 7,
+        "separateD76ActualInitialCreations": 5,
+        "separateD76InitialUncommissionedStateMatches": true,
+        "separateD76GovernorBindingsExecuted": 0,
+        "governorBindingsPending": [
+          "AscensionRiskOracle.marketplace",
+          "AscensionJobMarket.mark"
+        ],
+        "mainnetTransactions": 0,
+        "physicalLedger": false,
+        "knownBlockers": [
+          "Physical Ledger and live provider acceptance remain pending; synthetic known-key governor signatures do not qualify d76 hardware custody or device approvals.",
+          "The separate d76 graph is uncommissioned with both one-time graph bindings unset. Alpha has no global pause switch.",
+          "No native plan expiry exists in this revision. Companion wall-clock expiry does not invalidate an Ethereum signature.",
+          "Exact explorer acceptance and external token/proxy/ENS/controller permissions remain unverified.",
+          "Existing-marker creator policies require exact additional companion acceptance; no delegation is changed."
+        ]
+      }
+    ],
+    "jobs": "No external manual signing compatibility entry is added: exact source and independent acceptance handoff remain unavailable.",
+    "walletPrebindingHelper": {
+      "status": "ACTUAL_FIVE_CREATE_PREBINDING_NATIVE_HELPER_PASSED",
+      "source": {
+        "repository": "MontrealAI/AGI-Alpha-Agent-v0",
+        "commit": "38064bec3423218f87c6b81760ac6768b3e7d4e5",
+        "tree": "4fe59cb9b8c7e65ea087fd27b0e2abed6bf34c68"
+      },
+      "evidenceFileName": "alpha-380-wallet-prebinding-acceptance-final.json",
+      "evidenceSha256": "946e5ddfc7bb21b78823207c11d957b70141c1f9b40b59578d384ba05ef33f59",
+      "acceptanceCodeSha256": {
+        "verification/native-wallet-snapshot.cjs": "90a365a22d99dc76bc4e93c48bd785e5bb70477f85e238fcff24fcc6b8555f96",
+        "verification/wallet-configuration.mjs": "278405f78d43378376ac14ffed498651b4f52c01a068b97244e6d5e21c576eab",
+        "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+        "verification/authority.mjs": "3ea9b8f855bff154385b894180cbd4edaad43f593d48ccd5053652ea60bd9be1",
+        "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+        "scripts/accept-wallet-configuration.mjs": "99f8955c88f801b7c925f02ba2486a0bc8d7c9aefa169a7eface30268f372b02"
+      },
+      "actualCreations": 5,
+      "verificationTargetCount": 5,
+      "runtimeEvidenceCount": 5,
+      "initialUncommissionedStateMatches": true,
+      "requiredGovernorBindings": [
+        "AscensionRiskOracle.marketplace",
+        "AscensionJobMarket.mark"
+      ],
+      "nativeSigningSessionCreated": false,
+      "nativeActorLocksCreated": false,
+      "repeatedReadOnlySnapshotStable": true,
+      "changedCanonicalReceiptRejected": true,
+      "helperBroadcastRequests": 0,
+      "governorSignatures": 0,
+      "governorBindingSubmissions": 0,
+      "explorerServiceCalls": 0,
+      "physicalLedger": false,
+      "scope": "Disposable unforked Osaka with actual current native modules; synthetic creator, exact d76 constructor governor, five real CREATEs and two unsigned unexecuted d76 bindings. TLS finalized=latest is a fixture adaptation, not consensus proof.",
+      "limitation": "Receipt/source/runtime verification and exact unsigned call descriptions only. No wallet transaction-envelope enforcement, physical signing, full authority or activation acceptance is inferred."
+    }
   }
 }

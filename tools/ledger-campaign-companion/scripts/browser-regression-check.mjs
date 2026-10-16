@@ -6,7 +6,7 @@ let output='',bytes=0,overflow=false;
 for(const stream of [child.stdout,child.stderr])stream.on('data',part=>{bytes+=part.length;if(bytes<=4*1024*1024)output+=part;else{overflow=true;child.kill('SIGTERM');}});
 const code=await new Promise(resolve=>{child.once('error',()=>resolve(1));child.once('exit',code=>resolve(code??1));});
 const total=key=>Number(output.match(new RegExp(`^# ${key} (\\d+)$`,'m'))?.[1]??0);
-const result={schema:'ledger-companion-browser-regression-evidence-v1',status:code===0&&!overflow?'PASS':'FAIL',tests:total('tests'),pass:total('pass'),fail:total('fail'),cancelled:total('cancelled'),skipped:total('skipped'),todo:total('todo'),outputRedacted:true,syntheticCapabilitiesNotPublished:true};
+const result={schema:'ledger-companion-browser-regression-evidence-v1',status:code===0&&!overflow?'PASS':'FAIL',sourceCommit:/^[a-f0-9]{40}$/.test(process.env.COMPANION_SOURCE_COMMIT??'')?process.env.COMPANION_SOURCE_COMMIT:null,workflowRunId:/^[0-9]+$/.test(process.env.GITHUB_RUN_ID??'')?process.env.GITHUB_RUN_ID:null,tests:total('tests'),pass:total('pass'),fail:total('fail'),cancelled:total('cancelled'),skipped:total('skipped'),todo:total('todo'),outputRedacted:true,syntheticCapabilitiesNotPublished:true};
 await mkdir('manual-ledger-evidence',{recursive:true});await writeFile('manual-ledger-evidence/browser-deterministic-regressions.json',`${JSON.stringify(result,null,2)}\n`);
 process.stdout.write(`Deterministic regressions ${result.status}: ${result.pass}/${result.tests} passed; ${result.skipped} skipped; ${result.cancelled} cancelled; ${result.todo} todo; output redacted.\n`);
 if(result.status!=='PASS')process.exitCode=1;

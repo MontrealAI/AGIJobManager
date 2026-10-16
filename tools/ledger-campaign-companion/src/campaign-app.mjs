@@ -108,6 +108,9 @@ $('prepareNext').onclick = async () => {
     if (!step || current || !['awaiting-owner-approval','prepared'].includes(step.state) || reviewedIdentity !== identity(snapshot.campaign)) throw new GateError('REVIEW_AGAIN_REQUIRED');
     const result = await api('prepare', { step: step.index });
     if (result.step !== step.index || result.state !== 'signing-requested' || result.operationId !== result.prepared?.review?.operationId) throw new GateError('DURABLE_SIGNING_INTENT_REQUIRED');
+    await refresh();
+    const retained = snapshot.steps[step.index];
+    if (retained?.state !== 'signing-requested' || retained.operationId !== result.operationId || !retained.signingRequestedAt || retained.transactionHash || retained.relayAttempted === true) throw new GateError('DURABLE_SIGNING_INTENT_REQUIRED');
     const prepared = validatePreparedPacket(result.prepared);
     if (prepared.sender.toLowerCase() !== approver(snapshot.campaign.operations[step.index]).toLowerCase()) throw new GateError('CAMPAIGN_APPROVER_MISMATCH');
     attachSigner(prepared, step.index, result.operationId);

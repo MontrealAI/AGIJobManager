@@ -1,7 +1,40 @@
-MANUAL LEDGER CAMPAIGN — 0.2.0-candidate.2 • EN / FR
-Review candidate • New deployments only
+MAINNET CONTRACT HANDOVER — 0.2.0-candidate.2 • EN / FR
+Review candidate • Owner manually approves every transaction
 
-CHECK ON THE MAC / CONTRÔLES SUR LE MAC
+ENGLISH
+
+The primary configuration path is your existing Ledger-backed wallet with Etherscan. The custom companion is optional for a separately reviewed creation/recovery workflow; it is not required for wallet-supported contract calls. Initial contract creation is a separate phase. No transaction is executed by this handover.
+
+1. CREATE SEPARATELY. On the trusted Mac Studio, independently validate the exact reviewed source/compiler/build, full native plan and transaction bytes. Ubuntu supplies proposals only. Select the deployer before signing; changing it regenerates every affected nonce, address and binding. Reconcile any existing signature/submission before replacing a campaign. The distinct governor is 0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99. All supported Manager revisions remain blocked in the production launcher pending the native ENS-root verifier correction; legacy source is not a fallback.
+2. VERIFY EVERY COMPONENT. Record chain ID, new address and canonical creation transaction/receipt. Generate the exact source/compiler/settings/constructor/libraries package and compare deployed runtime, including legitimate immutables. Cover every actual library, implementation or proxy. Explorer submission or a similar match is not exact verification success.
+3. REVIEW CONFIGURATION. Review the verified ABI, exact new target, method, arguments, complete calldata, value, governor and expected post-state using the existing wallet/Etherscan and independent Mac readback. The optional wallet-config utility automates checks; equivalent independent exact evidence is sufficient. Preserve ENS eligibility and economic policy; distinguish USDC (6 decimals) from $AGIALPHA (18). Unsupported calls require a separate exact review.
+4. APPROVE MANUALLY. Connect the existing Ledger-backed wallet, verify Ethereum Mainnet and the governor address, compare the exact reviewed call, then manually approve that single transaction. Repeat only for the next separately reviewed call. No delegation, blanket approval or automatic signing is introduced.
+5. RECONCILE INDEPENDENTLY. Record the resulting transaction hash. Check the exact sender/target/calldata/value, canonical receipt and actual resulting state through independent read-only verification. A missing receipt, disconnect, lost response or unknown outcome means STOP and reconcile the known attempt; never automatically resend or replace fees.
+6. HAND OVER AUTHORITY. Review ownership, pending ownership, roles, upgrade/configuration powers and dependency permissions. The deployer retains no unintended authority. Alpha has no global pause switch: initial uncommissioned is not globally paused. No funding, activation or historical change follows automatically.
+
+Exact phase commands and input schema: verification/WALLET_CONFIGURATION_EN_FR.md (`node verification/wallet-config.mjs --help`).
+
+Wallet-generated calls are separate evidence; they do not automatically import into or complete a native seven-step Alpha signing journal. Exact source compatibility, physical USB/macOS, live-provider/explorer and final authority checks retain their own status. Jobs signing remains unsupported until its separate exact adapter passes acceptance. Audit and Sepolia are accepted omissions. Previous deployments, jobs, balances and permissions remain untouched.
+
+FRANÇAIS
+
+Le parcours principal de configuration utilise votre portefeuille existant adossé au Ledger avec Etherscan. Le compagnon personnalisé est facultatif pour la création/reprise examinée séparément; il n'est pas requis pour les appels compatibles avec votre portefeuille. La création initiale constitue une phase distincte. Ce dossier n'exécute aucune transaction.
+
+1. CRÉEZ SÉPARÉMENT. Sur le Mac Studio de confiance, contrôlez indépendamment source/compilateur/build exacts, plan natif complet et octets. Ubuntu ne fournit que des propositions. Choisissez le déployeur avant signature; tout changement régénère nonces, adresses et liaisons affectés. Réconciliez toute signature/tentative avant remplacement. Gouverneur distinct : 0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99. Toutes les révisions Manager prises en charge restent bloquées au lancement de production jusqu'à correction du vérificateur natif des racines ENS; aucune version historique de repli.
+2. VÉRIFIEZ CHAQUE COMPOSANT. Consignez réseau, nouvelle adresse, transaction de création et reçu canoniques. Produisez le dossier exact source/compilateur/paramètres/constructeur/bibliothèques et comparez le runtime, immuables légitimes compris. Incluez toute bibliothèque, implémentation ou proxy réel. Soumission ou correspondance similaire ne valent pas vérification exacte.
+3. EXAMINEZ LA CONFIGURATION. Contrôlez ABI vérifiée, cible exacte, méthode, arguments, calldata complet, valeur, gouverneur et état attendu avec le portefeuille/Etherscan existant et une lecture indépendante sur Mac. L'utilitaire wallet-config automatise ces contrôles, sans être obligatoire si les preuves exactes indépendantes sont équivalentes. Préservez critères ENS et économie. USDC : 6 décimales; $AGIALPHA : 18. Tout appel non pris en charge exige un examen exact distinct.
+4. APPROUVEZ MANUELLEMENT. Connectez votre portefeuille Ledger existant, vérifiez Ethereum Mainnet et l'adresse du gouverneur, comparez l'appel examiné et approuvez physiquement cette seule transaction. Chaque appel suivant exige son examen. Aucune délégation, approbation générale ou signature automatique.
+5. RÉCONCILIEZ INDÉPENDAMMENT. Consignez le hachage. Vérifiez expéditeur/cible/calldata/valeur exacts, reçu canonique et état obtenu en lecture seule. Reçu absent, déconnexion, réponse perdue ou issue inconnue : ARRÊTEZ et réconciliez la tentative connue, sans renvoi automatique ni remplacement des frais.
+6. CONTRÔLEZ L'AUTORITÉ. Examinez propriété, propriété en attente, rôles, pouvoirs et permissions des dépendances. Le déployeur ne conserve aucune autorité indue. Alpha n'a pas de pause globale : non mis en service ne signifie pas globalement en pause. Aucun financement, activation ou changement historique automatique.
+
+Commandes exactes et schéma d'entrée : verification/WALLET_CONFIGURATION_EN_FR.md (`node verification/wallet-config.mjs --help`).
+
+Les appels du portefeuille n'importent ni ne terminent automatiquement le journal natif Alpha à sept étapes. Compatibilité exacte, USB/macOS physique, fournisseur/explorateur et autorité finale gardent leurs contrôles distincts. Signature Jobs indisponible avant acceptation de son adaptateur exact. Audit/Sepolia : omissions acceptées. Anciens déploiements, emplois, soldes et permissions intacts.
+
+OPTIONAL COMPANION / COMPAGNON FACULTATIF
+
+README.md documents the Mac-only creation/recovery launch, independently reviewed local trust policy and exact source dependencies. / README.md décrit le lancement création/reprise sur Mac, la politique de confiance indépendante et les dépendances exactes.
+
   npm ci --ignore-scripts --no-audit --no-fund
   COMPANION_REQUIRE_COMPILER=1 COMPANION_TEST_SOLJSON=/absolute/reviewed/soljson-v0.8.37.js node scripts/browser-regression-check.mjs
   npm run build
@@ -9,35 +42,4 @@ CHECK ON THE MAC / CONTRÔLES SUR LE MAC
   node trust/prepare-review.mjs --help
   node bridge/start.mjs --help
 
-OWNER-REVIEWED LAUNCH / LANCEMENT EXAMINÉ PAR LE PROPRIÉTAIRE
-  node bridge/start.mjs --campaign /absolute/private/reviewed-campaign.json --reviewed-campaign-sha256 EXACT_REVIEWED_CAMPAIGN_DIGEST --trust-policy /absolute/private/mac-trust-policy.json --reviewed-trust-policy-sha256 EXACT_REVIEWED_TRUST_POLICY_DIGEST --actor-lock-directory /absolute/private/shared-actor-locks --state /absolute/private/campaign-state
-
-ENGLISH
-
-The Mac Studio is authoritative. Independently obtain the reviewed source/compiler there, reproduce its build and validate the complete native plan and exact transaction bytes. Ubuntu provides proposals only. Keep the native session, campaign, capabilities, nonce locks and attempt records on the Mac. Private campaign/trust-policy files must be ordinary owner-only files; their separately approved canonical digests cannot come solely from Ubuntu. Generate the unapproved local policy using README.md's exact preparation command, then independently review it. No ready-to-sign Mainnet campaign is supplied.
-
-Choose the deployer before preparation. Changing it requires a new fully regenerated and reviewed native plan/campaign, including affected nonces, predicted addresses and bindings. Governor: 0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99, distinct from deployer. Existing signing markers, signatures/imports/submissions require read-only reconciliation before any campaign change.
-
-1. Run the checks and reviewed launch above. Open the printed numeric 127.0.0.1 address. Review source/build/plan, roles, graph, dependencies, fees and every operation. USDC: 6 decimals; $AGIALPHA: 18.
-2. Prepare; durable intent/locks/marker must precede device access. Select your path, verify the on-device address and manually approve each transaction. Browser-decoded initcode does not promise device clear signing.
-3. Keep the signer open until durable acknowledgement of the exact private capability. Manual native import: Manager JSON {raw}; Alpha raw text. Preserve full private recovery separately.
-4. Relay is off by default. An approved immutable relay policy plus explicit --relay enables a separate exact per-step action. Review/click it once. Unknown outcome: Observe & recover; never automatically resend or change fees.
-5. Restart, cancellation, disconnect, lost response, account/source change, expiry or interrupted import/relay: preserve capability, state, locks and attempt record, then reconcile read-only. A missing receipt or local expiry cannot cancel a signed transaction.
-6. Require exact explorer/runtime verification of every deployed component and the authority report before commissioning. Submission is not success. Alpha has no global pause switch; initial uncommissioned does not mean globally paused.
-
-README.md gives details; COORDINATOR_COMPATIBILITY.json records exact accepted revisions. Physical USB/macOS and live provider/explorer acceptance remain distinct from synthetic tests. Jobs signing is unsupported pending its separate adapter acceptance. Audit/Sepolia are accepted omissions. Earlier deployments, jobs, balances, ENS eligibility and permissions stay untouched. No seed, private key or PIN requested.
-
-FRANÇAIS
-
-Le Mac Studio fait autorité. Obtenez-y indépendamment source/compilateur examinés, reproduisez le build et contrôlez le plan natif complet et les octets exacts. Ubuntu ne fournit que des propositions. Sessions, campagne, signatures, verrous de nonce et traces de tentative restent sur le Mac. Les fichiers privés campagne/politique doivent être ordinaires, réservés au propriétaire; leurs empreintes canoniques approuvées ne peuvent venir seulement d'Ubuntu. Générez la proposition locale non approuvée avec la commande exacte de README.md, puis examinez-la indépendamment. Aucune campagne Mainnet prête à signer n'est fournie.
-
-Choisissez le déployeur avant préparation. Tout changement exige un nouveau plan/campagne entièrement régénéré et examiné : nonces, adresses prédites et liaisons affectés compris. Gouverneur : 0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99, distinct du déployeur. Tout marqueur, signature/import/envoi existant exige une réconciliation en lecture seule avant changement.
-
-1. Exécutez contrôles et lancement examiné ci-dessus. Ouvrez l'adresse numérique 127.0.0.1 affichée. Examinez source/build/plan, rôles, graphe, dépendances, frais et chaque opération. USDC : 6 décimales; $AGIALPHA : 18.
-2. Préparez; intention/verrous/marqueur durables précèdent l'appareil. Choisissez votre chemin, vérifiez l'adresse sur le Ledger, puis approuvez physiquement chaque transaction. Le navigateur ne prouve pas l'affichage clair de l'initcode sur l'appareil.
-3. Gardez le signataire ouvert jusqu'à confirmation durable de la signature exacte. Import natif manuel : Manager JSON {raw}; Alpha texte brut. Conservez séparément la reprise privée complète.
-4. Envoi désactivé par défaut. Politique immuable approuvée et option explicite --relay activent l'action exacte par étape. Examinez/cliquez une fois. Issue inconnue : Observer et reprendre; aucun renvoi automatique ni changement de frais.
-5. Redémarrage, annulation, déconnexion, réponse perdue, changement compte/source, expiration ou interruption : conservez signature, état, verrous et trace, puis réconciliez en lecture seule. Reçu absent ou expiration locale n'annulent pas une transaction signée.
-6. Exigez vérification exacte explorateur/runtime de chaque composant et rapport d'autorité avant mise en service. Soumission ne vaut pas réussite. Alpha n'a aucun interrupteur global de pause; non mis en service ne signifie pas globalement en pause.
-
-Détails : README.md; révisions acceptées : COORDINATOR_COMPATIBILITY.json. USB/macOS physique et fournisseur/explorateur réels restent distincts des essais synthétiques. Signature Jobs indisponible avant acceptation de son adaptateur séparé. Audit/Sepolia : omissions acceptées. Anciens déploiements, emplois, soldes, admissibilité ENS et permissions restent intacts. Aucune phrase de récupération, clé privée ou NIP demandé.
+Never supply seeds/private keys/PINs. Preserve private capability, nonce locks and attempt records. / Ne fournissez jamais phrase de récupération, clé privée ou NIP. Conservez signature privée, verrous et traces de tentative.

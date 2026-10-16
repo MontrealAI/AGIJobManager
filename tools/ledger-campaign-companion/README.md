@@ -4,11 +4,30 @@ This review candidate adds a local English/French campaign dashboard, an isolate
 
 **Mainnet deployment requires a separate decision for each exact contract set.** This package is a review candidate, with physical Ledger/macOS and live explorer acceptance still pending. Real-browser tests with synthetic devices, native disposable-chain acceptance and deterministic tests establish distinct scopes. Earlier passing runs do not qualify this changed source. Jobs external signing is being implemented by the native owner team and remains refused here until its exact interface and acceptance evidence are supplied.
 
+## Primary configuration path: existing Ledger wallet + Etherscan
+
+Initial contract creation is separate. For supported configuration calls, use the owner's existing Ledger-backed wallet with Etherscan after every deployed component has exact source/runtime verification. The custom companion is **optional**, and is not a prerequisite for wallet-supported calls. No new signing application, key import, delegation, blanket approval or automatic signature is required by this path. The standalone wallet-config utility is optional: it automates independent checks but does not mediate or replace the wallet, and equivalent independent exact Mac evidence may be supplied instead.
+
+The bounded configuration review must show the exact new target, method, arguments, complete calldata, value, designated governor, source/plan and expected state before the owner opens the explorer write interface. The owner checks Ethereum Mainnet and the governor account, compares the reviewed exact call and manually approves each transaction on the physical Ledger. Record its transaction hash, then independently reconcile exact transaction bytes, canonical receipt and post-state. A successful explorer submission is separate from this acceptance. Unknown outcomes stop; they never permit automatic resend or replacement.
+
+The supported Alpha configuration consists of the two exact native bindings only. Creation proofs and explicit approved policy must identify their new targets and arguments. Unsupported Manager/Alpha administration requires a separate exact reviewed policy and implementation; economic settings, treasuries and ENS eligibility are not invented by the workflow. Wallet-generated transactions are independent evidence. Do not claim they were imported into, or completed, a native seven-operation session without exact native acceptance of that interface.
+
+| New receipt-proven target | Exact method | Argument from the same new graph | Required resulting getter |
+|---|---|---|---|
+| `AscensionRiskOracle` | `bindMarketplace(address)` | New `AscensionJobMarket` | `marketplace()` equals that market |
+| `AscensionJobMarket` | `bindMark(address)` | New `AscensionMark` | `mark()` equals that MARK |
+
+Both are one-time, governor-only bindings. Contract-side checks also require consistent access/oracle/job dependencies; independent Mac readback must prove those links before approval; the optional utility automates that check. Do not substitute historical addresses or change parameters to bypass a failed check.
+
+For the optional standalone utility, `trust/prepare-wallet-review.mjs` creates the local five-contract build-policy proposal directly from the independently reviewed wallet input and native plan. It performs no RPC, uses no signing session/bridge/actor locks and does not require a seven-operation campaign. The supplied compiler/Node pins and exact Alpha source are checked locally; its generated policy and integrity digest remain unapproved until independently reviewed. Five unit cases and actual Linux offline compilation of the five native Alpha contracts with their 55-source closure passed; the production Mac CLI and physical wallet remain separate acceptance. See the wallet runbook for the exact command.
+
+See `START_HERE_EN_FR.txt` for the short bilingual operator flow and `verification/WALLET_CONFIGURATION_EN_FR.md` for the exact bounded `export`, `submit-source`, `verify` and `reconcile` commands and review schema. Each appended owner transaction hash requires a freshly reviewed complete input digest; the local build binding stays stable. Preserve the same private explorer journal across fresh report directories. The optional companion's preparation, signing and recovery details follow below.
+
 ## Exact source dependencies
 
 The new review targets are Manager PR #1586 `c2f72180d2f0d6ecd5b92d8e5197c5344be2c699` and Alpha PR #4827 `38064bec3423218f87c6b81760ac6768b3e7d4e5`. They require their own acceptance before a compatibility entry can be promoted. `COORDINATOR_COMPATIBILITY.json` is the revision inventory; inspect its exact acceptance state and linked evidence. The following entries preserve the earlier accepted interface baseline.
 
-The production launcher blocks **all** Manager `c2f72180…` campaigns because its native verifier reverses the agent/club ENS-root expectations. A disposable zero-root engine fixture may qualify transport/recovery, but cannot authorize that source for a live launch or certify distinct nonzero roots. The owner must fix and freeze the native revision, then repeat exact acceptance; no equal/zero-root policy workaround is inferred.
+The production launcher blocks **all supported Manager revisions**, including legacy `eb6f725e…` and candidate `c2f72180…`, because their native verifier reverses the agent/club ENS-root expectations. Legacy adapters and evidence remain available for recovery and fixtures, not as a production fallback. A disposable zero-root engine fixture may qualify transport/recovery, but cannot authorize a live launch or certify distinct nonzero roots. The owner must fix and freeze the native revision, then repeat exact acceptance; no equal/zero-root policy workaround is inferred.
 
 | Adapter | Supported source | Native import | Supported operations |
 |---|---|---|---|
@@ -35,6 +54,14 @@ node trust/prepare-review.mjs --campaign /absolute/private/reviewed-campaign.jso
 This recompiles and binds the native plan, then writes an **unapproved review proposal** and prints an integrity digest. The owner must independently review that exact policy before supplying its reviewed digest at launch. A printed digest is not approval. Existing outputs are never overwritten: preserve each failed attempt and use a fresh private review directory. No compiler, account or fee policy is selected automatically.
 
 Select the deployer before preparing the campaign. A different deployer requires regeneration and review of the full native plan, every affected nonce/predicted address, constructor and governed binding, and a new immutable campaign. This package does not edit an existing plan in place. Existing signing markers, signed capabilities, imports or submissions must first be reconciled read-only. Do not clear locks or erase attempt records to make a changed campaign proceed.
+
+The optional Mac-only creator-selection helper generates a **new unapproved proposal**, preserving the prior campaign and fixed economic/ENS/governor policy:
+
+```sh
+node trust/prepare-campaign.mjs --campaign /absolute/private/reviewed-template.json --reviewed-campaign-sha256 EXACT_REVIEWED_TEMPLATE_DIGEST --creator SELECTED_DEPLOYER --prior-state /absolute/private/original-campaign-state --output-directory /absolute/private/new-empty-review-directory
+```
+
+The output directory must be a fresh ordinary 0700 directory. Native nonce/preflight checks and temporary shared actor locks must succeed; existing signing/submission evidence requires reconciliation. Prior relay/explorer authorization is not transferred. Cross-project journals stop for an explicit handoff. Seven unit cases and actual Linux disposable HTTPS native-planner/preflight acceptance passed for Manager (nine replanned creations) and Alpha (seven reviewed operations). These do not qualify the real Mac CLI, physical device or Mainnet provider. The Mac acceptance remains separate. Independently review the new plan/campaign and generate a fresh local trust policy before any optional companion launch.
 
 ## Install and review
 

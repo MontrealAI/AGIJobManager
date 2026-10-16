@@ -866,7 +866,7 @@ class LedgerCompanionPackagingTests(unittest.TestCase):
         inventory = self.inventory()
         manifest = json.loads((PUBLISHER.parents[2] / self.prefix / 'SOURCE_MANIFEST.json').read_text())
         expected = {self.prefix + item['path'] for item in manifest['files']} | {self.prefix + 'SOURCE_MANIFEST.json'}
-        self.assertEqual(len(inventory), 146)
+        self.assertEqual(len(inventory), 162)
         self.assertEqual(inventory, expected)
         for name in inventory:
             with self.subTest(name=name):
