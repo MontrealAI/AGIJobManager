@@ -10,7 +10,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import { Wallet, Transaction, keccak256 } from 'ethers';
-import manager, { MANAGER_SUPPORTED, MANAGER_CURRENT } from '../coordinators/manager.mjs';
+import manager, { MANAGER_SUPPORTED, MANAGER_CURRENT, MANAGER_CORRECTED } from '../coordinators/manager.mjs';
 import { sha256, canonical, observeSource } from '../coordinators/common.mjs';
 import { policyDigest, attachAndValidateSignature } from '../src/envelope.mjs';
 import { prepareVerificationTask } from '../verification/explorer.mjs';
@@ -18,8 +18,8 @@ import { createCampaignEngine } from '../bridge/campaign-engine.mjs';
 
 
 const MANAGER_ACCEPT_PROFILE = process.env.MANAGER_ACCEPT_PROFILE || 'legacy';
-assert.ok(['legacy', 'current'].includes(MANAGER_ACCEPT_PROFILE));
-const SUPPORTED = MANAGER_ACCEPT_PROFILE === 'current' ? MANAGER_CURRENT : MANAGER_SUPPORTED;
+assert.ok(['legacy', 'current', 'corrected'].includes(MANAGER_ACCEPT_PROFILE));
+const SUPPORTED = ({ legacy: MANAGER_SUPPORTED, current: MANAGER_CURRENT, corrected: MANAGER_CORRECTED })[MANAGER_ACCEPT_PROFILE];
 const root = process.env.MANAGER_ACCEPT_CHECKOUT, output = process.env.MANAGER_ACCEPT_REPORT;
 assert.ok(root && path.isAbsolute(root) && output && path.isAbsolute(output));
 const requireSource = createRequire(path.join(root, 'package.json'));
@@ -38,7 +38,7 @@ const companionRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 const codeHashes = () => Object.fromEntries(['coordinators/common.mjs', 'coordinators/manager.mjs', 'verification/configuration.mjs', 'verification/explorer.mjs', 'verification/runtime.mjs', 'coordinators/runtime-evidence.mjs', 'coordinators/native-runtime-snapshot.cjs', 'bridge/campaign-engine.mjs', 'bridge/private-store.mjs', 'trust/local-build.mjs', 'trust/prepare-review.mjs', 'trust/soljson-driver.cjs', 'verification/authority.mjs', 'scripts/accept-local-trust.mjs', 'scripts/accept-manager-coordinator.mjs'].map(name => [name, sha256(fs.readFileSync(path.join(companionRoot, name)))]));
 report.acceptanceCodeSha256 = codeHashes();
 const check = label => report.checks.push(label);
-let server, engine, rawRelayCalls = 0, readCalls = 0, loseResponse = false, corruptReceipt = false, stage = 'certificate';
+let server, engine, rawRelayCalls = 0, readCalls = 0, loseResponse = false, corruptReceipt = false, rootReadbackFault = null, rootReadbackAddress = null, stage = 'certificate';
 function write(file, value) { fs.writeFileSync(file, JSON.stringify(value), { flag: 'wx', mode: 0o600 }); }
 try {
   const cert = path.join(privateRoot, 'ca.pem'), key = path.join(privateRoot, 'key.pem');
@@ -57,6 +57,8 @@ try {
   original.source = source; catalog.builds = { [buildId]: original }; fs.writeFileSync(catalogPath, JSON.stringify(catalog));
   const catalogSha256 = sha256(fs.readFileSync(catalogPath)), qualified = C.loadQualifiedBuild({ catalogPath, catalogSha256, buildId, expectedRevision: source });
   stage = 'plan'; const block = await local.send('eth_getBlockByNumber', ['latest', false]), config = F.config(creator.address, { block: { number: Number(BigInt(block.number)), hash: block.hash }, registry });
+  const originalRootNames = ['club.agi.eth', 'agent.agi.eth', 'alpha.club.agi.eth', 'alpha.agent.agi.eth'];
+  if (MANAGER_ACCEPT_PROFILE === 'corrected') { config.constructorArgs.rootNodes = originalRootNames.map(ethers.namehash); assert.equal(new Set(config.constructorArgs.rootNodes).size, 4); assert.ok(config.constructorArgs.rootNodes.every(root => root !== ethers.ZeroHash)); report.distinctEnsRootNames = originalRootNames; report.distinctEnsRoots = config.constructorArgs.rootNodes; }
   const plan = P.makePlan(config, qualified, source), planPath = path.join(privateRoot, 'plan.json'); write(planPath, plan);
   const allowed = new Set(['eth_chainId', 'eth_getCode', 'eth_getTransactionCount', 'eth_getBlockByNumber', 'eth_call', 'eth_estimateGas', 'eth_getTransactionByHash', 'eth_getTransactionReceipt']);
   stage = 'https-server'; server = https.createServer({ key: fs.readFileSync(key), cert: fs.readFileSync(cert), minVersion: 'TLSv1.2' }, (request, response) => {
@@ -72,6 +74,9 @@ try {
         const at = params.at(-1); let before;
         if (at?.requireCanonical) { before = await local.send('eth_getBlockByHash', [at.blockHash, false]); assert.ok(before); assert.equal((await local.send('eth_getBlockByNumber', [before.number, false])).hash, at.blockHash); params = [...params.slice(0, -1), before.number]; }
         let result = await local.send(body.method, params);
+        if (rootReadbackFault && body.method === 'eth_call' && params[0]?.to?.toLowerCase() === rootReadbackAddress?.toLowerCase()) {
+          const changed = rootReadbackFault[params[0].data]; if (changed !== undefined) result = changed;
+        }
         if (corruptReceipt && body.method === 'eth_getTransactionReceipt' && result) result = { ...result, blockHash: '0x' + '12'.repeat(32) };
         if (before) assert.equal((await local.send('eth_getBlockByNumber', [before.number, false])).hash, at.blockHash);
         if (relay) { rawRelayCalls++; if (loseResponse) { loseResponse = false; request.socket.destroy(); return; } } else readCalls++;
@@ -143,6 +148,18 @@ try {
   const completion = await manager.observe({ campaign, step: 8, operationId: 'manager-8', privateDir: privateRoot }); assert.equal(completion.boundedCampaignComplete, true); assert.equal(completion.configurationComplete, false);
   const contract = new ethers.Contract(plan.operations[8].predictedAddress, qualified.records.AGIJobManager.artifact.abi, local);
   assert.equal(await contract.owner(), P.GOVERNOR); assert.equal(await contract.paused(), true); assert.equal(await contract.pendingOwner(), ethers.ZeroAddress); assert.equal(await contract.ensJobPages(), ethers.ZeroAddress); check('Actual Manager paused, explicit d76 governor, zero pending owner and unconfigured ENS pages');
+  if (MANAGER_ACCEPT_PROFILE === 'corrected') {
+    const getterNames = ['clubRootNode', 'agentRootNode', 'alphaClubRootNode', 'alphaAgentRootNode'];
+    report.actualEnsRootReadback = {};
+    for (const [index, getter] of getterNames.entries()) { const value = await contract[getter](); assert.equal(value, config.constructorArgs.rootNodes[index]); report.actualEnsRootReadback[getter] = value; }
+    rootReadbackAddress = plan.operations[8].predictedAddress;
+    const abi = new ethers.Interface(qualified.records.AGIJobManager.artifact.abi), rootCases = getterNames.map(getter => ({ name: getter, values: { [abi.encodeFunctionData(getter)]: ethers.ZeroHash } }));
+    rootCases.push({ name: 'swapped-agent-and-alphaClub', values: { [abi.encodeFunctionData('agentRootNode')]: config.constructorArgs.rootNodes[2], [abi.encodeFunctionData('alphaClubRootNode')]: config.constructorArgs.rootNodes[1] } });
+    report.ensRootMismatchRefusals = [];
+    for (const testCase of rootCases) { rootReadbackFault = testCase.values; await assert.rejects(manager.observe({ campaign, step: 8, operationId: 'manager-8', privateDir: privateRoot })); rootReadbackFault = null; report.ensRootMismatchRefusals.push(testCase.name); assert.equal(rawRelayCalls, 9); }
+    assert.equal((await manager.observe({ campaign, step: 8, operationId: 'manager-8', privateDir: privateRoot })).verified, true);
+    check('Four distinct original ENS subname roots match actual constructor-order getters; genuine native prefix observation refuses each wrong root and the agent/alphaClub swap without submission');
+  }
   if (SUPPORTED.runtimeEvidenceRequired) { report.authority = await acceptanceAuthority({ adapter: 'manager', source: campaign.reviewedManifest.source, graph: Object.fromEntries(plan.operations.map(op => [op.name, op.predictedAddress])), creator: creator.address, governor: P.GOVERNOR, provider: local }); assert.equal(report.authority.boundedCoreStateMatches, true); check('Actual deployed paused Manager core authority getters match d76 and no creator exceptions; external dependency/controller evidence remains pending'); }
   const exported = await manager.exportVerification({ campaign, step: 8, privateDir: privateRoot }); assert.equal(exported.tasks.length, 9); assert.ok(exported.tasks.every(x => x.creation.runtimeVerified && x.creation.finalized && /^v\d+\.\d+\.\d+\+commit\.[a-f0-9]{8}$/.test(x.compilerVersion))); check('Native offline export preserved plus independently reverified nine runtime/receipt task bindings');
   report.verificationTasks = exported.tasks.map(({ standardInput, ...task }) => task); if (exported.runtimeEvidence) report.runtimeEvidence = exported.runtimeEvidence;

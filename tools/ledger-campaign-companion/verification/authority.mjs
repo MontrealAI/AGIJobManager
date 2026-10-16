@@ -7,6 +7,7 @@ const pins = {
   manager: { repository: 'MontrealAI/AGIJobManager', commit: 'c2f72180d2f0d6ecd5b92d8e5197c5344be2c699', tree: '8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f' },
   alpha: { repository: 'MontrealAI/AGI-Alpha-Agent-v0', commit: '38064bec3423218f87c6b81760ac6768b3e7d4e5', tree: '4fe59cb9b8c7e65ea087fd27b0e2abed6bf34c68' },
 };
+const correctedManager = { repository: 'MontrealAI/AGIJobManager', commit: 'd371d95cfcc44b9133cda4bba55304f727917f18', tree: '93faf6e9a6875026c1eb9bc2f0f9bdada308d296' };
 const managerLibraries = ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility', 'JobSettlement', 'JobValidation'];
 const managerOwner = ['setSettlementWallets', 'lockIdentityConfiguration', 'pause', 'unpause', 'pauseIntake', 'unpauseIntake', 'pauseAll', 'unpauseAll', 'setSettlementPaused', 'resolveStaleDispute', 'blacklistAgent', 'blacklistValidator', 'delistJob', 'addModerator', 'removeModerator', 'updateEnsRegistry', 'updateNameWrapper', 'setEnsJobPages', 'setUseEnsJobTokenURI', 'updateRootNodes', 'updateMerkleRoots', 'setBaseIpfsUrl', 'setRequiredValidatorApprovals', 'setRequiredValidatorDisapprovals', 'setPremiumReputationThreshold', 'setVoteQuorum', 'setMaxJobPayout', 'setJobDurationLimit', 'setMaxActiveJobsPerAgent', 'setCompletionReviewPeriod', 'setDisputeReviewPeriod', 'setValidatorBondParams', 'setAgentBondParams', 'setAgentBond', 'setValidatorSlashBps', 'setChallengePeriodAfterApproval', 'setValidationRewardPercentage', 'addAdditionalValidator', 'removeAdditionalValidator', 'addAdditionalAgent', 'removeAdditionalAgent', 'withdrawUSDC', 'rescueETH', 'rescueERC20', 'rescueToken', 'setAgentNftRequired', 'addAGIType', 'disableAGIType'];
 const stop = code => { throw Object.assign(new Error(code), { code }); };
@@ -17,7 +18,7 @@ const address = value => { try { const found = getAddress(value); need(found !==
 const row = (component, authority, powers, limitations) => ({ component, authority, powers, limitations });
 
 export function authorityScope(adapter, source) {
-  need(pins[adapter] && canonicalJson(source) === canonicalJson(pins[adapter]), 'AUTHORITY_SOURCE_UNREVIEWED');
+  need(pins[adapter] && (canonicalJson(source) === canonicalJson(pins[adapter]) || adapter === 'manager' && canonicalJson(source) === canonicalJson(correctedManager)), 'AUTHORITY_SOURCE_UNREVIEWED');
   const common = {
     schema: 'manual-ledger-authority-scope-v1', adapter, source: copy(source),
     newProxies: [], newImplementations: [], proxyScope: 'No proxy or upgrade entry point exists in the selected new direct-CREATE architecture; external dependencies require their own inventory.',

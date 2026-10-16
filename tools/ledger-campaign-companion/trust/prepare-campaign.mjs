@@ -3,7 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { Transaction, getAddress, keccak256 } from 'ethers';
-import manager, { MANAGER_CURRENT } from '../coordinators/manager.mjs';
+import manager, { MANAGER_CORRECTED } from '../coordinators/manager.mjs';
 import alpha, { ALPHA_CURRENT } from '../coordinators/alpha.mjs';
 import { execute, privateWrite, readJson, observeSource, sha256, canonical } from '../coordinators/common.mjs';
 import { assertCampaignUnstartedForReplacement, assertTrustedSigningHost } from './local-build.mjs';
@@ -64,6 +64,7 @@ console.log(JSON.stringify({planPath:request.outputPlan,reportPath:request.outpu
 }finally{for(const lock of locks.reverse()){if(id==='manager')managerLocks.releaseCreator(lock);else alphaLocks.releaseActor(lock);}}
 })().catch(()=>{console.error('CREATOR_SELECTION_NATIVE_READ_ONLY_STOPPED');process.exitCode=1;});`;
 export const nativeSelectionQualification = Object.freeze({ command: NATIVE_SELECTION, scope: 'READ_ONLY_PREPARATION_NO_SIGNING_IMPORT_SESSION_OR_RELAY' });
+export function assertSelectableNativeRevision(adapter,supported){const selected=adapter==='manager'?MANAGER_CORRECTED:adapter==='alpha'?ALPHA_CURRENT:null;need(selected&&supported?.commit===selected.commit&&supported?.tree===selected.tree,'SELECTION_CURRENT_NATIVE_REVISION_REQUIRED');}
 
 export function deriveSelectedCampaign({ template, plan, creator, governorNonce, outputDirectory }) {
   const selected = getAddress(creator); need(selected !== GOVERNOR && selected !== '0x0000000000000000000000000000000000000000', 'SELECTION_ACTORS_INVALID');
@@ -100,7 +101,7 @@ export async function prepareSelectedCampaign({ campaignPath, reviewedCampaignSh
   assertTrustedSigningHost(); privateDirectory(outputDirectory); need(typeof priorStateDirectory === 'string' && path.isAbsolute(priorStateDirectory) && path.resolve(priorStateDirectory) === priorStateDirectory, 'SELECTION_ORIGINAL_STATE_PATH_REQUIRED'); need(outputDirectory !== packageRoot && !outputDirectory.startsWith(packageRoot + path.sep), 'SELECTION_OUTPUT_ISOLATION_REQUIRED'); need(fs.readdirSync(outputDirectory).length === 0, 'SELECTION_FRESH_OUTPUT_DIRECTORY_REQUIRED');
   const template = readPrivate(campaignPath); need(/^[a-f0-9]{64}$/.test(reviewedCampaignSha256) && sha256(JSON.stringify(canonical(template))) === reviewedCampaignSha256, 'SELECTION_INDEPENDENT_REVIEW_REQUIRED');
   const base = { manager, alpha }[template.adapter]; need(base, 'SELECTION_ARCHITECTURE_UNSUPPORTED'); const adapter = base.forCampaign(template), supported = adapter.supported;
-  need(supported.commit === (template.adapter === 'manager' ? MANAGER_CURRENT.commit : ALPHA_CURRENT.commit), 'SELECTION_CURRENT_NATIVE_REVISION_REQUIRED');
+  assertSelectableNativeRevision(template.adapter,supported);
   const selected = getAddress(creator); need(selected !== GOVERNOR && selected !== '0x0000000000000000000000000000000000000000', 'SELECTION_ACTORS_INVALID');
   need(!outputDirectory.startsWith(template.coordinator.checkout + path.sep) && outputDirectory !== priorStateDirectory && !outputDirectory.startsWith(priorStateDirectory + path.sep), 'SELECTION_OUTPUT_ISOLATION_REQUIRED');
   const guard = () => assertCampaignUnstartedForReplacement({ privateDirectory: priorStateDirectory, nativeSessionPath: template.coordinator.sessionPath }); guard();

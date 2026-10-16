@@ -1,7 +1,7 @@
 import * as fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import manager from '../coordinators/manager.mjs';
+import manager, { MANAGER_CORRECTED } from '../coordinators/manager.mjs';
 import alpha from '../coordinators/alpha.mjs';
 import jobs from '../coordinators/jobs.mjs';
 import { createCampaignEngine } from './campaign-engine.mjs';
@@ -42,7 +42,10 @@ async function main() {
   if (sha256(campaign) !== configuration.reviewedCampaignSha256) throw new Error();
   const governor = '0xd76ad27a1bcf8652e7e46be603fa742fd1c10a99';
   if (campaign.actors?.governor?.toLowerCase() !== governor || campaign.actors?.creator?.toLowerCase() === governor) throw new Error();
-  if (campaign.adapter === 'manager') throw Object.assign(new Error(), { code: 'MANAGER_NATIVE_ENS_ROOT_ORDER_CORRECTION_REQUIRED' });
+  if (campaign.adapter === 'manager') {
+    const correctedCandidate = adapter.supported.commit === MANAGER_CORRECTED.commit && adapter.supported.tree === MANAGER_CORRECTED.tree;
+    throw Object.assign(new Error(), { code: correctedCandidate ? 'MANAGER_EXACT_NATIVE_QUALIFICATION_HANDOFF_REQUIRED' : 'MANAGER_NATIVE_ENS_ROOT_ORDER_CORRECTION_REQUIRED' });
+  }
   await adapter.inspectCampaign(campaign);
   const policy = await privateJson(configuration.trustPolicyPath);
   const trustedContext = createTrustedCampaignContext({ campaign, plan: readJson(campaign.coordinator.planPath), policy, expectedPolicySha256: configuration.reviewedTrustPolicySha256, sourceRoot: campaign.coordinator.checkout, observeSource: () => observeSource(campaign.coordinator, adapter.supported), nativePlanValidated: true });

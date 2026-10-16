@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { Wallet, Transaction, keccak256 } from 'ethers';
-import manager, { MANAGER_SUPPORTED, MANAGER_CURRENT, MANAGER_COMPATIBILITY } from '../coordinators/manager.mjs';
+import manager, { MANAGER_SUPPORTED, MANAGER_CURRENT, MANAGER_CORRECTED, MANAGER_COMPATIBILITY } from '../coordinators/manager.mjs';
 import alpha, { ALPHA_SUPPORTED, ALPHA_CURRENT, ALPHA_COMPATIBILITY } from '../coordinators/alpha.mjs';
 import { comparePacket, validateSignedRaw, reviewedOperation, runtime, sha256, cleanEnvironment } from '../coordinators/common.mjs';
 import { policyDigest, validateIntent } from '../src/envelope.mjs';
@@ -116,7 +116,7 @@ for(const packet of [{relayAlreadyAttempted:true},{status:'submission-attempted'
 });
 
 for (const [id, adapter, legacy, current, entries] of [['manager', manager, MANAGER_SUPPORTED, MANAGER_CURRENT, MANAGER_COMPATIBILITY], ['alpha', alpha, ALPHA_SUPPORTED, ALPHA_CURRENT, ALPHA_COMPATIBILITY]]) test(`${id} exact source dispatch preserves legacy and isolates current compatibility identity`, () => {
-  assert.equal(entries.length, 2); assert.equal(entries[0], legacy);
+  assert.equal(entries.length, id === 'manager' ? 3 : 2); assert.equal(entries[0], legacy);
   for (const supported of entries) {
     const source = { repository: supported.repository, commit: supported.commit, tree: supported.tree };
     const concrete = adapter.forCampaign({ reviewedManifest: { source } });
@@ -129,4 +129,10 @@ test('Manager unsigned unresolved observation omits absent transaction hash', as
   const fixture = await observationAdapter('manager', { status: 'handed-off', noHash: true });
   const result = await fixture.run(); assert.equal(result.state, 'recovery-required');
   assert.equal(Object.hasOwn(result, 'transactionHash'), false); assert.equal(result.acknowledgement, undefined);
+});
+
+test('Corrected Manager exact source is additive and cannot inherit the c2 tree', () => {
+  assert.equal(MANAGER_COMPATIBILITY.includes(MANAGER_CURRENT), true); assert.equal(MANAGER_COMPATIBILITY.includes(MANAGER_CORRECTED), true);
+  assert.equal(MANAGER_CORRECTED.commit, 'd371d95cfcc44b9133cda4bba55304f727917f18');
+  assert.throws(() => manager.forCampaign({ reviewedManifest: { source: { repository: MANAGER_CORRECTED.repository, commit: MANAGER_CORRECTED.commit, tree: MANAGER_CURRENT.tree } } }), /UNREVIEWED_COORDINATOR_SOURCE/);
 });

@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { Wallet, Transaction, keccak256 } from 'ethers';
-import manager, { MANAGER_CURRENT } from '../coordinators/manager.mjs';
+import manager, { MANAGER_CURRENT, MANAGER_CORRECTED } from '../coordinators/manager.mjs';
 import alpha, { ALPHA_CURRENT } from '../coordinators/alpha.mjs';
 import { execute, observeSource, privateWrite, readJson, sha256, canonical } from '../coordinators/common.mjs';
 import { policyDigest } from '../src/envelope.mjs';
@@ -16,7 +16,8 @@ import { assertCampaignUnstartedForReplacement } from '../trust/local-build.mjs'
 
 const id=process.env.SELECTION_ACCEPT_ADAPTER,root=process.env.SELECTION_ACCEPT_CHECKOUT,output=process.env.SELECTION_ACCEPT_REPORT;
 assert.ok(['manager','alpha'].includes(id)&&path.isAbsolute(root)&&path.isAbsolute(output));
-const supported=id==='manager'?MANAGER_CURRENT:ALPHA_CURRENT,base=id==='manager'?manager:alpha,source=observeSource({checkout:root},supported),load=createRequire(path.join(root,id==='manager'?'package.json':'tests/contracts/package.json'));
+const managerProfile=process.env.SELECTION_ACCEPT_MANAGER_PROFILE||'current';assert.ok(['current','corrected'].includes(managerProfile));
+const supported=id==='manager'?(managerProfile==='corrected'?MANAGER_CORRECTED:MANAGER_CURRENT):ALPHA_CURRENT,base=id==='manager'?manager:alpha,source=observeSource({checkout:root},supported),load=createRequire(path.join(root,id==='manager'?'package.json':'tests/contracts/package.json'));
 const native=load(path.join(root,id==='manager'?'hardhat/scripts/core-creation-plan.cjs':'tests/contracts/scripts/mainnet-authority.js'));
 const {ethers}=id==='manager'?await load(path.join(root,'hardhat/scripts/runtime.cjs')).getRuntime():load('hardhat');
 const provider=ethers.provider,temp=fs.mkdtempSync(path.join(os.tmpdir(),'companion-selection-'+id+'-'));fs.chmodSync(temp,0o700);
@@ -40,7 +41,9 @@ try{
     F.actualCatalog(temp);const catalogPath=path.join(temp,'catalog.json'),catalog=readJson(catalogPath),entry=Object.values(catalog.builds)[0],buildId='creator-selection-real-current-source';
     entry.source=native.observedRevision();catalog.builds={[buildId]:entry};fs.writeFileSync(catalogPath,JSON.stringify(catalog));
     const catalogSha256=sha256(fs.readFileSync(catalogPath)),qualified=C.loadQualifiedBuild({catalogPath,catalogSha256,buildId,expectedRevision:entry.source}),block=await provider.send('eth_getBlockByNumber',['latest',false]);
-    plan=native.makePlan(F.config(creator,{block:{number:Number(BigInt(block.number)),hash:block.hash},registry}),qualified,entry.source);catalogFields={catalogPath,catalogSha256,buildId};
+    const config=F.config(creator,{block:{number:Number(BigInt(block.number)),hash:block.hash},registry});
+    if(managerProfile==='corrected')config.constructorArgs.rootNodes=['club.agi.eth','agent.agi.eth','alpha.club.agi.eth','alpha.agent.agi.eth'].map(ethers.namehash);
+    plan=native.makePlan(config,qualified,entry.source);catalogFields={catalogPath,catalogSha256,buildId};
   }else{
     const legacy=load(path.join(root,'tests/contracts/scripts/mainnet.js'));await load(path.join(root,'tests/contracts/test/utils/token.js')).installToken();
     for(const[name,address]of[['MockAscensionENS',legacy.ENS],['MockAscensionWrapper',legacy.WRAPPER]]){const deployed=await(await ethers.getContractFactory(name)).deploy();await provider.send('hardhat_setCode',[address,await provider.getCode(deployed.target)]);}
@@ -71,6 +74,7 @@ try{
   async function run(label,inputPlanPath=planPath){const dir=path.join(temp,label);fs.mkdirSync(dir,{mode:0o700});const request={adapter:id,checkout:root,creator:selected,planPath:inputPlanPath,lockDirectory,...catalogFields,outputPlan:path.join(dir,'selected-plan.json'),outputReport:path.join(dir,'native-read-only-preflight.json'),requestPath:path.join(dir,'request.json')};write(request.requestPath,request);return{dir,request,result:JSON.parse(await execute(config,supported,'-e',[nativeSelectionQualification.command,request.requestPath],id==='manager'?{MANAGER_READ_RPC_URL:config.readRpcUrl}:{ALPHA_READ_ONLY_RPC_URL:config.readRpcUrl}))};}
   stage='actual-native-selection';const selectedRun=await run('successful-selection'),newPlan=readJson(selectedRun.request.outputPlan);
   assert.equal(selectedRun.result.creatorNonce,7);assert.equal(selectedRun.result.governorNonce,4);assert.equal(selectedRun.result.externalTransactions,false);assert.notEqual(newPlan.payloadSha256,plan.payloadSha256);assert.equal(sha256(fs.readFileSync(planPath)),originalPlanHash);assert.deepEqual(fs.readdirSync(lockDirectory),[]);
+  if(id==='manager'&&managerProfile==='corrected'){assert.equal(new Set(plan.config.constructorArgs.rootNodes).size,4);assert.ok(plan.config.constructorArgs.rootNodes.every(root=>root!=='0x'+'00'.repeat(32)));assert.deepEqual(newPlan.config.constructorArgs.rootNodes,plan.config.constructorArgs.rootNodes);report.distinctRootArguments=plan.config.constructorArgs.rootNodes;report.rootArgumentOrder=['clubRootNode','agentRootNode','alphaClubRootNode','alphaAgentRootNode'];report.checks.push('New d371 preparation separately preserved all four distinct nonzero ENS role-root arguments in actual constructor order; deployed getter qualification is separate');}
   const selectedCampaign=deriveSelectedCampaign({template:{...campaign,__reviewedPlanConfig:plan.config},plan:newPlan,creator:selected,governorNonce:4,outputDirectory:selectedRun.dir});adapter.inspectCampaign(selectedCampaign);
   const newCreations=id==='manager'?newPlan.operations:newPlan.transactions;
   for(let i=0;i<creations.length;i++){assert.equal(Transaction.from(selectedCampaign.reviewedManifest.operations[i].unsignedHex).nonce,7+i);assert.notEqual(newCreations[i].predictedAddress||newCreations[i].expectedAddress,creations[i].predictedAddress||creations[i].expectedAddress);}

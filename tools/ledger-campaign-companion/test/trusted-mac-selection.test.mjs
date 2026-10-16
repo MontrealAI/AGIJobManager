@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { Transaction, getCreateAddress, keccak256 } from 'ethers';
-import { deriveSelectedCampaign } from '../trust/prepare-campaign.mjs';
+import { deriveSelectedCampaign, assertSelectableNativeRevision } from '../trust/prepare-campaign.mjs';
+import { MANAGER_CURRENT, MANAGER_CORRECTED, MANAGER_SUPPORTED } from '../coordinators/manager.mjs';
+import { ALPHA_CURRENT } from '../coordinators/alpha.mjs';
 import { policyDigest, validateIntent } from '../src/envelope.mjs';
 
 const creator='0x1111111111111111111111111111111111111111',selected='0x2222222222222222222222222222222222222222',governor='0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99';
@@ -25,3 +27,4 @@ test('replacement never transfers old relay or explorer submission authorization
 test('governor, zero creator, mismatched native actor and fee escalation are refused',()=>{for(const mutate of [f=>{f.creator=governor;},f=>{f.creator='0x0000000000000000000000000000000000000000';},f=>{f.plan.creator=creator;},f=>{f.template.actors.governor=creator;},f=>{f.plan.operations[0].envelope.maxFeePerGas='101';}]){const f=fixture();mutate(f);assert.throws(()=>deriveSelectedCampaign(f));}});
 test('experimental Linux cannot invoke the production Mac creator-preparation path',()=>{if(process.platform==='darwin')return;const result=spawnSync(process.execPath,['trust/prepare-campaign.mjs','--campaign','/irrelevant','--reviewed-campaign-sha256','a'.repeat(64),'--creator',selected,'--prior-state','/irrelevant','--output-directory','/irrelevant'],{encoding:'utf8'});assert.equal(result.status,1);assert.match(result.stderr,/CREATOR_SELECTION_BLOCKED/);assert.equal(result.stdout,'');});
 test('optional creation helper exposes only explicit preparation arguments',()=>{const output=execFileSync(process.execPath,['trust/prepare-campaign.mjs','--help'],{encoding:'utf8'});assert.match(output,/--creator/);assert.match(output,/--prior-state/);assert.doesNotMatch(output,/--relay|--sign|--private-key|--seed/);});
+test('new preparation selects d371 separately; c2 and prior source evidence remain historical',()=>{assert.doesNotThrow(()=>assertSelectableNativeRevision('manager',MANAGER_CORRECTED));assert.doesNotThrow(()=>assertSelectableNativeRevision('alpha',ALPHA_CURRENT));for(const source of [MANAGER_CURRENT,MANAGER_SUPPORTED,{...MANAGER_CORRECTED,tree:'a'.repeat(40)}])assert.throws(()=>assertSelectableNativeRevision('manager',source),/CURRENT_NATIVE_REVISION_REQUIRED/);assert.throws(()=>assertSelectableNativeRevision('jobs',{}),/CURRENT_NATIVE_REVISION_REQUIRED/);});

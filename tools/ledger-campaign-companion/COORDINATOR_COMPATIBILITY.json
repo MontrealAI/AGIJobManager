@@ -399,6 +399,123 @@
           "No native plan expiry exists in this revision. Companion wall-clock expiry does not invalidate an Ethereum signature.",
           "Exact explorer acceptance and external token/proxy/ENS/controller permissions remain unverified.",
           "Existing-marker creator policies require exact additional companion acceptance; no delegation is changed."
+        ],
+        "laterImplementationIntegration": [
+          {
+            "id": "alpha-380-shared-d371-implementation-integration",
+            "reason": "Additive exact d371 Manager authority pin changed the shared authority module. The same exact Alpha380 source was independently rerun; historical acceptance above remains unchanged.",
+            "evidenceFileName": "alpha-380-d371-integration-final.json",
+            "evidenceSha256": "6665253492d1b09a349a71a3535674fd728e7f86aa256e6d98c025ec671be7bc",
+            "acceptanceCodeSha256": {
+              "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+              "coordinators/alpha.mjs": "328d47d8408a2376f910645f3f60110882878280db95f2509b03ef698024d66b",
+              "verification/configuration.mjs": "f6880a939e1db8552a61dfb880c1f9b8aba2348c4382e6fd3661bf6a2715276a",
+              "verification/explorer.mjs": "37713b91d54e105b4e4da800133de07fc98f0f757d53cd92550b98435719b70d",
+              "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+              "coordinators/runtime-evidence.mjs": "f55a9a173b88f26616232f7438cdfa1458632dfd9ad4f41721db4a4c9f00769a",
+              "coordinators/native-runtime-snapshot.cjs": "152257035d3cf1dc831746feea5856be8189186f04ff590e82ea409d931cc453",
+              "bridge/campaign-engine.mjs": "e007308c4ce9b0663a8c048823a2f1f037141c0f7f7ab83246510d448adaa188",
+              "bridge/private-store.mjs": "f2d4f6500291c5ec537c58d19b9e864e3b5fd16b9f2438d7cb6342eb377330c5",
+              "trust/local-build.mjs": "c8a81a093d6d08f762ff246415e1d51e264e6f8968352ed47373cf2497b31a75",
+              "trust/prepare-review.mjs": "f2973bee875ec5fe7a5dbfb179a091186ac5184b37ec5b39d562f7dc471a5108",
+              "trust/soljson-driver.cjs": "8af8df9dd5d4176caddfb2ae1e95049ef1b250c739aa24d2ce3faefd1a63f383",
+              "verification/authority.mjs": "4385aa543a6860597b74c62326fb88daad29f4de9a39ff45e08e3c02cda29365",
+              "scripts/accept-local-trust.mjs": "b0b130a4b3880a87cef19c5d49f8bcf96b811757d950860ea3fb2cf5d898637a",
+              "scripts/accept-alpha-coordinator.mjs": "eabb065ee6767b75b17db0bfdfc4420dc51b856002fe3836c3cdc66a7f1edd04"
+            },
+            "acceptanceStatus": "ACTUAL_NATIVE_COMPANION_MECHANICS_PASSED",
+            "actualSyntheticGovernorSignedOperations": 7,
+            "verificationTargetCount": 5,
+            "runtimeEvidenceCount": 5,
+            "separateD76UnsignedTrustedCompilerBindings": 7,
+            "separateD76ActualInitialCreations": 5,
+            "separateD76InitialUncommissionedStateMatches": true,
+            "actualD76GovernorSignatures": 0,
+            "separateD76GovernorBindingsExecuted": 0,
+            "rawRelayRequests": 7,
+            "scope": "Unforked disposable Osaka, synthetic keys and mock dependencies, normal child-scoped local TLS, finalized=latest; not physical Ledger/public-provider/finality qualification",
+            "physicalLedger": false,
+            "mainnetTransactions": 0,
+            "productionApproved": false
+          }
+        ]
+      },
+      {
+        "id": "manager-d371-empty",
+        "repository": "MontrealAI/AGIJobManager",
+        "commit": "d371d95cfcc44b9133cda4bba55304f727917f18",
+        "tree": "93faf6e9a6875026c1eb9bc2f0f9bdada308d296",
+        "nodeVersions": [
+          "24.19.0"
+        ],
+        "creatorProfiles": [
+          "empty-eoa-direct-create.v1"
+        ],
+        "packetSchema": "manager-external-signing-handoff-v1",
+        "signedImport": "JSON {raw}; full private capability remains separate",
+        "operationCount": 9,
+        "verificationTargetCount": 9,
+        "runtimeEvidenceCount": 9,
+        "acceptanceStatus": "ACTUAL_NATIVE_COMPANION_MECHANICS_AND_DISTINCT_ENS_ROOTS_PASSED",
+        "productionStatus": "NO_GO_EXACT_OWNER_NATIVE_QUALIFICATION_HANDOFF_PHYSICAL_PROVIDER_EXPLORER_AND_EXTERNAL_AUTHORITY_PENDING",
+        "evidenceFileName": "manager-d371-companion-acceptance-final.json",
+        "evidenceSha256": "4741008d4e73c468408f8870039a5ae1b54ce2f8037bd43ebdd0f32db0899811",
+        "acceptanceCodeSha256": {
+          "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+          "coordinators/manager.mjs": "3e8d05abda3d77e78cc04fc0a3d73f8582ab40ebbf3526792bf8d3e5a49cb4f3",
+          "verification/configuration.mjs": "f6880a939e1db8552a61dfb880c1f9b8aba2348c4382e6fd3661bf6a2715276a",
+          "verification/explorer.mjs": "37713b91d54e105b4e4da800133de07fc98f0f757d53cd92550b98435719b70d",
+          "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+          "coordinators/runtime-evidence.mjs": "f55a9a173b88f26616232f7438cdfa1458632dfd9ad4f41721db4a4c9f00769a",
+          "coordinators/native-runtime-snapshot.cjs": "152257035d3cf1dc831746feea5856be8189186f04ff590e82ea409d931cc453",
+          "bridge/campaign-engine.mjs": "e007308c4ce9b0663a8c048823a2f1f037141c0f7f7ab83246510d448adaa188",
+          "bridge/private-store.mjs": "f2d4f6500291c5ec537c58d19b9e864e3b5fd16b9f2438d7cb6342eb377330c5",
+          "trust/local-build.mjs": "c8a81a093d6d08f762ff246415e1d51e264e6f8968352ed47373cf2497b31a75",
+          "trust/prepare-review.mjs": "f2973bee875ec5fe7a5dbfb179a091186ac5184b37ec5b39d562f7dc471a5108",
+          "trust/soljson-driver.cjs": "8af8df9dd5d4176caddfb2ae1e95049ef1b250c739aa24d2ce3faefd1a63f383",
+          "verification/authority.mjs": "4385aa543a6860597b74c62326fb88daad29f4de9a39ff45e08e3c02cda29365",
+          "scripts/accept-local-trust.mjs": "b0b130a4b3880a87cef19c5d49f8bcf96b811757d950860ea3fb2cf5d898637a",
+          "scripts/accept-manager-coordinator.mjs": "cba8e5d98976b47b08cc305a724c597e07df436433d53a2c130a7eb7ba377a13"
+        },
+        "scope": "Unforked disposable Osaka with real source CLI subprocesses and synthetic signatures; finalized=latest and EIP1898 fixture adaptation are not public-provider or consensus proof",
+        "actualTrustedCompilerReproduction": true,
+        "trustedCompilerInputSourceUnits": 91,
+        "trustedCompilerOperationBindings": 9,
+        "actualD76CoreAuthorityMatches": true,
+        "comprehensiveAuthorityComplete": false,
+        "distinctEnsRootNames": [
+          "club.agi.eth",
+          "agent.agi.eth",
+          "alpha.club.agi.eth",
+          "alpha.agent.agi.eth"
+        ],
+        "distinctEnsRoots": [
+          "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16",
+          "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d",
+          "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e",
+          "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e"
+        ],
+        "actualEnsRootReadback": {
+          "clubRootNode": "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16",
+          "agentRootNode": "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d",
+          "alphaClubRootNode": "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e",
+          "alphaAgentRootNode": "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e"
+        },
+        "ensRootMismatchRefusals": [
+          "clubRootNode",
+          "agentRootNode",
+          "alphaClubRootNode",
+          "alphaAgentRootNode",
+          "swapped-agent-and-alphaClub"
+        ],
+        "rawRelayRequests": 9,
+        "genuineEngineFacadeOperations": 1,
+        "mainnetTransactions": 0,
+        "physicalLedger": false,
+        "knownBlockers": [
+          "The implementation owner exact full native qualification handoff for d371 remains separately required; companion acceptance cannot replace it. Production launcher blocks pending that handoff.",
+          "Existing-marker creator policies have not passed this companion acceptance. Select an independently reviewed empty-code Ledger creator before signing and regenerate every affected nonce, prediction and binding, or obtain exact marker-profile acceptance without changing existing delegation.",
+          "Physical Ledger, live independent provider, exact explorer success and full external token/proxy/ENS/controller inventory remain pending."
         ]
       }
     ],
@@ -438,7 +555,58 @@
       "explorerServiceCalls": 0,
       "physicalLedger": false,
       "scope": "Disposable unforked Osaka with actual current native modules; synthetic creator, exact d76 constructor governor, five real CREATEs and two unsigned unexecuted d76 bindings. TLS finalized=latest is a fixture adaptation, not consensus proof.",
-      "limitation": "Receipt/source/runtime verification and exact unsigned call descriptions only. No wallet transaction-envelope enforcement, physical signing, full authority or activation acceptance is inferred."
+      "limitation": "Receipt/source/runtime verification and exact unsigned call descriptions only. No wallet transaction-envelope enforcement, physical signing, full authority or activation acceptance is inferred.",
+      "laterImplementationIntegration": [
+        {
+          "id": "alpha-380-wallet-prebinding-shared-d371-implementation-integration",
+          "reason": "Same exact Alpha380 native prebinding helper rerun after additive d371 authority pin; all historical evidence preserved.",
+          "evidenceFileName": "alpha-380-wallet-prebinding-d371-integration-final.json",
+          "evidenceSha256": "243cbaad2ee7f0248f4ac615a554b16addf738a2b146e466b75934ec49794f7a",
+          "acceptanceCodeSha256": {
+            "verification/native-wallet-snapshot.cjs": "90a365a22d99dc76bc4e93c48bd785e5bb70477f85e238fcff24fcc6b8555f96",
+            "verification/wallet-configuration.mjs": "278405f78d43378376ac14ffed498651b4f52c01a068b97244e6d5e21c576eab",
+            "verification/runtime.mjs": "e80883ec0037f57bf48e88a10f56be01517724d22f0931cbd9534a27408fde52",
+            "verification/authority.mjs": "4385aa543a6860597b74c62326fb88daad29f4de9a39ff45e08e3c02cda29365",
+            "coordinators/common.mjs": "220ab3c60b0bd6d3220bcd7e78d10ef2da17f2c3e20ba02ffc32448d7f116a9d",
+            "scripts/accept-wallet-configuration.mjs": "99f8955c88f801b7c925f02ba2486a0bc8d7c9aefa169a7eface30268f372b02"
+          },
+          "status": "ACTUAL_FIVE_CREATE_PREBINDING_NATIVE_HELPER_PASSED",
+          "actualCreations": 5,
+          "verificationTargetCount": 5,
+          "runtimeEvidenceCount": 5,
+          "initialUncommissionedStateMatches": true,
+          "changedCanonicalReceiptRejected": true,
+          "repeatedReadOnlySnapshotStable": true,
+          "nativeSigningSessionCreated": false,
+          "nativeActorLocksCreated": false,
+          "helperBroadcastRequests": 0,
+          "governorSignatures": 0,
+          "governorBindingSubmissions": 0,
+          "explorerServiceCalls": 0,
+          "physicalLedger": false,
+          "mainnetTransactions": 0,
+          "productionApproved": false,
+          "scope": "Disposable unforked Osaka with actual current native modules; synthetic creator, exact d76 constructor governor, five real CREATEs and two unsigned unexecuted d76 bindings. TLS finalized=latest is a fixture adaptation, not consensus proof."
+        }
+      ]
+    },
+    "correctedManagerFollowOn": {
+      "observedAt": "2026-10-16T19:07:32.170Z",
+      "supersedesNewCampaignTarget": "manager-c2f-empty",
+      "selectedManagerProfile": "manager-d371-empty",
+      "earlierEntriesAndEvidence": "All earlier records above are retained unchanged as historical evidence. No c2f or eb6 acceptance certifies d371.",
+      "ownerNativeQualification": "PENDING_SEPARATE_EXACT_OWNER_HANDOFF",
+      "productionApproved": false,
+      "currentImplementationIntegration": {
+        "bindingEvidenceFileName": "native-d371-integration-current-code-bindings.json",
+        "bindingEvidenceSha256": "fdb478306c0586ea84b522ee1c92d3f989022c1870ff51ce7e12a82cb08463c3",
+        "managerNineOperationsPassed": true,
+        "alphaSevenOperationsPassed": true,
+        "alphaFivePrebindingPassed": true,
+        "allCurrentGuardedCodeMatches": true,
+        "ownerFullNativeQualificationHandoff": "PENDING_SEPARATE_SCOPE",
+        "productionApproved": false
+      }
     }
   }
 }

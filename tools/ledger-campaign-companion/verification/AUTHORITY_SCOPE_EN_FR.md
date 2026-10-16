@@ -4,11 +4,16 @@ This inventory describes the selected new direct-CREATE architectures at the exa
 
 | Candidate | Exact source commit | Exact source tree | New components |
 |---|---|---|---|
-| Manager PR #1586 | `c2f72180d2f0d6ecd5b92d8e5197c5344be2c699` | `8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f` | Eight linked libraries and AGIJobManager |
+| Manager PR #1586 — corrected candidate | `d371d95cfcc44b9133cda4bba55304f727917f18` | `93faf6e9a6875026c1eb9bc2f0f9bdada308d296` | Eight linked libraries and AGIJobManager |
+| Manager historical review candidate | `c2f72180d2f0d6ecd5b92d8e5197c5344be2c699` | `8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f` | Preserved source inventory and ENS-index defect evidence; no current deployment clearance |
 | Alpha PR #4827 | `38064bec3423218f87c6b81760ac6768b3e7d4e5` | `4fe59cb9b8c7e65ea087fd27b0e2abed6bf34c68` | Five direct contracts and two governor binding transactions |
 | Jobs | No supported external-manual adapter accepted in this inventory | Pending owner handoff and exact acceptance | No signing or verification support inferred |
 
 Source review: Manager `contracts/AGIJobManager.sol`, `contracts/utils/*.sol`, `hardhat/scripts/{qualified-build-catalog,core-creation-plan,deployment-safety}.cjs`; Alpha `contracts/ascension/*.sol`, `tests/contracts/scripts/mainnet-authority.js`. The exact compiled native closure, source identity and plan must also be checked on the trusted Mac before signing. Ubuntu statements or packet checksums alone do not meet that requirement.
+
+The corrected Manager commit is a direct child of `c2f7218…`. Independent source comparison found only the native verifier's ENS tuple-index correction, the four-distinct-root regression and its source-inventory hashes changed. All Solidity, the seven-argument explicit-governor constructor, compiler settings, dependency locks and all 48 owner-only powers are unchanged. The verifier now matches constructor order: club, agent, Alpha-club, Alpha-agent. The regression covers nine creations, all four original ENS namehashes and getter readbacks, every wrong-root case, the swapped-root case, governor ownership, zero pending owner and paused intake.
+
+This establishes the **static source correction**, not a new runtime qualification. The corrected exact commit requires its own native/coordinator, local-build, receipt/runtime and authority acceptance. Earlier `c2f7218…` evidence and its defective-index finding remain historical and cannot certify `d371d95…`. The authority inventory recognizes both exact sources additively; recognizing a source for read-only reporting does not authorize deployment or activation.
 
 ## Manager
 

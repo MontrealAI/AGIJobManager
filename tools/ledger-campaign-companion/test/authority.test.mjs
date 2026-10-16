@@ -9,6 +9,13 @@ test('scope enumerates exact selected9/5 components and distinct token decimals'
   assert.equal(manager.components.length, 9); assert.equal(alpha.components.length, 5); assert.equal(manager.route.decimals, 6); assert.equal(alpha.route.decimals, 18);
   assert.match(alpha.initialState, /No global pause/); assert.deepEqual(alpha.newProxies, []); assert.deepEqual(manager.newImplementations, []);
 });
+test('corrected Manager d371 inventory is additive while old c2 and Alpha evidence remain source-bound', () => {
+  const corrected = { repository: 'MontrealAI/AGIJobManager', commit: 'd371d95cfcc44b9133cda4bba55304f727917f18', tree: '93faf6e9a6875026c1eb9bc2f0f9bdada308d296' };
+  const current = authorityScope('manager', corrected), historical = authorityScope('manager', pins.manager);
+  assert.deepEqual(current.matrix, historical.matrix); assert.deepEqual(current.components, historical.components); assert.equal(current.source.commit, corrected.commit); assert.equal(historical.source.commit, pins.manager.commit); assert.equal(authorityScope('alpha', pins.alpha).source.commit, pins.alpha.commit);
+  assert.throws(() => authorityScope('manager', { ...corrected, tree: pins.manager.tree }), /AUTHORITY_SOURCE_UNREVIEWED/);
+  assert.throws(() => authorityScope('manager', { ...corrected, commit: 'f'.repeat(40) }), /AUTHORITY_SOURCE_UNREVIEWED/);
+});
 test('Manager matrix contains owner, pending transfer, moderator, fuses, economic config and rescue powers', () => {
   const matrix = authorityScope('manager', pins.manager).matrix, powers = matrix.flatMap(item => item.powers);
   for (const power of ['transferOwnership', 'acceptOwnership', 'resolveDisputeWithCode', 'lockJobENS(jobId,true)', 'setValidatorBondParams', 'setSettlementWallets', 'rescueERC20', 'setAgentNftRequired']) assert.ok(powers.includes(power));

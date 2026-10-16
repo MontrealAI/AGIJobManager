@@ -8,7 +8,8 @@ import { execute, evaluateOffline, need, readJson, sha256, canonical, directory,
 
 export const MANAGER_SUPPORTED = Object.freeze({ id: 'manager', repository: 'MontrealAI/AGIJobManager', commit: 'eb6f725e0b40ac81e50a374304e54a5ff6859fcf', tree: '73347842e4a81767ef14686a607b7aceb4f5d70c', nodeVersions: Object.freeze(['24.19.0']), packetSchema: 'manager-external-signing-handoff-v1', configurationScope: 'Nine core CREATEs only; no governor configuration, ENS changes, funding or activation' });
 export const MANAGER_CURRENT = Object.freeze({ ...MANAGER_SUPPORTED, commit: 'c2f72180d2f0d6ecd5b92d8e5197c5344be2c699', tree: '8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f', runtimeEvidenceRequired: true, creatorProfiles: Object.freeze(['empty-eoa-direct-create.v1']) });
-export const MANAGER_COMPATIBILITY = Object.freeze([MANAGER_SUPPORTED, MANAGER_CURRENT]);
+export const MANAGER_CORRECTED = Object.freeze({ ...MANAGER_CURRENT, commit: 'd371d95cfcc44b9133cda4bba55304f727917f18', tree: '93faf6e9a6875026c1eb9bc2f0f9bdada308d296' });
+export const MANAGER_COMPATIBILITY = Object.freeze([MANAGER_SUPPORTED, MANAGER_CURRENT, MANAGER_CORRECTED]);
 function createPinnedManagerAdapter(supported) {
 const COUNT = 9;
 function paths(config, privateDir) {
@@ -55,7 +56,7 @@ function expected(state, step, operationId, campaign) {
       graph: plan.operations.map((x, index) => ({ name: x.name, address: x.predictedAddress, constructorArguments: x.constructorArguments, libraries: x.libraries,
         ...describeCreation({ unsignedHex: campaign.reviewedManifest.operations[index].unsignedHex, abi: records[index].abi, linkedBytecode: records[index].linkedBytecode, expectedLinkedBytecodeHash: keccak256(records[index].linkedBytecode), constructorArguments: x.constructorArguments }),
         displayScope: 'HOST_DECODED_NOT_DEVICE_CONFIRMED', expectedPostState: { address: x.predictedAddress, runtime: { verification: 'Exact pinned compiler artifact and new-graph library links', qualifiedName: x.qualifiedName, catalogSha256: plan.catalogSha256, buildDigest: plan.buildDigest },
-          ...(x.name === 'AGIJobManager' ? { owner: plan.governor, pendingOwner: '0x0000000000000000000000000000000000000000', paused: true, settlementPaused: false, ensJobPages: '0x0000000000000000000000000000000000000000', usdcToken: plan.config.constructorArgs.usdcTokenAddress, wallet30: plan.config.constructorArgs.settlementWallets[0], wallet10: plan.config.constructorArgs.settlementWallets[1], creatorModerator: false, creatorAdditionalAgent: false, creatorAdditionalValidator: false, nextJobId: '0', activationAuthorized: false } : {}) } })) }; },
+          ...(x.name === 'AGIJobManager' ? { owner: plan.governor, pendingOwner: '0x0000000000000000000000000000000000000000', paused: true, settlementPaused: false, ensJobPages: '0x0000000000000000000000000000000000000000', usdcToken: plan.config.constructorArgs.usdcTokenAddress, wallet30: plan.config.constructorArgs.settlementWallets[0], wallet10: plan.config.constructorArgs.settlementWallets[1], clubRootNode: plan.config.constructorArgs.rootNodes[0], agentRootNode: plan.config.constructorArgs.rootNodes[1], alphaClubRootNode: plan.config.constructorArgs.rootNodes[2], alphaAgentRootNode: plan.config.constructorArgs.rootNodes[3], creatorModerator: false, creatorAdditionalAgent: false, creatorAdditionalValidator: false, nextJobId: '0', activationAuthorized: false } : {}) } })) }; },
     async prepare({ campaign, step, privateDir }) {
       const checked = reviewedOperation(campaign, supported, COUNT, step); paths(checked.config, privateDir);
       if (!fs.existsSync(checked.config.sessionPath)) await command(campaign, privateDir, 'start');

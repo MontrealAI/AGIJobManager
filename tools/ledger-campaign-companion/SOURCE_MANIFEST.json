@@ -10,8 +10,8 @@
     },
     {
       "path": "COORDINATOR_COMPATIBILITY.json",
-      "bytes": 22254,
-      "sha256": "39022c11062678ab1ef642f26073433d2966d26cee8e5800dba1977aeb92f6e8"
+      "bytes": 33680,
+      "sha256": "310f24dc5df1fdedac12adc71dce485bfc6cd21f090dd5b6e806fd5e9d80f665"
     },
     {
       "path": "DEPENDENCIES.json",
@@ -20,8 +20,8 @@
     },
     {
       "path": "DEPLOYMENT_DECISION_EN_FR.md",
-      "bytes": 13479,
-      "sha256": "642d7a3afb2c31a98d964a18c143bb0bb6fab8e960717440a54bf848fa594ae3"
+      "bytes": 15921,
+      "sha256": "b3b26ad3b014862757566f6fb4bacbb4a47a5b49af9d984e96a436d58a83c322"
     },
     {
       "path": "LEGACY_SOURCE_PREVIEW_2_START_HERE_EN_FR.txt",
@@ -40,8 +40,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 18904,
-      "sha256": "752fe7e9a7316cc3d0d263f38d07853818c459654f73b6cfa4ec271a65b0e263"
+      "bytes": 20356,
+      "sha256": "9c105ebf65578b82a2eede94667c0964f4c7d3216d9ea0949ebbfaacf5850fee"
     },
     {
       "path": "SDK_CONTEXT_POLICY_EN_FR.md",
@@ -60,8 +60,8 @@
     },
     {
       "path": "START_HERE_EN_FR.txt",
-      "bytes": 7679,
-      "sha256": "afa495bcd1cca8a496e5b46ab0d0c8a4c4b38e573cb597804d26915d20ee9bba"
+      "bytes": 7797,
+      "sha256": "15c56167edffd30d0421a6ff77650e87546eed201765b1c0435b5c6a3c4f4d72"
     },
     {
       "path": "THIRD_PARTY.md",
@@ -70,8 +70,8 @@
     },
     {
       "path": "VALIDATION.md",
-      "bytes": 9302,
-      "sha256": "21fd4d65286098f740f5ec43377e2a2a466bf83e42fd7f948dcc32d42edcfd83"
+      "bytes": 11630,
+      "sha256": "adffdd4d1a4e16032ceeec6b8c2167cacdb461a28e08ee8dea03d69ef06d5ffe"
     },
     {
       "path": "bridge/README.md",
@@ -105,8 +105,8 @@
     },
     {
       "path": "bridge/start.mjs",
-      "bytes": 6848,
-      "sha256": "f3816d862c0ac44e07bbf60e5731cc2dcfeebb060682cde6a32e1e8ad49daec5"
+      "bytes": 7097,
+      "sha256": "26098a9b2e3f0e9942bc1f66d1493e66e0aca5a675cbdcc6ae30d0ffba0c6356"
     },
     {
       "path": "campaign-signer.html",
@@ -140,8 +140,8 @@
     },
     {
       "path": "coordinators/manager.mjs",
-      "bytes": 16665,
-      "sha256": "bb97b227b16d39f3516693df8ac1fc4d0f754cb5cc5031d329a261608b2f07f6"
+      "bytes": 17094,
+      "sha256": "3e8d05abda3d77e78cc04fc0a3d73f8582ab40ebbf3526792bf8d3e5a49cb4f3"
     },
     {
       "path": "coordinators/native-runtime-snapshot.cjs",
@@ -190,18 +190,18 @@
     },
     {
       "path": "scripts/accept-manager-coordinator.mjs",
-      "bytes": 21770,
-      "sha256": "4fb6eb21fb0c3a1f1f76bf6d85cbd3fd2e4051c8b50526ded303662ade0f0e60"
+      "bytes": 24219,
+      "sha256": "cba8e5d98976b47b08cc305a724c597e07df436433d53a2c130a7eb7ba377a13"
     },
     {
       "path": "scripts/accept-prepare-campaign.mjs",
-      "bytes": 15340,
-      "sha256": "69c915f2e62dccca5c4c349ff6962843bfa53e5e22c2a03bf81decaa68f295de"
+      "bytes": 16397,
+      "sha256": "caca6a8c076825988b1f2eb814582cf906db2c4075efb1bcdef4f541f5e0e817"
     },
     {
       "path": "scripts/accept-source-checkout.mjs",
-      "bytes": 2182,
-      "sha256": "212bbbc2d1b3cb4beacecea1e1d44e25ec027b2bfe63f4e0b9addd4c0e42dabf"
+      "bytes": 2444,
+      "sha256": "61385af5a7851f758ebbfe14bed988c791b4f1258471fb768660ad82bc9fc7c8"
     },
     {
       "path": "scripts/accept-wallet-configuration.mjs",
@@ -325,8 +325,8 @@
     },
     {
       "path": "test/authority.test.mjs",
-      "bytes": 4623,
-      "sha256": "f1aea5d9037b41665fc245b81eb818113804e55b3fa341f5db0d725449e9b8d2"
+      "bytes": 5579,
+      "sha256": "2d7869396264e90f7350940d5c02931650fceb2b91a26b3b477db21c29a30651"
     },
     {
       "path": "test/bridge-actor-policy.test.mjs",
@@ -350,8 +350,8 @@
     },
     {
       "path": "test/bridge-independent-final-boundaries.test.mjs",
-      "bytes": 4899,
-      "sha256": "93601fb594a7fccd4da07f65e2f98da8fd66503c028aa2182fb88f4fa496bde8"
+      "bytes": 7785,
+      "sha256": "2b8d7099d64061f16be8759f31d0bc9e30ce7f57f9116d63f52e48a0ab15f149"
     },
     {
       "path": "test/bridge-independent-http.test.mjs",
@@ -400,8 +400,8 @@
     },
     {
       "path": "test/coordinator-adapters.test.mjs",
-      "bytes": 12948,
-      "sha256": "feb76f84fc8e2407e6b3244054a03425c9a714c53a35ab3a1a198e00de8247f0"
+      "bytes": 13532,
+      "sha256": "8b8b838757941b3b59ee03564bbcf47596d48651eee7a51ec201fe2c2e35cff9"
     },
     {
       "path": "test/coordinator-import-ui.test.mjs",
@@ -475,8 +475,8 @@
     },
     {
       "path": "test/trusted-mac-selection.test.mjs",
-      "bytes": 8083,
-      "sha256": "1752a5006a071852dbe030425a6280a6b52b547d5f07821eaf9c2bea66a69e5b"
+      "bytes": 8841,
+      "sha256": "a72ba5088132f733ca946ebaa0903935ce3ef1a73d57c678a82b983bf314b202"
     },
     {
       "path": "test/trusted-mac.test.mjs",
@@ -730,8 +730,8 @@
     },
     {
       "path": "trust/prepare-campaign.mjs",
-      "bytes": 19250,
-      "sha256": "216207285425b70f3cdad510b1c767429c0aa3304ed32c0d8d48c035c97d2278"
+      "bytes": 19445,
+      "sha256": "93321ab6e9e7bd8569cc84d837822359320e2c2283f4c16d57304896529bdd05"
     },
     {
       "path": "trust/prepare-review.mjs",
@@ -750,13 +750,13 @@
     },
     {
       "path": "verification/AUTHORITY_SCOPE_EN_FR.md",
-      "bytes": 13959,
-      "sha256": "fe2d949ab6e73626964eebbac124f160c4ad48bc07356bee3a8da20cd823bb82"
+      "bytes": 15332,
+      "sha256": "09eddffbb72d647479466452d199c767994ad4a151babfa761d92bedb60c1324"
     },
     {
       "path": "verification/README.md",
-      "bytes": 10071,
-      "sha256": "d2f84a03a692cd7148b1adec9d92d0f4fbf1a367776e330e0543423d3e4ba268"
+      "bytes": 10276,
+      "sha256": "d7c6c5c722b4eccaf4d18c5fd5b3ded201855a5cb5e3b9d4796546083b8cd1b8"
     },
     {
       "path": "verification/WALLET_CONFIGURATION_EN_FR.md",
@@ -765,8 +765,8 @@
     },
     {
       "path": "verification/authority.mjs",
-      "bytes": 14184,
-      "sha256": "3ea9b8f855bff154385b894180cbd4edaad43f593d48ccd5053652ea60bd9be1"
+      "bytes": 14443,
+      "sha256": "4385aa543a6860597b74c62326fb88daad29f4de9a39ff45e08e3c02cda29365"
     },
     {
       "path": "verification/automation.mjs",
