@@ -1,4 +1,4 @@
-name: Bounded Jobs Dependency Runtime Observation
+name: Fixed Historical ENS Two-Word Owner Observation
 
 # Publication and this opened-only trigger require root review. Updates and reopened
 # PRs cannot trigger a second observation; there is no dispatch or schedule entrypoint.
@@ -17,7 +17,7 @@ jobs:
       github.run_attempt == 1 &&
       github.event.pull_request.head.repo.full_name == 'MontrealAI/AGIJobManager' &&
       github.event.pull_request.head.repo.fork == false &&
-      github.event.pull_request.head.ref == 'qualification/jobs-dependency-code-20261016'
+      github.event.pull_request.head.ref == 'qualification/jobs-ens-two-word-20261016'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -54,7 +54,7 @@ jobs:
       - name: Exercise the whole sequence using injected offline responses
         run: |
           env -i PATH="$PATH" HOME="$HOME" node collector/scripts/qualification/test-observe-account-metadata.cjs --dependency-root "$GITHUB_WORKSPACE/actual-c2"
-      - name: Observe once through the fixed public endpoint
+      - name: Observe the fixed historical ENS words once
         env:
           COLLECTOR_COMMIT: ${{ github.event.pull_request.head.sha }}
         run: |
@@ -63,12 +63,13 @@ jobs:
           env -i PATH="$PATH" HOME="$HOME" node collector/scripts/qualification/observe-account-metadata.cjs \
             --dependency-root "$GITHUB_WORKSPACE/actual-c2" \
             --collector-commit "$COLLECTOR_COMMIT" \
-            --output "$GITHUB_WORKSPACE/metadata-evidence/jobs-passive-dependency-code.json"
-      - name: Preserve the bounded public runtime receipt
+            --output "$GITHUB_WORKSPACE/metadata-evidence/jobs-fixed-ens-two-word-owner.json" \
+            --mode fixed-ens-two-word-20261016
+      - name: Preserve the bounded historical ENS owner receipt
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: jobs-passive-dependency-code
-          path: metadata-evidence/jobs-passive-dependency-code.json
+          name: jobs-fixed-ens-two-word-owner
+          path: metadata-evidence/jobs-fixed-ens-two-word-owner.json
           if-no-files-found: error
           retention-days: 14

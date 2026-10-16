@@ -1,5 +1,6 @@
 {
-  "schema": "jobs-passive-dependency-code/v1",
+  "schema": "jobs-fixed-ens-two-word-owner/v1",
+  "mode": "fixed-ens-two-word-20261016",
   "endpoint": "https://eth-mainnet.g.alchemy.com/public",
   "chainId": "0x1",
   "source": {
@@ -10,34 +11,44 @@
     "ethersVersion": "6.17.0",
     "nodeVersion": "22.23.2"
   },
+  "jobsSource": {
+    "repository": "MontrealAI/AGIJobsv0",
+    "commit": "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5",
+    "tree": "720312acac83eddeeb76644e1e22f53578e91784",
+    "ensConfigSha256": "cff15f5df467d8d17aee40ecf4024af9089f8a88fb9a91a8fae6500de72646a5"
+  },
   "priorObservation": {
-    "reportSha256": "5fc3cf3d4010eb07ea6c9987ec400ab985702f90fdf4e94ae57db49bf1685bde",
-    "collectorCommit": "49f661f075819f5ae873d596b9a9e8cbd683f26e",
+    "reportSha256": "5be20406e1f41b6f44a9a926aafc024b65a199c9309489694f512e06033ac15a",
+    "collectorCommit": "65b3d9214cac0ec58a4b76ff03d44030d53b357b",
+    "startedAt": "2026-10-16T19:50:33.335Z",
+    "completedAt": "2026-10-16T19:50:34.438Z",
     "finalized": {
-      "number": "0x18fe2b9",
-      "hash": "0x7c3ce900a3bb552c2980ad870cef641ec90ad4576fedddbd36d638bf2094ed29",
-      "parentHash": "0xcc633555d2c2970c988d114fefbe3aecf1e716b47007675f2f6fba09c1a6f4e9",
-      "timestamp": "0x6ad26d57"
+      "number": "0x18fe3f8",
+      "hash": "0x59f68739717ff05434d8b3ad2555549c0216178541f19ce944ba296163f97f6d",
+      "parentHash": "0x2170053233ae396bc91fcdf2ce54835fcd22a4636ed164d5f8e9ebe2c4c97f54",
+      "timestamp": "0x6ad27c57"
     }
   },
   "dependencies": [
-    {
-      "role": "AGIALPHA",
-      "address": "0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA",
-      "expectedBytes": 9322,
-      "expectedKeccak256": "0xb2f6d0bbf5e047601a71fc099779bd3932274a484f2175fd1e830e613349c310"
-    },
     {
       "role": "ENS-registry",
       "address": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
       "expectedBytes": 5346,
       "expectedKeccak256": "0xd6bfd5d6f1384a1f6ea57b8a8412de5552f138d42021cf7c4941e33206f529e4"
+    }
+  ],
+  "ownerSlots": [
+    {
+      "role": "agent",
+      "name": "agent.agi.eth",
+      "node": "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d",
+      "key": "0xc78e2b314987901db0f7d20ba0c8bb5d7b0577c356a2fe6ee0af68531003e4d5"
     },
     {
-      "role": "NameWrapper",
-      "address": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
-      "expectedBytes": 24389,
-      "expectedKeccak256": "0xb2d3098f0579718d88a04ee65d3c6827a76823316ceed387945ad993fc6dbb6c"
+      "role": "validator",
+      "name": "club.agi.eth",
+      "node": "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16",
+      "key": "0x78a277a1ca05a7d99d6d7a7bcd3e40f9380d8278bc57f4d3fdc26c8f49bb2ea1"
     }
   ],
   "limits": {
@@ -48,10 +59,33 @@
     "aggregateBytes": 4194304,
     "reportBytes": 131072
   },
-  "scope": "Passive public runtime bytes for exactly AGIALPHA, ENS registry and NameWrapper. No account nonce, balance, eth_call, storage, trace, signing, relay, delegation invocation or operational approval.",
+  "scope": "Historical conditional ENS owner(bytes32) getter-path fact only at the exact 19:50 canonical block: both configured role-root records have nonzero low160 owners, so this runtime path bypasses oldRegistry fallback. Exactly two fixed owner storage words and same-pin ENS runtime. No eth_call, oldRegistry/slot2/fallback reads, wrapper state, signing or operational action. Any eventual plan must bind and recheck its own canonical state; this observation grants no future deployment or activation clearance.",
+  "approval": {
+    "productionApproved": false,
+    "activationApproved": false,
+    "deploymentApproved": false,
+    "signerCompatibilityApproved": false,
+    "futureStateVerified": false,
+    "fallbackExecutionApproved": false
+  },
   "sourceReferences": [
+    "https://github.com/MontrealAI/AGIJobsv0/blob/9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5/config/ens.json",
     "https://github.com/MontrealAI/AGIJobsv0/blob/9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5/contracts/v2/StakeManager.sol#L103",
     "https://github.com/MontrealAI/AGIJobsv0/blob/9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5/contracts/v2/FeePool.sol#L188",
     "https://github.com/MontrealAI/AGIJobsv0/blob/9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5/scripts/deploy/authority-audit.cjs#L510"
-  ]
+  ],
+  "pathProof": {
+    "kind": "independently-reviewed-offline-runtime-path-analysis",
+    "analysisSha256": "ea462d7026ed115ee7e1f3dd36599bcff1e83baebbcfedd3d731215c744b10cc",
+    "runtimeKeccak256": "0xd6bfd5d6f1384a1f6ea57b8a8412de5552f138d42021cf7c4941e33206f529e4",
+    "selector": "0x02571be3",
+    "mappingBaseSlot": "0x0",
+    "helperPc": "0x10b2",
+    "nonzeroBranchPc": "0x069e",
+    "fallbackStaticcallPc": "0x0714",
+    "ownerSlotDerivation": "keccak256(bytes32(node) || uint256(0))",
+    "noFallbackPredicate": "low160(storage[ownerSlot]) != 0",
+    "ownerMeaning": "owner is the low160 stored word, not an executed owner() result; the registry-address sentinel returns zero locally without fallback",
+    "limits": "Path-local manual runtime analysis; no automatic whole-program proof, fresh compilation, explorer-source verification or future-state clearance"
+  }
 }
