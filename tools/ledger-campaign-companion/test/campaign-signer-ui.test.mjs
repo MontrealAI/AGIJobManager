@@ -30,3 +30,17 @@ test('raw device error is redacted and a failed attempt cannot reprompt',async()
 test('click-time expiry stops before device access',async()=>{const h=harness();ready(h);h.clock.now=h.expiry;await h.elements.signCampaign.onclick();assert.equal(h.calls(),0);assert.match(h.elements.signerStatus.textContent,/INTENT_EXPIRED/);assert.equal(h.elements.signCampaign.disabled,true)});
 
 test('parent stop message disables a prepared child before device access while retaining its intent',async()=>{const h=harness();ready(h);h.send('block',{code:'CAMPAIGN_STOPPED_RECOVERY_REQUIRED'});assert.equal(h.elements.signCampaign.disabled,true);await h.elements.signCampaign.onclick();assert.equal(h.calls(),0);assert.match(h.elements.signerStatus.textContent,/CAMPAIGN_STOPPED_RECOVERY_REQUIRED/)});
+
+for (const [format, schema, mime] of [['manager-json','manager-external-signing-handoff-v1','application/json'], ['alpha-raw','agialpha.external-signing-handoff.v1','text/plain']]) {
+ test(`campaign download uses exact ${schema} private import bytes`, async()=>{
+  const h=harness(); h.connect();h.send('prepare',{prepared:h.packet,importFormat:format});h.elements.path.value="44'/60'/0'/0/0";h.elements.deviceAck.checked=true;h.elements.deviceAck.change();
+  await h.elements.signCampaign.onclick();h.elements.downloadImport.onclick();
+  const cap=h.messages.find(x=>x.type==='signed').capability;assert.equal(h.files.length,1);assert.equal(h.files[0].type,mime);
+  const text=await h.files[0].text();assert.equal(format==='alpha-raw'?text:JSON.parse(text).raw,cap.signedTransaction);
+  h.clock.now=h.expiry;h.elements.downloadImport.onclick();assert.equal(h.files.length,1);assert.match(h.elements.signerStatus.textContent,/EXPIRED/);
+ });
+}
+test('unqualified download format remains unavailable and unknown format is rejected',async()=>{
+ const h=harness();ready(h);await h.elements.signCampaign.onclick();assert.equal(h.elements.downloadImport.disabled,true);h.elements.downloadImport.onclick();assert.equal(h.files.length,0);
+ const other=harness();other.connect();other.send('prepare',{prepared:other.packet,importFormat:'jobs-raw'});assert.match(other.elements.signerStatus.textContent,/CHANNEL_MESSAGE_REJECTED/);assert.equal(other.calls(),0);
+});

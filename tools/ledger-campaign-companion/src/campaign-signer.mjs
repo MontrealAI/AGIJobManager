@@ -1,11 +1,11 @@
 import { validatePath, GateError } from './envelope.mjs';
-import { coordinatorImport } from './coordinator-import.mjs';
+import { coordinatorImport, coordinatorImportFile } from './coordinator-import.mjs';
 import { makeCampaignUsbSigner } from './device.mjs';
 import { CHANNEL_FORMAT, isLoopbackOrigin, channelNonce, requireMessage, validatePreparedPacket, preparedIdentity, sameIdentity, safeCode } from './campaign-protocol.mjs';
 
 const $ = id => document.getElementById(id);
 const parentOrigin = document.querySelector('meta[name="campaign-parent-origin"]')?.content;
-let port, nonce, prepared, capability, previousSender, busy = false, attempted = false, durable = false;
+let port, nonce, prepared, capability, importFormat, previousSender, busy = false, attempted = false, durable = false;
 const status = value => { $('signerStatus').textContent = value; };
 const usb = makeCampaignUsbSigner(status);
 const send = (type, extra = {}) => { port?.postMessage({ format: CHANNEL_FORMAT, nonce, type, ...extra }); };
@@ -14,7 +14,7 @@ function buttons() {
   $('cancelCampaign').disabled = !busy;
   $('path').disabled = $('deviceAck').disabled = busy || attempted || Boolean(capability);
   $('downloadRecovery').disabled = !capability;
-  $('downloadImport').disabled = !capability || Date.now() >= Date.parse(capability.review.expiresAt) || capability.status.startsWith('EXPIRED');
+  $('downloadImport').disabled = !importFormat || !capability || Date.now() >= Date.parse(capability.review.expiresAt) || capability.status.startsWith('EXPIRED');
 }
 function reject(error) { status(`${safeCode(error)}. Recovery required; no automatic signing retry. / Reprise requise; aucune nouvelle signature automatique.`); }
 function accept(message) {
@@ -26,6 +26,7 @@ function accept(message) {
     } else if (value.type === 'prepare') {
       if (prepared || capability || busy || attempted) throw new GateError('RECOVERY_REQUIRED_NO_SECOND_PREPARE');
       prepared = validatePreparedPacket(value.prepared);
+      importFormat = value.importFormat ?? null;
       if (previousSender && previousSender !== prepared.sender) { $('path').value = ''; usb.close?.(); }
       $('signerSummary').textContent = JSON.stringify(prepared.summary, null, 2);
       status('Exact intent validated. Choose your actual path; manually approve this operation only. / Intention exacte validée. Choisissez votre chemin réel; approuvez cette opération seulement.');
@@ -36,7 +37,7 @@ function accept(message) {
       status('Coordinator confirms durable private recovery. This frame keeps a private backup. / Le coordinateur confirme la reprise privée durable. Cette fenêtre conserve une copie.');
     } else if (value.type === 'advance') {
       if (!durable || !capability || busy || value.verified !== true || !sameIdentity(value.identity, preparedIdentity(prepared))) throw new GateError('VERIFIED_ADVANCE_REQUIRED');
-      previousSender = prepared.sender; prepared = capability = undefined; attempted = durable = false; $('deviceAck').checked = false; $('signerSummary').textContent = '';
+      previousSender = prepared.sender; prepared = capability = importFormat = undefined; attempted = durable = false; $('deviceAck').checked = false; $('signerSummary').textContent = '';
       status('Previous operation verified and privately preserved. Awaiting next exact manual approval. / Opération précédente vérifiée et conservée. Attente de la prochaine approbation.');
     } else if (value.type === 'cancel' && busy) { usb.cancel(); status('Cancellation requested. A returned signature still requires recovery. / Annulation demandée; toute signature retournée doit être conservée.'); }
   } catch (error) { reject(error); }
@@ -66,8 +67,8 @@ $('signCampaign').onclick = async () => {
   finally { busy = false; buttons(); }
 };
 $('cancelCampaign').onclick = () => { usb.cancel(); status('Cancellation requested; wait for recovery. / Annulation demandée; attendre la reprise.'); };
-function download(value, filename) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' }));
+function download(value, filename, mimeType = 'application/json') {
+  const url = URL.createObjectURL(new Blob([typeof value === 'string' ? value : JSON.stringify(value, null, 2)], { type: mimeType }));
   const link = document.createElement('a'); link.href = url; link.download = filename; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 $('downloadRecovery').onclick = () => {
@@ -81,7 +82,10 @@ $('downloadRecovery').onclick = () => {
 };
 $('downloadImport').onclick = () => {
   if (!capability) return;
-  try { download(coordinatorImport(prepared, capability), `${capability.review.operationId}.coordinator-import.private.json`); }
+  try {
+    const file = coordinatorImportFile(prepared, capability, importFormat);
+    download(file.text, `${capability.review.operationId}.coordinator-import.private.${file.extension}`, file.mimeType);
+  }
   catch (error) { reject(error); }
   buttons();
 };

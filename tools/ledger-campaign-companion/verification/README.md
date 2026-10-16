@@ -73,10 +73,18 @@ Canonical proof checks deliberately re-export private native packages at each ev
 
 All returned verification reports retain `authorityComplete:false`, `activationReady:false`, and `productionApproved:false`. Source verification cannot approve comprehensive authority, funding, admission, unpause or activation.
 
+## Additive current-candidate runtime and authority evidence
+
+The older compatibility profiles and their evidence remain separate. For the new exact Manager `c2f72180d2f0d6ecd5b92d8e5197c5344be2c699` and Alpha `38064bec3423218f87c6b81760ac6768b3e7d4e5` profiles, verification automation first selects the concrete source-bound adapter using `forCampaign()`. These profiles require one `manual-ledger-runtime-evidence-v1` record per creation in the additive `runtimeEvidence` export; the existing task v1 schema is unchanged.
+
+The native subprocess independently validates the trusted local source/build and approved plan, reads runtime at a canonical pinned block, and supplies the exact compiler output hash, runtime template, deployed link locations, linked libraries, compiler immutable locations and explicit expected immutable values. `runtime.mjs` replaces only these declared values and the narrowly recognized Manager library self-address guard. It rejects unknown bytes, conflicting overlaps, absent values, wrong lengths and mismatching code. No immutable range is masked. Each fresh export must retain the same compiler output hash, instantiated runtime hash and substitution identity before explorer reads or submission.
+
+`authority.mjs` provides the exact source-bound component/power inventory and a bounded canonical read-only core report. It does not claim comprehensive authority from core ownership and graph observations. The complete matrix, external permission requirements, Alpha's uncommissioned state and EN/FR interpretation are in [AUTHORITY_SCOPE_EN_FR.md](AUTHORITY_SCOPE_EN_FR.md). The collector requires trusted Mac `read(query)` and `checkCanonical(snapshot)` functions, not an Ubuntu JSON verdict. It observes the snapshot before and after the bounded reads and reports each missing/mismatched field explicitly. Jobs remains unsupported until exact source and external-signing acceptance exist.
+
 Run the synthetic tests with the pinned project runtime:
 
 ```sh
-node --test test/explorer.test.mjs test/verification-automation.test.mjs
+node --test test/explorer.test.mjs test/verification-automation.test.mjs test/runtime.test.mjs test/authority.test.mjs
 ```
 
 Les paquets exacts sont préparés hors ligne. Toute publication de sources par Etherscan exige une autorisation explicite liée à la campagne et au plan ainsi qu'une configuration sécurisée côté serveur. Chaque étape revérifie les créations et reçus canoniques par les véritables coordinateurs. Une réponse perdue ne déclenche jamais une seconde soumission automatique. Un statut « vérifié » ou une correspondance similaire ne suffit pas : l'ensemble exact des sources, paramètres, bibliothèques, constructeur et identité du compilateur doit correspondre. L'autorité complète et l'activation restent fausses. Les essais Etherscan réels et l'acceptation physique Ledger n'ont pas été effectués.

@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { Wallet, Transaction, keccak256 } from 'ethers';
-import manager, { MANAGER_SUPPORTED } from '../coordinators/manager.mjs';
-import alpha, { ALPHA_SUPPORTED } from '../coordinators/alpha.mjs';
+import manager, { MANAGER_SUPPORTED, MANAGER_CURRENT, MANAGER_COMPATIBILITY } from '../coordinators/manager.mjs';
+import alpha, { ALPHA_SUPPORTED, ALPHA_CURRENT, ALPHA_COMPATIBILITY } from '../coordinators/alpha.mjs';
 import { comparePacket, validateSignedRaw, reviewedOperation, runtime, sha256, cleanEnvironment } from '../coordinators/common.mjs';
 import { policyDigest, validateIntent } from '../src/envelope.mjs';
 
@@ -54,4 +54,79 @@ test('Exact signature is accepted and every material signed field/account mutati
     const changed = await wallet.signTransaction({ ...unsigned, ...mutation }); assert.throws(() => validateSignedRaw(changed, prepared), /SIGNED_CAPABILITY_MISMATCH/);
   }
   const wrong = await Wallet.createRandom().signTransaction(unsigned); assert.throws(() => validateSignedRaw(wrong, prepared), /SIGNED_CAPABILITY_MISMATCH/);
+});
+
+// Execute the actual pinned companion adapters with synthetic native command
+// responses. No coordinator checkout, provider, hardware or process is invoked.
+import { build } from 'esbuild';
+import { runInNewContext } from 'node:vm';
+import { createRequire } from 'node:module';
+import * as realCommon from '../coordinators/common.mjs';
+async function observationAdapter(id, changes = {}) {
+  const cap = await wallet.signTransaction(unsigned), hash = keccak256(cap), planSha256 = checked.manifest.planSha256;
+  let output, statusCalls = 0; const calls = [];
+  const config = { checkout: '/synthetic/source', nodePath: '/synthetic/node', sessionPath: '/synthetic/session', lockDirectory: '/synthetic/locks', catalogSha256: 'ab'.repeat(32), catalogPath: '/synthetic/catalog', buildId: 'synthetic', mode: 'raw-relay' };
+  const current = { status: changes.status ?? 'signed', txHash: changes.noHash ? undefined : hash };
+  const fixture = { common: { ...realCommon,
+    reviewed() { return { config }; },
+    reviewedOperation() { return { config, manifest: { planSha256 }, operation, prepared: { ...prepared, expired: changes.expired === true } }; },
+    directory() {}, privateWrite() { return '/synthetic/input'; },
+    ordinary() { return Buffer.from(changes.raw ?? cap); }, readJson() { return output; },
+    async execute(_config, supported, script, args) {
+      assert.equal(supported.commit, id === 'manager' ? 'eb6f725e0b40ac81e50a374304e54a5ff6859fcf' : 'd69cdd3ddc0f36933d07f0f64abfe15e742bf68c');
+      const action = script === '-e' ? 'status' : args[0]; calls.push(action);
+      if (action === 'status') {
+        statusCalls++;
+        if (id === 'manager') return JSON.stringify({ planSha256, states: [{ status: current.status, transactionHash: current.txHash }, ...Array.from({length:8},()=>({status:'planned'}))] });
+        output = { state: { schema: 'agialpha.new-graph-session.v1', planSha256, operations: [{ ...current, ...(changes.attemptDuringRecovery && statusCalls > 1 ? { status: 'submission-attempted' } : {}) }] }, commandBlocked: changes.commandBlocked === true, relayAcknowledgement: changes.missingAck ? null : 'NATIVE_EXACT_ACK' };
+      } else if (action === 'recover') {
+        if (id === 'manager') throw new Error('synthetic receipt unavailable');
+        output = { resolved: false };
+      } else if (action === 'retrieve-handoff') {
+        output = { schema: 'manager-retrieved-handoff-v1', planSha256, unsignedSerialized: prepared.unsignedHex, index: 0, transactionHash: hash, status: 'signed', relayAlreadyAttempted: false, relayAcknowledgement: 'NATIVE_EXACT_ACK', ...changes.packet };
+      } else throw new Error('Unexpected native action: ' + action);
+      return '';
+    }
+  } };
+  const names = Object.keys(realCommon);
+  const bundled = await build({ entryPoints: [new URL(`../coordinators/${id}.mjs`, import.meta.url).pathname], bundle: true, write: false, platform: 'node', format: 'cjs', external: ['ethers'], plugins: [{ name: 'synthetic-native-responses', setup(b) {
+    b.onResolve({filter:/^\.\/common\.mjs$/},()=>({path:'common',namespace:'synthetic'}));
+    b.onLoad({filter:/.*/,namespace:'synthetic'},()=>({contents:names.map(name=>`export const ${name}=(...args)=>globalThis.fixture.common.${name}(...args);`).join('\n'),loader:'js'}));
+  }}] });
+  const module = { exports: {} };runInNewContext(bundled.outputFiles[0].text,{module,exports:module.exports,require:createRequire(import.meta.url),fixture,Buffer,process});
+  const adapter = module.exports.default;
+  const supported = id === 'manager' ? MANAGER_SUPPORTED : ALPHA_SUPPORTED;
+  const campaign = { reviewedManifest: { source: { repository: supported.repository, commit: supported.commit, tree: supported.tree }, planSha256, operations: [operation] } };
+  return { run: () => adapter.observe({ campaign, step: 0, operationId: operation.operationId, privateDir: '/synthetic/private' }), calls, hash };
+}
+for (const id of ['manager', 'alpha']) test(`${id} exact supported native status restores only existing signed acknowledgement`,async()=>{
+  const f=await observationAdapter(id);const result=await f.run();assert.equal(result.state,'signed');assert.equal(result.transactionHash,f.hash);assert.equal(result.acknowledgement,'NATIVE_EXACT_ACK');assert.equal(result.relayAlreadyAttempted,false);assert.equal(f.calls.includes('relay'),false);assert.equal(f.calls.includes('import'),false);
+});
+test('Alpha d69 unsigned unresolved observation omits absent hash',async()=>{
+ const f=await observationAdapter('alpha',{status:'handed-off',noHash:true});const result=await f.run();assert.equal(result.state,'pending');assert.equal(Object.hasOwn(result,'transactionHash'),false);assert.equal(result.acknowledgement,undefined);
+});
+for(const changes of [{expired:true},{attemptDuringRecovery:true},{missingAck:true}]) test(`Alpha d69 acknowledgement suppressed ${JSON.stringify(changes)}`,async()=>{
+ const f=await observationAdapter('alpha',changes);const result=await f.run();assert.equal(result.acknowledgement,undefined);
+});
+for(const changes of [{commandBlocked:true},{raw:'0x02'}]) test(`Alpha d69 observation rejects unavailable native gate/capability ${JSON.stringify(changes)}`,async()=>{
+ const f=await observationAdapter('alpha',changes);await assert.rejects(f.run());
+});
+for(const packet of [{relayAlreadyAttempted:true},{status:'submission-attempted'},{planSha256:'ff'.repeat(32)},{unsignedSerialized:'0x02'},{index:1},{transactionHash:'0x'+'12'.repeat(32)},{relayAcknowledgement:null},{schema:'unknown'}]) test(`Manager eb6 retrieval refuses changed identity/attempt/ack ${JSON.stringify(packet)}`,async()=>{
+ const f=await observationAdapter('manager',{packet});const result=await f.run();assert.equal(result.state,'recovery-required');assert.equal(result.acknowledgement,undefined);
+});
+
+for (const [id, adapter, legacy, current, entries] of [['manager', manager, MANAGER_SUPPORTED, MANAGER_CURRENT, MANAGER_COMPATIBILITY], ['alpha', alpha, ALPHA_SUPPORTED, ALPHA_CURRENT, ALPHA_COMPATIBILITY]]) test(`${id} exact source dispatch preserves legacy and isolates current compatibility identity`, () => {
+  assert.equal(entries.length, 2); assert.equal(entries[0], legacy);
+  for (const supported of entries) {
+    const source = { repository: supported.repository, commit: supported.commit, tree: supported.tree };
+    const concrete = adapter.forCampaign({ reviewedManifest: { source } });
+    assert.equal(concrete.supported, supported); assert.equal(Object.isFrozen(concrete), true);
+    assert.throws(() => adapter.forCampaign({ reviewedManifest: { source: { ...source, tree: '0'.repeat(40) } } }), /UNREVIEWED_COORDINATOR_SOURCE/);
+  }
+  assert.equal(current.runtimeEvidenceRequired, true); assert.equal(legacy.runtimeEvidenceRequired, undefined);
+});
+test('Manager unsigned unresolved observation omits absent transaction hash', async () => {
+  const fixture = await observationAdapter('manager', { status: 'handed-off', noHash: true });
+  const result = await fixture.run(); assert.equal(result.state, 'recovery-required');
+  assert.equal(Object.hasOwn(result, 'transactionHash'), false); assert.equal(result.acknowledgement, undefined);
 });

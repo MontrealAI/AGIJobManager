@@ -1,13 +1,19 @@
 {
   "schema": "manual-ledger-source-origin-v1",
-  "generatedAt": "2026-10-16T15:45:55.974479+00:00",
-  "candidate": "0.2.0-candidate.1",
+  "generatedAt": "2026-10-16T17:53:55.559037+00:00",
+  "candidate": "0.2.0-candidate.2",
   "derivedFrom": "0.1.0-source-preview.2",
   "originalManifestSha256": "5aab7fcf45233b1ea93ecc372c8023171b4498f7639dbfcdb4e6bd3c0eed2155",
   "originalManifestRowsVerified": 76,
   "previousEvidenceZipSha256": "658fcd886c374eb9568c9b7c1b9a1b24255de804439241588ce775b010a6a821",
   "dependencyPackageEntriesIdentical": 77,
   "sdkInspectedFilesRehashed": 6,
-  "packageLockSha256": "f89d84ea35d73b7d3bce9d7f3af0d2febf410b2d8d0ed402edefa108d170de4d",
-  "qualificationImplication": "INTEGRITY_AND_DEPENDENCY_IDENTITY_ONLY_NOT_READINESS"
+  "packageLockSha256": "1be64c56df594cb6545b3b4b2fbd24e210b820885351687b057fc26243fd1d34",
+  "qualificationImplication": "INTEGRITY_AND_DEPENDENCY_IDENTITY_ONLY_NOT_READINESS",
+  "previousCandidate": "0.2.0-candidate.1",
+  "reviewBaseCommit": "6eeac125ae69d68c6a67291604541fd887f76a85",
+  "ownerHandoffPatches": {
+    "interfaceSha256": "cc48a0a89d9b2acdc4841c29329149fc0b32bd31839e674184fe4d0956565063",
+    "packagingSha256": "ec1ce64762e66e86622a9c29ffc0dcef269667ab40c9ca25cb4f57f294eeae17"
+  }
 }

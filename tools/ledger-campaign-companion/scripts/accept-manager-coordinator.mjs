@@ -1,5 +1,6 @@
 // Disposable native acceptance only. No public RPC, real wallet, old target or explorer service is used.
 import fs from 'node:fs';
+import { acceptanceTrustedContext, acceptanceAuthority } from './accept-local-trust.mjs';
 import path from 'node:path';
 import os from 'node:os';
 import https from 'node:https';
@@ -9,12 +10,16 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import { Wallet, Transaction, keccak256 } from 'ethers';
-import manager, { MANAGER_SUPPORTED } from '../coordinators/manager.mjs';
+import manager, { MANAGER_SUPPORTED, MANAGER_CURRENT } from '../coordinators/manager.mjs';
 import { sha256, canonical, observeSource } from '../coordinators/common.mjs';
 import { policyDigest, attachAndValidateSignature } from '../src/envelope.mjs';
 import { prepareVerificationTask } from '../verification/explorer.mjs';
 import { createCampaignEngine } from '../bridge/campaign-engine.mjs';
 
+
+const MANAGER_ACCEPT_PROFILE = process.env.MANAGER_ACCEPT_PROFILE || 'legacy';
+assert.ok(['legacy', 'current'].includes(MANAGER_ACCEPT_PROFILE));
+const SUPPORTED = MANAGER_ACCEPT_PROFILE === 'current' ? MANAGER_CURRENT : MANAGER_SUPPORTED;
 const root = process.env.MANAGER_ACCEPT_CHECKOUT, output = process.env.MANAGER_ACCEPT_REPORT;
 assert.ok(root && path.isAbsolute(root) && output && path.isAbsolute(output));
 const requireSource = createRequire(path.join(root, 'package.json'));
@@ -26,11 +31,11 @@ const { ethers, network } = await requireSource(path.join(root, 'hardhat/scripts
 assert.equal((await ethers.provider.getNetwork()).chainId, 1n);
 assert.equal(network.config.hardfork, 'osaka');
 const local = ethers.provider, privateRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'manual-ledger-manager-accept-'));
-const report = { schema: 'manual-ledger-genuine-manager-adapter-acceptance-v1', source: MANAGER_SUPPORTED, node: process.versions.node,
+const report = { schema: 'manual-ledger-genuine-manager-adapter-acceptance-v1', source: SUPPORTED, node: process.versions.node,
   scope: 'Unforked disposable Osaka with real source CLI subprocesses and synthetic signatures; finalized=latest and EIP1898 fixture adaptation are not public-provider or consensus proof',
   hardware: false, publicProvider: false, oldDeploymentTransactions: 0, activationAllowed: false, checks: [], operations: [] };
 const companionRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const codeHashes = () => Object.fromEntries(['coordinators/common.mjs', 'coordinators/manager.mjs', 'verification/configuration.mjs', 'verification/explorer.mjs', 'bridge/campaign-engine.mjs', 'bridge/private-store.mjs', 'scripts/accept-manager-coordinator.mjs'].map(name => [name, sha256(fs.readFileSync(path.join(companionRoot, name)))]));
+const codeHashes = () => Object.fromEntries(['coordinators/common.mjs', 'coordinators/manager.mjs', 'verification/configuration.mjs', 'verification/explorer.mjs', 'verification/runtime.mjs', 'coordinators/runtime-evidence.mjs', 'coordinators/native-runtime-snapshot.cjs', 'bridge/campaign-engine.mjs', 'bridge/private-store.mjs', 'trust/local-build.mjs', 'trust/prepare-review.mjs', 'trust/soljson-driver.cjs', 'verification/authority.mjs', 'scripts/accept-local-trust.mjs', 'scripts/accept-manager-coordinator.mjs'].map(name => [name, sha256(fs.readFileSync(path.join(companionRoot, name)))]));
 report.acceptanceCodeSha256 = codeHashes();
 const check = label => report.checks.push(label);
 let server, engine, rawRelayCalls = 0, readCalls = 0, loseResponse = false, corruptReceipt = false, stage = 'certificate';
@@ -45,7 +50,7 @@ try {
   await local.send('hardhat_setCode', [registry, code]);
   await local.send('hardhat_mine', ['0x1']);
   const creator = Wallet.createRandom(); await local.send('hardhat_setBalance', [creator.address, ethers.toQuantity(ethers.parseEther('10'))]);
-  stage = 'source-observation'; const source = P.observedRevision(); assert.equal(source.commit, MANAGER_SUPPORTED.commit); assert.equal(source.tree, MANAGER_SUPPORTED.tree);
+  stage = 'source-observation'; const source = P.observedRevision(); assert.equal(source.commit, SUPPORTED.commit); assert.equal(source.tree, SUPPORTED.tree);
   stage = 'catalog';
   F.actualCatalog(privateRoot);
   const catalogPath = path.join(privateRoot, 'catalog.json'), catalog = JSON.parse(fs.readFileSync(catalogPath)), original = Object.values(catalog.builds)[0], buildId = 'disposable-current-source-real-artifacts-v1';
@@ -82,14 +87,19 @@ try {
     const review = { chainId: '1', expectedSender: creator.address, expiresAt, maxGasLimit: e.gasLimit, maxFeePerGas: e.maxFeePerGas, maxPriorityFeePerGas: e.maxPriorityFeePerGas, maxTotalFeeWei: (BigInt(e.gasLimit) * BigInt(e.maxFeePerGas)).toString(), maxValueWei: '0', operationId: `manager-${i}`, sourceSha256 };
     return { operationId: review.operationId, unsignedHex, expectedUnsignedHash, expectedPolicyHash: policyDigest(review, expectedUnsignedHash), review };
   });
-  const campaign = { expiresAt, reviewedManifest: { source: { repository: MANAGER_SUPPORTED.repository, commit: source.commit, tree: source.tree }, sourceSha256, planSha256: plan.payloadSha256, operations },
+  const campaign = { expiresAt, reviewedManifest: { source: { repository: SUPPORTED.repository, commit: source.commit, tree: source.tree }, sourceSha256, planSha256: plan.payloadSha256, operations },
     coordinator: { checkout: root, nodePath: fs.realpathSync(process.execPath), nodeVersion: process.versions.node, nodeSha256: sha256(fs.readFileSync(fs.realpathSync(process.execPath))), planPath, sessionPath: path.join(privateRoot, 'session'), lockDirectory, catalogPath, catalogSha256, buildId, readRpcUrl: origin + '/read', relayRpcUrl: origin + '/relay', extraCaCertificates: cert, licenseType: '3' } };
-  Object.assign(campaign, { format: 'manual-ledger-campaign-v1', campaignId: 'synthetic-manager-acceptance', adapter: 'manager', packetSchema: MANAGER_SUPPORTED.packetSchema, network: { chainId: '1' }, route: { token: plan.config.constructorArgs.usdcTokenAddress, symbol: 'USDC', decimals: 6 }, actors: { creator: creator.address, governor: P.GOVERNOR, feeRecipients: plan.config.constructorArgs.settlementWallets.map(address => ({ address })), treasuries: [] }, maxTotalFeeWei: plan.config.maximumTotalFeeWei,
+  Object.assign(campaign, { format: 'manual-ledger-campaign-v1', campaignId: 'synthetic-manager-acceptance', adapter: 'manager', packetSchema: SUPPORTED.packetSchema, network: { chainId: '1' }, route: { token: plan.config.constructorArgs.usdcTokenAddress, symbol: 'USDC', decimals: 6 }, actors: { creator: creator.address, governor: P.GOVERNOR, feeRecipients: plan.config.constructorArgs.settlementWallets.map(address => ({ address })), treasuries: [] }, maxTotalFeeWei: plan.config.maximumTotalFeeWei,
     operations: operations.map((operation, index) => ({ index, account: 'creator', destination: 'CREATE', dependsOn: index ? [index - 1] : [] })), relayPolicy: { enabled: true, acknowledgementMode: 'EXACT_COORDINATOR_PER_STEP' } });
   stage = 'inspect'; assert.equal(manager.inspectCampaign(campaign).route.decimals, 6); check('Actual plan derives USDC route, creator, governor, graph and fee wallet display');
   const unknown = structuredClone(campaign); unknown.reviewedManifest.source.commit = 'a'.repeat(40);
   assert.throws(() => manager.inspectCampaign(unknown), /UNREVIEWED_COORDINATOR_SOURCE/); check('Unknown source rejected before loading coordinator');
-  engine = await createCampaignEngine({ campaign, adapter: manager, privateDirectory: path.join(privateRoot, 'bridge'), relayEnabled: true });
+  const trustedContext = SUPPORTED.runtimeEvidenceRequired ? acceptanceTrustedContext({ campaign, supported: SUPPORTED, privateRoot }) : undefined;
+  if (trustedContext) { report.localTrustedBuild = trustedContext.receipt; check('Real exact Manager source independently recompiled with explicitly pinned compiler and all nine transaction bytes bound locally'); }
+  const pinnedAdapter = manager.forCampaign(campaign);
+  let lostImportResponse = true, actualImports = 0;
+  const lostImportAdapter = Object.freeze({ ...pinnedAdapter, async importSigned(request) { actualImports++; const result = await pinnedAdapter.importSigned(request); if (lostImportResponse) { lostImportResponse = false; throw Error('SYNTHETIC_LOST_NATIVE_IMPORT_RESPONSE'); } return result; } });
+  engine = await createCampaignEngine({ campaign, adapter: lostImportAdapter, privateDirectory: path.join(privateRoot, 'bridge'), relayEnabled: true, trustedContext });
   for (let step = 0; step < 9; step++) {
     stage = `operation-${step}`; const operationId = operations[step].operationId, beforePrepare = rawRelayCalls;
     const prepared = step === 0 ? await engine.prepare({ step }) : await manager.prepare({ campaign, step, privateDir: privateRoot }); assert.equal(rawRelayCalls, beforePrepare);
@@ -106,11 +116,24 @@ try {
       await assert.rejects(manager.importSigned({ campaign, step, operationId, raw: wrong, privateDir: privateRoot }), /SIGNED_CAPABILITY_MISMATCH/); check('Every material envelope field and recovered sender mismatch refused before import');
     }
     const raw = await creator.signTransaction(Transaction.from(prepared.prepared.unsignedHex));
-    const imported = step === 0 ? await engine.importSigned({ step, operationId, capability: attachAndValidateSignature(prepared.prepared, Transaction.from(raw).signature) }) : await manager.importSigned({ campaign, step, operationId, raw, privateDir: privateRoot }); assert.equal(imported.transactionHash, keccak256(raw));
+    let imported;
+    if (step === 0) {
+      const unsignedObservation = await engine.observe({ step, operationId }); assert.equal(unsignedObservation.verified, false); assert.equal(rawRelayCalls, beforePrepare);
+      await engine.close(); engine = await createCampaignEngine({ campaign, adapter: lostImportAdapter, privateDirectory: path.join(privateRoot, 'bridge'), relayEnabled: true, trustedContext });
+      await assert.rejects(engine.prepare({ step })); check('Actual unsigned native handoff survives bridge restart without another signing request or submission');
+      const capability = attachAndValidateSignature(prepared.prepared, Transaction.from(raw).signature);
+      await assert.rejects(engine.importSigned({ step, operationId, capability })); assert.equal(actualImports, 1);
+      await assert.rejects(engine.importSigned({ step, operationId, capability })); assert.equal(actualImports, 1);
+      await engine.close(); engine = await createCampaignEngine({ campaign, adapter: pinnedAdapter, privateDirectory: path.join(privateRoot, 'bridge'), relayEnabled: true, trustedContext });
+      imported = await engine.observe({ step, operationId }); assert.equal(imported.state, 'signed'); assert.equal(typeof imported.acknowledgement, 'string');
+      check('Successful actual native import with lost response preserves exact capability and restores only original acknowledgement after restart, without reimport');
+    } else imported = await manager.importSigned({ campaign, step, operationId, raw, privateDir: privateRoot });
+    assert.equal(imported.transactionHash, keccak256(raw));
     const reads = rawRelayCalls; if (step === 0) { const unresolved = await engine.observe({ step, operationId }); assert.equal(unresolved.verified, false); assert.equal(unresolved.state, 'signed'); assert.equal(rawRelayCalls, reads); check('Receipt absence neither submits nor advances; genuine engine preserves signed state'); loseResponse = true; }
     if (step === 0) await assert.rejects(engine.relayOne({ step, operationId, acknowledgement: imported.acknowledgement }));
     else await manager.relayOne({ campaign, step, operationId, acknowledgement: imported.acknowledgement, privateDir: privateRoot });
     if (step === 0) await assert.rejects(engine.relayOne({ step, operationId, acknowledgement: imported.acknowledgement })); else await assert.rejects(manager.relayOne({ campaign, step, operationId, acknowledgement: imported.acknowledgement, privateDir: privateRoot }));
+    if (step === 0) { await engine.close(); engine = await createCampaignEngine({ campaign, adapter: pinnedAdapter, privateDirectory: path.join(privateRoot, 'bridge'), relayEnabled: true, trustedContext }); check('Exact persisted relay attempt survives restart before canonical receipt reconciliation'); }
     const sent = rawRelayCalls, observed = step === 0 ? await engine.observe({ step, operationId }) : await manager.observe({ campaign, step, operationId, privateDir: privateRoot }); assert.equal(observed.verified, true); if (step > 0) assert.equal(observed.finalized, true); assert.equal(rawRelayCalls, sent);
     const again = await manager.observe({ campaign, step, operationId, privateDir: privateRoot }); assert.equal(again.verified, true); assert.equal(rawRelayCalls, sent);
     report.operations.push({ step, operationId, transactionHash: imported.transactionHash, status: observed.state, canonicalReobserved: true });
@@ -120,7 +143,9 @@ try {
   const completion = await manager.observe({ campaign, step: 8, operationId: 'manager-8', privateDir: privateRoot }); assert.equal(completion.boundedCampaignComplete, true); assert.equal(completion.configurationComplete, false);
   const contract = new ethers.Contract(plan.operations[8].predictedAddress, qualified.records.AGIJobManager.artifact.abi, local);
   assert.equal(await contract.owner(), P.GOVERNOR); assert.equal(await contract.paused(), true); assert.equal(await contract.pendingOwner(), ethers.ZeroAddress); assert.equal(await contract.ensJobPages(), ethers.ZeroAddress); check('Actual Manager paused, explicit d76 governor, zero pending owner and unconfigured ENS pages');
+  if (SUPPORTED.runtimeEvidenceRequired) { report.authority = await acceptanceAuthority({ adapter: 'manager', source: campaign.reviewedManifest.source, graph: Object.fromEntries(plan.operations.map(op => [op.name, op.predictedAddress])), creator: creator.address, governor: P.GOVERNOR, provider: local }); assert.equal(report.authority.boundedCoreStateMatches, true); check('Actual deployed paused Manager core authority getters match d76 and no creator exceptions; external dependency/controller evidence remains pending'); }
   const exported = await manager.exportVerification({ campaign, step: 8, privateDir: privateRoot }); assert.equal(exported.tasks.length, 9); assert.ok(exported.tasks.every(x => x.creation.runtimeVerified && x.creation.finalized && /^v\d+\.\d+\.\d+\+commit\.[a-f0-9]{8}$/.test(x.compilerVersion))); check('Native offline export preserved plus independently reverified nine runtime/receipt task bindings');
+  report.verificationTasks = exported.tasks.map(({ standardInput, ...task }) => task); if (exported.runtimeEvidence) report.runtimeEvidence = exported.runtimeEvidence;
   for (const task of exported.tasks) prepareVerificationTask(task); report.explorerOfflineTasksValidated = exported.tasks.length; check('All nine genuine exported tasks accepted by strict explorer package validator without service calls');
   corruptReceipt = true; await assert.rejects(manager.observe({ campaign, step: 8, operationId: 'manager-8', privateDir: privateRoot })); corruptReceipt = false;
   assert.equal(rawRelayCalls, 9); check('Changed canonical receipt blocks even previously verified campaign and never submits');
@@ -128,7 +153,7 @@ try {
   try { await assert.rejects(manager.observe({ campaign, step: 8, operationId: 'manager-8', privateDir: privateRoot })); } finally { fs.writeFileSync(catalogPath, savedCatalog); }
   check('Catalog/build drift blocks fresh observation before any new effect');
   report.readOnlyRequests = readCalls; report.rawRelayRequests = rawRelayCalls; report.passed = true; report.completedAt = new Date().toISOString();
-  observeSource(campaign.coordinator, MANAGER_SUPPORTED);
+  observeSource(campaign.coordinator, SUPPORTED);
   assert.deepEqual(codeHashes(), report.acceptanceCodeSha256, 'Acceptance implementation changed during its own run');
   fs.writeFileSync(output, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
   console.log('Manager genuine coordinator adapter acceptance passed; sanitized report written.');

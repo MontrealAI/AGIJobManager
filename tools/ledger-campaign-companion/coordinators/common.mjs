@@ -99,6 +99,7 @@ export function reviewed(campaign, supported, count) {
   const { payloadSha256, ...payload } = plan;
   need(sha256(JSON.stringify(canonical(payload))) === payloadSha256, 'PLAN_SEAL_MISMATCH');
   need(same(plan.source || plan.revision, { ...(plan.source || plan.revision), commit: supported.commit, tree: supported.tree }), 'PLAN_REVISION_MISMATCH');
+  if (supported.creatorProfiles) need(supported.creatorProfiles.includes((plan.config?.creatorPolicy || plan.config?.sender)?.mode), 'CREATOR_PROFILE_REQUIRES_EXACT_COMPANION_ACCEPTANCE');
   observeSource(config, supported);
   return { config, manifest, plan };
 }

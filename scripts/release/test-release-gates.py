@@ -854,5 +854,110 @@ class PackagedGuideTests(unittest.TestCase):
             github_release_notes(b'[missing](../../MISSING.md)', source, available)
 
 
+class LedgerCompanionPackagingTests(unittest.TestCase):
+    prefix = 'tools/ledger-campaign-companion/'
+    mode = stat.S_IFREG | 0o644
+
+    def inventory(self):
+        from release_common import LEDGER_COMPANION_SOURCE_FILES
+        return LEDGER_COMPANION_SOURCE_FILES
+
+    def test_exact_reviewed_source_inventory_is_accepted(self):
+        inventory = self.inventory()
+        manifest = json.loads((PUBLISHER.parents[2] / self.prefix / 'SOURCE_MANIFEST.json').read_text())
+        expected = {self.prefix + item['path'] for item in manifest['files']} | {self.prefix + 'SOURCE_MANIFEST.json'}
+        self.assertEqual(len(inventory), 146)
+        self.assertEqual(inventory, expected)
+        for name in inventory:
+            with self.subTest(name=name):
+                source_path(name, self.mode)
+
+    def test_manifest_hashes_match_exact_regular_source_bytes(self):
+        root = PUBLISHER.parents[2] / self.prefix
+        manifest = json.loads((root / 'SOURCE_MANIFEST.json').read_text())
+        self.assertEqual(manifest['schema'], 'manual-ledger-source-manifest-v1')
+        self.assertEqual(manifest['candidate'], json.loads((root / 'package.json').read_text())['version'])
+        self.assertEqual(len(manifest['files']), len({item['path'] for item in manifest['files']}))
+        for item in manifest['files']:
+            with self.subTest(path=item['path']):
+                self.assertEqual(set(item), {'path', 'bytes', 'sha256'})
+                source_path(self.prefix + item['path'], self.mode)
+                source = root / item['path']
+                self.assertTrue(source.is_file())
+                self.assertFalse(source.is_symlink())
+                data = source.read_bytes()
+                self.assertEqual(len(data), item['bytes'])
+                self.assertEqual(sha(data), item['sha256'])
+
+    def test_tools_root_and_unknown_companion_files_stay_closed(self):
+        from release_common import ROOT_DIRS
+        self.assertNotIn('tools', ROOT_DIRS)
+        for name in ['tools/other/README.md', 'tools/ledger-campaign-companion-other/README.md',
+                     self.prefix + 'UNREVIEWED.md', self.prefix + 'src/unknown.mjs',
+                     self.prefix + 'test/unreviewed.json', self.prefix + 'scripts/browser-toolchain/extra.json']:
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                source_path(name, self.mode)
+
+    def test_private_generated_and_dependency_paths_stay_excluded(self):
+        names = ['node_modules/a/index.js', 'scripts/browser-toolchain/node_modules/a/index.js',
+                 'dist/app.js', 'manual-ledger-evidence/result.json', 'state.json',
+                 'journal.json', 'locks/creator.json', 'owner.json', 'capabilities/0.json',
+                 'signed.raw', 'operation.private.json', 'operation.private.txt',
+                 '.env', '.env.production', 'secrets.json', 'credentials.json',
+                 'key.pem', 'key.key', 'key.p12', 'backup.zip', 'logs/session.log',
+                 'src/node_modules/hidden.js', '.git/config', 'coverage/result.json']
+        for name in names:
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                source_path(self.prefix + name, self.mode)
+
+    def test_allowlisted_names_do_not_bypass_path_or_mode_checks(self):
+        for name in self.inventory():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                source_path(name, stat.S_IFLNK | 0o777)
+        for name in [self.prefix + '../README.md', '/' + self.prefix + 'README.md',
+                     self.prefix + './README.md', self.prefix + 'src/../README.md',
+                     self.prefix + 'README.md\\\\x', self.prefix + 'README.md\x00',
+                     'tools//ledger-campaign-companion/README.md']:
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                source_path(name, self.mode)
+
+    def archive(self, names):
+        archive = Mock()
+        entries = []
+        for name in names:
+            item = zipfile.ZipInfo(f'AGIJobManager-{TAG}/' + name)
+            item.external_attr = self.mode << 16
+            entries.append(item)
+        archive.infolist.return_value = entries
+        return archive
+
+    def verifier(self):
+        return runpy.run_path(str(PUBLISHER.with_name('verify-package.py')), run_name='companion_package_test')['archive_inventory']
+
+    def test_archive_accepts_complete_companion_source_inventory(self):
+        names = ['source/' + name for name in sorted(self.inventory())]
+        archive = self.archive(names + ['RELEASE_MANIFEST.json'])
+        self.verifier()(archive, {'files': {name: {} for name in names}})
+        archive.read.assert_not_called()
+
+    def test_archive_rejects_missing_extra_duplicate_and_unreviewed_entries(self):
+        name = 'source/' + self.prefix + 'README.md'
+        manifest = {'files': {name: {}}}
+        for names in [[name], ['RELEASE_MANIFEST.json'],
+                      [name, name, 'RELEASE_MANIFEST.json'],
+                      [name, 'source/' + self.prefix + 'signed.raw', 'RELEASE_MANIFEST.json']]:
+            archive = self.archive(names)
+            with self.subTest(names=names), self.assertRaises(ValueError):
+                self.verifier()(archive, manifest)
+            archive.read.assert_not_called()
+        # A self-consistent supplied manifest cannot authorize private/unknown files.
+        for extra in ['signed.raw', 'state.json', 'dist/app.js', 'node_modules/a.js']:
+            names = [name, 'source/' + self.prefix + extra]
+            archive = self.archive(names + ['RELEASE_MANIFEST.json'])
+            with self.subTest(extra=extra), self.assertRaises(ValueError):
+                self.verifier()(archive, {'files': {n: {} for n in names}})
+            archive.read.assert_not_called()
+
+
 if __name__ == '__main__':
     unittest.main()

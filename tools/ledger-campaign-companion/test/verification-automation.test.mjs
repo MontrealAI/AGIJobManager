@@ -88,3 +88,28 @@ test('Jobs is honestly unsupported and cannot obtain a generic verification call
   const h = fixture(), adapter = Object.freeze({ id: 'jobs' });
   assert.equal((await createVerificationAutomation()({ ...h.context, adapter })).state, 'unsupported');
 });
+
+function runtimeFixture({ omit = false, mismatch = false, outputDrift = false } = {}) {
+  const h = fixture({ authorize: true }); let exports = 0;
+  const concrete = Object.freeze({ ...h.context.adapter, supported: { ...h.context.adapter.supported, runtimeEvidenceRequired: true }, exportVerification: async context => {
+    const result = await h.context.adapter.exportVerification(context); exports++;
+    if (!omit) result.runtimeEvidence = result.tasks.map(task => ({ schema: 'manual-ledger-runtime-evidence-v1', chainId: 1, address: task.address, source: h.context.campaign.reviewedManifest.source, qualifiedName: task.qualifiedName, compilerVersion: task.compilerVersion, standardInputSha256: task.standardInputSha256, compilerOutputSha256: outputDrift && exports > 1 ? 'c'.repeat(64) : 'b'.repeat(64), runtimeTemplate: '0x6000', linkReferences: {}, libraries: {}, immutableReferences: {}, immutableValues: {}, actualRuntime: mismatch ? '0x6001' : '0x6000', creation: { transactionHash: task.creation.transactionHash, blockHash: task.creation.blockHash, blockNumber: task.creation.blockNumber }, observedBlock: { hash: task.creation.blockHash, number: task.creation.blockNumber } }));
+    return result;
+  } });
+  const outer = Object.freeze({ id: 'alpha', supported: { repository: 'legacy', commit: '0'.repeat(40), tree: '0'.repeat(40) }, forCampaign: campaign => { assert.equal(campaign, h.context.campaign); return concrete; } });
+  return { h, context: { ...h.context, adapter: outer } };
+}
+test('new selected compatibility profile requires full exact runtime evidence before service effects', async () => {
+  for (const settings of [{ omit: true }, { mismatch: true }]) {
+    const { h, context } = runtimeFixture(settings); const result = await createVerificationAutomation({ apiKey: 'SYNTHETIC_KEY', serviceAuthorization: h.serviceAuthorization, fetch: h.fetch })(context);
+    assert.equal(result.state, 'blocked'); assert.equal(h.requests, 0);
+  }
+});
+test('new selected compatibility profile verifies sources with fresh exact runtime consistency', async () => {
+  const { h, context } = runtimeFixture(); const result = await createVerificationAutomation({ apiKey: 'SYNTHETIC_KEY', serviceAuthorization: h.serviceAuthorization, fetch: h.fetch, sleep: async () => {} })(context);
+  assert.equal(result.state, 'verified'); assert.equal(h.requests, 5); assert.equal(result.authorityComplete, false);
+});
+test('fresh locally derived compiler output drift blocks service acceptance', async () => {
+  const { h, context } = runtimeFixture({ outputDrift: true }); const result = await createVerificationAutomation({ apiKey: 'SYNTHETIC_KEY', serviceAuthorization: h.serviceAuthorization, fetch: h.fetch, sleep: async () => {} })(context);
+  assert.equal(result.state, 'blocked'); assert.equal(h.requests, 0);
+});

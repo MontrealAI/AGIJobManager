@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { exportRuntimeEvidence } from './runtime-evidence.mjs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { Transaction } from 'ethers';
@@ -7,16 +8,19 @@ import { keccak256 } from 'ethers';
 import { execute, evaluateOffline, need, readJson, ordinary, sha256, canonical, directory, privateWrite, reviewed, reviewedOperation, comparePacket, validateSignedRaw, publicSummary } from './common.mjs';
 
 export const ALPHA_SUPPORTED = Object.freeze({ id: 'alpha', repository: 'MontrealAI/AGI-Alpha-Agent-v0', commit: 'd69cdd3ddc0f36933d07f0f64abfe15e742bf68c', tree: '721aae37b0f337029de98325d6ba3de1b1b1a7bd', nodeVersions: Object.freeze(['22.17.1']), packetSchema: 'agialpha.external-signing-handoff.v1', configurationScope: 'Five direct CREATEs and only bindMarketplace + bindMark on the new receipt-proven graph' });
+export const ALPHA_CURRENT = Object.freeze({ ...ALPHA_SUPPORTED, commit: '38064bec3423218f87c6b81760ac6768b3e7d4e5', tree: '4fe59cb9b8c7e65ea087fd27b0e2abed6bf34c68', runtimeEvidenceRequired: true, creatorProfiles: Object.freeze(['empty-eoa-direct-create.v1']) });
+export const ALPHA_COMPATIBILITY = Object.freeze([ALPHA_SUPPORTED, ALPHA_CURRENT]);
+function createPinnedAlphaAdapter(supported) {
 const COUNT = 7;
 function paths(config, privateDir) {
   directory(privateDir, config.checkout); directory(path.dirname(config.sessionPath), config.checkout); directory(config.lockDirectory, config.checkout);
   need(config.mode === 'raw-relay', 'ALPHA_EXPLICIT_RAW_RELAY_MODE_REQUIRED');
 }
 async function command(campaign, privateDir, action, fields = {}) {
-  const { config } = reviewed(campaign, ALPHA_SUPPORTED, COUNT); paths(config, privateDir);
+  const { config } = reviewed(campaign, supported, COUNT); paths(config, privateDir);
   const input = privateWrite(privateDir, { plan: config.planPath, journal: config.sessionPath, ...fields });
   const output = path.join(privateDir, `${crypto.randomUUID()}-alpha-${action}.json`);
-  await execute(config, ALPHA_SUPPORTED, path.join(config.checkout, 'tests/contracts/scripts/authority-session.js'), [action, input, output],
+  await execute(config, supported, path.join(config.checkout, 'tests/contracts/scripts/authority-session.js'), [action, input, output],
     { DEPLOYMENT_LOCK_DIRECTORY: config.lockDirectory, ALPHA_READ_ONLY_RPC_URL: config.readRpcUrl,
       ...(action === 'relay' ? { ALPHA_RAW_RELAY_RPC_URL: config.relayRpcUrl, ALPHA_ENABLE_USER_RUN_RAW_RELAY: 'I_REVIEWED_THIS_EXACT_TRANSACTION' } : {}) });
   return readJson(output);
@@ -29,19 +33,19 @@ function expected(report, step, operationId, campaign) {
   return state.operations[step];
 }
 async function preflight(campaign, privateDir, state) {
-  const { config, plan } = reviewed(campaign, ALPHA_SUPPORTED, COUNT), prefix = state.operations.filter(x => x.status === 'finalized');
+  const { config, plan } = reviewed(campaign, supported, COUNT), prefix = state.operations.filter(x => x.status === 'finalized');
   const input = privateWrite(privateDir, { creationHashes: prefix.filter(x => x.index < 5).map(x => x.txHash), governanceHashes: prefix.filter(x => x.index >= 5).map(x => x.txHash), journal: plan.journal });
   const output = path.join(privateDir, `${crypto.randomUUID()}-alpha-verified-prefix.json`);
-  await execute(config, ALPHA_SUPPORTED, path.join(config.checkout, 'tests/contracts/scripts/authority-cli.js'), ['preflight', config.planPath, input, output], { ALPHA_READ_ONLY_RPC_URL: config.readRpcUrl });
+  await execute(config, supported, path.join(config.checkout, 'tests/contracts/scripts/authority-cli.js'), ['preflight', config.planPath, input, output], { ALPHA_READ_ONLY_RPC_URL: config.readRpcUrl });
   return readJson(output);
 }
-export function createAlphaAdapter() {
+
   return Object.freeze({
-    id: 'alpha', supported: ALPHA_SUPPORTED,
-    inspectCampaign(campaign) { const { plan, config } = reviewed(campaign, ALPHA_SUPPORTED, COUNT);
+    id: 'alpha', supported: supported,
+    inspectCampaign(campaign) { const { plan, config } = reviewed(campaign, supported, COUNT);
       const code = "(async()=>{const path=require('node:path'),[root,planFile]=process.argv.slice(1),p=require(path.join(root,'tests/contracts/scripts/mainnet-authority.js')),revision=require(path.join(root,'tests/contracts/scripts/authority-revision.js')).reviewedRevision(),plan=JSON.parse(require('node:fs').readFileSync(planFile));await p.checkPlan(plan,undefined,revision);const state=p.expectedState(plan,0);console.log(JSON.stringify({unbound:state,one:p.expectedState(plan,1),bound:p.expectedState(plan,2),runtimeHashes:Object.fromEntries(p.NAMES.map(name=>[name,require(path.join(root,'tests/contracts/node_modules/ethers')).keccak256(p.expectedRuntime(plan.contracts[name],state[name]))]))}));})().catch(()=>{console.error('ALPHA_OFFLINE_INSPECTION_FAILED');process.exitCode=1;});";
-      const expected = evaluateOffline(config, ALPHA_SUPPORTED, code, [config.checkout, config.planPath]);
-      return { ...publicSummary(campaign, ALPHA_SUPPORTED, COUNT), route: { token: '$AGIALPHA', decimals: 18, address: plan.config.dependencies.token.address }, creator: plan.config.deployer, governor: plan.config.governor.address,
+      const expected = evaluateOffline(config, supported, code, [config.checkout, config.planPath]);
+      return { ...publicSummary(campaign, supported, COUNT), route: { token: '$AGIALPHA', decimals: 18, address: plan.config.dependencies.token.address }, creator: plan.config.deployer, governor: plan.config.governor.address,
       parameters: plan.config.parameters, graph: plan.transactions.map((x, index) => ({ name: x.name, address: x.expectedAddress,
         ...describeCreation({ unsignedHex: campaign.reviewedManifest.operations[index].unsignedHex, abi: plan.contracts[x.name].abi, linkedBytecode: plan.contracts[x.name].bytecode.toLowerCase(), expectedLinkedBytecodeHash: keccak256(plan.contracts[x.name].bytecode), constructorArguments: x.constructorArguments }),
         expectedPostState: { ...expected.unbound[x.name], runtimeCodeHash: expected.runtimeHashes[x.name], afterGovernedBindings: expected.bound[x.name] } })),
@@ -50,7 +54,7 @@ export function createAlphaAdapter() {
         return { ...binding, ...decodeSupportedBinding(operation.unsignedHex), expectedPostState: i === 0 ? { target: binding.to, getter: 'marketplace', equals: plan.addresses.AscensionJobMarket } : { target: binding.to, getter: 'mark', equals: plan.addresses.AscensionMark } }; }),
       nativePlanExpiry: 'NOT_SUPPORTED_BY_CURRENT_COORDINATOR', wallClockExpiryScope: 'Companion only; an Ethereum signature remains executable after expiry' }; },
     async prepare({ campaign, step, privateDir }) {
-      const checked = reviewedOperation(campaign, ALPHA_SUPPORTED, COUNT, step); paths(checked.config, privateDir);
+      const checked = reviewedOperation(campaign, supported, COUNT, step); paths(checked.config, privateDir);
       if (!fs.existsSync(checked.config.sessionPath)) await command(campaign, privateDir, 'start', { mode: 'raw-relay' });
       const current = expected(await command(campaign, privateDir, 'status'), step, checked.operation.operationId, campaign);
       need(!current, 'RECOVERY_REQUIRED_EXISTING_SIGNING_INTENT');
@@ -61,11 +65,11 @@ export function createAlphaAdapter() {
         governorEnvelope = privateWrite(privateDir, { nonce: tx.nonce, gasLimit: tx.gasLimit.toString(), maxFeePerGas: tx.maxFeePerGas.toString(), maxPriorityFeePerGas: tx.maxPriorityFeePerGas.toString(), accessList: tx.accessList });
       }
       const result = await command(campaign, privateDir, 'prepare', { governorEnvelope });
-      comparePacket(result.packet, checked, ALPHA_SUPPORTED, step);
+      comparePacket(result.packet, checked, supported, step);
       return { packet: result.packet, operationId: checked.operation.operationId, prepared: checked.prepared, state: 'awaiting-owner-approval' };
     },
     async importSigned({ campaign, step, operationId, raw, privateDir }) {
-      const checked = reviewedOperation(campaign, ALPHA_SUPPORTED, COUNT, step); paths(checked.config, privateDir);
+      const checked = reviewedOperation(campaign, supported, COUNT, step); paths(checked.config, privateDir);
       need(operationId === checked.operation.operationId, 'OPERATION_ID_MISMATCH');
       const hash = validateSignedRaw(raw, checked.prepared), current = expected(await command(campaign, privateDir, 'status'), step, operationId, campaign);
       need(current?.status === 'handed-off', 'RECOVERY_REQUIRED_NO_IMPORTABLE_INTENT');
@@ -80,7 +84,7 @@ export function createAlphaAdapter() {
       return { operationId, transactionHash: hash, state: 'signed', acknowledgement: report.relayAcknowledgement };
     },
     async relayOne({ campaign, step, operationId, acknowledgement, privateDir }) {
-      const checked = reviewedOperation(campaign, ALPHA_SUPPORTED, COUNT, step); paths(checked.config, privateDir);
+      const checked = reviewedOperation(campaign, supported, COUNT, step); paths(checked.config, privateDir);
       const report = await command(campaign, privateDir, 'status'), current = expected(report, step, operationId, campaign);
       need(current?.status === 'signed' && report.relayAcknowledgement === acknowledgement, 'EXACT_COORDINATOR_ACK_REQUIRED');
       // The original durable raw is retained in private import input, never reconstructed from an untrusted request.
@@ -90,12 +94,24 @@ export function createAlphaAdapter() {
       return { operationId, transactionHash: current.txHash, state: 'submitted', submissionAttempted: true };
     },
     async observe({ campaign, step, operationId, privateDir }) {
-      const checked = reviewedOperation(campaign, ALPHA_SUPPORTED, COUNT, step, { allowExpired: true }); paths(checked.config, privateDir);
+      const checked = reviewedOperation(campaign, supported, COUNT, step, { allowExpired: true }); paths(checked.config, privateDir);
       let report = await command(campaign, privateDir, 'status'), current = expected(report, step, operationId, campaign);
       if (!current) return { operationId, state: 'blocked', verified: false, finalized: false };
       if (current.status !== 'finalized') {
         const result = await command(campaign, privateDir, 'recover', { transactionHash: current.txHash || null });
-        if (!result.resolved) return { operationId, transactionHash: current.txHash || null, state: current.status === 'signed' && !checked.prepared.expired ? 'signed' : 'pending', verified: false, finalized: false, canonicalReceipt: 'NOT_ESTABLISHED', signingAuthorization: false };
+        if (!result.resolved) {
+          // Re-read native durable state; never reconstruct an acknowledgement or
+          // reuse one from before recovery/another process's submission attempt.
+          report = await command(campaign, privateDir, 'status'); current = expected(report, step, operationId, campaign);
+          const signed = current?.status === 'signed' && !checked.prepared.expired;
+          if (signed) {
+            const savedRaw = path.join(privateDir, `alpha-${checked.manifest.planSha256}-${step}.raw`);
+            need(validateSignedRaw(ordinary(savedRaw, 200002).toString(), checked.prepared) === current.txHash, 'PRESERVED_PRIVATE_CAPABILITY_REQUIRED');
+          }
+          return { operationId, ...(current?.txHash ? { transactionHash: current.txHash } : {}), state: signed ? 'signed' : 'pending',
+            ...(signed && typeof report.relayAcknowledgement === 'string' ? { acknowledgement: report.relayAcknowledgement, relayAlreadyAttempted: false } : {}),
+            verified: false, finalized: false, canonicalReceipt: 'NOT_ESTABLISHED', signingAuthorization: false };
+        }
         await command(campaign, privateDir, 'reconcile', { transactionHash: result.transactionHash });
       }
       report = await command(campaign, privateDir, 'status'); current = expected(report, step, operationId, campaign);
@@ -111,13 +127,13 @@ export function createAlphaAdapter() {
     },
     async exportVerification({ campaign, step, privateDir }) {
       need(step === COUNT - 1, 'RECEIPT_PROVEN_EXPORT_AWAITS_ALL_SEVEN_OPERATIONS');
-      const checked = reviewedOperation(campaign, ALPHA_SUPPORTED, COUNT, step, { allowExpired: true }); paths(checked.config, privateDir);
+      const checked = reviewedOperation(campaign, supported, COUNT, step, { allowExpired: true }); paths(checked.config, privateDir);
       need(typeof checked.config.licenseType === 'string' && /^[1-9][0-9]?$/.test(checked.config.licenseType), 'EXPLICIT_EXPLORER_LICENSE_REQUIRED');
       const completed = await command(campaign, privateDir, 'finish');
       need(completed.state.complete === true && completed.state.operations.length === COUNT && completed.state.operations.every(x => x.status === 'finalized'), 'ALL_SEVEN_FINALIZED_OPERATIONS_REQUIRED');
       const evidencePath = privateWrite(privateDir, { creationHashes: completed.state.operations.slice(0, 5).map(x => x.txHash), governanceHashes: completed.state.operations.slice(5).map(x => x.txHash), acceptanceBlock: completed.evidence.block });
       const packagePath = path.join(privateDir, `${crypto.randomUUID()}-alpha-verification`), config = checked.config;
-      await execute(config, ALPHA_SUPPORTED, path.join(config.checkout, 'tests/contracts/scripts/authority-verification-package.js'), ['receipts', config.planPath, evidencePath, packagePath], { ALPHA_READ_ONLY_RPC_URL: config.readRpcUrl });
+      await execute(config, supported, path.join(config.checkout, 'tests/contracts/scripts/authority-verification-package.js'), ['receipts', config.planPath, evidencePath, packagePath], { ALPHA_READ_ONLY_RPC_URL: config.readRpcUrl });
       const manifest = readJson(path.join(packagePath, 'manifest.json'));
       need(manifest.schema === 'agialpha.explorer-verification-package.v2' && manifest.addressStatus === 'receipt-proven', 'NATIVE_EXPORT_SCOPE_MISMATCH');
       const tasks = Object.entries(manifest.contracts).map(([name, contract]) => {
@@ -129,8 +145,23 @@ export function createAlphaAdapter() {
           creation: { transactionHash: creation.transactionHash, blockHash: creation.block.hash, blockNumber: creation.block.number, canonical: true, finalized: true, runtimeVerified: true }, licenseType: config.licenseType };
       });
       need(tasks.length === 5, 'EXACT_FIVE_CONTRACT_EXPORT_REQUIRED');
-      return { tasks, packagePath, nativePackageScope: 'Genuine receipt-proven v2 export; all five creations and both bindings reverified', explorerAcceptance: 'NOT_OBSERVED', activationAllowed: false };
+      const runtimeEvidence = supported.runtimeEvidenceRequired ? await exportRuntimeEvidence({ campaign, supported, privateDir, tasks, proofs: Object.values(manifest.contracts).map(contract => contract.creationEvidence) }) : null;
+      return { tasks, ...(runtimeEvidence ? { runtimeEvidence } : {}), packagePath, nativePackageScope: 'Genuine receipt-proven v2 export; all five creations and both bindings reverified', explorerAcceptance: 'NOT_OBSERVED', activationAllowed: false };
     }
+  });
+}
+
+export function createAlphaAdapter() {
+  const adapters = ALPHA_COMPATIBILITY.map(createPinnedAlphaAdapter);
+  const select = campaign => {
+    const source = campaign?.reviewedManifest?.source;
+    const selected = adapters.find(adapter => source?.repository === adapter.supported.repository && source.commit === adapter.supported.commit && source.tree === adapter.supported.tree);
+    need(selected, 'UNREVIEWED_COORDINATOR_SOURCE'); return selected;
+  };
+  return Object.freeze({ id: 'alpha', supported: ALPHA_SUPPORTED, compatibility: ALPHA_COMPATIBILITY,
+    forCampaign(campaign) { return select(campaign); },
+    inspectCampaign(campaign) { return select(campaign).inspectCampaign(campaign); },
+    ...Object.fromEntries(['prepare', 'importSigned', 'relayOne', 'observe', 'exportVerification'].map(method => [method, request => select(request?.campaign)[method](request)]))
   });
 }
 export default createAlphaAdapter();

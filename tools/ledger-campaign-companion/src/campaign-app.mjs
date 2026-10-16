@@ -1,5 +1,5 @@
 import { GateError } from './envelope.mjs';
-import { coordinatorImport } from './coordinator-import.mjs';
+import { coordinatorImport, coordinatorImportFormat } from './coordinator-import.mjs';
 import { validateCampaignStatus, stateLabel, nextStep } from './campaign-model.mjs';
 import { CHANNEL_FORMAT, bounded, requireMessage, validatePreparedPacket, preparedIdentity, sameIdentity, safeCode } from './campaign-protocol.mjs';
 
@@ -63,7 +63,7 @@ function send(type, extra = {}) { port?.postMessage({ format: CHANNEL_FORMAT, no
 function attachSigner(prepared, step, operationId) {
   if (port && !$('signFrame').hidden) {
     current = { prepared, step, operationId, identity: preparedIdentity(prepared), imported: false };
-    send('prepare', { prepared: { unsignedHex: prepared.unsignedHex, expectedUnsignedHash: prepared.expectedUnsignedHash, expectedPolicyHash: prepared.expectedPolicyHash, review: prepared.review } });
+    send('prepare', { importFormat: coordinatorImportFormat(snapshot.campaign.identity.packetSchema), prepared: { unsignedHex: prepared.unsignedHex, expectedUnsignedHash: prepared.expectedUnsignedHash, expectedPolicyHash: prepared.expectedPolicyHash, review: prepared.review } });
     return;
   }
   port?.close();
@@ -74,7 +74,7 @@ function attachSigner(prepared, step, operationId) {
   port.onmessage = async event => {
     try {
       const value = requireMessage(event.data, nonce, ['ready','prepared','signing','signed','recovery']);
-      if (value.type === 'ready') { send('prepare', { prepared: { unsignedHex: prepared.unsignedHex, expectedUnsignedHash: prepared.expectedUnsignedHash, expectedPolicyHash: prepared.expectedPolicyHash, review: prepared.review } }); return; }
+      if (value.type === 'ready') { send('prepare', { importFormat: coordinatorImportFormat(snapshot.campaign.identity.packetSchema), prepared: { unsignedHex: prepared.unsignedHex, expectedUnsignedHash: prepared.expectedUnsignedHash, expectedPolicyHash: prepared.expectedPolicyHash, review: prepared.review } }); return; }
       if (!sameIdentity(value.identity, current.identity)) throw new GateError('SIGNER_RESPONSE_IDENTITY_MISMATCH');
       if (value.type === 'prepared') { status('Durable intent and actor locks are held. Manually approve this exact operation in the isolated signer. / Intention durable et verrous acquis. Approuvez cette opération dans le signataire isolé.'); return; }
       if (value.type === 'signing') { busy = true; controls(); status('Awaiting manual physical Ledger approval. / En attente de votre approbation physique sur Ledger.'); return; }
