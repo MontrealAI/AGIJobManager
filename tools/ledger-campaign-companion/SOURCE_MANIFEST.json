@@ -20,8 +20,8 @@
     },
     {
       "path": "DEPLOYMENT_DECISION_EN_FR.md",
-      "bytes": 12945,
-      "sha256": "cbbd279c26e433fbc8517a3e6667beeb54bc638cd804689c30464e61b9b589c6"
+      "bytes": 13479,
+      "sha256": "642d7a3afb2c31a98d964a18c143bb0bb6fab8e960717440a54bf848fa594ae3"
     },
     {
       "path": "LEGACY_SOURCE_PREVIEW_2_START_HERE_EN_FR.txt",
@@ -70,8 +70,8 @@
     },
     {
       "path": "VALIDATION.md",
-      "bytes": 8687,
-      "sha256": "c2fd213bb69ef56a2d4f1db72a6a530ad869ac14178189e6a502691a4f9fe776"
+      "bytes": 9302,
+      "sha256": "21fd4d65286098f740f5ec43377e2a2a466bf83e42fd7f948dcc32d42edcfd83"
     },
     {
       "path": "bridge/README.md",
@@ -95,8 +95,8 @@
     },
     {
       "path": "bridge/http-server.mjs",
-      "bytes": 8055,
-      "sha256": "5270673aa5194d3353492927fd4c872bba6ac2390abcf46077f9ce141c1acc5a"
+      "bytes": 9412,
+      "sha256": "2c1b9cac7c163931291420b799d1d82c1f2c0483236e82c9dc8a87f6135af39b"
     },
     {
       "path": "bridge/private-store.mjs",
@@ -215,8 +215,8 @@
     },
     {
       "path": "scripts/browser-README.md",
-      "bytes": 6330,
-      "sha256": "36a5dd014938aa837e1645f4d5394fa59fa4e39c9ae00d67a8a646945890d4f8"
+      "bytes": 6648,
+      "sha256": "74d978ec87324ae2b4c8fdbb091c8449d1404f1a7eb1c6eea2d79c65c9e4affc"
     },
     {
       "path": "scripts/browser-acceptance.workflow.yml",
@@ -355,8 +355,8 @@
     },
     {
       "path": "test/bridge-independent-http.test.mjs",
-      "bytes": 6242,
-      "sha256": "f1a9bac9675aa07ebc557a9c9fbf76b74785b6094a4d51af8f52c35411316a31"
+      "bytes": 8193,
+      "sha256": "8c8cd56cf3011d8c6cd32a9600b10275830b3fefc04e4738b44886ccf6d42e89"
     },
     {
       "path": "test/bridge-independent-store.test.mjs",
@@ -365,8 +365,8 @@
     },
     {
       "path": "test/browser-acceptance.mjs",
-      "bytes": 15551,
-      "sha256": "9c3ee82cf0855828fdc258399aa0715a8b83479a0229400e59661e6b808269ce"
+      "bytes": 17496,
+      "sha256": "7a4fdd68c59f2b45fa9e2f1d41fb17cd3bf9073fa6886ffa7083afb5b47389e1"
     },
     {
       "path": "test/browser-campaign.mjs",
