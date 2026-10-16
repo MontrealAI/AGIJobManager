@@ -1,5 +1,5 @@
 'use strict';
-// Exactly three public dependency runtimes. Importing never contacts a provider.
+// Exactly two literal ENS owner storage words at one historical pin. Importing never contacts a provider.
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -8,7 +8,7 @@ const { createRequire } = require('node:module');
 const { execFileSync } = require('node:child_process');
 const { TextDecoder } = require('node:util');
 const ROOT = path.resolve(__dirname, '../..');
-const CONFIG_SHA256 = '825f6817af67522b97344f8b29f5ddcd097f7cbee47f6447b2dd6deaf2ae3128';
+const CONFIG_SHA256 = '34517626f7c941922e9724ef824b99a6cac30ad70ab6ab85bb98c0bcc65732d2';
 const FILES = ['.github/workflows/account-metadata-observation.yml', 'scripts/qualification/observe-account-metadata.cjs', 'scripts/qualification/test-observe-account-metadata.cjs', 'config/account-metadata-observation.json'];
 const fail = () => { throw new Error('OBSERVATION_STOPPED'); };
 const check = (v) => { if (!v) fail(); };
@@ -92,6 +92,10 @@ function loadEthers(root) {
   check(ethers.version === CONFIG.source.ethersVersion);
   check(ethers.keccak256('0x') === '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470');
   for (const a of CONFIG.dependencies) check(ethers.getAddress(a.address) === a.address);
+  for (const slot of CONFIG.ownerSlots) {
+    check(ethers.namehash(slot.name) === slot.node);
+    check(ethers.keccak256(slot.node + '00'.repeat(32)) === slot.key);
+  }
   return ethers;
 }
 function sourceIdentity(root) {
@@ -109,14 +113,22 @@ function block(value) {
 function assertRequest(method, params, pins) {
   check(typeof method === 'string' && Array.isArray(params));
   if (method === 'eth_chainId') return check(params.length === 0);
-  if (method === 'eth_getBlockByNumber') {
-    check(params.length === 2 && params[1] === false);
-    return check(['finalized', ...pins.map((p) => p.number)].includes(params[0]));
-  }
-  check(method === 'eth_getCode' && params.length === 2);
-  check(CONFIG.dependencies.some((a) => a.address === params[0]));
-  keys(params[1], ['blockHash', 'requireCanonical']);
-  check(params[1].requireCanonical === true && pins.length === 1 && pins[0].hash === params[1].blockHash);
+  if (method === 'eth_getBlockByNumber') return check(equal(params, [CONFIG.priorObservation.finalized.number, false]));
+  check(method === 'eth_getCode' || method === 'eth_getStorageAt');
+  check(params.length === (method === 'eth_getCode' ? 2 : 3));
+  check(params[0] === CONFIG.dependencies[0].address);
+  if (method === 'eth_getStorageAt') check(CONFIG.ownerSlots.some((s) => s.key === params[1]));
+  const ref = params.at(-1);
+  keys(ref, ['blockHash', 'requireCanonical']);
+  check(ref.requireCanonical === true && ref.blockHash === CONFIG.priorObservation.finalized.hash);
+  check(pins.length === 1); requireObservationPin(pins[0]);
+}
+function requestPlan() {
+  const pin = CONFIG.priorObservation.finalized, ref = { blockHash: pin.hash, requireCanonical: true };
+  return [['eth_chainId', []], ['eth_getBlockByNumber', [pin.number, false]],
+    ['eth_getCode', [CONFIG.dependencies[0].address, ref]],
+    ...CONFIG.ownerSlots.map((s) => ['eth_getStorageAt', [CONFIG.dependencies[0].address, s.key, ref]]),
+    ['eth_getBlockByNumber', [pin.number, false]], ['eth_chainId', []]];
 }
 
 // Fixed endpoint and default TLS trust. No redirects, retries, fallback, proxy, or batch support.
@@ -171,17 +183,18 @@ function codeSummary(code, subject, ethers) {
   const digest = ethers.keccak256(code); check(digest === subject.expectedKeccak256);
   return { bytes, keccak256: digest, classification: 'public-contract-code', runtime: code };
 }
+function ownerSummary(word, slot) {
+  hash(word); const owner = '0x' + word.slice(-40);
+  check(owner !== '0x' + '0'.repeat(40));
+  return { role: slot.role, name: slot.name, node: slot.node, key: slot.key, address: CONFIG.dependencies[0].address, blockHash: CONFIG.priorObservation.finalized.hash, word, owner };
+}
 function newReport(collectorCommit, now = Date.now) {
   check(typeof collectorCommit === 'string' && /^[0-9a-f]{40}$/.test(collectorCommit));
-  return { schema: CONFIG.schema, status: 'STOPPED', reason: 'OBSERVATION_STOPPED', scope: CONFIG.scope, source: CONFIG.source, collectorCommit, files: inventory(), endpoint: CONFIG.endpoint, priorObservation: CONFIG.priorObservation, startedAt: new Date(now()).toISOString(), completedAt: null, pin: null, dependencies: [], requests: [], responseBytes: 0, sourceReferences: CONFIG.sourceReferences };
+  return { schema: CONFIG.schema, mode: CONFIG.mode, status: 'STOPPED', reason: 'OBSERVATION_STOPPED', scope: CONFIG.scope, source: CONFIG.source, jobsSource: CONFIG.jobsSource, pathProof: CONFIG.pathProof, collectorCommit, files: inventory(), endpoint: CONFIG.endpoint, priorObservation: CONFIG.priorObservation, startedAt: new Date(now()).toISOString(), completedAt: null, pin: null, dependencies: [], owners: [], historicalNoFallback: null, approval: CONFIG.approval, requests: [], responseBytes: 0, sourceReferences: CONFIG.sourceReferences };
 }
 function requireObservationPin(pin) {
   keys(pin, ['number', 'hash', 'parentHash', 'timestamp']); quantity(pin.number); hash(pin.hash); hash(pin.parentHash); quantity(pin.timestamp);
-  const previous = CONFIG.priorObservation.finalized;
-  check(quantity(pin.number) >= quantity(previous.number) && quantity(pin.timestamp) >= quantity(previous.timestamp));
-  check((pin.number === previous.number) === (pin.hash === previous.hash));
-  if (pin.number === previous.number) check(equal(pin, previous));
-  if (quantity(pin.number) === quantity(previous.number) + 1n) check(pin.parentHash === previous.hash);
+  check(equal(pin, CONFIG.priorObservation.finalized));
 }
 async function observe({ transport, ethers, collectorCommit, now = Date.now }) {
   check(typeof transport === 'function');
@@ -189,35 +202,43 @@ async function observe({ transport, ethers, collectorCommit, now = Date.now }) {
   const client = createClient(transport, report, now), rpc = client.rpc;
   try {
     check(await rpc('eth_chainId', []) === CONFIG.chainId);
-    const pin = block(await rpc('eth_getBlockByNumber', ['finalized', false]));
+    const pin = block(await rpc('eth_getBlockByNumber', [CONFIG.priorObservation.finalized.number, false]));
     requireObservationPin(pin);
     client.pins.push(pin); report.pin = pin;
-    const ref = { blockHash: pin.hash, requireCanonical: true };
-    for (const d of CONFIG.dependencies) {
-      const code = codeSummary(await rpc('eth_getCode', [d.address, ref]), d, ethers);
-      report.dependencies.push({ role: d.role, address: d.address, blockHash: pin.hash, code });
+    const ref = { blockHash: pin.hash, requireCanonical: true }, d = CONFIG.dependencies[0];
+    const code = codeSummary(await rpc('eth_getCode', [d.address, ref]), d, ethers);
+    report.dependencies.push({ role: d.role, address: d.address, blockHash: pin.hash, code });
+    for (const slot of CONFIG.ownerSlots) {
+      const owner = ownerSummary(await rpc('eth_getStorageAt', [d.address, slot.key, ref]), slot);
+      report.owners.push(owner);
     }
     check(equal(block(await rpc('eth_getBlockByNumber', [pin.number, false])), pin));
     check(await rpc('eth_chainId', []) === CONFIG.chainId);
-    report.status = 'OBSERVED_WITH_CANONICAL_PIN'; report.reason = null;
-  } catch { /* Never retain provider errors, headers, rejected raw code or exception text. */ }
+    report.status = 'OBSERVED_WITH_CANONICAL_PIN'; report.reason = null; report.historicalNoFallback = true;
+  } catch { /* Never retain provider errors, headers, rejected raw code/words or exception text. */ }
   report.completedAt = new Date(now()).toISOString(); return report;
 }
 function validateReport(r, ethers) {
-  keys(r, ['schema', 'status', 'reason', 'scope', 'source', 'collectorCommit', 'files', 'endpoint', 'priorObservation', 'startedAt', 'completedAt', 'pin', 'dependencies', 'requests', 'responseBytes', 'sourceReferences']);
-  check(r.schema === CONFIG.schema && r.scope === CONFIG.scope && equal(r.source, CONFIG.source) && equal(r.sourceReferences, CONFIG.sourceReferences) && equal(r.priorObservation, CONFIG.priorObservation) && r.endpoint === CONFIG.endpoint);
+  keys(r, ['schema', 'mode', 'status', 'reason', 'scope', 'source', 'jobsSource', 'pathProof', 'collectorCommit', 'files', 'endpoint', 'priorObservation', 'startedAt', 'completedAt', 'pin', 'dependencies', 'owners', 'historicalNoFallback', 'approval', 'requests', 'responseBytes', 'sourceReferences']);
+  check(r.schema === CONFIG.schema && r.mode === CONFIG.mode && r.scope === CONFIG.scope && equal(r.source, CONFIG.source) && equal(r.jobsSource, CONFIG.jobsSource) && equal(r.pathProof, CONFIG.pathProof) && equal(r.sourceReferences, CONFIG.sourceReferences) && equal(r.priorObservation, CONFIG.priorObservation) && equal(r.approval, CONFIG.approval) && r.endpoint === CONFIG.endpoint);
   check(['STOPPED', 'OBSERVED_WITH_CANONICAL_PIN'].includes(r.status) && r.reason === (r.status === 'STOPPED' ? 'OBSERVATION_STOPPED' : null));
+  check(r.historicalNoFallback === (r.status === 'STOPPED' ? null : true));
   check(/^[0-9a-f]{40}$/.test(r.collectorCommit));
   const time = (v) => check(typeof v === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(v) && Number.isFinite(Date.parse(v)));
   time(r.startedAt); time(r.completedAt); check(equal(r.files, inventory()));
   check(r.pin === null || (r.pin && typeof r.pin === 'object' && !Array.isArray(r.pin)));
   if (r.pin !== null) requireObservationPin(r.pin);
-  check(Array.isArray(r.dependencies) && r.dependencies.length <= 3);
+  check(Array.isArray(r.dependencies) && r.dependencies.length <= 1);
   for (const [i, d] of r.dependencies.entries()) {
     keys(d, ['role', 'address', 'blockHash', 'code']); const expected = CONFIG.dependencies[i];
     check(d.role === expected.role && d.address === expected.address && r.pin && d.blockHash === r.pin.hash);
     keys(d.code, ['bytes', 'keccak256', 'classification', 'runtime']);
     check(equal(d.code, codeSummary(d.code.runtime, expected, ethers)));
+  }
+  check(Array.isArray(r.owners) && r.owners.length <= 2);
+  for (const [i, o] of r.owners.entries()) {
+    keys(o, ['role', 'name', 'node', 'key', 'address', 'blockHash', 'word', 'owner']);
+    check(equal(o, ownerSummary(o.word, CONFIG.ownerSlots[i])) && r.dependencies.length === 1 && r.pin !== null);
   }
   check(Array.isArray(r.requests) && r.requests.length <= CONFIG.limits.requests && Number.isSafeInteger(r.responseBytes) && r.responseBytes >= 0 && r.responseBytes <= CONFIG.limits.aggregateBytes + CONFIG.limits.responseBytes);
   for (const [i, q] of r.requests.entries()) {
@@ -225,21 +246,23 @@ function validateReport(r, ethers) {
     check(q.id === i + 1); assertRequest(q.method, q.params, r.pin ? [r.pin] : []); time(q.startedAt); time(q.completedAt);
     check(Number.isSafeInteger(q.bytes) && q.bytes >= 0 && q.bytes <= CONFIG.limits.responseBytes + 1);
     if (q.responseSha256 !== null) check(/^[0-9a-f]{64}$/.test(q.responseSha256)); check(['RECEIVED', 'STOPPED'].includes(q.outcome));
+    if (q.outcome === 'RECEIVED') check(q.bytes > 0 && q.bytes <= CONFIG.limits.responseBytes && q.responseSha256 !== null);
     if (q.outcome === 'STOPPED') check(i === r.requests.length - 1);
   }
-  const expected = [['eth_chainId', []], ['eth_getBlockByNumber', ['finalized', false]], ...CONFIG.dependencies.map((d) => ['eth_getCode', [d.address, { blockHash: r.pin && r.pin.hash, requireCanonical: true }]]), ['eth_getBlockByNumber', [r.pin && r.pin.number, false]], ['eth_chainId', []]];
-  check(equal(r.requests.map((q) => [q.method, q.params]), expected.slice(0, r.requests.length)));
+  check(equal(r.requests.map((q) => [q.method, q.params]), requestPlan().slice(0, r.requests.length)));
   check(r.responseBytes === r.requests.reduce((sum, q) => sum + q.bytes, 0));
-  for (let i = 0; i < r.dependencies.length; i++) check(r.requests[i + 2] && r.requests[i + 2].outcome === 'RECEIVED');
   if (r.requests.length <= 1 || (r.requests.length === 2 && r.requests[1].outcome === 'STOPPED')) check(r.pin === null);
   if (r.requests.length >= 3) check(r.pin !== null);
-  const codeRequests = Math.min(Math.max(r.requests.length - 2, 0), 3);
-  const terminalIsCode = r.requests.length >= 3 && r.requests.length <= 5;
-  const minimumAccepted = codeRequests - (terminalIsCode ? 1 : 0);
-  check(r.dependencies.length >= minimumAccepted && r.dependencies.length <= codeRequests);
-  if (terminalIsCode && r.requests.at(-1).outcome === 'STOPPED') check(r.dependencies.length === minimumAccepted);
-
-  if (r.status === 'OBSERVED_WITH_CANONICAL_PIN') check(r.pin && r.dependencies.length === 3 && r.requests.length === 7 && r.requests.every((q) => q.outcome === 'RECEIVED'));
+  // Exactly one accepted code followed by up to two accepted words. Only the
+  // terminal RECEIVED data request can be either accepted or rejected semantically.
+  const retained = r.dependencies.length + r.owners.length;
+  const dataRequests = Math.min(Math.max(r.requests.length - 2, 0), 3);
+  const terminalIsData = r.requests.length >= 3 && r.requests.length <= 5;
+  const minimumAccepted = dataRequests - (terminalIsData ? 1 : 0);
+  check(retained >= minimumAccepted && retained <= dataRequests);
+  if (terminalIsData && r.requests.at(-1).outcome === 'STOPPED') check(retained === minimumAccepted);
+  for (let i = 0; i < retained; i++) check(r.requests[i + 2] && r.requests[i + 2].outcome === 'RECEIVED');
+  if (r.status === 'OBSERVED_WITH_CANONICAL_PIN') check(r.pin && r.dependencies.length === 1 && r.owners.length === 2 && r.requests.length === 7 && r.requests.every((q) => q.outcome === 'RECEIVED'));
   const raw = Buffer.from(JSON.stringify(r, null, 2) + '\n'); check(raw.length <= CONFIG.limits.reportBytes); return raw;
 }
 
@@ -251,7 +274,7 @@ function reserveOutput(file) {
 async function main(argv = process.argv.slice(2)) {
   let fd, report, ethers;
   try {
-    check(argv.length === 6 && argv[0] === '--dependency-root' && argv[2] === '--collector-commit' && argv[4] === '--output');
+    check(argv.length === 8 && argv[0] === '--dependency-root' && argv[2] === '--collector-commit' && argv[4] === '--output' && argv[6] === '--mode' && argv[7] === CONFIG.mode);
     report = newReport(argv[3]);
     fd = reserveOutput(argv[5]);
     checkEnvironment(process.env); check(process.versions.node === CONFIG.source.nodeVersion);
@@ -262,11 +285,11 @@ async function main(argv = process.argv.slice(2)) {
     if (report.status !== 'OBSERVED_WITH_CANONICAL_PIN') process.exitCode = 1;
   } catch {
     if (fd !== undefined && report) {
-      try { report.status = 'STOPPED'; report.reason = 'OBSERVATION_STOPPED'; report.completedAt = new Date().toISOString(); fs.writeFileSync(fd, validateReport(report, ethers)); fs.fsyncSync(fd); } catch { /* Do not print raw errors. */ }
+      try { report.status = 'STOPPED'; report.reason = 'OBSERVATION_STOPPED'; report.historicalNoFallback = null; report.completedAt = new Date().toISOString(); fs.writeFileSync(fd, validateReport(report, ethers)); fs.fsyncSync(fd); } catch { /* Do not print raw errors. */ }
     }
     process.stderr.write('OBSERVATION_STOPPED\n'); process.exitCode = 1;
   }
   finally { if (fd !== undefined) fs.closeSync(fd); }
 }
-module.exports = { CONFIG, FILES, strictJson, loadConfig, checkEnvironment, loadEthers, sourceIdentity, inventory, assertRequest, makeHttpsTransport, createClient, codeSummary, observe, validateReport, reserveOutput, main };
+module.exports = { CONFIG, FILES, strictJson, loadConfig, checkEnvironment, loadEthers, sourceIdentity, inventory, assertRequest, makeHttpsTransport, createClient, codeSummary, ownerSummary, requestPlan, observe, validateReport, reserveOutput, main };
 if (require.main === module) main();
