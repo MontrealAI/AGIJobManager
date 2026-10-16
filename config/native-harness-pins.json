@@ -26,7 +26,7 @@
     "scripts/qualification/run-native-campaigns.py": "935c928acb2934c35331c32d7ebd81f765845c6b52f7561421db5f5b6f3683a5",
     "scripts/qualification/select-source-profile.py": "16e1635469419480e5993bc36afac33d0f0b7e9e036ec67d2eae36bb13335ac3",
     "scripts/qualification/test-marker-relocation.py": "fe4230203d600688f7d5a405e1c3c7d06f9e0f0467b6a900539996a0752c2f6f",
-    "scripts/qualification/test-native-workflow.py": "d87158e4350921a3cf7f75d3dfd13a4cf1ea599e51c8ad507470eb8d54af59c7",
+    "scripts/qualification/test-native-workflow.py": "a49b0add824716e11b93a13a28b072a5e928aeede7574b7c51333d48a2f22ce8",
     "scripts/qualification/test-run-native-campaigns.py": "770b8d91709eb349bdc9e743998d76b8667b3ac78b58381f639753f17d831f76",
     "scripts/qualification/test-select-source-profile.py": "08ca6fb870855e4c0a45dfa6365ed4e86d6e262c118fb6e943a41811e62c7477",
     "scripts/qualification/test-verify-fork-provenance.py": "522ec7a869332f3dcfcc1595034c872d580492212ec691c50e115b57a893c743",

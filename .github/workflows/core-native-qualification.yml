@@ -33,7 +33,7 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       HARNESS_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
-      HARNESS_PINS_SHA256: 5af1ffba5162598f028454d2e669e2004d1ee4af66be9966a2884ef7b332e765
+      HARNESS_PINS_SHA256: a8bc2e9a97b21d02c4a89ab1c3b8480fe1e1cce9081a9e0767e481fb717272c6
     steps:
       - name: Check out the separately reviewed harness revision
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -122,6 +122,11 @@ jobs:
             --profile manager-explicit-governor-v1 --source-root "$(realpath source)"
           node --max-old-space-size=384 --test qualifier/runners/full/hardhat/test/cleanup-race-oracle.test.cjs
           MANAGER_QUALIFICATION_SOURCE_ROOT="$(realpath source)" node --max-old-space-size=384 --test qualifier/runners/marker/hardhat/test/marker-native-evidence.test.cjs
+      - name: Compile the exact new and authentic historical constructors separately
+        run: |
+          set -euo pipefail
+          (cd source && node --max-old-space-size=2048 node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs compile)
+          (cd legacy && node --max-old-space-size=2048 node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs compile)
       - name: Run the genuine source tooling suite and unchanged dependency parity groups
         working-directory: source
         run: |
@@ -137,11 +142,6 @@ jobs:
           PY
           python3 -I scripts/release/test-source-boundary-dispatch.py \
             --object-store "$(pwd)" --dependency-root "$(realpath node_modules)"
-      - name: Compile the exact new and authentic historical constructors separately
-        run: |
-          set -euo pipefail
-          (cd source && node --max-old-space-size=2048 node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs compile)
-          (cd legacy && node --max-old-space-size=2048 node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs compile)
       - name: Run full96 and marker30 campaigns serially in fresh external directories
         run: |
           python3 -I qualifier/scripts/qualification/run-native-campaigns.py \

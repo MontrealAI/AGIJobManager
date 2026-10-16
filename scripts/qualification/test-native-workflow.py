@@ -10,6 +10,26 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / '.github/workflows/core-native-qualification.yml'
 
 
+DEPENDENCY_STEPS = [
+    'Install only the existing exact source and historical locks',
+    'Check original legacy policy without changing its semantics',
+    'Bind actual c2 to the separately reviewed finite source policy',
+    'Check routing, evidence wrapper and retained fork provenance adversarial cases',
+    'Compile the exact new and authentic historical constructors separately',
+    'Run the genuine source tooling suite and unchanged dependency parity groups',
+    'Run full96 and marker30 campaigns serially in fresh external directories',
+]
+
+
+def require_dependency_order(text):
+    names = re.findall(r'^      - name: (.*)$', text, re.M)
+    if any(names.count(name) != 1 for name in DEPENDENCY_STEPS):
+        raise ValueError('Every required producer and consumer must appear exactly once')
+    positions = [names.index(name) for name in DEPENDENCY_STEPS]
+    if positions != sorted(positions):
+        raise ValueError('Source binding and exact compilation must precede artifact consumers')
+
+
 class WorkflowInvariants(unittest.TestCase):
     def setUp(self):
         self.text = WORKFLOW.read_text()
@@ -45,6 +65,19 @@ class WorkflowInvariants(unittest.TestCase):
         self.assertNotIn('npm run build', self.text)
         self.assertNotIn('export-contract-artifacts', self.text)
         self.assertIn('node-version: 22.23.2', self.text)
+
+    def test_compilation_precedes_artifact_consumers(self):
+        require_dependency_order(self.text)
+
+    def test_old_compile_after_tooling_order_is_rejected(self):
+        start = self.text.index('      - name: Compile the exact new and authentic historical constructors separately\n')
+        end = self.text.index('      - name: ', start + 1)
+        compile_step = self.text[start:end]
+        reordered = self.text[:start] + self.text[end:]
+        index = reordered.index('      - name: Run full96 and marker30')
+        reordered = reordered[:index] + compile_step + reordered[index:]
+        with self.assertRaisesRegex(ValueError, 'precede artifact consumers'):
+            require_dependency_order(reordered)
 
     def test_original_and_explicit_profiles_are_both_selected(self):
         self.assertIn('--profile legacy-v114', self.text)
