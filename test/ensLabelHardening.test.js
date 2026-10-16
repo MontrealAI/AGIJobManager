@@ -57,7 +57,7 @@ contract("ENS label hardening", (accounts) => {
       const nameWrapper = await MockNameWrapper.new({ from: owner });
 
       manager = await deployActive(AGIJobManager,
-        ...buildInitConfig(
+        ...buildInitConfig(owner,
           token.address,
           "ipfs://base",
           ens.address,
@@ -154,7 +154,7 @@ contract("ENS label hardening", (accounts) => {
       await revertingWrapper.setRevertOwnerOf(true, { from: owner });
 
       const strictManager = await deployActive(AGIJobManager,
-        ...buildInitConfig(
+        ...buildInitConfig(owner,
           token.address,
           "ipfs://base",
           revertingEns.address,
@@ -183,7 +183,7 @@ contract("ENS label hardening", (accounts) => {
       await revertingWrapper.setRevertOwnerOf(true, { from: owner });
 
       const strictManager = await deployActive(AGIJobManager,
-        ...buildInitConfig(
+        ...buildInitConfig(owner,
           token.address,
           "ipfs://base",
           revertingEns.address,
@@ -224,7 +224,7 @@ contract("ENS label hardening", (accounts) => {
       token = await MockERC20.new({ from: owner });
 
       manager = await deployActive(AGIJobManager,
-        ...buildInitConfig(
+        ...buildInitConfig(owner,
           token.address,
           "ipfs://base",
           "0x0000000000000000000000000000000000000000",

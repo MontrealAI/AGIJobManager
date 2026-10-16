@@ -2,7 +2,12 @@ const { getRuntime } = require('./runtime.cjs');
 let hre, ethers, run, network;
 const fs = require("fs");
 const path = require("path");
-const { randomUUID } = require("crypto");
+const E = require('ethers');
+const { durableWrite, requireCreatorProfile, reserveCreator, releaseCreator, planCreation, requireCreationTransaction, recoverCreation } = require('./creator-transaction.cjs');
+const { createCanonicalReader } = require('./canonical-state.cjs');
+const { qualifiedArtifact, snapshot, recheck, encode } = require('./deploy-job-pages.cjs');
+const FQN = 'contracts/ens/ENSJobPages.sol:ENSJobPages';
+const SCHEMA = 'ens-job-pages-deployment-v2';
 const { COMPILER_SETTINGS, stableObject } = require('./deploy.cjs');
 
 
@@ -26,7 +31,7 @@ function sleep(ms) {
 
 function namehash(name) {
   if (!name || name.trim() === "") return "0x" + "00".repeat(32);
-  return ethers.namehash(ethers.ensNormalize(name));
+  return E.namehash(E.ensNormalize(name));
 }
 
 function deriveJobsRootName(chainId, managerAddress) {
@@ -100,9 +105,93 @@ function parseIntEnv(key, fallback, min = 0) {
   return parsed;
 }
 
+function governorPlan(journal) {
+  const iface = new E.Interface(['function setJobManager(address)','function setJobLabelPrefix(string)','function lockConfiguration()']);
+  const calls = [['setJobManager',[journal.jobManager]],['setJobLabelPrefix',[journal.namespace.jobLabelPrefix]],...(journal.lockConfig ? [['lockConfiguration',[]]] : [])];
+  return {status:'requires_separate_governor_authorization',affectedContracts:[journal.address],historicalReferencesReadOnly:true,chainId:journal.chainId,from:journal.finalOwner,
+    actions:calls.map(([method,args])=>({to:journal.address,value:'0',method,args,data:iface.encodeFunctionData(method,args)})),
+    rootAuthorityAuthorized:false,managerAttachmentAuthorized:false,intakeActivationAuthorized:false};
+}
+async function readEnsCreationState({provider,journal,artifact,buildInfo,legacy=false}) {
+  const block=await snapshot(provider,journal.chainId),reader=createCanonicalReader(provider,block);
+  const code=await reader.getCode(journal.address);
+  requireArtifactMatch({artifact,buildInfo,address:journal.address,code});
+  const helper=reader.contract(journal.address,artifact.abi);
+  const fields=['owner','jobManager','jobsRootName','jobsRootNode','jobLabelPrefix','ens','nameWrapper','publicResolver','useEnsJobTokenURI','configLocked'];
+  const values=await Promise.all(fields.map(field=>helper[field]()));
+  const state=Object.fromEntries(fields.map((field,index)=>[field,values[index]]));
+  const manager=reader.contract(journal.jobManager,['function owner() view returns(address)','function pendingOwner() view returns(address)','function paused() view returns(bool)','function ensJobPages() view returns(address)','function usdcToken() view returns(address)']);
+  const [owner,pendingOwner,paused,attachment,token]=await Promise.all([manager.owner(),manager.pendingOwner(),manager.paused(),manager.ensJobPages(),manager.usdcToken()]);
+  requireCanonicalUSDC(journal.chainId,token);
+  if (!legacy) {
+    if (E.keccak256(await reader.getCode(journal.jobManager))!==journal.managerCodeHash) throw Error('Reviewed manager source/runtime binding changed.');
+    if (owner!==journal.finalOwner || pendingOwner!==E.ZeroAddress || !paused || attachment!==journal.namespace.previousHelper) throw Error('Manager ownership, pause or helper attachment changed; reconciliation is required.');
+    const [registry,wrapper,resolver,node,name,governor]=journal.constructorArgs;
+    if (state.owner!==governor || state.jobManager!==E.ZeroAddress || state.jobsRootName!==name || state.jobsRootNode!==node ||
+        state.jobLabelPrefix!=='agijob' || state.ens!==E.getAddress(registry) || state.nameWrapper!==E.getAddress(wrapper) ||
+        state.publicResolver!==E.getAddress(resolver) || state.useEnsJobTokenURI!==false || state.configLocked!==false) throw Error('ENS helper differs from the governed unconfigured constructor state. Preserve the journal and reconcile any partial governor configuration without redeploying.');
+    const ens=reader.contract(registry,['function owner(bytes32) view returns(address)','function resolver(bytes32) view returns(address)']);
+    const [rootOwner,rootResolver]=await Promise.all([ens.owner(node),ens.resolver(node)]);
+    if (rootOwner!==journal.namespace.rootOwner || rootResolver!==journal.namespace.rootResolver) throw Error('ENS root authority changed before separately authorized configuration.');
+  }
+  await recheck(provider,journal.chainId,block);
+  return {snapshot:block,state,managerState:{owner,pendingOwner,paused,attachment},runtimeCodeHash:E.keccak256(code)};
+}
+async function verifyEnsCreation({hre,journal,artifact,buildInfo,confirmations,legacy=false,verifyLegacy}) {
+  const p=hre.ethers.provider;
+  const expectedTypes=legacy?['address','address','address','bytes32','string']:['address','address','address','bytes32','string','address'];
+  const buildDigest=qualifiedArtifact(artifact,buildInfo,FQN,expectedTypes);
+  if (!legacy && (journal.schema!==SCHEMA || journal.buildDigest!==buildDigest || journal.constructorSchema!=='ens-job-pages-constructor-v2' || journal.ownershipInitialization!=='explicit-constructor' || journal.constructorArgs[5]!==journal.finalOwner)) throw Error('ENS versioned constructor/source manifest differs.');
+  const creationData=(await new E.ContractFactory(artifact.abi,artifact.bytecode).getDeployTransaction(...journal.constructorArgs)).data;
+  if (!legacy && (journal.creationDataHash!==E.keccak256(creationData) || !journal.creationIntent || journal.creationIntent.creator!==journal.deployer || journal.creationIntent.chainId!==journal.chainId || journal.creationIntent.dataHash!==journal.creationDataHash)) throw Error('ENS creation intent differs from the reviewed manifest.');
+  if (!journal.transactionHash) throw Error('No reconciled ENS creation transaction; recover the saved intent before continuing.');
+  const receipt=requireConfirmedReceipt(await p.getTransactionReceipt(journal.transactionHash),journal.transactionHash,journal.address);
+  const tx=await p.getTransaction(journal.transactionHash);
+  if (!tx || tx.hash?.toLowerCase()!==journal.transactionHash.toLowerCase() || tx.to!==null || E.getAddress(tx.from)!==E.getAddress(journal.deployer) || Number(tx.chainId)!==journal.chainId || BigInt(tx.value)!==0n || tx.data.toLowerCase()!==creationData.toLowerCase() || E.getCreateAddress({from:tx.from,nonce:tx.nonce})!==E.getAddress(journal.address)) throw Error('ENS creation sender, chain, nonce, address or constructor differs.');
+  if (!legacy) requireCreationTransaction(tx,journal.creationIntent);
+  const initial=await readEnsCreationState({provider:p,journal,artifact,buildInfo,legacy});
+  const mined=await p.send('eth_getBlockByNumber',[E.toQuantity(receipt.blockNumber),false]);
+  if (initial.snapshot.number-receipt.blockNumber+1<confirmations || mined?.hash?.toLowerCase()!==receipt.blockHash.toLowerCase()) throw Error('ENS creation lacks canonical confirmations.');
+  requireExplorerEnabled(hre.config);
+  const verified=legacy?await (verifyLegacy||require('./verify-etherscan.cjs').verifyEtherscan)({chainId:journal.chainId,address:journal.address,artifact,buildInfo,constructorArguments:journal.constructorArgs,apiKey:hre.config.verify.etherscan.apiKey})
+    :await hre.run('verify:verify',{address:journal.address,contract:FQN,constructorArguments:journal.constructorArgs,blockReference:initial.snapshot});
+  if (verified!==true) throw Error('ENS exact-source explorer verification was not established.');
+  const final=await readEnsCreationState({provider:p,journal,artifact,buildInfo,legacy});
+  if (encode(initial.state)!==encode(final.state) || encode(initial.managerState)!==encode(final.managerState) || initial.runtimeCodeHash!==final.runtimeCodeHash) throw Error('ENS state changed during verification.');
+  return {...final,status:legacy?'legacy_verified_state_observed':'verified_unconfigured',verification:{status:'verified'},
+    currentOwner:final.state.owner,configuredManager:final.state.jobManager,configLocked:final.state.configLocked,
+    governorActionPlan:legacy?null:governorPlan(journal),attachmentAuthorized:false,rootAuthorityAuthorized:false,intakeActivationAuthorized:false,blockchainTransactionsBroadcast:0};
+}
+async function recoverEns({hre,env:settings,verifyLegacy}) {
+  if (!settings.ENS_JOURNAL || !settings.ENS_REPORT || parseBooleanSetting(settings.DRY_RUN,'DRY_RUN',true)) throw Error('ENS_REVERIFY requires ENS_JOURNAL, a new ENS_REPORT and DRY_RUN=0 for source submission; no signer or deployment is used.');
+  if (fs.existsSync(settings.ENS_REPORT)) throw Error('ENS recovery report already exists; original history is never overwritten.');
+  const journal=JSON.parse(fs.readFileSync(settings.ENS_JOURNAL,'utf8'));
+  const legacy=journal.schema===undefined;
+  if (!legacy && journal.schema!==SCHEMA) throw Error('Unknown ENS deployment schema; never reinterpret historical records.');
+  requireDeploymentNetwork(hre.network.name,journal.chainId);
+  let artifact,buildInfo;
+  if (legacy) {
+    if (!settings.ENS_LEGACY_ARTIFACT || !settings.ENS_LEGACY_BUILD_INFO || !settings.ENS_LEGACY_BUILD_DIGEST) throw Error('Historical five-argument ENS recovery requires the explicit original artifact, compiler build and reviewed buildDigest.');
+    artifact=JSON.parse(fs.readFileSync(settings.ENS_LEGACY_ARTIFACT,'utf8')); buildInfo=JSON.parse(fs.readFileSync(settings.ENS_LEGACY_BUILD_INFO,'utf8'));
+    if (qualifiedArtifact(artifact,buildInfo,FQN,['address','address','address','bytes32','string'])!==settings.ENS_LEGACY_BUILD_DIGEST) throw Error('Historical ENS source/build identity differs.');
+    const originalInput=JSON.parse(fs.readFileSync(journal.solcInputPath,'utf8'));
+    if (encode(originalInput)!==encode(buildInfo.input)) throw Error('Archived ENS build differs from the original journal compiler input.');
+    journal.transactionHash=journal.transactions?.find(entry=>entry.action==='deploy')?.txHash;
+  } else {
+    artifact=await hre.artifacts.readArtifact(FQN); buildInfo=await hre.artifacts.getBuildInfo(FQN);
+    if (!journal.transactionHash && journal.creationIntent) journal.transactionHash=await recoverCreation({provider:hre.ethers.provider,intent:journal.creationIntent});
+  }
+  const confirmations=Number(settings.CONFIRMATIONS||3);
+  if (!Number.isSafeInteger(confirmations)||confirmations<3) throw Error('ENS recovery requires at least three confirmations.');
+  const result=await verifyEnsCreation({hre,journal,artifact,buildInfo,confirmations,legacy,verifyLegacy});
+  const report={...journal,...result,recoveryOf:path.resolve(settings.ENS_JOURNAL),priorJournalStatus:journal.status};delete report.error;
+  durableWrite(settings.ENS_REPORT,report,{exclusive:true});return report;
+}
+
 async function main() {
   hre = await getRuntime();
   ({ ethers, run, network } = hre);
+  if (parseBooleanSetting(env('ENS_REVERIFY'), 'ENS_REVERIFY')) { const result=await recoverEns({ hre, env:process.env }); console.log(JSON.stringify(result,null,2)); return result; }
   const net = await ethers.provider.getNetwork();
   const chainId = Number(net.chainId);
   requireDeploymentNetwork(network.name, chainId);
@@ -136,9 +225,10 @@ async function main() {
   if (!dryRun && !verify) throw new Error("Explorer verification is required before an ENS helper can be deployed for use. Remove VERIFY=false or set VERIFY=1; DRY_RUN=1 remains read-only.");
   if (verify && !dryRun) requireExplorerEnabled(hre.config);
 
+  if (env('NEW_OWNER') && env('FINAL_OWNER') && env('NEW_OWNER').toLowerCase() !== env('FINAL_OWNER').toLowerCase()) throw Error('NEW_OWNER and FINAL_OWNER conflict; select one reviewed governor.');
   const ownerOverride = env("NEW_OWNER") || env("FINAL_OWNER") || "";
 
-  if (!ownerOverride) throw new Error("Set NEW_OWNER or FINAL_OWNER to the reviewed ENSJobPages owner. Ownership is transferred in one step; the deployer is not selected implicitly.");
+  if (!ownerOverride) throw new Error("Set NEW_OWNER or FINAL_OWNER to the reviewed ENSJobPages owner. Ownership is initialized atomically in the constructor; the creator is selected separately.");
 
   if (ownerOverride && (!ethers.isAddress(ownerOverride) || ownerOverride.toLowerCase() === ethers.ZeroAddress.toLowerCase())) {
     throw new Error(`Resolved owner override is not a valid address: ${ownerOverride}`);
@@ -155,8 +245,9 @@ async function main() {
     manager.usdcToken(), manager.owner(), manager.pendingOwner(), manager.paused(),
   ]);
   requireCanonicalUSDC(chainId, managerToken);
-  if (managerPendingOwner !== ethers.ZeroAddress) throw new Error("The USDC manager has pending ownership acceptance. Complete and verify its two-step handover before deploying the ENS helper.");
-  if (managerIntakePaused !== true) throw new Error("Pause intake on the reviewed USDC manager before deploying the ENS helper. Existing jobs can continue settlement while intake is paused.");
+  if (managerOwner.toLowerCase() !== ownerOverride.toLowerCase()) throw Error('The manager owner must equal the reviewed final ENS governor.');
+  if (managerPendingOwner !== ethers.ZeroAddress) throw new Error("The USDC manager has pending ownership acceptance. Select the intended new manager with verified final governance; this workflow cannot alter a previous deployment.");
+  if (managerIntakePaused !== true) throw new Error("The reviewed USDC manager must already have paused intake. Select the intended new paused manager; this workflow cannot pause or alter a previous deployment.");
   if (ownerOverride && [ensRegistry, nameWrapper, publicResolver, jobManager, managerToken].some(address => address.toLowerCase() === ownerOverride.toLowerCase())) {
     throw new Error("The ENSJobPages owner cannot be a configured protocol dependency. Choose a reviewed wallet or governance contract able to operate owner functions.");
   }
@@ -166,13 +257,11 @@ async function main() {
     await requireCode(nameWrapper, "NAME_WRAPPER");
   }
 
-  let [deployer] = await ethers.getSigners();
-  if (!deployer && dryRun && env("DEPLOYER_ADDRESS")) {
-    const address = env("DEPLOYER_ADDRESS");
-    if (!ethers.isAddress(address) || address.toLowerCase() === ethers.ZeroAddress.toLowerCase()) throw new Error("DEPLOYER_ADDRESS must be a valid nonzero address.");
-    deployer = { address: ethers.getAddress(address) };
-  }
-  if (!deployer) throw new Error("A deployer account is required. For read-only DRY_RUN=1 without a key, set DEPLOYER_ADDRESS.");
+  const creator = env('DEPLOYER_ADDRESS');
+  if (!ethers.isAddress(creator) || creator.toLowerCase() === ethers.ZeroAddress) throw Error('DEPLOYER_ADDRESS must name the separately reviewed nonzero creator.');
+  const transactionMode = env('CREATOR_TRANSACTION_MODE');
+  await requireCreatorProfile({provider:ethers.provider,chainId,creator,transactionMode});
+  const deployer = {address:ethers.getAddress(creator)};
   const ens = await ethers.getContractAt(
     ["function owner(bytes32 node) view returns (address)", "function resolver(bytes32 node) view returns (address)"],
     ensRegistry,
@@ -183,7 +272,7 @@ async function main() {
     rootNodeInput: env('JOBS_ROOT_NODE'), prefixInput: env('JOB_LABEL_PREFIX') });
   const { jobsRootName, jobsRootNode, jobLabelPrefix } = namespace;
   const currentRootOwner = namespace.rootOwner;
-  const constructorArgs = [ensRegistry, nameWrapper, publicResolver, jobsRootNode, jobsRootName];
+  const constructorArgs = [ensRegistry, nameWrapper, publicResolver, jobsRootNode, jobsRootName, ethers.getAddress(ownerOverride)];
   const factory = await ethers.getContractFactory("ENSJobPages");
   const artifact = await hre.artifacts.readArtifact('ENSJobPages');
   const buildInfo = await hre.artifacts.getBuildInfo('contracts/ens/ENSJobPages.sol:ENSJobPages');
@@ -198,6 +287,12 @@ async function main() {
   if (!compiled || `0x${compiled.evm.bytecode.object}` !== artifact.bytecode || `0x${compiled.evm.deployedBytecode.object}` !== artifact.deployedBytecode) {
     throw new Error('ENSJobPages artifact differs from its compiler build. Clean and recompile the qualified release.');
   }
+  const buildDigest = qualifiedArtifact(artifact,buildInfo,FQN,['address','address','address','bytes32','string','address']);
+  if (env('ENS_BUILD_DIGEST') && env('ENS_BUILD_DIGEST') !== buildDigest) throw Error('ENS reviewed buildDigest differs from the exact compiler input.');
+  if (!dryRun && !env('ENS_BUILD_DIGEST')) throw Error('Set ENS_BUILD_DIGEST to the explicitly reviewed compiler-input identity before deployment.');
+  const managerCodeHash = ethers.keccak256(await ethers.provider.getCode(jobManager));
+  if (env('ENS_MANAGER_CODE_HASH') && env('ENS_MANAGER_CODE_HASH').toLowerCase() !== managerCodeHash) throw Error('ENS manager runtime differs from the reviewed hash.');
+  if (!dryRun && !env('ENS_MANAGER_CODE_HASH')) throw Error('Set ENS_MANAGER_CODE_HASH to the explicitly reviewed manager runtime before deployment.');
   const runtimeBytes = requireRuntimeSize('ENSJobPages', artifact.deployedBytecode);
   const prepared = await prepareDeployment({ provider: ethers.provider, factory, args: constructorArgs, from: deployer.address, name: 'ENSJobPages' });
 
@@ -222,6 +317,8 @@ async function main() {
   console.log("CONFIRMATIONS:", confirmations);
   console.log("VERIFY_DELAY_MS:", verifyDelayMs);
   console.log("DRY_RUN:", dryRun);
+  console.log("buildDigest:", buildDigest);
+  console.log("managerCodeHash:", managerCodeHash);
   console.log("deployment limits:", JSON.stringify({ runtimeBytes, initcodeBytes: prepared.initcodeBytes,
     estimatedGas: prepared.estimatedGas.toString(), gasLimit: prepared.gasLimit.toString() }));
 
@@ -230,104 +327,51 @@ async function main() {
     return;
   }
 
-  const journalDirectory = path.join(__dirname, '..', 'deployments', network.name);
-  fs.mkdirSync(journalDirectory, { recursive: true });
-  const journalPath = path.join(journalDirectory, `ens-job-pages.${chainId}.${randomUUID()}.json`);
-  const solcInputPath = journalPath.replace(/\.json$/, '.solc-input.json');
-  fs.writeFileSync(solcInputPath, `${JSON.stringify(buildInfo.input, null, 2)}\n`, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
-  const journal = { status: 'started', chainId, network: network.name, deployer: deployer.address,
-    constructorArgs, namespace, jobManager, managerOwner, managerIntakePaused, finalOwner: ownerOverride, lockConfig,
-    compiler: COMPILER_SETTINGS, solcInputPath, expectedRuntimeCodeHash: ethers.keccak256(artifact.deployedBytecode),
-    runtimeBytes, initcodeBytes: prepared.initcodeBytes, estimatedGas: prepared.estimatedGas.toString(), gasLimit: prepared.gasLimit.toString(),
-    verification: { status: verify ? 'pending' : 'not_requested' }, transactions: [] };
-  const checkpoint = () => {
-    fs.writeFileSync(`${journalPath}.tmp`, `${JSON.stringify(journal, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
-    fs.renameSync(`${journalPath}.tmp`, journalPath);
-  };
-  checkpoint();
-  console.log(`ENS deployment journal: ${journalPath}`);
-  const recordTransaction = async (action, tx, contractAddress) => {
-    const entry = { action, txHash: tx.hash, status: 'broadcast' };
-    journal.transactions.push(entry);
-    checkpoint();
-    const receipt = requireConfirmedReceipt(await tx.wait(confirmations), tx.hash, contractAddress);
-    Object.assign(entry, { status: 'confirmed', blockNumber: receipt.blockNumber, blockHash: receipt.blockHash, gasUsed: receipt.gasUsed.toString() });
-    checkpoint();
-  };
+  const journalPath = env('ENS_JOURNAL');
+  if (!journalPath) throw Error('ENS_JOURNAL must name the reviewed durable journal; reuse it for recovery, never create a fresh journal to retry.');
+  if (fs.existsSync(journalPath) || fs.existsSync(journalPath+'.solc-input.json')) throw Error('ENS deployment journal/input already exists. Use ENS_REVERIFY with the original journal; never redeploy.');
+  const [signer] = await ethers.getSigners();
+  if (!signer || ethers.getAddress(await signer.getAddress()) !== deployer.address) throw Error('Signing account differs from reviewed DEPLOYER_ADDRESS.');
+  const block = await snapshot(ethers.provider,chainId);
+  const canonical = createCanonicalReader(ethers.provider,block);
+  const canonicalManager = canonical.contract(jobManager,['function owner() view returns(address)','function pendingOwner() view returns(address)','function paused() view returns(bool)','function ensJobPages() view returns(address)','function nextJobId() view returns(uint256)']);
+  const canonicalEns = canonical.contract(ensRegistry,['function owner(bytes32) view returns(address)','function resolver(bytes32) view returns(address)']);
+  const [currentOwner,currentPending,currentPaused,currentHelper,currentJobId,currentRoot,currentResolver] = await Promise.all([canonicalManager.owner(),canonicalManager.pendingOwner(),canonicalManager.paused(),canonicalManager.ensJobPages(),canonicalManager.nextJobId(),canonicalEns.owner(jobsRootNode),canonicalEns.resolver(jobsRootNode)]);
+  if (ethers.keccak256(await canonical.getCode(jobManager)) !== managerCodeHash || currentOwner !== ethers.getAddress(ownerOverride) || currentPending !== ethers.ZeroAddress || currentPaused !== true || currentHelper !== namespace.previousHelper || currentRoot !== namespace.rootOwner || currentResolver !== namespace.rootResolver || (namespace.mode === 'fresh' && currentJobId !== 0n)) throw Error('ENS pre-creation authority or namespace changed. Reconcile before deployment.');
+  await recheck(ethers.provider,chainId,block);
+  const creatorLock = reserveCreator({directory:env('DEPLOYMENT_LOCK_DIRECTORY'),chainId,creator:deployer.address,journalPath});
+  const journal = {schema:SCHEMA,constructorSchema:'ens-job-pages-constructor-v2',ownershipInitialization:'explicit-constructor',
+    status:'prepared',chainId,network:network.name,deployer:deployer.address,transactionMode,creatorLock,constructorArgs,namespace,
+    jobManager,managerOwner,managerCodeHash,managerIntakePaused,finalOwner:ethers.getAddress(ownerOverride),lockConfig,buildDigest,
+    compiler:COMPILER_SETTINGS,solcInputPath:journalPath+'.solc-input.json',runtimeBytes,
+    expectedRuntimeCodeHash:ethers.keccak256(artifact.deployedBytecode),
+    initcodeBytes:prepared.initcodeBytes,estimatedGas:String(prepared.estimatedGas),gasLimit:String(prepared.gasLimit),
+    verification:{status:'pending'},transactions:[],attachmentAuthorized:false,rootAuthorityAuthorized:false,intakeActivationAuthorized:false};
+  durableWrite(journalPath,journal,{exclusive:true});
+  const checkpoint = () => durableWrite(journalPath,journal);
   try {
-    const ensJobPages = await factory.deploy(...constructorArgs, { gasLimit: prepared.gasLimit });
-    const ensJobPagesAddress = await ensJobPages.getAddress();
-    journal.address = ensJobPagesAddress;
-    await recordTransaction('deploy', ensJobPages.deploymentTransaction(), ensJobPagesAddress);
-    await ensJobPages.waitForDeployment();
-    const code = await ethers.provider.getCode(ensJobPagesAddress);
-    requireArtifactMatch({ artifact, buildInfo, address: ensJobPagesAddress, code });
-    journal.runtimeCodeHash = ethers.keccak256(code);
-    checkpoint();
-    console.log("\nENSJobPages deployed:", ensJobPagesAddress);
-
-    console.log("Setting job manager...");
-    await recordTransaction('setJobManager', await ensJobPages.setJobManager(jobManager));
-    await recordTransaction('setJobLabelPrefix', await ensJobPages.setJobLabelPrefix(jobLabelPrefix));
-    const [configuredRoot, configuredNode, configuredPrefix, configuredManagerAddress] = await Promise.all([
-      ensJobPages.jobsRootName(), ensJobPages.jobsRootNode(), ensJobPages.jobLabelPrefix(), ensJobPages.jobManager(),
-    ]);
-    if (configuredRoot !== jobsRootName || configuredNode !== jobsRootNode || configuredPrefix !== jobLabelPrefix || configuredManagerAddress.toLowerCase() !== jobManager.toLowerCase()) {
-      throw new Error('Configured ENS namespace differs from the plan. Stop before locking or ownership handoff.');
-    }
-
-    if (verify) {
-      try {
-        console.log(`\nWaiting ${verifyDelayMs}ms before verify...`);
-        await sleep(verifyDelayMs);
-        const verified = await run("verify:verify", { address: ensJobPagesAddress, constructorArguments: constructorArgs });
-        if (verified !== true) throw new Error("Explorer verification did not return an explicit successful result.");
-        journal.verification = { status: 'verified' };
-      } catch (error) {
-        journal.verification = { status: 'failed', error: String(error?.message || error) };
-        checkpoint();
-        throw new Error(`ENSJobPages ${ensJobPagesAddress} was deployed but explorer verification failed. Preserve ${journalPath} and finish verification before use; do not redeploy blindly. ${String(error?.message || error)}`);
-      }
-      checkpoint();
-    }
-
-    if (lockConfig) {
-      console.log("Locking configuration...");
-      await recordTransaction('lockConfiguration', await ensJobPages.lockConfiguration());
-    }
-    if (ownerOverride) {
-      console.log("Transferring ENSJobPages ownership in one step to:", ownerOverride);
-      await recordTransaction('transferOwnership', await ensJobPages.transferOwnership(ownerOverride));
-    }
-    const currentOwner = await ensJobPages.owner();
-    const configuredManager = await ensJobPages.jobManager();
-    const configLocked = await ensJobPages.configLocked();
-    const [actualRootName, actualRootNode, actualPrefix] = await Promise.all([
-      ensJobPages.jobsRootName(), ensJobPages.jobsRootNode(), ensJobPages.jobLabelPrefix(),
-    ]);
-    if (currentOwner.toLowerCase() !== journal.finalOwner.toLowerCase() || configuredManager.toLowerCase() !== jobManager.toLowerCase() || configLocked !== lockConfig ||
-        actualRootName !== jobsRootName || actualRootNode !== jobsRootNode || actualPrefix !== jobLabelPrefix) {
-      throw new Error('ENSJobPages final configuration did not match the reviewed plan. Preserve the journal and reconcile before use.');
-    }
-    Object.assign(journal, { status: 'configured', currentOwner, configuredManager, configLocked });
-    checkpoint();
-    console.log(`ENSJobPages configured; verification=${journal.verification.status}. Receipt: ${journalPath}`);
+    durableWrite(journal.solcInputPath,buildInfo.input,{exclusive:true});
+    const creationData = (await factory.getDeployTransaction(...constructorArgs)).data;
+    journal.creationDataHash = ethers.keccak256(creationData);
+    journal.creationIntent = await planCreation({provider:ethers.provider,chainId,creator:deployer.address,transactionMode,creationData,gasLimit:prepared.gasLimit,startBlock:block.number});
+    journal.address = journal.creationIntent.address; journal.status='intent_saved'; journal.submissionAttempted=true; journal.blockchainTransactionsBroadcast='unknown'; checkpoint();
+    // This is the only transaction in creation. Governor configuration is data only.
+    const helper = await factory.connect(signer).deploy(...constructorArgs,{gasLimit:prepared.gasLimit,nonce:journal.creationIntent.nonce,value:0n});
+    const tx = helper.deploymentTransaction();
+    journal.transactionHash = tx.hash; journal.status='broadcast'; journal.blockchainTransactionsBroadcast=1; checkpoint();
+    requireCreationTransaction(tx,journal.creationIntent);
+    const receipt = requireConfirmedReceipt(await tx.wait(confirmations),tx.hash,journal.address);
+    journal.transactions.push({action:'deploy',txHash:tx.hash,status:'confirmed',blockNumber:receipt.blockNumber,blockHash:receipt.blockHash});
+    journal.status='confirmed'; checkpoint();
+    if (verifyDelayMs) await sleep(verifyDelayMs);
+    Object.assign(journal,await verifyEnsCreation({hre,journal,artifact,buildInfo,confirmations}),{blockchainTransactionsBroadcast:1});
+    checkpoint(); releaseCreator(creatorLock);
+    console.log(JSON.stringify(journal,null,2)); return journal;
   } catch (error) {
-    journal.status = 'failed';
-    journal.error = String(error?.message || error);
-    checkpoint();
-    console.error(`ENS deployment incomplete. Preserve ${journalPath}; do not redeploy blindly.`);
-    throw error;
+    journal.status='incomplete'; journal.error='ENS creation or verification incomplete. Preserve this journal, source input and creator lock; use keyless recovery. No governor action, attachment, root permission or intake activation was performed.';
+    checkpoint(); throw new Error(journal.error,{cause:error});
   }
 
-  console.log("\nManual next steps (not automated):");
-  console.log(`Namespace (${namespace.mode}): ${namespace.exampleJobName}`);
-  if (namespace.mode === 'replacement') console.log("Preserve the existing root and every historical job label. Reconcile the exact-label migration inventory before the same-manager cutover; do not create a new namespace.");
-  console.log("1) Have the ENS parent owner establish direct helper ownership of the reviewed dedicated jobs root. For the qualified wrapped route, verify Registry owner(root)=NameWrapper and NameWrapper.ownerOf(root)=newEnsJobPages; an unwrapped root instead requires Registry owner(root)=newEnsJobPages.");
-  console.log("   A fresh USDC manager must keep the legacy manager, helper and jobs namespace unchanged. Do not grant blanket approval over legacy names.");
-  console.log("   For a same-manager helper replacement, review the existing root authority and replacement runbook separately.");
-  console.log("2) On the reviewed USDC AGIJobManager, its accepted owner calls setEnsJobPages(newEnsJobPages).");
-  console.log("3) Verify creation, actor delegation, authorized writes and terminal revocation with no skipped or best-effort failure events before opening general intake.");
 }
 
 if (require.main === module) main().catch((err) => {
@@ -335,4 +379,4 @@ if (require.main === module) main().catch((err) => {
   process.exitCode = 1;
 });
 
-module.exports = { main, parseIntEnv, deriveJobsRootName, resolveNamespacePlan };
+module.exports = { main, parseIntEnv, deriveJobsRootName, resolveNamespacePlan, verifyEnsCreation, recoverEns, governorPlan, FQN, SCHEMA };

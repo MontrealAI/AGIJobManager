@@ -42,7 +42,7 @@ contract("AGIJobManager seeded invariant sequences", (accounts) => {
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
     const manager = await deployActive(AGIJobManager,
-      ...buildInitConfig(
+      ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,

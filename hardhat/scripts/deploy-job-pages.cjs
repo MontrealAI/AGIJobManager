@@ -9,21 +9,25 @@ const { requireCanonicalUSDC } = require('../../scripts/lib/usdc.js');
 const { parseBooleanSetting, requireDeploymentNetwork, requireExplorerEnabled, requireArtifactMatch,
   requireConfirmedReceipt, requireRuntimeSize, prepareDeployment } = require('./deployment-safety.cjs');
 const FQN = 'contracts/periphery/AGIJobPages.sol:AGIJobPages';
-const SCHEMA = 'agi-job-pages-deployment-v1';
+const SCHEMA = 'agi-job-pages-deployment-v2';
+const LEGACY_SCHEMA = 'agi-job-pages-deployment-v1';
+const { durableWrite, requireCreatorProfile, reserveCreator, releaseCreator, planCreation, requireCreationTransaction, recoverCreation } = require('./creator-transaction.cjs');
 const HASH = /^0x[0-9a-fA-F]{64}$/;
 const digest = data => crypto.createHash('sha256').update(data).digest('hex');
 const canonical = value => Array.isArray(value) ? value.map(canonical) : value && typeof value === 'object'
   ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
 const encode = value => JSON.stringify(canonical(value));
 function normalizeConfig(value) {
-  const fields = ['schema','chainId','owner','manager','managerCodeHash','buildDigest','baseMetadataURI','externalUrlBase'];
+  const legacy = value?.schema === 'reviewed-job-pages-v1';
+  const fields = ['schema','chainId','owner','manager','managerCodeHash','buildDigest','baseMetadataURI','externalUrlBase', ...(legacy ? [] : ['creator','transactionMode'])];
   if (!value || Array.isArray(value) || Object.keys(value).sort().join() !== fields.sort().join() ||
-      value.schema !== 'reviewed-job-pages-v1' || ![1,11155111].includes(value.chainId)) throw Error('Invalid reviewed router configuration schema or chain.');
+      !['reviewed-job-pages-v1','reviewed-job-pages-v2'].includes(value.schema) || ![1,11155111].includes(value.chainId)) throw Error('Invalid reviewed router configuration schema or chain.');
   const result = { ...value };
-  for (const key of ['owner','manager']) {
+  for (const key of ['owner','manager', ...(legacy ? [] : ['creator'])]) {
     if (!E.isAddress(value[key]) || value[key].toLowerCase() === E.ZeroAddress) throw Error(`Invalid router ${key}.`);
     result[key] = E.getAddress(value[key]);
   }
+  if (!legacy && value.transactionMode !== 'eoa-create') throw Error('Only eoa-create is a qualified creator mode.');
   if (!HASH.test(value.managerCodeHash || '')) throw Error('Expected manager runtime hash is required.');
   result.managerCodeHash = value.managerCodeHash.toLowerCase();
   if (!/^[0-9a-f]{64}$/.test(value.buildDigest || '')) throw Error('Explicit reviewed compiler-input buildDigest is required.');
@@ -44,10 +48,11 @@ function settings(env) {
   if (recover && !env.ROUTER_REPORT) throw Error('ROUTER_REPORT must name a new exclusive recovery report.');
   if (!parseBooleanSetting(env.VERIFY, 'VERIFY', true)) throw Error('Router explorer verification cannot be disabled.');
   return { recover, dryRun, confirmations, configPath: env.ROUTER_CONFIG, journalPath: env.ROUTER_JOURNAL,
-    reportPath: env.ROUTER_REPORT, confirmation: env.DEPLOY_CONFIRM_MAINNET };
+    reportPath: env.ROUTER_REPORT, confirmation: env.DEPLOY_CONFIRM_MAINNET, lockDirectory: env.DEPLOYMENT_LOCK_DIRECTORY,
+    legacyArtifactPath: env.ROUTER_LEGACY_ARTIFACT, legacyBuildInfoPath: env.ROUTER_LEGACY_BUILD_INFO };
 }
 function exclusive(file, data) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2)+'\n', { flag:'wx', mode:0o600 });
+  durableWrite(file, data, { exclusive:true });
 }
 async function snapshot(provider, chainId) {
   if (Number(BigInt(await provider.send('eth_chainId', []))) !== chainId) throw Error('RPC chain identity differs from reviewed chain.');
@@ -66,23 +71,26 @@ async function checkManager(reader, config) {
   if (E.keccak256(await reader.getCode(config.manager)) !== config.managerCodeHash) throw Error('Reviewed manager runtime mismatch.');
   const manager = reader.contract(config.manager, ['function owner() view returns(address)','function pendingOwner() view returns(address)',
     'function paused() view returns(bool)','function usdcToken() view returns(address)','function ensJobPages() view returns(address)','function useEnsJobTokenURI() view returns(bool)']);
-  const [owner,pending,paused,token,helper,enabled] = await Promise.all([manager.owner(),manager.pendingOwner(),manager.paused(),manager.usdcToken(),manager.ensJobPages(),manager.useEnsJobTokenURI()]);
+  // The legacy non-upgradeable Manager did not expose its private URI-mode flag.
+  const [owner,pending,paused,token,helper,enabled] = await Promise.all([manager.owner(),manager.pendingOwner(),manager.paused(),manager.usdcToken(),manager.ensJobPages(),
+    config.schema === 'reviewed-job-pages-v1' ? Promise.resolve('not_observed_legacy_abi') : manager.useEnsJobTokenURI()]);
   requireCanonicalUSDC(config.chainId, token);
   if (owner !== config.owner || pending !== E.ZeroAddress || paused !== true) throw Error('Manager owner must be accepted and match router owner, with intake paused.');
   return { owner,pendingOwner:pending,intakePaused:paused,ensJobPages:helper,useEnsJobTokenURI:enabled };
 }
-function qualifiedArtifact(artifact, buildInfo) {
+function qualifiedArtifact(artifact, buildInfo, fqn = FQN, constructorTypes = ['string','string','address']) {
   const expected = { version:'0.8.37',optimizer:{enabled:true,runs:40},evmVersion:'shanghai',viaIR:true,metadata:{bytecodeHash:'none'},debug:{revertStrings:'strip'} };
   const s = buildInfo?.input?.settings;
   if (!s || encode({version:buildInfo.solcVersion,optimizer:s.optimizer,evmVersion:s.evmVersion,viaIR:s.viaIR || false,metadata:s.metadata,debug:s.debug}) !== encode(expected)) throw Error('Router compiler profile differs from qualified source.');
-  const source = FQN.split(':')[0], inputSource = artifact.inputSourceName || artifact.sourceName;
+  const source = fqn.split(':')[0], contractName = fqn.split(':')[1], inputSource = artifact.inputSourceName || artifact.sourceName;
   if (artifact.sourceName !== source || ![source,'project/'+source].includes(inputSource) || typeof buildInfo.input.sources?.[inputSource]?.content !== 'string') throw Error('Router artifact source identity differs from the reviewed fully qualified target.');
-  const compiled = buildInfo.output?.contracts?.[inputSource]?.AGIJobPages;
-  if (artifact.contractName !== 'AGIJobPages' || !compiled || encode(artifact.abi) !== encode(compiled.abi) || artifact.bytecode !== '0x'+compiled.evm.bytecode.object || artifact.deployedBytecode !== '0x'+compiled.evm.deployedBytecode.object || Object.keys(artifact.linkReferences || {}).length) throw Error('Router artifact differs from intact compiler output.');
-  requireRuntimeSize('AGIJobPages', artifact.deployedBytecode);
+  const compiled = buildInfo.output?.contracts?.[inputSource]?.[contractName];
+  if (artifact.contractName !== contractName || !compiled || encode(artifact.abi) !== encode(compiled.abi) || artifact.bytecode !== '0x'+compiled.evm.bytecode.object || artifact.deployedBytecode !== '0x'+compiled.evm.deployedBytecode.object || Object.keys(artifact.linkReferences || {}).length) throw Error('Router artifact differs from intact compiler output.');
+  if (encode(new E.Interface(artifact.abi).deploy.inputs.map(input => input.type)) !== encode(constructorTypes)) throw Error('Constructor ABI differs from the versioned deployment schema.');
+  requireRuntimeSize(contractName, artifact.deployedBytecode);
   return digest(encode({input:buildInfo.input,solcLongVersion:buildInfo.solcLongVersion}));
 }
-async function verifyInstance({hre,config,artifact,buildInfo,journal,creationData,confirmations}) {
+async function verifyInstance({hre,config,artifact,buildInfo,journal,creationData,confirmations,verifyLegacy}) {
   const p = hre.ethers.provider;
   const block = await snapshot(p, config.chainId), reader = createCanonicalReader(p, block);
   const managerState = await checkManager(reader, config);
@@ -91,43 +99,62 @@ async function verifyInstance({hre,config,artifact,buildInfo,journal,creationDat
   const mined = await p.send('eth_getBlockByNumber',[E.toQuantity(receipt.blockNumber),false]);
   if (block.number - receipt.blockNumber + 1 < confirmations || mined?.hash?.toLowerCase() !== receipt.blockHash.toLowerCase()) throw Error('Router deployment lacks canonical confirmations.');
   const tx = await p.getTransaction(journal.transactionHash);
-  if (!tx || tx.hash?.toLowerCase() !== journal.transactionHash.toLowerCase() || tx.to !== null || E.getAddress(tx.from) !== config.owner ||
+  if (!tx || tx.hash?.toLowerCase() !== journal.transactionHash.toLowerCase() || tx.to !== null || E.getAddress(tx.from) !== (config.creator || config.owner) ||
       tx.data?.toLowerCase() !== creationData.toLowerCase() || BigInt(tx.value) !== 0n || Number(tx.chainId) !== config.chainId ||
       E.getCreateAddress({from:tx.from,nonce:tx.nonce}).toLowerCase() !== journal.address.toLowerCase()) throw Error('Deployment transaction constructor, sender, chain or address differs.');
+  if (journal.creationIntent) requireCreationTransaction(tx,journal.creationIntent);
   const code = await reader.getCode(journal.address);
   requireArtifactMatch({artifact,buildInfo,address:journal.address,code});
   const router = reader.contract(journal.address,artifact.abi);
   const [owner,manager,base,external,suffix,image] = await Promise.all([router.owner(),router.jobManager(),router.baseMetadataURI(),router.externalUrlBase(),router.useJobIdJsonSuffix(),router.defaultImageURI()]);
   if (owner !== config.owner || manager !== E.ZeroAddress || base !== config.baseMetadataURI || external !== config.externalUrlBase || suffix !== true || image !== 'ipfs://Qmc13BByj8xKnpgQtwBereGJpEXtosLMLq6BCUjK3TtAd1') throw Error('Router is not in the reviewed unconfigured constructor state; reconcile owner/configuration before recovery.');
   requireExplorerEnabled(hre.config);
-  const verified = await hre.run('verify:verify',{address:journal.address,contract:FQN,constructorArguments:[config.baseMetadataURI,config.externalUrlBase],blockReference:block});
+  const constructorArguments = routerConstructor(config);
+  const verified = config.schema === 'reviewed-job-pages-v1'
+    ? await (verifyLegacy || require('./verify-etherscan.cjs').verifyEtherscan)({ chainId:config.chainId,address:journal.address,artifact,buildInfo,constructorArguments,apiKey:hre.config.verify.etherscan.apiKey })
+    : await hre.run('verify:verify',{address:journal.address,contract:FQN,constructorArguments,blockReference:block});
   if (verified !== true) throw Error('Explorer did not establish explicit exact-source verification.');
   await recheck(p,config.chainId,block);
-  return {status:'verified_unconfigured',verification:{status:'verified'},runtimeCodeHash:E.keccak256(code),snapshot:block,managerState,
-    owner,jobManager:manager,attachmentAuthorized:false,intakeActivationAuthorized:false,blockchainTransactionsBroadcast:0};
+  const finalBlock = await snapshot(p,config.chainId), finalReader = createCanonicalReader(p,finalBlock);
+  const finalManager = await checkManager(finalReader,config), finalRouter = finalReader.contract(journal.address,artifact.abi);
+  const fresh = await Promise.all([finalRouter.owner(),finalRouter.jobManager(),finalRouter.baseMetadataURI(),finalRouter.externalUrlBase(),finalRouter.useJobIdJsonSuffix(),finalRouter.defaultImageURI()]);
+  if (encode(finalManager) !== encode(managerState) || encode(fresh) !== encode([owner,manager,base,external,suffix,image]) || E.keccak256(await finalReader.getCode(journal.address)) !== E.keccak256(code)) throw Error('Router state changed during verification.');
+  await recheck(p,config.chainId,finalBlock);
+  return {status:'verified_unconfigured',verification:{status:'verified'},runtimeCodeHash:E.keccak256(code),snapshot:finalBlock,managerState:finalManager,
+    owner,jobManager:manager,governorActionPlan:config.schema === 'reviewed-job-pages-v1' ? null : routerGovernorPlan(config,journal.address),attachmentAuthorized:false,intakeActivationAuthorized:false,blockchainTransactionsBroadcast:0};
 }
-async function execute({hre,config:rawConfig,options}) {
+function routerConstructor(config) { return [config.baseMetadataURI,config.externalUrlBase,...(config.schema === 'reviewed-job-pages-v1' ? [] : [config.owner])]; }
+function routerGovernorPlan(config,address) {
+  return { status:'requires_separate_governor_authorization',affectedContracts:[address],historicalReferencesReadOnly:true,chainId:config.chainId,from:config.owner,actions:[{ to:address,value:'0',method:'setJobManager(address)',args:[config.manager],data:new E.Interface(['function setJobManager(address)']).encodeFunctionData('setJobManager',[config.manager]) }],managerAttachmentAuthorized:false,rootAuthorityAuthorized:false,intakeActivationAuthorized:false };
+}
+async function execute({hre,config:rawConfig,options,verifyLegacy}) {
   const config = normalizeConfig(rawConfig), p = hre.ethers.provider;
   requireDeploymentNetwork(hre.network.name,config.chainId);
-  const artifact = await hre.artifacts.readArtifact(FQN), buildInfo = await hre.artifacts.getBuildInfo(FQN);
-  const buildDigest = qualifiedArtifact(artifact,buildInfo);
+  const legacy = config.schema === 'reviewed-job-pages-v1';
+  if (legacy && (!options.recover || !options.legacyArtifactPath || !options.legacyBuildInfoPath)) throw Error('Legacy router schema is recovery-only and requires explicitly archived original artifact and compiler build; current source is never substituted.');
+  const artifact = legacy ? JSON.parse(fs.readFileSync(options.legacyArtifactPath,'utf8')) : await hre.artifacts.readArtifact(FQN);
+  const buildInfo = legacy ? JSON.parse(fs.readFileSync(options.legacyBuildInfoPath,'utf8')) : await hre.artifacts.getBuildInfo(FQN);
+  const buildDigest = qualifiedArtifact(artifact,buildInfo,FQN,legacy ? ['string','string'] : ['string','string','address']);
   if (config.buildDigest !== buildDigest) throw Error('Compiler input identity differs from the explicitly reviewed buildDigest.');
   const factory = new E.ContractFactory(artifact.abi,artifact.bytecode);
-  const args = [config.baseMetadataURI,config.externalUrlBase];
+  const args = routerConstructor(config);
   const creationData = (await factory.getDeployTransaction(...args)).data;
   const block = await snapshot(p,config.chainId), managerState = await checkManager(createCanonicalReader(p,block),config);
   await recheck(p,config.chainId,block);
   if (options.recover) {
     if (fs.existsSync(options.reportPath)) throw Error('Recovery report already exists; no overwrite allowed.');
     const journal = JSON.parse(fs.readFileSync(options.journalPath,'utf8'));
-    if (journal.schema !== SCHEMA || encode(journal.config) !== encode(config) || journal.buildDigest !== buildDigest || journal.creationDataHash !== E.keccak256(creationData)) throw Error('Original journal/configuration/compiler binding differs.');
-    const result = await verifyInstance({hre,config,artifact,buildInfo,journal,creationData,confirmations:options.confirmations});
+    if (journal.schema !== (legacy ? LEGACY_SCHEMA : SCHEMA) || encode(journal.config) !== encode(config) || journal.buildDigest !== buildDigest || journal.creationDataHash !== E.keccak256(creationData)) throw Error('Original journal/configuration/compiler binding differs.');
+    if (!legacy && (journal.ownershipInitialization !== 'explicit-constructor' || journal.constructorSchema !== 'agi-job-pages-constructor-v2' || !journal.creationIntent || journal.creationIntent.dataHash !== E.keccak256(creationData) || journal.creationIntent.creator !== config.creator || journal.creationIntent.chainId !== config.chainId)) throw Error('Versioned creator/constructor journal binding differs.');
+    if (!journal.transactionHash && journal.creationIntent) journal.transactionHash = await recoverCreation({provider:p,intent:journal.creationIntent});
+    const result = await verifyInstance({hre,config,artifact,buildInfo,journal,creationData,confirmations:options.confirmations,verifyLegacy});
     const report = {...journal,...result,recoveryOf:path.resolve(options.journalPath),priorJournalStatus:journal.status};
     delete report.error;
     exclusive(options.reportPath,report); return report;
   }
-  const prepared = await prepareDeployment({provider:p,factory,args,from:config.owner,name:'AGIJobPages'});
-  const plan = {schema:SCHEMA,config,buildDigest,creationDataHash:E.keccak256(creationData),managerState,snapshot:block,
+  const prepared = await prepareDeployment({provider:p,factory,args,from:config.creator,name:'AGIJobPages'});
+  await requireCreatorProfile({provider:createCanonicalReader(p,block),chainId:config.chainId,creator:config.creator,transactionMode:config.transactionMode});
+  const plan = {schema:SCHEMA,constructorSchema:'agi-job-pages-constructor-v2',ownershipInitialization:'explicit-constructor',config,buildDigest,creationDataHash:E.keccak256(creationData),managerState,snapshot:block,
     gasLimit:String(prepared.gasLimit),estimatedGas:String(prepared.estimatedGas),initcodeBytes:prepared.initcodeBytes,
     attachmentAuthorized:false,intakeActivationAuthorized:false};
   if (options.dryRun) return {...plan,status:'read_only_plan',blockchainTransactionsBroadcast:0};
@@ -135,25 +162,27 @@ async function execute({hre,config:rawConfig,options}) {
   if (config.chainId === 1 && options.confirmation !== 'I_UNDERSTAND_MAINNET_DEPLOYMENT') throw Error('Explicit mainnet deployment confirmation is required.');
   if (fs.existsSync(options.journalPath) || fs.existsSync(options.journalPath+'.solc-input.json')) throw Error('Deployment journal/input already exists; use keyless recovery, never redeploy blindly.');
   const signers = await hre.ethers.getSigners();
-  if (!signers[0] || E.getAddress(await signers[0].getAddress()) !== config.owner) throw Error('Deployment signer must be the explicitly reviewed router owner.');
+  if (!signers[0] || E.getAddress(await signers[0].getAddress()) !== config.creator) throw Error('Deployment signer must be the explicitly reviewed creator; governor ownership is independent.');
   // Recheck immediately before reserving a journal and broadcasting.
   const latest = await snapshot(p,config.chainId); await checkManager(createCanonicalReader(p,latest),config); await recheck(p,config.chainId,latest);
-  const journal = {...plan,status:'prepared',verification:{status:'pending'},blockchainTransactionsBroadcast:0};
+  const creatorLock = reserveCreator({directory:options.lockDirectory,chainId:config.chainId,creator:config.creator,journalPath:options.journalPath});
+  const journal = {...plan,creatorLock,status:'prepared',verification:{status:'pending'},blockchainTransactionsBroadcast:0};
   exclusive(options.journalPath,journal);
   const checkpoint = () => {
-    const temp = options.journalPath+'.'+crypto.randomUUID()+'.tmp';
-    exclusive(temp,journal); fs.renameSync(temp,options.journalPath);
+    durableWrite(options.journalPath,journal);
   };
   try {
     exclusive(options.journalPath+'.solc-input.json',buildInfo.input);
-    const router = await factory.connect(signers[0]).deploy(...args,{gasLimit:prepared.gasLimit});
+    journal.creationIntent = await planCreation({provider:p,chainId:config.chainId,creator:config.creator,transactionMode:config.transactionMode,creationData,gasLimit:prepared.gasLimit,startBlock:latest.number});
+    journal.address = journal.creationIntent.address; journal.status='intent_saved'; journal.submissionAttempted=true; journal.blockchainTransactionsBroadcast='unknown'; checkpoint();
+    const router = await factory.connect(signers[0]).deploy(...args,{gasLimit:prepared.gasLimit,nonce:journal.creationIntent.nonce,value:0n});
     const tx = router.deploymentTransaction();
-    journal.transactionHash = tx.hash; journal.address = E.getCreateAddress({from:config.owner,nonce:tx.nonce});
-    journal.status = 'broadcast'; journal.blockchainTransactionsBroadcast = 1; checkpoint();
+    journal.transactionHash = tx.hash; journal.status = 'broadcast'; journal.blockchainTransactionsBroadcast = 1; checkpoint();
+    requireCreationTransaction(tx,journal.creationIntent);
     const receipt = requireConfirmedReceipt(await tx.wait(options.confirmations),tx.hash,journal.address);
     journal.deploymentBlock = {number:receipt.blockNumber,hash:receipt.blockHash};journal.status='confirmed';checkpoint();
     const result = await verifyInstance({hre,config,artifact,buildInfo,journal,creationData,confirmations:options.confirmations});
-    Object.assign(journal,result,{blockchainTransactionsBroadcast:1});checkpoint();return journal;
+    Object.assign(journal,result,{blockchainTransactionsBroadcast:1});checkpoint();releaseCreator(creatorLock);return journal;
   } catch {
     journal.status='incomplete';journal.error='Deployment or verification incomplete. Preserve the journal and original compiler input; reconcile before keyless re-verification. No attachment was performed.';checkpoint();
     throw Error(journal.error);
@@ -165,5 +194,5 @@ async function main(env=process.env) {
   const result=await execute({hre:await getRuntime(),config,options});
   console.log(JSON.stringify(result,null,2));
 }
-module.exports={normalizeConfig,settings,qualifiedArtifact,verifyInstance,execute,main,FQN,SCHEMA};
+module.exports={normalizeConfig,settings,qualifiedArtifact,verifyInstance,execute,main,FQN,SCHEMA,LEGACY_SCHEMA,snapshot,recheck,exclusive,encode,checkManager,routerConstructor,routerGovernorPlan};
 if(require.main===module)main().catch(()=>{console.error('Router operation failed; preserve existing journals. No successful deployment/verification is established.');process.exitCode=1;});

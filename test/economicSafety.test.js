@@ -38,7 +38,7 @@ contract("AGIJobManager economic safety", (accounts) => {
   });
 
   it("keeps NFT eligibility scores independent of payout headroom", async () => {
-    const manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,
@@ -63,7 +63,7 @@ contract("AGIJobManager economic safety", (accounts) => {
   });
 
   it("rejects validator rewards above the 60% remaining budget", async () => {
-    const manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,
@@ -86,7 +86,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
 
   it("settles successfully with safe payout configuration", async () => {
-    const manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,
@@ -143,7 +143,7 @@ contract("AGIJobManager economic safety", (accounts) => {
   });
 
   it("reverts job completion requests when completion metadata is empty (defensive)", async () => {
-    const manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,

@@ -32,6 +32,11 @@
           "internalType": "address[2]",
           "name": "settlementWallets",
           "type": "address[2]"
+        },
+        {
+          "internalType": "address",
+          "name": "initialGovernor",
+          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
@@ -3311,6 +3316,19 @@
           "internalType": "contract IERC20",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "useEnsJobTokenURI",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",

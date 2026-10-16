@@ -62,8 +62,9 @@ function requireDeploymentNetwork(networkName, chainId) {
   }
 }
 
-function requireRuntimeSize(name, deployedBytecode) {
-  if (typeof deployedBytecode !== 'string' || !deployedBytecode.startsWith('0x') || deployedBytecode.length % 2 !== 0) {
+function requireRuntimeSize(name, deployedBytecode, { allowUnlinked = false } = {}) {
+  const pattern = allowUnlinked ? /^0x(?:[a-fA-F0-9]{2}|__\$[a-fA-F0-9]{34}\$__)*$/ : /^0x(?:[a-fA-F0-9]{2})*$/;
+  if (typeof deployedBytecode !== 'string' || !pattern.test(deployedBytecode)) {
     throw new Error(`${name} has malformed runtime bytecode.`);
   }
   const bytes = (deployedBytecode.length - 2) / 2;

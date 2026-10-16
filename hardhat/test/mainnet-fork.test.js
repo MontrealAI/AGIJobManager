@@ -83,7 +83,7 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
     }
     manager = await (await ethers.getContractFactory('AGIJobManager', { libraries })).deploy(
       PIN.usdc, 'ipfs://', [ethers.ZeroAddress, ethers.ZeroAddress],
-      Array(4).fill(ethers.ZeroHash), Array(2).fill(ethers.ZeroHash), [wallet30.address, wallet10.address],
+      Array(4).fill(ethers.ZeroHash), Array(2).fill(ethers.ZeroHash), [wallet30.address, wallet10.address], owner.address,
     );
     await manager.waitForDeployment();
     managerAddress = await manager.getAddress();

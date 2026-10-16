@@ -19,7 +19,7 @@ async function main() {
     const token = await runtime.artifacts.require('MockERC20').new();
     const zero = '0x' + '00'.repeat(20);
     const rootNode = '0x' + '00'.repeat(32);
-    const manager = await runtime.artifacts.require('AGIJobManager').new(...buildInitConfig(
+    const manager = await runtime.artifacts.require('AGIJobManager').new(...buildInitConfig(owner,
       token.address, 'ipfs://', zero, zero, rootNode, rootNode, rootNode, rootNode, rootNode, rootNode,
       [wallet30, wallet10],
     ));

@@ -28,7 +28,7 @@ contract V091ABIWordSource {
 }
 
 contract V091ENSJobPagesHarness is ENSJobPages {
-    constructor(address endpoint) ENSJobPages(endpoint, address(0), endpoint, keccak256("jobs-root"), "jobs.eth") {}
+    constructor(address endpoint) ENSJobPages(endpoint, address(0), endpoint, keccak256("jobs-root"), "jobs.eth", msg.sender) {}
 
     function readAddress(address target) external view returns (bool, address) {
         return _staticcallAddress(target, abi.encodeWithSelector(bytes4(keccak256("owner(bytes32)")), bytes32(0)));
@@ -236,7 +236,7 @@ contract AGIJobManagerV091SecurityTest is Test {
         MockNameWrapper wrapper = new MockNameWrapper();
         MockPublicResolver resolver = new MockPublicResolver();
         bytes32 root = keccak256("jobs-root");
-        ENSJobPages pages = new ENSJobPages(address(registry), address(wrapper), address(resolver), root, "jobs.eth");
+        ENSJobPages pages = new ENSJobPages(address(registry), address(wrapper), address(resolver), root, "jobs.eth", address(this));
         registry.setOwner(root, address(wrapper));
         wrapper.setOwner(uint256(root), address(pages));
         wrapper.setENSRegistry(address(registry));

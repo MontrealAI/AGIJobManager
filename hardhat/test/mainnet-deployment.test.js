@@ -45,7 +45,7 @@ describe('Release deployment under Ethereum code-size limits', function () {
 
   beforeEach(async function () {
     const args = [await token.getAddress(), 'ipfs://', [ethers.ZeroAddress, ethers.ZeroAddress],
-      Array(4).fill(ethers.ZeroHash), Array(2).fill(ethers.ZeroHash), [wallet30.address, wallet10.address]];
+      Array(4).fill(ethers.ZeroHash), Array(2).fill(ethers.ZeroHash), [wallet30.address, wallet10.address], owner.address];
     manager = await deployWithinLimits('AGIJobManager', args, { libraries });
   });
 
@@ -114,7 +114,7 @@ describe('Release deployment under Ethereum code-size limits', function () {
     assert.equal(ethers.toUtf8Bytes(gateway).length, 512);
     const instance = await deployWithinLimits('AGIJobManager', [await token.getAddress(), gateway,
       [ethers.ZeroAddress, ethers.ZeroAddress], Array(4).fill(ethers.ZeroHash), Array(2).fill(ethers.ZeroHash),
-      [wallet30.address, wallet10.address]], { libraries });
+      [wallet30.address, wallet10.address], owner.address], { libraries });
     assert.equal(await instance.paused(), true);
   });
 
@@ -127,7 +127,7 @@ describe('Release deployment under Ethereum code-size limits', function () {
     assert.equal(ethers.toUtf8Bytes(rootName).length, 240);
     const rootNode = ethers.namehash(rootName);
     const pages = await deployWithinLimits('ENSJobPages', [await registry.getAddress(), await wrapper.getAddress(),
-      await resolver.getAddress(), rootNode, rootName]);
+      await resolver.getAddress(), rootNode, rootName, owner.address]);
     await (await pages.setJobManager(await manager.getAddress())).wait();
     await (await manager.setEnsJobPages(await pages.getAddress())).wait();
     assert.equal(await pages.jobsRootName(), rootName);
@@ -140,7 +140,7 @@ describe('Release deployment under Ethereum code-size limits', function () {
   it('deploys and wires the optional metadata router with actual URI constructor strings', async function () {
     const base = 'https://metadata.example.org/jobs/';
     const external = 'https://jobs.example.org/';
-    const pages = await deployWithinLimits('AGIJobPages', [base, external]);
+    const pages = await deployWithinLimits('AGIJobPages', [base, external, owner.address]);
     await (await pages.setJobManager(await manager.getAddress())).wait();
     await (await manager.setEnsJobPages(await pages.getAddress())).wait();
     await (await manager.setUseEnsJobTokenURI(true)).wait();
@@ -154,7 +154,7 @@ describe('Release deployment under Ethereum code-size limits', function () {
     const factory = await ethers.getContractFactory('AGIJobPages');
     const nonce = await ethers.provider.getTransactionCount(owner.address);
     await assert.rejects(prepareDeployment({ provider: ethers.provider, factory,
-      args: ['x'.repeat(49152), 'https://jobs.example.org/'], from: owner.address, name: 'AGIJobPages' }), /EIP-3860/);
+      args: ['x'.repeat(49152), 'https://jobs.example.org/', owner.address], from: owner.address, name: 'AGIJobPages' }), /EIP-3860/);
     assert.equal(await ethers.provider.getTransactionCount(owner.address), nonce);
   });
 

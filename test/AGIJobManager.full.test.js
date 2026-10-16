@@ -174,7 +174,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     alphaClubRootNode = clubRootNode;
     alphaAgentRootNode = agentRootNode;
 
-    manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         baseIpfsUrl,
         ens.address,
@@ -687,7 +687,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const failing = await FailingERC20.new({ from: owner });
       await failing.mint(employer, parseUSDCAmount("10"), { from: owner });
 
-      const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(
+      const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(owner,
           failing.address,
           baseIpfsUrl,
           ens.address,
@@ -715,7 +715,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const failing = await FailingERC20.new({ from: owner });
       await failing.mint(employer, parseUSDCAmount("20"), { from: owner });
 
-      const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(
+      const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(owner,
           failing.address,
           baseIpfsUrl,
           ens.address,
@@ -929,7 +929,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const failTransferToken = await FailTransferToken.new({ from: owner });
       await failTransferToken.mint(employer, payout, { from: owner });
 
-      const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(
+      const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(owner,
           failTransferToken.address,
           baseIpfsUrl,
           ens.address,
