@@ -89,7 +89,7 @@ Before approving an employer UI change, also inspect narrow screens and enlarged
 | `agijobmanager.html` | Preserved committed single-file React interface from `ui/dist-ipfs/agijobmanager.html` |
 | `build-info.json` | Source commit, version, source paths, public file sizes/digests and separate build-only markers |
 | `404.html` | Return-to-home page |
-| `sitemap.xml` | Homepage and employer onboarding language URLs |
+| `sitemap.xml` | Homepage, employer onboarding, workflow directory and SUCCESSOR language URLs |
 
 The `files` inventory describes public Pages files. The local empty `.nojekyll` marker remains in the build but is listed separately under `buildOnlyFiles`, because `upload-pages-artifact` omits dotfiles. It must not be treated as a missing public deployment file. Verify `build-info.json` and every public file against the same reviewed source after publication.
 
