@@ -1830,10 +1830,10 @@
     },
     "docs/deployment/ubuntu-ephemeral-creator.md": {
       "mode": "100644",
-      "sha256": "84972b786ef1541a5de076b43d68440a663a9237f8d7602538dcbe2f412b71fc",
+      "sha256": "3ff66141b6e8175fbdff39008c0e7b9c9b36f1b9cb07935fe9df375536689c7e",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change."
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change. Retain original public-input and parent descriptors to prevent path replacement passing through inode reuse; bind descriptor bytes, close on all command exits, and preserve deterministic replacement/lifecycle regressions."
     },
     "docs/deployments-and-bridging.md": {
       "mode": "100644",
@@ -5540,10 +5540,10 @@
     },
     "hardhat/scripts/deploy-core-tty.cjs": {
       "mode": "100644",
-      "sha256": "22f001ca52503bc29f26381a8163ec84ba40d4158c88565f2a49d895d0e10f0b",
+      "sha256": "e7af79dd656ece73471066723e96538f340b823c5bf923ead7e8ea3a52ae5521",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change."
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change. Retain original public-input and parent descriptors to prevent path replacement passing through inode reuse; bind descriptor bytes, close on all command exits, and preserve deterministic replacement/lifecycle regressions."
     },
     "hardhat/scripts/deploy-core-tty.js": {
       "mode": "100644",
@@ -5848,10 +5848,10 @@
     },
     "hardhat/test/deploy-core-tty.test.cjs": {
       "mode": "100644",
-      "sha256": "e1e04e955ce06378b41383956c8a0240fea74ec686b4ca25d4346a783952c361",
+      "sha256": "54d1ea96cd52fb5afd5c1b06a04284d9fed4637de281cf60db6240d0fe0075e2",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change."
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change. Retain original public-input and parent descriptors to prevent path replacement passing through inode reuse; bind descriptor bytes, close on all command exits, and preserve deterministic replacement/lifecycle regressions."
     },
     "hardhat/test/deploy-core-tty.test.js": {
       "mode": "100644",

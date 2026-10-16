@@ -14,11 +14,26 @@ function requireCleanEnvironment(env=process.env,argv=process.argv,root=path.res
 }
 function readEndpoint(value){let u;try{u=new URL(value);}catch{throw Error('Explicit HTTPS endpoint required.');}T.need(u.protocol==='https:'&&!u.username&&!u.password&&!u.hash,'Explicit HTTPS endpoint required.');return u.href;}
 function readPinned(file){
- X.requireExternalPath(file,{label:'Public run/config file'});const absolute=path.resolve(file),stat=fs.lstatSync(absolute);
- T.need(stat.isFile()&&!stat.isSymbolicLink()&&stat.nlink===1&&stat.size<=4*1024*1024,'Bounded independent public input file required.');
- const parents=[];for(let p=path.dirname(absolute);;p=path.dirname(p)){const st=fs.lstatSync(p);T.need(st.isDirectory()&&!st.isSymbolicLink()&&fs.realpathSync(p)===p,'Real public-input parent required.');parents.push({path:p,dev:st.dev,ino:st.ino});if(path.dirname(p)===p)break;}
- const bytes=fs.readFileSync(absolute),hash=crypto.createHash('sha256').update(bytes).digest('hex');let value;try{value=JSON.parse(bytes);}catch{throw Error('Public input JSON is invalid.');}
- return {value,assertUnchanged(){for(const p of parents){const st=fs.lstatSync(p.path);T.need(st.isDirectory()&&!st.isSymbolicLink()&&st.dev===p.dev&&st.ino===p.ino&&fs.realpathSync(p.path)===p.path,'Public input parent changed.');}const now=fs.lstatSync(absolute);T.need(now.isFile()&&!now.isSymbolicLink()&&now.dev===stat.dev&&now.ino===stat.ino&&now.nlink===1&&crypto.createHash('sha256').update(fs.readFileSync(absolute)).digest('hex')===hash,'Public input changed.');return true;}};
+ X.requireExternalPath(file,{label:'Public run/config file'});const absolute=path.resolve(file),descriptors=[];let closed=false;
+ const same=(a,b)=>a.dev===b.dev&&a.ino===b.ino;
+ const close=()=>{if(closed)return;closed=true;for(const fd of descriptors.reverse())try{fs.closeSync(fd);}catch{}};
+ try{
+  const parents=[];for(let p=path.dirname(absolute);;p=path.dirname(p)){
+   const fd=fs.openSync(p,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW|fs.constants.O_DIRECTORY);descriptors.push(fd);
+   const stat=fs.fstatSync(fd),named=fs.lstatSync(p);T.need(stat.isDirectory()&&named.isDirectory()&&!named.isSymbolicLink()&&same(stat,named)&&fs.realpathSync(p)===p,'Real public-input parent required.');parents.push({path:p,fd,stat});if(path.dirname(p)===p)break;
+  }
+  const fd=fs.openSync(absolute,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW|fs.constants.O_NONBLOCK);descriptors.push(fd);const stat=fs.fstatSync(fd);
+  const requireIdentity=()=>{
+   T.need(!closed,'Public input binding is closed.');
+   for(const p of parents){const original=fs.fstatSync(p.fd),named=fs.lstatSync(p.path);T.need(original.isDirectory()&&named.isDirectory()&&!named.isSymbolicLink()&&same(original,p.stat)&&same(named,p.stat)&&fs.realpathSync(p.path)===p.path,'Public input parent changed.');}
+   const original=fs.fstatSync(fd),named=fs.lstatSync(absolute);T.need(original.isFile()&&named.isFile()&&!named.isSymbolicLink()&&same(original,stat)&&same(named,stat)&&original.nlink===1&&named.nlink===1&&original.size<=4*1024*1024,'Bounded independent public input file changed.');return original;
+  };
+  // Retaining the original descriptor prevents inode recycling from impersonating
+  // an unlinked input. Read only that descriptor, never replacement path bytes.
+  const readBytes=()=>{const before=requireIdentity(),bytes=Buffer.alloc(before.size);let offset=0;while(offset<bytes.length){const n=fs.readSync(fd,bytes,offset,bytes.length-offset,offset);T.need(n>0,'Public input read changed.');offset+=n;}T.need(requireIdentity().size===before.size,'Public input size changed.');return bytes;};
+  const bytes=readBytes(),hash=crypto.createHash('sha256').update(bytes).digest('hex');let value;try{value=JSON.parse(bytes);}catch{throw Error('Public input JSON is invalid.');}
+  return {value,assertUnchanged(){T.need(crypto.createHash('sha256').update(readBytes()).digest('hex')===hash,'Public input changed.');return true;},close};
+ }catch(error){close();throw error;}
 }
 function validateRun(run){T.exact(run,['schema','mode','catalog','catalogSha256','buildId','config','session','lockDirectory','finalityTimeoutSeconds','pollIntervalSeconds']);T.need(run.schema==='manager-tty-creator-run-v1'&&['new','resume','inspect'].includes(run.mode),'Explicit new/resume/inspect mode required.');for(const k of ['catalog','config','session','lockDirectory']){T.need(typeof run[k]==='string'&&path.isAbsolute(run[k]),'Absolute public paths required.');X.requireExternalPath(run[k],{label:k});}T.sha(run.catalogSha256);T.need(typeof run.buildId==='string'&&run.buildId,'Explicit build required.');T.integer(run.finalityTimeoutSeconds,1);T.integer(run.pollIntervalSeconds,1);T.need(run.finalityTimeoutSeconds<=3600&&run.pollIntervalSeconds>=5&&run.pollIntervalSeconds<=60&&run.pollIntervalSeconds<=run.finalityTimeoutSeconds,'Bounded finality timing required.');return run;}
 function publicReview(plan){return {schema:'manager-tty-creator-review-v1',source:plan.source,buildId:plan.buildId,buildDigest:plan.buildDigest,catalogSha256:plan.catalogSha256,planSha256:plan.payloadSha256,chainId:plan.chainId,creator:plan.creator,governor:plan.governor,creatorPolicy:plan.config.creatorPolicy,nonce:plan.startNonce,expiresAfterBlock:plan.config.expiresAfterBlock,constructorArgs:plan.config.constructorArgs,maximumTotalFeeWei:plan.config.maximumTotalFeeWei,operations:plan.operations.map(x=>({index:x.id,name:x.name,address:x.predictedAddress,envelope:x.envelope,initcodeKeccak256:E.keccak256(x.envelope.data)})),scope:'Nine direct type-2 CREATEs only; owner is the explicit governor from construction. Remains paused. Governor configuration and activation are separate.'};}
@@ -56,7 +71,8 @@ async function runCampaign({run,plan,context,freshRpc,confirm=confirmPlan,openSi
 function inspectPlan(plan,guard,qualified){requireCreatorPlan(plan);T.need(guard.assertUnchanged()===true,'Source guard failed.');qualified.assertUnchanged();return {...publicReview(plan),status:'OFFLINE_INSPECTION_ONLY',readyToBroadcast:false,transactionsSigned:0,transactionsBroadcast:0,operatorStateModified:false,configurationAuthorized:false,activationAuthorized:false};}
 async function main({hardhat}={}){
  requireCleanEnvironment();T.need(process.version==='v22.23.2','Pinned Node22.23.2 required.');T.need(hardhat?.globalOptions?.network==='mainnet'&&hardhat.globalOptions.config&&fs.realpathSync(hardhat.globalOptions.config)===fs.realpathSync(path.resolve(__dirname,'../../hardhat.creator.config.mjs')),'Run using the isolated Hardhat creator config and mainnet selection.');
- const runFile=readPinned(process.env.MANAGER_CREATOR_RUN),run=validateRun(runFile.value),configFile=readPinned(run.config),sourceGuard=P.createSourceGuard(),source=sourceGuard.source;
+ let runFile,configFile;try{
+ runFile=readPinned(process.env.MANAGER_CREATOR_RUN);const run=validateRun(runFile.value);configFile=readPinned(run.config);const sourceGuard=P.createSourceGuard(),source=sourceGuard.source;
  const qualified=loadQualifiedBuild(run.catalog,{expectedCatalogSha256:run.catalogSha256,buildId:run.buildId,expectedRevision:source}),plan=P.makePlan(configFile.value,qualified,source);requireCreatorPlan(plan);
  if(run.mode==='inspect'){runFile.assertUnchanged();configFile.assertUnchanged();const review=inspectPlan(plan,sourceGuard,qualified);console.log(JSON.stringify(review));return review;}
  // Validate both URLs before any confirmation/key input; endpoint text is never reported.
@@ -64,5 +80,6 @@ async function main({hardhat}={}){
  const freshRpc=()=>R.createReadRpc(readUrl,{scope:R.scopeFor(plan)}),context={directory:run.session,qualified,source,revalidateSource(){runFile.assertUnchanged();configFile.assertUnchanged();sourceGuard.assertUnchanged();qualified.assertUnchanged();return true;}};
  const result=await runCampaign({run,plan,context,freshRpc,relay:(ctx,acknowledgement)=>require('./raw-transaction-relay.cjs').relayOperation(ctx,{endpoint:relayUrl,acknowledgement}),emit:record=>console.log(JSON.stringify(record))});
  console.log(JSON.stringify({status:result.status,planSha256:plan.payloadSha256,manager:plan.operations[8].predictedAddress,governor:plan.governor,paused:true,configurationAuthorized:false,activationAuthorized:false,verification:'Run the existing source-bound verification-package exporter from this completed session; explorer acceptance remains a separate readback.'}));return result;
+ }finally{if(configFile)configFile.close();if(runFile)runFile.close();}
 }
 module.exports={ERROR,requireCleanEnvironment,readEndpoint,readPinned,validateRun,publicReview,confirmPlan,ephemeralSigner,requireCreatorPlan,waitFinalized,runCampaign,inspectPlan,main};

@@ -19,7 +19,7 @@ test('source drift after signing produces no import or relay',()=>mocked(async()
 test('public review exposes exact effects and fee ceiling without input credentials',()=>{const review=W.publicReview(plan());assert.equal(review.operations.length,9);assert.equal(review.governor,P.GOVERNOR);assert.equal(review.maximumTotalFeeWei,'900000000000000');assert(!JSON.stringify(review).includes(KEY));});
 test('endpoint errors never include the credential or URL',()=>{for(const url of ['not a url secret-sentinel','http://host/secret-sentinel','https://user:secret-sentinel@host','https://host/#secret-sentinel'])assert.throws(()=>W.readEndpoint(url),e=>!e.message.includes('secret-sentinel'));assert.equal(W.readEndpoint('https://host/api-secret'),'https://host/api-secret');});
 test('environment rejects secret, dotenv and injection channels before any input',()=>{const dir=fs.mkdtempSync(path.join(os.tmpdir(),'tty-environment-'));fs.mkdirSync(path.join(dir,'hardhat'));try{for(const key of ['PRIVATE_KEY','CREATOR_PRIVATE_KEY','MNEMONIC','NODE_OPTIONS','NODE_PATH','NODE_EXTRA_CA_CERTS','DEBUG','DOTENV_KEY'])assert.throws(()=>W.requireCleanEnvironment({[key]:'secret-sentinel'},[],dir),e=>!e.message.includes('secret-sentinel'));assert.equal(W.requireCleanEnvironment({},['node','script'],dir),true);assert.throws(()=>W.requireCleanEnvironment({},['node',KEY],dir));fs.writeFileSync(path.join(dir,'.env'),'PRIVATE_KEY=sentinel');assert.throws(()=>W.requireCleanEnvironment({},[],dir));}finally{fs.rmSync(dir,{recursive:true,force:true});}});
-test('public input mutation and inode replacement fail closed',()=>{const dir=fs.mkdtempSync(path.join(os.tmpdir(),'tty-input-')),file=path.join(dir,'run.json');try{fs.writeFileSync(file,'{}');const pinned=W.readPinned(file);assert.equal(pinned.assertUnchanged(),true);fs.writeFileSync(file,'{"x":1}');assert.throws(()=>pinned.assertUnchanged());fs.unlinkSync(file);fs.writeFileSync(file,'{}');assert.throws(()=>pinned.assertUnchanged());}finally{fs.rmSync(dir,{recursive:true,force:true});}});
+test('public input mutation and inode replacement fail closed',()=>{const dir=fs.mkdtempSync(path.join(os.tmpdir(),'tty-input-')),file=path.join(dir,'run.json');let pinned;try{fs.writeFileSync(file,'{}');pinned=W.readPinned(file);assert.equal(pinned.assertUnchanged(),true);fs.writeFileSync(file,'{"x":1}');assert.throws(()=>pinned.assertUnchanged());fs.unlinkSync(file);fs.writeFileSync(file,'{}');assert.throws(()=>pinned.assertUnchanged());}finally{if(pinned)pinned.close();fs.rmSync(dir,{recursive:true,force:true});}});
 test('documented root Hardhat CLI reaches public-run validation with a clean environment',()=>{
  const cp=require('node:child_process'),{createRequire}=require('node:module'),root=path.resolve(__dirname,'../..'),rootRequire=createRequire(path.join(root,'package.json')),cli=path.join(path.dirname(rootRequire.resolve('hardhat')),'cli.js');
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'tty-cli-boundary-')),file=path.join(dir,'run.json');
@@ -32,3 +32,36 @@ test('offline inspection validates guards and returns no signing or operator-sta
 test('offline inspection rejects invalid source, catalog and creator configuration',()=>{const good={assertUnchanged(){return true;}};assert.throws(()=>W.inspectPlan(plan(),{assertUnchanged(){throw Error('source');}},good));assert.throws(()=>W.inspectPlan(plan(),good,{assertUnchanged(){throw Error('catalog');}}));const p=plan();p.creator=p.governor;assert.throws(()=>W.inspectPlan(p,good,good));});
 test('isolated Hardhat configuration does not load or embed endpoint/secret values',()=>{const code=fs.readFileSync(path.resolve(__dirname,'../../hardhat.creator.config.mjs'),'utf8');assert(code.includes("url:'https://unused.invalid'"));assert(!code.includes('process.env'));assert(!code.includes('load-env'));assert(code.includes('accounts:[]'));});
 test('offline inspect mode cannot enter the execution orchestrator',()=>mocked(async()=>{const x=fixture();try{x.f.run.mode='inspect';await assert.rejects(W.runCampaign(x.f));assert.equal(x.signed,0);assert.deepEqual(x.calls,[]);}finally{x.cleanup();}}));
+
+test('public input retains original descriptor across unlink/recreate and closes idempotently',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'tty-input-fd-')),file=path.join(dir,'run.json'),open=fs.openSync,held=[];let pinned;
+ try{fs.writeFileSync(file,'{}');fs.openSync=function(p,...args){const fd=open.call(fs,p,...args);held.push({path:p,fd});return fd;};pinned=W.readPinned(file);fs.openSync=open;
+  const original=held.find(x=>x.path===file);assert(original,'The original file descriptor must remain retained.');assert.equal(fs.fstatSync(original.fd).nlink,1);
+  fs.unlinkSync(file);fs.writeFileSync(file,'{}');assert.equal(fs.fstatSync(original.fd).nlink,0);assert.throws(()=>pinned.assertUnchanged());assert.equal(fs.readFileSync(file,'utf8'),'{}');
+  pinned.close();pinned.close();for(const {fd}of held)assert.throws(()=>fs.fstatSync(fd),{code:'EBADF'});assert.throws(()=>pinned.assertUnchanged());
+ }finally{fs.openSync=open;if(pinned)pinned.close();fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('public input parent replacement is rejected without touching either directory',()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'tty-input-parent-')),dir=path.join(root,'input'),old=path.join(root,'original'),file=path.join(dir,'run.json');let pinned;
+ try{fs.mkdirSync(dir);fs.writeFileSync(file,'{}');pinned=W.readPinned(file);fs.renameSync(dir,old);fs.mkdirSync(dir);fs.writeFileSync(file,'{}');assert.throws(()=>pinned.assertUnchanged());pinned.close();assert.equal(fs.readFileSync(file,'utf8'),'{}');assert.equal(fs.readFileSync(path.join(old,'run.json'),'utf8'),'{}');}
+ finally{if(pinned)pinned.close();fs.rmSync(root,{recursive:true,force:true});}
+});
+test('invalid public input releases every descriptor and refuses links or oversized bytes',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'tty-input-invalid-')),file=path.join(dir,'run.json'),other=path.join(dir,'other.json'),open=fs.openSync;let held=[];
+ const rejected=(expectDescriptors=true)=>{held=[];fs.openSync=function(p,...args){const fd=open.call(fs,p,...args);held.push(fd);return fd;};try{assert.throws(()=>W.readPinned(file));}finally{fs.openSync=open;}assert.equal(held.length>0,expectDescriptors);for(const fd of held)assert.throws(()=>fs.fstatSync(fd),{code:'EBADF'});};
+ try{fs.writeFileSync(file,'not-json');rejected();fs.writeFileSync(file,'{}');fs.linkSync(file,other);rejected();fs.unlinkSync(file);fs.symlinkSync(other,file);rejected(false);fs.unlinkSync(file);fs.writeFileSync(file,' '.repeat(4*1024*1024+1));rejected();}
+ finally{fs.openSync=open;fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('actual main releases input descriptors when public run validation fails',()=>{
+ const cp=require('node:child_process'),root=path.resolve(__dirname,'../..'),dir=fs.mkdtempSync(path.join(os.tmpdir(),'tty-main-cleanup-')),file=path.join(dir,'run.json');
+ try{fs.writeFileSync(file,'{}');const script=`const fs=require('node:fs'),assert=require('node:assert/strict'),W=require(${JSON.stringify(path.join(root,'hardhat/scripts/deploy-core-tty.cjs'))});const open=fs.openSync,held=[];fs.openSync=function(p,...args){const fd=open.call(fs,p,...args);held.push(fd);return fd;};W.main({hardhat:{globalOptions:{network:'mainnet',config:${JSON.stringify(path.join(root,'hardhat.creator.config.mjs'))}}}}).then(()=>{throw Error('Unexpected success');},()=>{fs.openSync=open;assert(held.length>0);for(const fd of held)assert.throws(()=>fs.fstatSync(fd),{code:'EBADF'});console.log('INPUT_DESCRIPTORS_CLOSED');});`;
+  const result=cp.spawnSync(process.execPath,['-e',script],{cwd:root,env:{HOME:dir,PATH:path.dirname(process.execPath)+':/usr/bin:/bin',MANAGER_CREATOR_RUN:file},encoding:'utf8',timeout:15000,maxBuffer:65536});assert.equal(result.error,undefined);assert.equal(result.status,0,result.stderr);assert.equal(result.stdout.trim(),'INPUT_DESCRIPTORS_CLOSED');assert.equal(result.stderr,'');
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+test('public input replacement during signing stops before import or relay',()=>mocked(async()=>{
+ const x=fixture(),file=path.join(x.f.run.root,'config.json');let pinned;
+ try{fs.writeFileSync(file,'{}');pinned=W.readPinned(file);x.f.context.revalidateSource=()=>pinned.assertUnchanged();const open=x.f.openSigner;x.f.openSigner=async address=>{const signer=await open(address);return {...signer,async signExact(envelope){const raw=await signer.signExact(envelope);fs.unlinkSync(file);fs.writeFileSync(file,'{}');return raw;}};};
+  await assert.rejects(W.runCampaign(x.f));assert.equal(x.signed,1);assert.equal(x.closed,1);assert(!x.calls.includes('import0'));assert(!x.calls.includes('relay0'));assert.equal(fs.readFileSync(file,'utf8'),'{}');
+ }finally{if(pinned)pinned.close();x.cleanup();}
+}));

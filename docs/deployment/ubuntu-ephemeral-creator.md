@@ -156,3 +156,9 @@ acceptance. The retained d371/d953 hosted **96 + 30** cases qualify the earlier
 contract/session source and remain unchanged; they do not retrospectively claim
 this newly added TTY route was exercised. No live deployment is authorized by a
 local test result.
+
+### Public-input file identity
+
+The process holds read-only descriptors for the original run/config files and their parent directories until the command returns or fails. It reads the bound file descriptors and checks both descriptor and named-path identities after awaits, so unlinking and recreating an identical pathname cannot pass by recycling the old inode. Descriptor cleanup never removes or modifies either the original or replacement path. Input bindings close on early validation errors as well as successful completion.
+
+These checks require an exclusively controlled, trusted local filesystem. They are not an atomic defense against hostile changes between checks, a compromised Ubuntu process, or manipulation of the operating system. No secure-erasure guarantee is made.
