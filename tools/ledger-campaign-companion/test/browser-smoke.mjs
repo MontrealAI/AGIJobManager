@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
+import { Transaction, keccak256 } from 'ethers';
+import { policyDigest } from '../src/envelope.mjs';
+const require = createRequire(import.meta.url);
+const packagePath = require.resolve('playwright', { paths: [new URL('../scripts/browser-toolchain/', import.meta.url).pathname] });
+const playwrightModule = await import(pathToFileURL(packagePath).href);
+const { chromium } = playwrightModule.default ?? playwrightModule;
+const browser = await chromium.launch({ headless: true, chromiumSandbox: true });
+try {
+  const page = await browser.newPage();
+  const errors = [], requests = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('request', req => requests.push(req.url()));
+  await page.goto('http://127.0.0.1:4173/');
+  await page.waitForFunction(() => document.getElementById('status').textContent.includes('Source preview'));
+  assert.deepEqual(errors, []);
+  assert.equal(await page.locator('#sign').isDisabled(), true);
+  const tx = Transaction.from({ type: 2, chainId: 1, nonce: 1, to: null, data: '0x60006000f3', value: 0, gasLimit: 500000, maxFeePerGas: 10000000000n, maxPriorityFeePerGas: 1000000000n, accessList: [] }).unsignedSerialized;
+  const review = { chainId: '1', expectedSender: '0x2222222222222222222222222222222222222222', expiresAt: new Date(Date.now() + 3600000).toISOString(), maxGasLimit: '5000000', maxFeePerGas: '20000000000', maxPriorityFeePerGas: '2000000000', maxTotalFeeWei: '100000000000000000', maxValueWei: '0', operationId: 'browser-preview-only', sourceSha256: `0x${'42'.repeat(32)}` };
+  await page.locator('#unsigned').fill(tx);
+  await page.locator('#expectedHash').fill(keccak256(tx));
+  await page.locator('#review').fill(JSON.stringify(review));
+  await page.locator('#expectedPolicyHash').fill(policyDigest(review, keccak256(tx)));
+  await page.locator('#path').fill("44'/60'/0'/0/0");
+  await page.locator('#ack').check();
+  await page.locator('#validate').click();
+  assert.equal(await page.locator('#sign').isEnabled(), true);
+  assert.match(await page.locator('#summary').textContent(), /CREATE — recipient absent/);
+  assert.equal(await page.locator('#download').isDisabled(), true);
+  assert.equal(await page.locator('#downloadImport').isDisabled(), true);
+  await page.locator('#expectedHash').fill(`0x${'00'.repeat(32)}`);
+  assert.equal(await page.locator('#sign').isDisabled(), true);
+  await page.locator('#validate').click();
+  assert.equal(await page.locator('#status').textContent(), 'UNSIGNED_HASH_MISMATCH');
+  const blocked = await page.evaluate(async () => {
+    const violations = [];
+    document.addEventListener('securitypolicyviolation', event => violations.push(event.effectiveDirective));
+    let rejected = false;
+    try { await fetch('https://blind-signing.api.ledger.com/ingest/TEST-NEVER-SENT'); } catch { rejected = true; }
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return { rejected, violations };
+  });
+  assert.equal(blocked.rejected, true);
+  assert.ok(blocked.violations.includes('connect-src'));
+  assert.ok(requests.every(url => url.startsWith('http://127.0.0.1:4173/')));
+  assert.deepEqual(errors, []);
+  process.stdout.write('Browser smoke PASS: page load, review/invalid-hash gates, CREATE display, download disabled, CSP outbound request blocked; no device APIs or signing invoked.\n');
+} finally { await browser.close(); }

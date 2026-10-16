@@ -1,0 +1,23 @@
+# Ledger SDK context and network policy / Contexte SDK et politique réseau
+
+The exact retained dependencies are Ethereum signer 1.18.2, context module 2.7.0, device management kit 1.11.0 and WebHID transport 1.2.4. This implementation supplies neither an origin token nor a custom context module. The released signer builder accepts optional `originToken`; the released context builder converts an absent token to an empty string. A credential is not required to instantiate these released builders. This does not promise that every remote Ledger endpoint would accept the empty token.
+
+The released default context has network-backed Ethereum loaders, transaction checks and reporting. We preserve that actual SDK behavior rather than substituting a permissive context. The isolated signer has `connect-src 'none'`, `img-src 'none'`, no workers, no RPC or broadcast controls. The dashboard uses a different numeric loopback origin and `connect-src 'self'`; no context, telemetry or remote reporting is enabled through it. The original standalone signer keeps its original no-network policy.
+
+Consequently, default SDK requests may be blocked. Metadata/check context may fail or be unavailable; the Ledger may require blind signing or refuse the operation. Contract creation initcode is never labelled device clear signed. The application does not silently fall back to another context, stub, transport or relaxed CSP. A campaign device action has a 180-second deadline; a timeout stops for recovery and never causes another signing request. Timing out does not invalidate a signature already produced by a device.
+
+The application adds no SDK loggers. The released DMK builder defaults to `stub=false` and an empty logger array. Browser acceptance must still test egress and logs; source inspection alone is not empirical browser or physical-device proof. No seed, private key, PIN or Ledger credential is requested.
+
+For a campaign, the owner chooses the actual path. First connection and an actor/path change require on-device address confirmation. A retained same-actor/path USB session performs an address read and exact match before each later transaction, and each transaction invokes manual device approval. Disconnect, changed account, failed action or path change invalidates the retained session. No persistent browser account/path storage is used. Device firmware/app/browser behavior still requires owner-operated physical qualification.
+
+The dashboard automatically observes a submitted known hash at five-second intervals, bounded to 360 observation cycles or 30 minutes per operation. A cycle can call multiple read-only coordinator/RPC checks; this is a UI cycle limit, not a claim about total provider requests. At the limit it stops for read-only recovery and never resends. Relay is off by default. When a reviewed immutable relay policy and explicit runtime flag enable it, this version requires one additional exact native acknowledgement button per signed operation. No command copying or acknowledgement typing is needed; this is separate from each manual physical signature.
+
+## Français
+
+Les versions Ledger exactes sont conservées. Le paramètre `originToken` est facultatif dans le constructeur publié; le module de contexte transforme son absence en chaîne vide. Aucun identifiant n'est nécessaire pour instancier ces versions. Cela ne garantit pas l'acceptation par les services distants Ledger.
+
+Le contexte officiel conserve ses chargeurs réseau et ses mécanismes de contrôle. Le signataire isolé bloque tout réseau avec `connect-src 'none'`; le tableau de bord utilise une autre origine numérique locale et n'autorise que son propre pont. Aucun contexte permissif de remplacement, aucune télémétrie et aucun assouplissement de la politique ne sont ajoutés. Les appels du SDK peuvent échouer; une signature aveugle peut être requise ou l'appareil peut refuser. Aucun code d'initialisation de contrat n'est présenté comme intégralement lisible sur le Ledger.
+
+Un délai de 180 secondes arrête l'opération en reprise, sans nouvelle demande de signature. Ce délai n'annule pas une signature existante. Le compte et le chemin sont choisis par le propriétaire. L'adresse est confirmée sur l'appareil à la première connexion et après changement de rôle ou chemin; le compte est revérifié avant chaque signature suivante. Chaque transaction nécessite l'approbation manuelle. Déconnexion, changement de compte et erreur invalident la session. La qualification physique reste en attente.
+
+The adjacent SDK_CONTEXT_SOURCE_INVENTORY.json binds the exact inspected dependency bytes. / Le fichier adjacent lie les octets exacts inspectés.
