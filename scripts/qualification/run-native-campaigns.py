@@ -28,7 +28,7 @@ BINDING_SHA = 'd3a7cc0e8e10bbb6f0c9af87adce755e845a84be338f90566ef6247dbc5690e5'
 PROFILE = 'manager-explicit-governor-v1'
 LOCAL_CONTAINER_PROFILE = 'retained-local-v1'
 HOSTED_CONTAINER_PROFILE = 'github-ubuntu-source-legacy-v1'
-CONTAINER_PROFILE_SHA = '56c570848ae28ba1afc06334c3ca467e860efd0e6d46efddd4bb753cd7daf65f'
+CONTAINER_PROFILE_SHA = '54fb5c6079eb6a864d1636ab4620f9d8a5f2982411e616f731db124f1923d115'
 HEX64 = re.compile(r'^[0-9a-f]{64}$')
 HEX40 = re.compile(r'^[0-9a-f]{40}$')
 TXHASH = re.compile(r'^0x[0-9a-fA-F]{64}$')
@@ -596,6 +596,22 @@ def fresh_output(value, excluded):
     return path
 
 
+def selected_suites(value):
+    require(value in ('both', 'full', 'marker'), 'Unknown required campaign selection')
+    return ('full', 'marker') if value == 'both' else (value,)
+
+
+def diagnostic_type(error):
+    # Only fixed classes are shareable; arbitrary messages/paths stay local.
+    if isinstance(error, CampaignError):
+        return 'VALIDATION'
+    if isinstance(error, OSError):
+        return 'FILESYSTEM'
+    if isinstance(error, subprocess.SubprocessError):
+        return 'SUBPROCESS'
+    return 'DATA_SHAPE'
+
+
 def run(args, launcher=launch):
     harness = exact_path(str(Path(__file__).resolve().parents[2]), True)
     source = exact_path(args.source_root, True)
@@ -609,6 +625,7 @@ def run(args, launcher=launch):
     require(HEX40.fullmatch(args.expected_harness_commit) and args.expected_harness_commit != TARGET, 'Separate explicit harness commit required')
     require(re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,127}', args.build_id), 'Invalid build ID')
     pins, expectations = verify_pins(harness, pins_path, args.pins_sha256)
+    suites = selected_suites(getattr(args, 'suite', 'both'))
     container_profile = getattr(args, 'container_profile', LOCAL_CONTAINER_PROFILE)
     expectations = select_container_profile(harness, expectations, container_profile)
     output = fresh_output(args.output, [source, legacy, harness])
@@ -618,13 +635,14 @@ def run(args, launcher=launch):
     env = child_environment(node, home)
     summary = {'schema': 'agijobmanager/native-campaign-result/v1', 'status': 'INCOMPLETE', 'scope': SCOPE,
         'source': {'commit': TARGET, 'tree': TREE, 'parents': PARENTS}, 'harnessPinsSha256': args.pins_sha256,
-        'containerProfile': container_profile,
+        'containerProfile': container_profile, 'requestedSuites': list(suites), 'selectedCampaignsComplete': False,
         'acceptanceComplete': False, 'nativeCLIQualified': False, 'functionalCampaignsComplete': False,
         'configurationAuthorized': False, 'activationAuthorized': False, 'campaigns': [], 'sourceGates': [],
         'claimsExcluded': ['production/provider/wallet or physical Ledger qualification', 'independent no-invocation security evidence',
             'historical release gate acceptance', 'governance configuration or activation', 'external audit and Sepolia acceptance']}
     write_new(output / 'INCOMPLETE', b'Preserve raw reports and logs. This is not operational acceptance.\n')
     current = None
+    stage = 'INITIAL_IDENTITY_AND_NODE'
     try:
         summary['harness'] = observe_git(harness, env, args.expected_harness_commit)
         observe_git(source, env, TARGET, TREE, PARENTS)
@@ -632,11 +650,14 @@ def run(args, launcher=launch):
         node_result = subprocess.run([str(node), '--version'], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, check=False)
         require(node_result.returncode == 0 and node_result.stdout == b'v22.23.2\n' and not node_result.stderr, 'Exactly Node v22.23.2 required')
         summary['nodeExecutableSha256'] = sha(node.read_bytes())
-        for suite in ('full', 'marker'):
+        for suite in suites:
+            stage = suite.upper() + '_PRE_EXECUTION_IDENTITIES'
             verify_pins(harness, pins_path, args.pins_sha256)
             observe_git(harness, env, args.expected_harness_commit)
             observe_git(source, env, TARGET, TREE, PARENTS)
+            stage = suite.upper() + '_BOUND_SOURCE_GATE'
             summary['sourceGates'].append(source_gate(source, harness, env, logs, 'before-' + suite, launcher))
+            stage = suite.upper() + '_EXACT_CONTAINER_GATE'
             prove_container_profile(harness, source, legacy, node, container_profile, env, logs, 'containers-before-' + suite, launcher)
             current = suite
             runner = harness / 'runners' / suite
@@ -646,39 +667,53 @@ def run(args, launcher=launch):
             if suite == 'full':
                 command += ['--legacy-source-root', str(legacy), '--legacy-artifacts-root', str(artifacts),
                             '--legacy-commit', LEGACY, '--legacy-tree', LEGACY_TREE]
+            stage = suite.upper() + '_NATIVE_CHILD'
             result = launcher(command, harness, env, logs / suite, args.timeout_seconds)
             summary['campaigns'].append({'suite': suite, 'process': result})
             require(result['exitCode'] == 0 and result['timedOut'] is False, 'Native child failed/crashed/timed out: ' + suite)
+            stage = suite.upper() + '_REPORT_VALIDATION'
             verified = validate_report(output / suite, suite, expectations[suite], source, runner, node, args.build_id)
+            stage = suite.upper() + '_POST_PINS'
             verify_pins(harness, pins_path, args.pins_sha256)
+            stage = suite.upper() + '_POST_HARNESS_IDENTITY'
             observe_git(harness, env, args.expected_harness_commit)
+            stage = suite.upper() + '_POST_SOURCE_IDENTITY'
             observe_git(source, env, TARGET, TREE, PARENTS)
+            stage = suite.upper() + '_POST_LEGACY_IDENTITY'
             observe_git(legacy, env, LEGACY, LEGACY_TREE)
+            stage = suite.upper() + '_EVIDENCE_PUBLICATION'
             publish_allowlist(output / suite, output / 'shareable' / suite)
             summary['campaigns'][-1]['verified'] = verified
             current = None
-        summary['sourceGates'].append(source_gate(source, harness, env, logs, 'after-marker', launcher))
+        stage = 'FINAL_SOURCE_AND_HARNESS_GATES'
+        summary['sourceGates'].append(source_gate(source, harness, env, logs, 'after-' + suites[-1], launcher))
         verify_pins(harness, pins_path, args.pins_sha256)
         observe_git(harness, env, args.expected_harness_commit)
         observe_git(source, env, TARGET, TREE, PARENTS)
+        stage = 'FINAL_EXACT_CONTAINER_GATE'
         prove_container_profile(harness, source, legacy, node, container_profile, env, logs, 'containers-final', launcher)
-        for suite in ('full', 'marker'):
+        for suite in suites:
+            stage = suite.upper() + '_FINAL_REPORT_AND_PUBLISHED_EVIDENCE'
             validate_report(output / suite, suite, expectations[suite], source, harness / 'runners' / suite, node, args.build_id)
             _, raw_inventory = evidence_inventory(output / suite)
             _, copied_inventory = evidence_inventory(output / 'shareable' / suite)
             require(raw_inventory == copied_inventory, 'Published evidence changed after validation')
-        summary.update(status='PASS_FINITE_FUNCTIONAL_CAMPAIGNS', functionalCampaignsComplete=True)
+        complete = suites == ('full', 'marker')
+        summary.update(status='PASS_FINITE_FUNCTIONAL_CAMPAIGNS' if complete else 'PASS_SELECTED_FUNCTIONAL_CAMPAIGNS',
+                       functionalCampaignsComplete=complete, selectedCampaignsComplete=True)
+        stage = 'SUCCESS_SUMMARY_PUBLICATION'
         publish_success_summary(output, summary, pins)
         (output / 'INCOMPLETE').unlink()
         code = 0
     except (CampaignError, OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         summary['status'] = 'FAILED_OR_INCOMPLETE'
         summary['functionalCampaignsComplete'] = False
+        summary['selectedCampaignsComplete'] = False
         for generated in ('campaign-summary.json', 'campaign-summary.SHA256SUMS'):
             published = output / 'shareable' / generated
             if published.exists() or published.is_symlink():
                 published.unlink()  # Only this run's fresh, wrapper-generated metadata.
-        summary['failure'] = {'stage': current or 'source-or-harness-gate', 'type': type(error).__name__, 'message': str(error)}
+        summary['failure'] = {'stage': stage, 'type': diagnostic_type(error), 'message': str(error)}
         # A failed report is retained verbatim and may be copied only if its own
         # allowlist is safe, complete and hashed. No report is synthesized/rewritten.
         if current and (output / current / 'report.json').is_file() and not (output / 'shareable' / current).exists():
@@ -700,6 +735,8 @@ def run(args, launcher=launch):
             'schema': 'agijobmanager/native-campaign-failure-diagnostics/v1',
             'status': 'FAILED_OR_INCOMPLETE', 'scope': SCOPE, 'sourceCommit': TARGET, 'sourceTree': TREE,
             'acceptanceComplete': False, 'nativeCLIQualified': False,
+            'requestedSuites': list(suites), 'selectedCampaignsComplete': False,
+            'failureStage': summary['failure']['stage'], 'failureType': summary['failure']['type'],
             'message': 'Campaign did not complete. Preserve raw files locally; no unsafe content was published.',
             'localSummarySha256': sha(read_regular(output, 'campaign-summary.json')), 'localLauncherLogSha256': hashes})
     print(json.dumps({'status': summary['status'], 'scope': SCOPE, 'summary': str(output / 'campaign-summary.json'),
@@ -709,14 +746,21 @@ def run(args, launcher=launch):
 
 def publish_success_summary(output, summary, pins):
     """Explicit reviewed metadata only; no absolute output paths or raw logs."""
-    require(summary.get('status') == 'PASS_FINITE_FUNCTIONAL_CAMPAIGNS' and
-            summary.get('functionalCampaignsComplete') is True and
+    requested = summary.get('requestedSuites', ['full', 'marker'])
+    require(requested in (['full', 'marker'], ['full'], ['marker']), 'Invalid selected campaign summary')
+    complete = requested == ['full', 'marker']
+    expected_status = 'PASS_FINITE_FUNCTIONAL_CAMPAIGNS' if complete else 'PASS_SELECTED_FUNCTIONAL_CAMPAIGNS'
+    require(summary.get('status') == expected_status and
+            summary.get('functionalCampaignsComplete') is complete and
+            summary.get('selectedCampaignsComplete', complete) is True and
             summary.get('acceptanceComplete') is False and summary.get('nativeCLIQualified') is False,
             'Cannot publish successful summary for incomplete/operational result')
     safe = {key: summary[key] for key in ('schema', 'status', 'scope', 'source', 'harness',
         'harnessPinsSha256', 'nodeExecutableSha256', 'acceptanceComplete', 'nativeCLIQualified',
         'functionalCampaignsComplete', 'configurationAuthorized', 'activationAuthorized', 'claimsExcluded')}
     safe['containerProfile'] = summary.get('containerProfile', LOCAL_CONTAINER_PROFILE)
+    safe['requestedSuites'] = requested
+    safe['selectedCampaignsComplete'] = True
     safe['harnessFiles'] = pins
     safe['sourceGates'] = summary['sourceGates']
     safe['campaigns'] = []
@@ -728,7 +772,7 @@ def publish_success_summary(output, summary, pins):
         require(sha(read_regular(output / 'shareable', report_path, True)) == verified['reportSha256'],
                 'Summary does not bind published raw report')
         safe['campaigns'].append({'suite': suite, 'report': report_path, 'process': campaign['process'], **verified})
-    require([c['suite'] for c in safe['campaigns']] == ['full', 'marker'], 'Incomplete summary campaign set')
+    require([c['suite'] for c in safe['campaigns']] == requested, 'Incomplete summary campaign set')
     data = (json.dumps(safe, indent=2, sort_keys=True) + '\n').encode()
     scan_shareable('campaign-summary.json', data)
     write_new(output / 'shareable/campaign-summary.json', data)
@@ -741,6 +785,7 @@ def parse_args(argv):
     for name in ('source-root', 'legacy-source-root', 'legacy-artifacts-root', 'node', 'build-id', 'output', 'pins', 'pins-sha256', 'expected-harness-commit'):
         parser.add_argument('--' + name, required=True)
     parser.add_argument('--timeout-seconds', type=int, default=10800)
+    parser.add_argument('--suite', choices=('both', 'full', 'marker'), default='both')
     parser.add_argument('--container-profile', choices=(LOCAL_CONTAINER_PROFILE, HOSTED_CONTAINER_PROFILE), default=LOCAL_CONTAINER_PROFILE)
     seen = set()
     for value in argv:

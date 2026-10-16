@@ -19,7 +19,9 @@ DEPENDENCY_STEPS = [
     'Prove the exact hosted compiler containers after separate compilation',
     'Run the original named-root nine-CREATE regression',
     'Run the genuine source tooling suite and unchanged dependency parity groups',
-    'Run full96 and marker30 campaigns serially in fresh external directories',
+    'Run complete full96 in its own guarded invocation',
+    'Run complete marker30 independently after fresh safety gates',
+    'Require both complete guarded campaign outcomes',
 ]
 
 
@@ -76,7 +78,7 @@ class WorkflowInvariants(unittest.TestCase):
         end = self.text.index('      - name: ', start + 1)
         compile_step = self.text[start:end]
         reordered = self.text[:start] + self.text[end:]
-        index = reordered.index('      - name: Run full96 and marker30')
+        index = reordered.index('      - name: Run complete full96')
         reordered = reordered[:index] + compile_step + reordered[index:]
         with self.assertRaisesRegex(ValueError, 'precede artifact consumers'):
             require_dependency_order(reordered)
@@ -126,12 +128,26 @@ class WorkflowInvariants(unittest.TestCase):
         self.assertNotIn('--suite source', self.text)
 
     def test_fresh_external_output_and_narrow_always_upload(self):
-        self.assertIn('--output "$(realpath "$RUNNER_TEMP")/manager-d371-native-campaigns"', self.text)
+        for suite in ('full', 'marker'):
+            self.assertIn('--output "$(realpath "$RUNNER_TEMP")/manager-d371-native-' + suite + '"', self.text)
         self.assertIn('if: always()', self.text)
-        self.assertEqual(re.findall(r'^          path: (\$\{\{ runner.temp.*)$', self.text, re.M),
-                         ['${{ runner.temp }}/manager-d371-native-campaigns/shareable/'])
+        self.assertEqual(re.findall(r'^            (\$\{\{ runner.temp.*)$', self.text, re.M),
+                         ['${{ runner.temp }}/manager-d371-native-full/shareable/',
+                          '${{ runner.temp }}/manager-d371-native-marker/shareable/'])
         self.assertNotIn('path: /tmp', self.text)
         self.assertNotIn('path: source/', self.text)
+
+    def test_separate_complete_campaigns_cannot_hide_either_failure(self):
+        self.assertEqual(self.text.count('--suite full'), 1)
+        self.assertEqual(self.text.count('--suite marker'), 1)
+        self.assertEqual(self.text.count('continue-on-error: true'), 2)
+        self.assertIn("if: ${{ !cancelled() && (steps.full_campaign.outcome == 'success' || steps.full_campaign.outcome == 'failure') }}", self.text)
+        self.assertIn('test "$FULL_OUTCOME" = success', self.text)
+        self.assertIn('test "$MARKER_OUTCOME" = success', self.text)
+        self.assertEqual(self.text.count('--expected-harness-commit "$HARNESS_COMMIT"'), 2)
+        self.assertEqual(self.text.count('--container-profile github-ubuntu-source-legacy-v1'), 2)
+        self.assertIn('node --max-old-space-size=256 --test qualifier/scripts/qualification/test-fixture-copy.mjs', self.text)
+        require_dependency_order(self.text)
 
     def test_workflow_pin_matches_complete_harness_inventory(self):
         pinfile = ROOT / 'config/native-harness-pins.json'

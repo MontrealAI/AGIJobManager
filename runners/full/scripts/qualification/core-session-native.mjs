@@ -13,6 +13,11 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const harnessRoot = path.resolve(here, '../..');
 const ownRequire = createRequire(import.meta.url);
 const { createNativeCoreRpc } = ownRequire('../../hardhat/test/helpers/native-core-rpc.cjs');
+// Independent fixture bytes keep the reviewed checkout's nlink==1 invariant.
+export function copyTrackedFixtureEntry(from, into) {
+  if (fs.lstatSync(from).isSymbolicLink()) fs.symlinkSync(fs.readlinkSync(from), into);
+  else fs.copyFileSync(from, into, fs.constants.COPYFILE_EXCL);
+}
 export const REPORT_SCHEMA = 'manager-native-core-session-qualification-v1';
 export const NODE_VERSION = 'v22.23.2';
 export const NATIVE_FAILURE_MESSAGES = Object.freeze({
@@ -314,13 +319,13 @@ export async function runNativeQualification({ sourceRoot, outputDirectory, expe
     fs.mkdirSync(path.join(clone, '.git/objects/info'), { recursive: true });
     fs.writeFileSync(path.join(clone, '.git/objects/info/alternates'), path.resolve(root, objects) + '\n');
     cleanGit(clone, 'update-ref', 'HEAD', expectedCommit); cleanGit(clone, 'read-tree', expectedCommit);
-    // Link immutable reviewed bytes rather than copy the full tree. Every file
-    // intentionally mutated below is detached before any write/chmod operation.
+    // Copy tracked fixture entries without hardlinking the reviewed source.
+    // Retained negative fixtures must not change the source link count.
     const tracked = cleanGit(root, 'ls-tree', '-r', '--name-only', expectedCommit).split('\n');
     for (const relative of tracked) {
       const from = path.join(root, relative), into = path.join(clone, relative);
       fs.mkdirSync(path.dirname(into), { recursive: true });
-      if (fs.lstatSync(from).isSymbolicLink()) fs.symlinkSync(fs.readlinkSync(from), into); else fs.linkSync(from, into);
+      copyTrackedFixtureEntry(from, into);
     }
     for (const relative of ['README.md', 'package-lock.json']) { const file = path.join(clone, relative), bytes = fs.readFileSync(file), mode = fs.statSync(file).mode; fs.unlinkSync(file); fs.writeFileSync(file, bytes, { mode }); }
     // Ignored real directory with entry symlinks preserves exact observed identity.

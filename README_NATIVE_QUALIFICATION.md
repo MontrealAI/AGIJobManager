@@ -55,7 +55,7 @@ journal state.
 The wrapper verifies the exact ordered case and command inventories, compiler
 input/output, source and artifact hashes, receipt/plan/signing-hash bindings and
 all shareable evidence hashes. It preserves raw reports unchanged. Successful
-completion sets only `functionalCampaignsComplete`; `acceptanceComplete`,
+completion of both suites sets only `functionalCampaignsComplete`; a selected-suite invocation sets only `selectedCampaignsComplete`. `acceptanceComplete`,
 `nativeCLIQualified`, configuration and activation authority remain false.
 
 Only the explicit checked shareable allowlist is uploaded. Private fixture keys,
@@ -111,3 +111,12 @@ The actual c2 run38946564930 passed full96/96 but its wrapper stopped before mar
 The source target d371 corrects only the agent/Alpha-club verifier indices, with unchanged Solidity/artifacts. Before the native campaigns the workflow executes the actual named-root nine-CREATE regression. Both full and marker configurations use the four original namehashes in constructor order: club.agi.eth, agent.agi.eth, alpha.club.agi.eth, alpha.agent.agi.eth. Original c2 zero-root campaign and failed-wrapper reports remain historical; no earlier execution is relabeled. The retained expected-campaigns.json and c2 target/binding/provenance files remain byte-identical. New d371-campaign-expectations.json is explicitly prospective: only exact runner/selector identities change from the old case/command schemas. A successful actual d371 run is required; no asserted result is synthesized.
 
 The c2 compatibility provenance command retains its original receipt source identity. It compares only its exact listed input hashes against the separately bound current checkout, reports both identities, and never claims a new fork execution. It does not clear named-root, signer or operator qualification.
+
+
+## Retained 233b11 execution and independent fixture correction
+
+The actual d371 run38954941703/job117155319484 completed full96/96, 355 native commands and 18 disposable CREATE receipts. Its wrapper failed before marker execution. The original report SHA256 is 8c1230a4c0e9036fe6d0fed8eeb2839e64e918c894033578078b04a02dbeffdf; artifact12070473989 ZIP SHA256 is 86581f183c3797572557b3744b06ccdbf0a7914a93787e644a27536a4721de12. All 1,545 full-evidence entries were rehashed. This remains a failed wrapper execution, with marker unexecuted.
+
+The retained source-probe fixture used hardlinks to checkout files. That raises their link count and conflicts with the unchanged post-campaign nlink==1 source guard. Both runner helpers now copy independent bytes/modes and preserve symbolic-link text. Tests exercise the actual wrapper guard, pre/post link counts, mutation isolation and the original hardlink rejection. Original fixture/report evidence stays unchanged. Only the two exact runner hashes change in the prospective campaign expectations; no case, command, source, material build or receipt assertion is removed.
+
+The workflow runs complete full96 and complete marker30 in two separate guarded invocations with distinct fresh output roots. Each invocation repeats all source, harness, dependency/container and report checks. Marker may run after a failed full-report check only if its own fresh safety preconditions pass. A final workflow step requires both outcomes to succeed; continue-on-error does not promote a partial result. A single-suite summary explicitly keeps functionalCampaignsComplete false. Safe failure artifacts expose only fixed stage/type codes and hashes, never raw exception text or tracebacks. No overall successful qualification is claimed by this unexecuted correction.

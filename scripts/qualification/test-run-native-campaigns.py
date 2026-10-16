@@ -553,6 +553,123 @@ class SyntheticBoundaries(unittest.TestCase):
         self.assertNotIn('not published', json.dumps(diag))
 
 
+class SelectedCampaignBoundaries(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix='selected-campaign-boundary-')
+        self.base = Path(self.temp.name)
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def execute(self, suite, fail=None):
+        source = self.base / 'source'; source.mkdir()
+        legacy = self.base / 'legacy'; legacy.mkdir()
+        artifacts = legacy / 'artifacts'; artifacts.mkdir()
+        node = put(self.base, 'node', b'synthetic, never launched')
+        pins = put(self.base, 'pins.json', {})
+        args = SimpleNamespace(source_root=str(source), legacy_source_root=str(legacy), legacy_artifacts_root=str(artifacts),
+            node=str(node), pins=str(pins), pins_sha256='a' * 64, output=str(self.base / 'out'), build_id='synthetic',
+            expected_harness_commit='1' * 40, timeout_seconds=60, suite=suite, container_profile=M.HOSTED_CONTAINER_PROFILE)
+        launches, gates, observations = [], [], []
+        sensitive = 'DO_NOT_PUBLISH_PRIVATE_PATH_OR_EXCEPTION_SENTINEL'
+        def observe(root, *args):
+            observations.append(root)
+            if fail == 'identity':
+                raise OSError(sensitive)
+            if fail == 'post-source' and launches and root == source:
+                raise M.CampaignError(sensitive)
+            return {'commit': '1' * 40}
+        def source_gate(*args):
+            gates.append('source')
+            if fail == 'source': raise M.CampaignError(sensitive)
+            return {'synthetic': True}
+        def containers(*args):
+            gates.append('containers')
+            if fail == 'containers': raise M.CampaignError(sensitive)
+        def launcher(command, cwd, env, log_base, timeout):
+            launches.append(command)
+            name = command[command.index('--suite') + 1]
+            put(Path(args.output) / name, 'report.json', {'synthetic': True, 'suite': name, 'acceptanceComplete': False})
+            return {'exitCode': 0, 'timedOut': False}
+        def validate(raw, name, *args):
+            if fail == 'report': raise M.CampaignError(sensitive)
+            return {'suite': name, 'reportSha256': M.sha((raw / 'report.json').read_bytes()), 'counts': {'synthetic': True}}
+        def publish(raw, dest):
+            put(dest, 'report.json', (raw / 'report.json').read_bytes())
+        def inventory(raw):
+            return ({}, {'report.json': M.sha((raw / 'report.json').read_bytes())})
+        with contextlib.ExitStack() as stack:
+            for name, replacement in [('verify_pins', lambda *a: ({}, {'full': {}, 'marker': {}})),
+                    ('select_container_profile', lambda *a: a[1]), ('observe_git', observe),
+                    ('source_gate', source_gate), ('prove_container_profile', containers),
+                    ('validate_report', validate), ('publish_allowlist', publish), ('evidence_inventory', inventory)]:
+                stack.enter_context(patch.object(M, name, side_effect=replacement))
+            stack.enter_context(patch.object(M.subprocess, 'run', return_value=SimpleNamespace(returncode=0, stdout=b'v22.23.2\n', stderr=b'')))
+            stack.enter_context(contextlib.redirect_stdout(io.StringIO()))
+            code = M.run(args, launcher=launcher)
+        return code, json.loads((Path(args.output) / 'campaign-summary.json').read_text()), launches, gates, observations
+
+    def test_marker_only_runs_only_marker_and_never_claims_all_campaigns_complete(self):
+        code, summary, calls, gates, observations = self.execute('marker')
+        self.assertEqual(code, 0); self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][calls[0].index('--suite') + 1], 'marker')
+        self.assertEqual(summary['requestedSuites'], ['marker']); self.assertTrue(summary['selectedCampaignsComplete'])
+        self.assertFalse(summary['functionalCampaignsComplete']); self.assertFalse(summary['acceptanceComplete']); self.assertFalse(summary['nativeCLIQualified'])
+        self.assertEqual(gates, ['source', 'containers', 'source', 'containers'])
+        published = json.loads((self.base / 'out/shareable/campaign-summary.json').read_text())
+        self.assertEqual(published['status'], 'PASS_SELECTED_FUNCTIONAL_CAMPAIGNS')
+        self.assertFalse(published['functionalCampaignsComplete'])
+        self.assertEqual([c['suite'] for c in published['campaigns']], ['marker'])
+
+    def test_full_only_keeps_full_counts_scope_and_no_marker_claim(self):
+        code, summary, calls, gates, observations = self.execute('full')
+        self.assertEqual(code, 0); self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][calls[0].index('--suite') + 1], 'full')
+        self.assertIn('--legacy-commit', calls[0]); self.assertEqual(summary['requestedSuites'], ['full'])
+        self.assertFalse(summary['functionalCampaignsComplete']); self.assertTrue(summary['selectedCampaignsComplete'])
+
+    def test_fresh_source_failure_prevents_marker_launch_and_redacts_details(self):
+        code, summary, calls, gates, observations = self.execute('marker', 'source')
+        self.assertEqual(code, 1); self.assertEqual(calls, [])
+        diag = json.loads((self.base / 'out/shareable/failure-diagnostics.json').read_text())
+        self.assertEqual(diag['failureStage'], 'MARKER_BOUND_SOURCE_GATE'); self.assertEqual(diag['failureType'], 'VALIDATION')
+        self.assertNotIn('DO_NOT_PUBLISH', json.dumps(diag)); self.assertNotIn('Traceback', json.dumps(diag))
+        self.assertFalse(diag['selectedCampaignsComplete'])
+
+    def test_fresh_container_failure_prevents_marker_launch(self):
+        code, summary, calls, gates, observations = self.execute('marker', 'containers')
+        self.assertEqual(code, 1); self.assertEqual(calls, [])
+        self.assertEqual(summary['failure']['stage'], 'MARKER_EXACT_CONTAINER_GATE')
+
+    def test_filesystem_failure_has_only_fixed_public_type(self):
+        code, summary, calls, gates, observations = self.execute('marker', 'identity')
+        self.assertEqual(code, 1); self.assertEqual(calls, [])
+        diag = json.loads((self.base / 'out/shareable/failure-diagnostics.json').read_text())
+        self.assertEqual(diag['failureStage'], 'INITIAL_IDENTITY_AND_NODE'); self.assertEqual(diag['failureType'], 'FILESYSTEM')
+        self.assertNotIn('DO_NOT_PUBLISH', json.dumps(diag)); self.assertNotIn('message', diag.get('failure', {}))
+
+    def test_post_source_guard_still_blocks_selected_success(self):
+        code, summary, calls, gates, observations = self.execute('marker', 'post-source')
+        self.assertEqual(code, 1); self.assertEqual(len(calls), 1)
+        self.assertEqual(summary['failure']['stage'], 'MARKER_POST_SOURCE_IDENTITY')
+        self.assertFalse(summary['functionalCampaignsComplete']); self.assertFalse(summary['selectedCampaignsComplete'])
+
+    def test_selected_summary_cannot_promote_overall_or_operational_flags(self):
+        code, summary, calls, gates, observations = self.execute('marker')
+        self.assertEqual(code, 0)
+        for field, value in [('functionalCampaignsComplete', True), ('acceptanceComplete', True),
+                             ('nativeCLIQualified', True), ('selectedCampaignsComplete', False),
+                             ('status', 'PASS_FINITE_FUNCTIONAL_CAMPAIGNS')]:
+            changed = copy.deepcopy(summary); changed[field] = value
+            with self.subTest(field=field), self.assertRaises(M.CampaignError):
+                M.publish_success_summary(self.base / 'out', changed, {})
+
+    def test_exact_campaign_selection_has_no_subset_fallback(self):
+        self.assertEqual(M.selected_suites('both'), ('full', 'marker'))
+        for invalid in ('source', 'positive', 'MARKER', '', None):
+            with self.subTest(invalid=invalid), self.assertRaises(M.CampaignError): M.selected_suites(invalid)
+
+
 if __name__ == '__main__':
     print('SYNTHETIC/MOCK WRAPPER BOUNDARIES ONLY. No actual-c2 native qualification claim.')
     unittest.main(verbosity=2)

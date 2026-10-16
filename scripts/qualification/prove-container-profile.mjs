@@ -15,7 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const PROFILE_SHA256 = '56c570848ae28ba1afc06334c3ca467e860efd0e6d46efddd4bb753cd7daf65f';
+export const PROFILE_SHA256 = '54fb5c6079eb6a864d1636ab4620f9d8a5f2982411e616f731db124f1923d115';
 export const HARDHAT_CONFIG_SHA256 = '3107bcfd3239cb05ef5580a368ec7b1b929e091b2caf3f15377733d3abfe6701';
 export const ALGORITHM_PINS = Object.freeze({
   'hardhat/dist/src/internal/builtin-plugins/solidity/build-system/compilation-job.js': '275be13130c43c5bcb4c47b4d04ad4511fade8481d3936778fa477a0c315944a',
