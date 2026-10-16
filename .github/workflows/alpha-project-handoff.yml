@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'scripts/successor/**'
+      - 'config/successor-builder-source.json'
       - 'site/**'
       - 'package.json'
       - 'LICENSE'
@@ -11,6 +12,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/successor/**'
+      - 'config/successor-builder-source.json'
       - 'site/**'
       - 'package.json'
       - 'LICENSE'
@@ -25,6 +27,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
@@ -39,4 +42,4 @@ jobs:
       - name: Exercise actual receiver validation, work and bilingual history
         env:
           SUCCESSOR_ALPHA_SOURCE: ${{ github.workspace }}/build/alpha-source
-        run: node --test scripts/successor/alpha-project.test.mjs scripts/successor/alpha-project-browser.test.mjs
+        run: node --test scripts/successor/alpha-project.test.mjs scripts/successor/alpha-project-browser.test.mjs scripts/successor/source-identity.test.mjs

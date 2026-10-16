@@ -19,12 +19,14 @@ on:
       - 'site/**'
       - 'scripts/site/**'
       - 'scripts/successor/**'
+      - 'config/successor-builder-source.json'
       - 'ui/agijobmanager-usdc.html'
       - 'ui/dist-ipfs/agijobmanager.html'
       - 'config/usdc-deployment.json'
       - 'docs/**'
       - 'hardhat/README.md'
       - 'package.json'
+      - 'LICENSE'
       - 'package-lock.json'
       - '.github/workflows/pages.yml'
   pull_request:
@@ -33,12 +35,14 @@ on:
       - 'site/**'
       - 'scripts/site/**'
       - 'scripts/successor/**'
+      - 'config/successor-builder-source.json'
       - 'ui/agijobmanager-usdc.html'
       - 'ui/dist-ipfs/agijobmanager.html'
       - 'config/usdc-deployment.json'
       - 'docs/**'
       - 'hardhat/README.md'
       - 'package.json'
+      - 'LICENSE'
       - 'package-lock.json'
       - '.github/workflows/pages.yml'
 
@@ -58,6 +62,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
           persist-credentials: false
       - name: Verify qualified source checkout
         env:
@@ -85,6 +90,7 @@ jobs:
       - name: SUCCESSOR local and adversarial checks
         run: |
           npm run successor:test
+          node --test scripts/successor/source-identity.test.mjs
           node --test scripts/successor/preservation.test.mjs
       - name: Install browser test dependencies
         run: |

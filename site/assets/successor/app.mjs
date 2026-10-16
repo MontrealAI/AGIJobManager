@@ -40,6 +40,8 @@ export function initialize() {
     const messages = {
       CAPSULE_CAPACITY: ['This change would exceed the 4 MB capsule limit. Your previous workspace is preserved. Download it, then reuse its selected method on new inputs.', 'Cette modification dépasserait la limite de 4 Mo. Votre espace précédent est conservé. Téléchargez-le, puis réutilisez sa méthode choisie sur de nouvelles données.'],
       HISTORY_LIMIT: ['This history segment is full. You can inspect, restore and download every file. Save a checkpoint, then explicitly continue history below before running again.', 'Ce segment d’historique est plein. Vous pouvez examiner, restaurer et télécharger tous les fichiers. Enregistrez un repère, puis confirmez la continuation de l’historique ci-dessous avant de relancer.'],
+      INPUT_BOM: ['This JSON file begins with a UTF-8 byte-order mark. Preserve the original and export valid UTF-8 JSON without a BOM; the file was not imported.', 'Ce fichier JSON commence par une marque d’ordre des octets UTF-8. Conservez l’original et exportez du JSON UTF-8 sans cette marque; le fichier n’a pas été importé.'],
+      INPUT_UTF8: ['This file is not valid UTF-8. Preserve the original and export valid UTF-8 JSON before importing.', 'Ce fichier n’est pas du UTF-8 valide. Conservez l’original et exportez du JSON UTF-8 valide avant l’importation.'],
       SOURCE_DECOMPRESSION_UNAVAILABLE: ['Editable source download needs a browser with gzip DecompressionStream. Work, history and report downloads remain available; the repository provides uncompressed sources.', 'Le téléchargement des sources exige DecompressionStream gzip. Le travail, l’historique et les rapports restent disponibles; le dépôt fournit les sources non compressées.'],
       HISTORY_CONFIRMATION: ['Confirm that you want a new bounded segment. Earlier history and all files remain inside the new capsule.', 'Confirmez un nouveau segment limité. L’historique précédent et tous les fichiers restent dans le nouveau fichier JSON.'],
       HISTORY_ARCHIVE_LIMIT: ['All ten archive slots are used. Keep and export this project; start a new mission with the selected method on new input. No history will be discarded.', 'Les dix archives sont utilisées. Conservez et exportez ce projet; commencez une nouvelle mission avec la méthode choisie sur de nouvelles données. Aucun historique ne sera supprimé.'],
@@ -152,6 +154,12 @@ export function initialize() {
     inspected = await work('inspect', { raw }); $('restore-summary').textContent = (inspected.summary.name || 'SUCCESSOR Ω') + ' · ' + inspected.summary.kind + ' · ' + inspected.summary.candidates + t(' saved candidates. Historical local checks only; no authority or payments.', ' candidats enregistrés. Vérifications locales historiques; aucune autorité ni transaction.'); $('restore-preview').hidden = false; $('restore-preview').closest('details').open = true; $('restore-consent').checked = false; $('restore-preview').scrollIntoView({ block: 'center' });
   }
   function clearPlan() { plan = null; $('job-results').hidden = true; $('replace-console').hidden = true; $('handoff-consent').checked = false; $('replace-consent').checked = false; $('console-link').replaceChildren(); backupRaw = null; $('comparison').textContent = ''; }
+  async function exactFileText(file) {
+    let raw;
+    try { raw = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(await file.arrayBuffer()); }
+    catch { fail(false, 'INPUT_UTF8'); }
+    fail(raw.charCodeAt(0) !== 0xfeff, 'INPUT_BOM'); return raw;
+  }
   async function previewAlpha(raw) {
     alphaPending = null; $('alpha-preview').hidden = true; $('alpha-mapping').checked = false; $('alpha-rights').checked = false;
     const value = parseStrict(raw);
@@ -230,13 +238,13 @@ export function initialize() {
     bind('load', async () => { clearInspection(); let raw; try { raw = localStorage.getItem(STORAGE_KEY); } catch { fail(false, 'STORAGE'); } fail(raw, 'STORAGE'); await inspect(raw); });
     bind('clear', () => { try { localStorage.removeItem(STORAGE_KEY); } catch { fail(false, 'STORAGE'); } say(t('Saved browser copy cleared. Your open workspace and downloaded copies remain.', 'Copie enregistrée effacée. L’espace ouvert et les téléchargements sont conservés.')); });
     bind('print', () => window.print());
-    bind('import-file', async () => { clearInspection(); const file = $('import-file').files[0]; fail(file && file.size <= LIMITS.capsule, 'INPUT_SIZE'); await inspect(await file.text()); }, 'change');
+    bind('import-file', async () => { clearInspection(); const file = $('import-file').files[0]; fail(file && file.size <= LIMITS.capsule, 'INPUT_SIZE'); await inspect(await exactFileText(file)); }, 'change');
     bind('restore', async () => { fail(inspected && $('restore-consent').checked, 'RESTORE_CONFIRMATION'); const consent = $('public-consent'), disabled = consent.disabled; consent.disabled = true; try { const restored = await work('restore', { inspected, confirmed: true }); await commitState(restored, inspected.capsule.payload.sourceManifest); candidate = state.candidates.find(c => c.id === state.active) || state.candidates.at(-1) || null; showMission(state.mission); $('public-consent').checked = false; clearInspection(); clearPlan(); redraw(); say(t('Restored as historical local work. Review the inputs and rerun for fresh measurements.', 'Restauré comme travail local historique. Vérifiez les données et relancez pour obtenir de nouvelles mesures.')); } finally { consent.disabled = disabled; } });
     bind('cancel-restore', clearInspection);
     bind('alpha-file', async () => {
       alphaPending = null; $('alpha-preview').hidden = true; $('alpha-mapping').checked = false; $('alpha-rights').checked = false;
       const file = $('alpha-file').files[0]; fail(file && file.size <= LIMITS.capsule, 'INPUT_SIZE');
-      await previewAlpha(await file.text());
+      await previewAlpha(await exactFileText(file));
     }, 'change');
     bind('alpha-confirm', async () => {
       fail(alphaPending && $('alpha-mapping').checked && $('alpha-rights').checked, 'EXPLICIT_MAPPING_REQUIRED');
@@ -257,7 +265,7 @@ export function initialize() {
       const checked = await work('alpha-inspect', { raw }); alphaTransfer = raw; alphaRead = checked; alphaDirty = true; $('alpha-select').checked = false; redrawAlpha();
       say(t('Unfunded USDC draft prepared. Download the complete history before continuing.', 'Brouillon USDC non financé préparé. Téléchargez tout l’historique avant de poursuivre.'));
     });
-    bind('alpha-download', () => { fail(alphaTransfer, 'RUN_REQUIRED'); download('Alpha-Manager-project-history.json', alphaTransfer); alphaDirty = false; });
+    bind('alpha-download', () => { fail(alphaTransfer, 'RUN_REQUIRED'); download('Alpha-Manager-project-history.json', alphaTransfer); });
     bind('alpha-save', () => { fail(alphaTransfer, 'RUN_REQUIRED'); try { localStorage.setItem(alphaStorageKey, alphaTransfer); } catch { fail(false, 'STORAGE'); } alphaDirty = false; say(t('Alpha history saved in this browser. Retain a complete-history download too.', 'Historique Alpha enregistré dans ce navigateur. Conservez aussi un téléchargement complet.')); });
     bind('alpha-load', async () => { let raw; try { raw = localStorage.getItem(alphaStorageKey); } catch { fail(false, 'STORAGE'); } fail(raw, 'STORAGE'); await previewAlpha(raw); });
     bind('alpha-clear', () => { try { localStorage.removeItem(alphaStorageKey); } catch { fail(false, 'STORAGE'); } say(t('Saved Alpha browser copy cleared. The open Alpha workspace and downloaded files remain.', 'Copie Alpha du navigateur effacée. L’espace Alpha ouvert et les fichiers téléchargés sont conservés.')); });

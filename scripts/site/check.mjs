@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { actualRepositoryCommit } from "../successor/source-identity.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -14,6 +15,11 @@ const root = path.resolve(
   ),
   out = path.join(root, "build/pages");
 const inventory = JSON.parse(fs.readFileSync(path.join(out, "build-info.json"), "utf8"));
+const builderSelector = JSON.parse(fs.readFileSync(path.join(root, 'config/successor-builder-source.json'), 'utf8'));
+assert.equal(inventory.sourceCommit, actualRepositoryCommit(root), 'Outer website qualification must identify the actual checkout');
+assert.equal(inventory.successorSource.commit, builderSelector.commit);
+assert.equal(inventory.successorSource.engineSha256, builderSelector.engineSha256);
+assert.deepEqual(inventory.successorSourceVerification, { mode: 'git-object-pin', sourceCommit: builderSelector.commit, sourceTree: builderSelector.tree, completeSourceFiles: inventory.successorSource.files.length });
 assert.equal(Object.hasOwn(inventory.files, ".nojekyll"), false, "Build-only marker must not claim public deployment coverage");
 assert.deepEqual(Object.keys(inventory.buildOnlyFiles), [".nojekyll"]);
 assert.equal(inventory.buildOnlyFiles[".nojekyll"].bytes, 0);
