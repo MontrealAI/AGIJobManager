@@ -1,0 +1,167 @@
+name: Paused Core Exact-c2 Native Qualification
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/core-native-qualification.yml'
+      - 'scripts/qualification/select-source-profile.py'
+      - 'scripts/qualification/test-select-source-profile.py'
+      - 'scripts/qualification/run-native-campaigns.py'
+      - 'scripts/qualification/test-run-native-campaigns.py'
+      - 'scripts/qualification/test-native-workflow.py'
+      - 'scripts/qualification/verify-fork-provenance.py'
+      - 'scripts/qualification/test-verify-fork-provenance.py'
+      - 'config/native-harness-pins.json'
+      - 'config/reviewed-c2-target.json'
+      - 'config/c2-source-review-binding.json'
+      - 'config/c2-fork-provenance.json'
+      - 'config/expected-campaigns.json'
+      - 'README_NATIVE_QUALIFICATION.md'
+      - 'RUNNER_COPY_PROVENANCE.json'
+      - 'runners/full/**'
+      - 'runners/marker/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: core-native-c2-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  finite-native-campaigns:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      HARNESS_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      HARNESS_PINS_SHA256: dc1386e2aadd3d1e6acae8ec6ca99bd743cb551963591f83c79cd157a8412961
+    steps:
+      - name: Check out the separately reviewed harness revision
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: qualifier
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check out the fixed actual production source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: MontrealAI/AGIJobManager
+          ref: c2f72180d2f0d6ecd5b92d8e5197c5344be2c699
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check out the authentic six-argument historical source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: MontrealAI/AGIJobManager
+          ref: 6484d09afbba64d7de24cd18ae4dbd246caffd17
+          path: legacy
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22.23.2
+          cache: npm
+          cache-dependency-path: |
+            source/package-lock.json
+            source/hardhat/package-lock.json
+            legacy/package-lock.json
+            legacy/hardhat/package-lock.json
+      - name: Check the reviewed harness inventory before executing its files
+        run: |
+          python3 -I - <<'PY'
+          import hashlib, json, os, pathlib, stat
+          root = pathlib.Path('qualifier').resolve()
+          raw = (root / 'config/native-harness-pins.json').read_bytes()
+          assert hashlib.sha256(raw).hexdigest() == os.environ['HARNESS_PINS_SHA256']
+          pins = json.loads(raw)
+          assert set(pins) == {'schema', 'files'}
+          assert pins['schema'] == 'agijobmanager/native-harness-pins/v1'
+          for name, expected in pins['files'].items():
+              rel = pathlib.PurePosixPath(name)
+              assert not rel.is_absolute() and str(rel) == name and '..' not in rel.parts
+              path = root / name
+              assert path == path.resolve() and stat.S_ISREG(path.lstat().st_mode)
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == expected, name
+          print('REVIEWED_HARNESS_FILES_VERIFIED', len(pins['files']))
+          PY
+      - name: Install only the existing exact source and historical locks
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = v22.23.2
+          npm --prefix source ci
+          npm --prefix source/hardhat ci
+          npm --prefix legacy ci
+          npm --prefix legacy/hardhat ci
+          node source/scripts/security/patch-openzeppelin-compiler.cjs
+          node legacy/scripts/security/patch-openzeppelin-compiler.cjs
+      - name: Check original legacy policy without changing its semantics
+        run: |
+          python3 -I qualifier/scripts/qualification/select-source-profile.py \
+            --profile legacy-v114 --source-root "$(realpath legacy)" \
+            --source-commit 6484d09afbba64d7de24cd18ae4dbd246caffd17 \
+            --source-tree fb8d1443f705731cfa5dfc89b065b4ca1bcf2ab0
+      - name: Bind actual c2 to the separately reviewed finite source policy
+        run: |
+          python3 -I qualifier/scripts/qualification/select-source-profile.py \
+            --profile manager-explicit-governor-v1 --mode bound \
+            --source-root "$(realpath source)" \
+            --target-manifest "$(realpath qualifier/config/reviewed-c2-target.json)" \
+            --target-manifest-sha256 d56bcfd0a47c83f220a81ebd4de3b3e18b5c4952ecc10024a889b1e64f99999a \
+            --review-binding "$(realpath qualifier/config/c2-source-review-binding.json)" \
+            --review-binding-sha256 dd3c4500be119cd8802d24486ad4ea3073fb1fe7e7e1977bcd6762a6ab76fa2a
+      - name: Check routing, evidence wrapper and retained fork provenance adversarial cases
+        run: |
+          set -euo pipefail
+          python3 -I qualifier/scripts/qualification/test-select-source-profile.py
+          python3 -I qualifier/scripts/qualification/test-run-native-campaigns.py
+          python3 -I qualifier/scripts/qualification/test-native-workflow.py
+          python3 -I qualifier/scripts/qualification/test-verify-fork-provenance.py --source-root "$(realpath source)"
+          python3 -I qualifier/scripts/qualification/verify-fork-provenance.py \
+            --profile manager-explicit-governor-v1 --source-root "$(realpath source)"
+          node --max-old-space-size=384 --test qualifier/runners/full/hardhat/test/cleanup-race-oracle.test.cjs
+          node --max-old-space-size=384 --test qualifier/runners/marker/hardhat/test/marker-native-evidence.test.cjs
+      - name: Run the genuine source tooling suite and unchanged dependency parity groups
+        working-directory: source
+        run: |
+          set -euo pipefail
+          node --max-old-space-size=384 --test --test-concurrency=1 hardhat/test/*.test.cjs | tee "$RUNNER_TEMP/c2-tooling.tap"
+          python3 -I - <<'PY'
+          import os, pathlib, re
+          text = (pathlib.Path(os.environ['RUNNER_TEMP']) / 'c2-tooling.tap').read_text()
+          for key, expected in {'tests': 867, 'pass': 867, 'fail': 0, 'cancelled': 0, 'skipped': 0, 'todo': 0}.items():
+              values = re.findall(r'^# ' + key + r' (\d+)$', text, re.M)
+              assert values and int(values[-1]) == expected, (key, values)
+          print('ALL_867_SOURCE_TOOLING_CASES_PASSED_WITHOUT_SKIPS')
+          PY
+          python3 -I scripts/release/test-source-boundary-dispatch.py \
+            --object-store "$(pwd)" --dependency-root "$(realpath node_modules)"
+      - name: Compile the exact new and authentic historical constructors separately
+        run: |
+          set -euo pipefail
+          (cd source && node --max-old-space-size=2048 node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs compile)
+          (cd legacy && node --max-old-space-size=2048 node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs compile)
+      - name: Run full96 and marker30 campaigns serially in fresh external directories
+        run: |
+          python3 -I qualifier/scripts/qualification/run-native-campaigns.py \
+            --source-root "$(realpath source)" \
+            --legacy-source-root "$(realpath legacy)" \
+            --legacy-artifacts-root "$(realpath legacy/hardhat/artifacts)" \
+            --node "$(realpath "$(command -v node)")" \
+            --build-id reviewed-core-c2 \
+            --output "$(realpath "$RUNNER_TEMP")/manager-c2-native-campaigns" \
+            --pins "$(realpath qualifier/config/native-harness-pins.json)" \
+            --pins-sha256 "$HARNESS_PINS_SHA256" \
+            --expected-harness-commit "$HARNESS_COMMIT" \
+            --timeout-seconds 1800
+      - name: Retain only the wrapper-checked shareable evidence inventory
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: manager-c2-native-functional-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/manager-c2-native-campaigns/shareable/
+          if-no-files-found: warn
+          retention-days: 30
+# No real provider, fork, wallet/device access, signing secret, deployment,
+# configuration, unpause, package/release publication, or write permission.
+# Checkout is the explicit acquisition step. Every subsequent source observer
+# requires complete local objects and forbids lazy fetch or protocol fallback.
