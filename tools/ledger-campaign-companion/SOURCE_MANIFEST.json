@@ -240,8 +240,8 @@
     },
     {
       "path": "scripts/browser-regression-check.mjs",
-      "bytes": 1699,
-      "sha256": "fdd4b1875ad2ed7c6ff75ee95ba520ce4a5226cfeeea762ac687e8011fa55e1a"
+      "bytes": 2027,
+      "sha256": "19c3adf3fb11ba2123576d345e79eff57c7939d8acf0e49db92bef22f697e817"
     },
     {
       "path": "scripts/browser-toolchain/package-lock.json",
@@ -350,8 +350,8 @@
     },
     {
       "path": "test/bridge-independent-final-boundaries.test.mjs",
-      "bytes": 4844,
-      "sha256": "3c1e4e59062f5fccd36559ae12b1f9ff0b26a9761c5e8a7cf4eee777d05ce6c7"
+      "bytes": 4899,
+      "sha256": "93601fb594a7fccd4da07f65e2f98da8fd66503c028aa2182fb88f4fa496bde8"
     },
     {
       "path": "test/bridge-independent-http.test.mjs",

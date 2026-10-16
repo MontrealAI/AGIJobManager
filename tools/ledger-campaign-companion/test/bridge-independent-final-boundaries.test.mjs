@@ -20,8 +20,9 @@ test('production startup requires independently reviewed trust policy and reject
   for(const args of [flags,[...flags,'--trust-policy',path.join(dir,'policy.json'),'--reviewed-trust-policy-sha256','b'.repeat(64)]]){
     const result=spawnSync(process.execPath,[path.join(root,'bridge/start.mjs'),...args],{encoding:'utf8',env:cleanEnvironment()});
     assert.equal(result.status,1);assert.equal(result.stdout,'');
-    const nonMac=process.platform!=='darwin'&&args.length>flags.length;
-    assert.equal(result.stderr,(nonMac?'TRUSTED_MAC_SIGNING_HOST_REQUIRED\n':'')+'COMPANION_START_BLOCKED: preserve private state and review the exact campaign/source configuration.\n');
+    const validFlags=args.length>flags.length;
+    const expectedCode=validFlags?(process.platform==='darwin'?'ENOENT\n':'TRUSTED_MAC_SIGNING_HOST_REQUIRED\n'):'';
+    assert.equal(result.stderr,expectedCode+'COMPANION_START_BLOCKED: preserve private state and review the exact campaign/source configuration.\n');
     assert.deepEqual(await fs.readdir(dir),[]);
   }
 }));
