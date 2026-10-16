@@ -1,4 +1,4 @@
-name: Paused Core Exact-c2 Native Qualification
+name: Paused Core Exact-d371 Named-Root Qualification
 on:
   pull_request:
     paths:
@@ -12,10 +12,14 @@ on:
       - 'scripts/qualification/verify-fork-provenance.py'
       - 'scripts/qualification/test-verify-fork-provenance.py'
       - 'config/native-harness-pins.json'
-      - 'config/reviewed-c2-target.json'
-      - 'config/c2-source-review-binding.json'
+      - 'config/reviewed-d371-target.json'
+      - 'config/d371-source-review-binding.json'
       - 'config/c2-fork-provenance.json'
       - 'config/expected-campaigns.json'
+      - 'config/d371-campaign-expectations.json'
+      - 'config/hosted-container-profile.json'
+      - 'scripts/qualification/prove-container-profile.mjs'
+      - 'scripts/qualification/test-prove-container-profile.mjs'
       - 'README_NATIVE_QUALIFICATION.md'
       - 'RUNNER_COPY_PROVENANCE.json'
       - 'runners/full/**'
@@ -24,7 +28,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: core-native-c2-${{ github.event.pull_request.number || github.ref }}
+  group: core-native-d371-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 jobs:
   finite-native-campaigns:
@@ -33,7 +37,7 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       HARNESS_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
-      HARNESS_PINS_SHA256: a8bc2e9a97b21d02c4a89ab1c3b8480fe1e1cce9081a9e0767e481fb717272c6
+      HARNESS_PINS_SHA256: 96bb724f33ceccbf5863cba38688c1f6b0fc2e91ac54d348f5e418fd6bc36223
     steps:
       - name: Check out the separately reviewed harness revision
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -46,7 +50,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGIJobManager
-          ref: c2f72180d2f0d6ecd5b92d8e5197c5344be2c699
+          ref: d371d95cfcc44b9133cda4bba55304f727917f18
           path: source
           fetch-depth: 0
           persist-credentials: false
@@ -101,15 +105,15 @@ jobs:
             --profile legacy-v114 --source-root "$(realpath legacy)" \
             --source-commit 6484d09afbba64d7de24cd18ae4dbd246caffd17 \
             --source-tree fb8d1443f705731cfa5dfc89b065b4ca1bcf2ab0
-      - name: Bind actual c2 to the separately reviewed finite source policy
+      - name: Bind actual d371 to the separately reviewed finite source policy
         run: |
           python3 -I qualifier/scripts/qualification/select-source-profile.py \
             --profile manager-explicit-governor-v1 --mode bound \
             --source-root "$(realpath source)" \
-            --target-manifest "$(realpath qualifier/config/reviewed-c2-target.json)" \
-            --target-manifest-sha256 d56bcfd0a47c83f220a81ebd4de3b3e18b5c4952ecc10024a889b1e64f99999a \
-            --review-binding "$(realpath qualifier/config/c2-source-review-binding.json)" \
-            --review-binding-sha256 dd3c4500be119cd8802d24486ad4ea3073fb1fe7e7e1977bcd6762a6ab76fa2a
+            --target-manifest "$(realpath qualifier/config/reviewed-d371-target.json)" \
+            --target-manifest-sha256 bbc3d9bfae5ef7ae9e0c5b1ccb5327f02a212552220ca10c8c3052efc8e5b78e \
+            --review-binding "$(realpath qualifier/config/d371-source-review-binding.json)" \
+            --review-binding-sha256 d3a7cc0e8e10bbb6f0c9af87adce755e845a84be338f90566ef6247dbc5690e5
       - name: Check routing, evidence wrapper and retained fork provenance adversarial cases
         run: |
           set -euo pipefail
@@ -127,6 +131,15 @@ jobs:
           set -euo pipefail
           (cd source && node --max-old-space-size=2048 node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs compile)
           (cd legacy && node --max-old-space-size=2048 node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs compile)
+      - name: Prove the exact hosted compiler containers after separate compilation
+        run: |
+          set -euo pipefail
+          node --max-old-space-size=384 qualifier/scripts/qualification/test-prove-container-profile.mjs --profile-file "$(realpath qualifier/config/hosted-container-profile.json)" --profile hosted --source-root "$(realpath source)" --legacy-root "$(realpath legacy)" --dependency-root "$(realpath source/node_modules)"
+          node --max-old-space-size=384 qualifier/scripts/qualification/prove-container-profile.mjs --profile-file "$(realpath qualifier/config/hosted-container-profile.json)" --profile hosted --source-root "$(realpath source)" --legacy-root "$(realpath legacy)" --dependency-root "$(realpath source/node_modules)"
+      - name: Run the original named-root nine-CREATE regression
+        working-directory: source
+        run: |
+          node --max-old-space-size=384 node_modules/hardhat/dist/src/cli.js --config hardhat.core-session.config.mjs test mocha --no-compile hardhat/test/core-session.test.js --grep 'four distinct ENS roots'
       - name: Run the genuine source tooling suite and unchanged dependency parity groups
         working-directory: source
         run: |
@@ -149,8 +162,9 @@ jobs:
             --legacy-source-root "$(realpath legacy)" \
             --legacy-artifacts-root "$(realpath legacy/hardhat/artifacts)" \
             --node "$(realpath "$(command -v node)")" \
-            --build-id reviewed-core-c2 \
-            --output "$(realpath "$RUNNER_TEMP")/manager-c2-native-campaigns" \
+            --build-id reviewed-core-d371 \
+            --container-profile github-ubuntu-source-legacy-v1 \
+            --output "$(realpath "$RUNNER_TEMP")/manager-d371-native-campaigns" \
             --pins "$(realpath qualifier/config/native-harness-pins.json)" \
             --pins-sha256 "$HARNESS_PINS_SHA256" \
             --expected-harness-commit "$HARNESS_COMMIT" \
@@ -159,8 +173,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: manager-c2-native-functional-${{ github.event.pull_request.head.sha || github.sha }}
-          path: ${{ runner.temp }}/manager-c2-native-campaigns/shareable/
+          name: manager-d371-native-functional-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/manager-d371-native-campaigns/shareable/
           if-no-files-found: warn
           retention-days: 30
 # No real provider, fork, wallet/device access, signing secret, deployment,

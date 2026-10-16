@@ -5505,10 +5505,10 @@
     },
     "hardhat/scripts/core-creation-verifier.cjs": {
       "mode": "100644",
-      "sha256": "70813af70f6c589ee5468d74ab93457c3081b2aa2e614e49a9c00dc7fea1e10f",
+      "sha256": "477f4bed32b451063cdcf0cd28d03ba49d9b646b9dea05d213302787390cc7d3",
       "predecessorGitBlob": "3d4727445fbd4ca077afad0a8361c8139c48d16b",
       "predecessorSha256": "d77cfda282a08a9d8643c64755815b379b8933e2cab346b88ad4da5eac4e48fc",
-      "reviewReason": "Revalidate observed source/catalog/artifact identity after RPC awaits and before returning session transitions; add exact async drift regressions."
+      "reviewReason": "Revalidate observed source/catalog/artifact identity after RPC awaits and before returning session transitions; add exact async drift regressions. Correct only agent/Alpha-club expected constructor tuple indices to the unchanged Solidity order; no ENS eligibility or artifact change."
     },
     "hardhat/scripts/core-session.cjs": {
       "mode": "100644",
@@ -5799,10 +5799,10 @@
     },
     "hardhat/test/core-session.test.js": {
       "mode": "100644",
-      "sha256": "b0d11283b5a4923564ea52eebc0f4074be27244cb54673dcc50960006014221d",
+      "sha256": "ea79c9291cc6c10d9cc64ed55ad003c02e82ecf6749839be6a9f02aaac525a8f",
       "predecessorGitBlob": "125e7165dc379c0a31e3edfead51004c1be26f90",
       "predecessorSha256": "92e5204e6f25ba9eed7e61aa5efb47ad07ac5565b07b417673fcfee1335ab0c8",
-      "reviewReason": "Reconcile exact PR1587 private-state boundaries while preserving async source/catalog/artifact guards; no historical evidence promotion."
+      "reviewReason": "Reconcile exact PR1587 private-state boundaries while preserving async source/catalog/artifact guards; no historical evidence promotion. Add genuine nine-CREATE regression with the exact four original ENS namehashes, each wrong-root and swapped-root rejection, paused explicit governor readback."
     },
     "hardhat/test/creator-transaction.test.cjs": {
       "mode": "100644",

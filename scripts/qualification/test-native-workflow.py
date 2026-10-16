@@ -13,9 +13,11 @@ WORKFLOW = ROOT / '.github/workflows/core-native-qualification.yml'
 DEPENDENCY_STEPS = [
     'Install only the existing exact source and historical locks',
     'Check original legacy policy without changing its semantics',
-    'Bind actual c2 to the separately reviewed finite source policy',
+    'Bind actual d371 to the separately reviewed finite source policy',
     'Check routing, evidence wrapper and retained fork provenance adversarial cases',
     'Compile the exact new and authentic historical constructors separately',
+    'Prove the exact hosted compiler containers after separate compilation',
+    'Run the original named-root nine-CREATE regression',
     'Run the genuine source tooling suite and unchanged dependency parity groups',
     'Run full96 and marker30 campaigns serially in fresh external directories',
 ]
@@ -53,7 +55,7 @@ class WorkflowInvariants(unittest.TestCase):
         self.assertEqual(self.text.count('persist-credentials: false'), 3)
         for root in ('source', 'legacy', 'qualifier'):
             self.assertIn('path: ' + root + '\n', self.text)
-        self.assertIn('ref: c2f72180d2f0d6ecd5b92d8e5197c5344be2c699', self.text)
+        self.assertIn('ref: d371d95cfcc44b9133cda4bba55304f727917f18', self.text)
         self.assertIn('ref: 6484d09afbba64d7de24cd18ae4dbd246caffd17', self.text)
         self.assertIn('--expected-harness-commit "$HARNESS_COMMIT"', self.text)
 
@@ -79,6 +81,13 @@ class WorkflowInvariants(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'precede artifact consumers'):
             require_dependency_order(reordered)
 
+    def test_exact_container_profile_is_explicit_and_proved_after_compilation(self):
+        self.assertIn('--container-profile github-ubuntu-source-legacy-v1', self.text)
+        self.assertIn('test-prove-container-profile.mjs --profile-file', self.text)
+        self.assertIn('prove-container-profile.mjs --profile-file', self.text)
+        self.assertIn('--profile hosted --source-root', self.text)
+        require_dependency_order(self.text)
+
     def test_original_and_explicit_profiles_are_both_selected(self):
         self.assertIn('--profile legacy-v114', self.text)
         self.assertIn('--profile manager-explicit-governor-v1 --mode bound', self.text)
@@ -93,6 +102,22 @@ class WorkflowInvariants(unittest.TestCase):
         self.assertIn("createRequire(path.join(sourceRoot, 'package.json'))", test)
         self.assertNotIn('/tmp/manager-', test)
 
+    def test_original_c2_expectations_and_provenance_remain_exact(self):
+        original = ROOT / 'config/expected-campaigns.json'
+        self.assertEqual(hashlib.sha256(original.read_bytes()).hexdigest(), '046aed913f8a729fc012ce5ee606d7d335c3dd57dc7d81a249752d89fd764772')
+        self.assertEqual(hashlib.sha256((ROOT / 'config/c2-fork-provenance.json').read_bytes()).hexdigest(), '309cfe866cb55a476cac7cb40143203c51c0b40f4bbe2f3b1485adc3455a2d0a')
+        self.assertEqual(hashlib.sha256((ROOT / 'config/reviewed-c2-target.json').read_bytes()).hexdigest(), 'd56bcfd0a47c83f220a81ebd4de3b3e18b5c4952ecc10024a889b1e64f99999a')
+        self.assertEqual(hashlib.sha256((ROOT / 'config/c2-source-review-binding.json').read_bytes()).hexdigest(), 'dd3c4500be119cd8802d24486ad4ea3073fb1fe7e7e1977bcd6762a6ab76fa2a')
+
+    def test_all_native_creations_use_four_original_named_roots(self):
+        expression = "rootNodes: ['club.agi.eth', 'agent.agi.eth', 'alpha.club.agi.eth', 'alpha.agent.agi.eth'].map(E.namehash)"
+        for suite in ('full', 'marker'):
+            script = (ROOT / 'runners' / suite / 'scripts/qualification/core-session-native.mjs').read_text()
+            self.assertIn(expression, script)
+            self.assertNotIn('rootNodes: Array(4).fill(E.ZeroHash)', script)
+        self.assertIn("--grep 'four distinct ENS roots'", self.text)
+        self.assertIn('--config hardhat.core-session.config.mjs test mocha --no-compile', self.text)
+
     def test_exact_tooling_suite_and_no_native_subset(self):
         self.assertIn('--test-concurrency=1 hardhat/test/*.test.cjs', self.text)
         self.assertIn("{'tests': 867, 'pass': 867, 'fail': 0, 'cancelled': 0, 'skipped': 0, 'todo': 0}", self.text)
@@ -101,10 +126,10 @@ class WorkflowInvariants(unittest.TestCase):
         self.assertNotIn('--suite source', self.text)
 
     def test_fresh_external_output_and_narrow_always_upload(self):
-        self.assertIn('--output "$(realpath "$RUNNER_TEMP")/manager-c2-native-campaigns"', self.text)
+        self.assertIn('--output "$(realpath "$RUNNER_TEMP")/manager-d371-native-campaigns"', self.text)
         self.assertIn('if: always()', self.text)
         self.assertEqual(re.findall(r'^          path: (\$\{\{ runner.temp.*)$', self.text, re.M),
-                         ['${{ runner.temp }}/manager-c2-native-campaigns/shareable/'])
+                         ['${{ runner.temp }}/manager-d371-native-campaigns/shareable/'])
         self.assertNotIn('path: /tmp', self.text)
         self.assertNotIn('path: source/', self.text)
 

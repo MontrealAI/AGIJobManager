@@ -84,7 +84,7 @@ function fileInventory(directory, relative = '') {
 function initialConfig(E, P, creator, nonce, block) {
   return { schema: 'manager-core-creation-config-v1', chainId: 1, creator, governor: P.GOVERNOR, governorAcknowledgement: P.GOVERNOR,
     nonce, block, expiresAfterBlock: block.number + 2048,
-    constructorArgs: { usdcTokenAddress: USDC, baseIpfsUrl: 'ipfs://native-disposable/', ensConfig: [REGISTRY, E.ZeroAddress], rootNodes: Array(4).fill(E.ZeroHash), merkleRoots: Array(2).fill(E.ZeroHash), settlementWallets: ['0x3333333333333333333333333333333333333333', '0x4444444444444444444444444444444444444444'], initialGovernor: P.GOVERNOR },
+    constructorArgs: { usdcTokenAddress: USDC, baseIpfsUrl: 'ipfs://native-disposable/', ensConfig: [REGISTRY, E.ZeroAddress], rootNodes: ['club.agi.eth', 'agent.agi.eth', 'alpha.club.agi.eth', 'alpha.agent.agi.eth'].map(E.namehash), merkleRoots: Array(2).fill(E.ZeroHash), settlementWallets: ['0x3333333333333333333333333333333333333333', '0x4444444444444444444444444444444444444444'], initialGovernor: P.GOVERNOR },
     creatorPolicy: { mode: 'empty-eoa-direct-create.v1' }, qualificationEvidence: null,
     envelopes: P.NAMES.map(name => ({ gasLimit: name === 'AGIJobManager' ? '8000000' : '1200000', maxFeePerGas: '10000000000', maxPriorityFeePerGas: '1000000000' })), maximumTotalFeeWei: '176000000000000000' };
 }

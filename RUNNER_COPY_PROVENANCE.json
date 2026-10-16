@@ -1,9 +1,11 @@
 {
-  "scope": "Separate external runners; one explicitly inventoried portable test dependency-root correction, no production edit",
+  "scope": "Separate external runners; preserve portable dependency-root correction and change only rootNodes fixture to the four original named roots for actual d371 qualification.",
   "files": {
     "runners/full/scripts/qualification/core-session-native.mjs": {
-      "sha256": "0814f181302b387c705d75528b4c76e8061fe75701396966915e807071eafe52",
-      "original": "/tmp/manager-full-native-guard-oracle-20261016/scripts/qualification/core-session-native.mjs"
+      "sha256": "d8606c7a2f3400718f4d9848e04d9990ba51033613572fe0844f8c9c48d786b7",
+      "original": "/tmp/manager-full-native-guard-oracle-20261016/scripts/qualification/core-session-native.mjs",
+      "beforeNamedRootsSha256": "0814f181302b387c705d75528b4c76e8061fe75701396966915e807071eafe52",
+      "change": "Replace four zero roots with the original distinct namehash tuple; no command/case omission."
     },
     "runners/full/scripts/qualification/prepare-core-catalog.mjs": {
       "sha256": "33047e22970a517d9c4b5cce6f0985271f10b0542dc052e9ee98f798701f0dcd",
@@ -34,8 +36,10 @@
       "original": "/tmp/manager-full-native-guard-oracle-20261016/docs/qualification/CORE_SESSION_NATIVE.md"
     },
     "runners/marker/scripts/qualification/core-session-native.mjs": {
-      "sha256": "bdce95313b1d264f22ba890513b29d0ec871632e58cc60b64617b31f68e50bce",
-      "original": "/tmp/manager-marker-native-harness-r2-20261016/scripts/qualification/core-session-native.mjs"
+      "sha256": "29b693cb0c58d5a7d892b76d5623991c7288c8479b8d0ac51359047911f3c9b2",
+      "original": "/tmp/manager-marker-native-harness-r2-20261016/scripts/qualification/core-session-native.mjs",
+      "beforeNamedRootsSha256": "bdce95313b1d264f22ba890513b29d0ec871632e58cc60b64617b31f68e50bce",
+      "change": "Replace four zero roots with the original distinct namehash tuple; no command/case omission."
     },
     "runners/marker/scripts/qualification/prepare-core-catalog.mjs": {
       "sha256": "33047e22970a517d9c4b5cce6f0985271f10b0542dc052e9ee98f798701f0dcd",

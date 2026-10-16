@@ -57,7 +57,7 @@ def complete_fixture(base):
     runner = base / 'synthetic-runner'; runner.mkdir()
     node = put(base, 'synthetic-node', b'not executable; tests never launch this file\n')
     node_sha = M.sha(node.read_bytes())
-    target = json.loads((HARNESS / 'config/reviewed-c2-target.json').read_text())
+    target = json.loads((HARNESS / 'config/reviewed-d371-target.json').read_text())
     identity = {'commit': M.TARGET, 'tree': M.TREE, 'rootLockSha256': target['lockSha256']['package-lock.json'], 'hardhatLockSha256': target['lockSha256']['hardhat/package-lock.json']}
     source_file = put(source, 'contracts/fixture.txt', b'SYNTHETIC SOURCE ONLY\n')
     sources = {'synthetic/unit-' + str(i): {'path': str(source_file), 'sha256': M.sha(source_file.read_bytes())} for i in range(91)}
@@ -142,6 +142,39 @@ class SyntheticBoundaries(unittest.TestCase):
             fn()
         if pattern:
             self.assertIn(pattern, str(caught.exception))
+
+    def test_hosted_profile_changes_only_exact_thirteen_container_fields(self):
+        original = json.loads((HARNESS / 'config/d371-campaign-expectations.json').read_text())['campaigns']
+        before = copy.deepcopy(original)
+        hosted = M.select_container_profile(HARNESS, original, M.HOSTED_CONTAINER_PROFILE)
+        self.assertEqual(original, before)
+        fixed = json.loads((HARNESS / 'config/hosted-container-profile.json').read_text())
+        self.assertEqual(len(fixed['containers']), 13)
+        restored = copy.deepcopy(hosted)
+        for row in fixed['containers']:
+            targets = [restored[x]['build'] for x in ('full', 'marker')] if row['group'] == 'new' else [restored['full']['historicalCatalog']]
+            for target in targets:
+                if row['name'] in ('input', 'output'):
+                    self.assertEqual(target[row['name'] + 'Sha256'], row['hostedSha256'])
+                    target[row['name'] + 'Sha256'] = row['originalSha256']
+                    target['compilerBuildInfoId'] = row['originalId']
+                else:
+                    self.assertEqual(target['artifactHashes'][row['name']]['artifactSha256'], row['hostedSha256'])
+                    target['artifactHashes'][row['name']]['artifactSha256'] = row['originalSha256']
+        self.assertEqual(restored, before)
+        self.assertIs(M.select_container_profile(HARNESS, original, M.LOCAL_CONTAINER_PROFILE), original)
+
+    def test_unknown_or_mutated_container_profile_and_baseline_fail_closed(self):
+        original = json.loads((HARNESS / 'config/d371-campaign-expectations.json').read_text())['campaigns']
+        self.assert_rejected(lambda: M.select_container_profile(HARNESS, original, 'discover'), 'Unknown')
+        temp = self.base / 'profile'; temp.mkdir()
+        config = json.loads((HARNESS / 'config/hosted-container-profile.json').read_text())
+        config['unknown'] = True
+        put(temp, 'config/hosted-container-profile.json', config)
+        self.assert_rejected(lambda: M.select_container_profile(temp, original, M.HOSTED_CONTAINER_PROFILE), 'profile bytes changed')
+        put(temp, 'config/hosted-container-profile.json', (HARNESS / 'config/hosted-container-profile.json').read_bytes())
+        put(temp, 'config/d371-campaign-expectations.json', b'{}')
+        self.assert_rejected(lambda: M.select_container_profile(temp, original, M.HOSTED_CONTAINER_PROFILE), 'baseline changed')
 
     def test_safe_allowlist_copy_preserves_raw_and_excludes_private(self):
         raw = self.base / 'raw'; raw.mkdir(); simple_report(raw)
@@ -281,7 +314,7 @@ class SyntheticBoundaries(unittest.TestCase):
         changes = {
             'same-tree-local25379': lambda r: r['source'].update(commit='25379ef1b0f484fea6bf559bf4a0b41e43a2e699'),
             'wrong-tree': lambda r: r['source'].update(tree='0' * 40),
-            'wrong-parents': lambda r: r.update(parents=list(reversed(M.PARENTS))),
+            'wrong-parents': lambda r: r.update(parents=['0' * 40]),
             'wrong-harness': lambda r: r.update(harnessFiles={'changed': '0' * 64}),
             'wrong-count': lambda r: r['counts'].update(commands=99),
             'numeric-boolean-count': lambda r: r['counts'].update(failed=False),
@@ -323,7 +356,7 @@ class SyntheticBoundaries(unittest.TestCase):
         self.assert_rejected(lambda: M.validate_report(raw, 'marker', expected, source, runner, node, 'synthetic'), 'native proof')
 
     def test_archived_catalog_identity_expected_in_frozen_config(self):
-        config = json.loads((HARNESS / 'config/expected-campaigns.json').read_text())
+        config = json.loads((HARNESS / 'config/d371-campaign-expectations.json').read_text())
         full = config['campaigns']['full']
         self.assertEqual(full['historicalCatalog']['source']['commit'], M.LEGACY)
         self.assertEqual(full['historicalCatalog']['source']['tree'], M.LEGACY_TREE)

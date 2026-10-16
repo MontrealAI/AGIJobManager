@@ -1,4 +1,4 @@
-# Exact-c2 paused-core functional qualification
+# Exact-d371 named-root paused-core functional qualification
 
 This is a separately reviewed test harness. It changes no production contract,
 compiler, artifact, source manifest, old v114 gate, historical report, package
@@ -7,10 +7,9 @@ identity, fee recipient, treasury, ENS custody, or deployed application.
 ## Contract target
 
 The only production target is commit
-`c2f72180d2f0d6ecd5b92d8e5197c5344be2c699`, tree
-`8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f`, with ordered parents
-`3c974ad3cb1d828e5c89464fd8424d8ae853d9dd` and
-`eb6f725e0b40ac81e50a374304e54a5ff6859fcf`.
+`d371d95cfcc44b9133cda4bba55304f727917f18`, tree
+`93faf6e9a6875026c1eb9bc2f0f9bdada308d296`, sole parent
+`c2f72180d2f0d6ecd5b92d8e5197c5344be2c699`.
 
 The new Manager has explicit initial governor constructor ownership, an additive
 URI-mode getter and unchanged storage. The complete core is eight linked library
@@ -84,8 +83,9 @@ hashes. The new receipt identifies them without rewriting their bytes.
 
 ## Boundaries still open
 
-The earlier local child `25379ef1...` has the same tree and passed full96 and
-marker30; it has a different commit and parent list. This wrapper deliberately
+The earlier local child `25379ef1...` has historical c2 tree `8b0d8816...`,
+not corrected d371 tree `93faf6e9...`, and passed full96 and marker30;
+its commit and parent list differ from both remote checkpoints. This wrapper deliberately
 rejects it as an actual-c2 run. Its original failures and corrected results stay
 separate. This new wrapper/workflow has not yet run at a real hosted harness
 checkpoint when prepared locally.
@@ -103,3 +103,11 @@ Optional ENS/router/metadata, new governor configuration, activation, website an
 release/package work are outside this minimum paused-core slice. Slither's
 source-binding stop is only reported; its 122 raw results are not a vulnerability
 disposition. External audit and Sepolia are owner-accepted omissions, not passes.
+
+## Exact hosted container profile and corrected named-root scope
+
+The actual c2 run38946564930 passed full96/96 but its wrapper stopped before marker because Hardhat's build-info ID includes the absolute configured solc path. The retained local expected-campaigns.json bytes remain unchanged. The explicit github-ubuntu-source-legacy-v1 profile checks thirteen exact hosted raw SHA256 values and both exact original and hosted IDs. A dependency-free transcription of the pinned Hardhat3.17 algorithm reproduces all four IDs from the pinned source/legacy inputs and exact compiler paths; one-ID reverse substitution must reproduce every original raw SHA256. Compiler settings, input/output, ABI, initcode/runtime, links/immutables and every unknown-field mutation still fail closed. No generic normalization or fallback exists. Hosted proof runs after separate compiles and before every campaign and final acceptance.
+
+The source target d371 corrects only the agent/Alpha-club verifier indices, with unchanged Solidity/artifacts. Before the native campaigns the workflow executes the actual named-root nine-CREATE regression. Both full and marker configurations use the four original namehashes in constructor order: club.agi.eth, agent.agi.eth, alpha.club.agi.eth, alpha.agent.agi.eth. Original c2 zero-root campaign and failed-wrapper reports remain historical; no earlier execution is relabeled. The retained expected-campaigns.json and c2 target/binding/provenance files remain byte-identical. New d371-campaign-expectations.json is explicitly prospective: only exact runner/selector identities change from the old case/command schemas. A successful actual d371 run is required; no asserted result is synthesized.
+
+The c2 compatibility provenance command retains its original receipt source identity. It compares only its exact listed input hashes against the separately bound current checkout, reports both identities, and never claims a new fork execution. It does not clear named-root, signer or operator qualification.

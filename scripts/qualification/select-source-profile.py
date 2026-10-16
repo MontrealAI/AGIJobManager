@@ -15,7 +15,7 @@ import subprocess
 import sys
 
 PROFILE = 'manager-explicit-governor-v1'
-REVIEWED_TARGET_MANIFEST_SHA256 = 'd56bcfd0a47c83f220a81ebd4de3b3e18b5c4952ecc10024a889b1e64f99999a'
+REVIEWED_TARGET_MANIFEST_SHA256 = 'bbc3d9bfae5ef7ae9e0c5b1ccb5327f02a212552220ca10c8c3052efc8e5b78e'
 LEGACY_COMMIT = '6484d09afbba64d7de24cd18ae4dbd246caffd17'
 LEGACY_TREE = 'fb8d1443f705731cfa5dfc89b065b4ca1bcf2ab0'
 LEGACY = 'scripts/release/check-v114-boundaries.py'
@@ -176,7 +176,7 @@ def load_reviewed_target(args, root):
             'Target manifest scope differs')
     require(all(isinstance(target[k], str) and re.fullmatch('[0-9a-f]{40}', target[k])
                 for k in ('sourceCommit', 'sourceTree')) and
-            isinstance(target['sourceParents'], list) and len(target['sourceParents']) == 2 and
+            isinstance(target['sourceParents'], list) and len(target['sourceParents']) == 1 and
             all(isinstance(p, str) and re.fullmatch('[0-9a-f]{40}', p) for p in target['sourceParents']),
             'Complete target commit/tree/ordered parents required')
     require(set(target['lockSha256']) == LOCK_PATHS, 'Target lock inventory differs')

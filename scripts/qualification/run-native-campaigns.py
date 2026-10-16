@@ -18,14 +18,17 @@ import sys
 import time
 
 sys.dont_write_bytecode = True
-TARGET = 'c2f72180d2f0d6ecd5b92d8e5197c5344be2c699'
-TREE = '8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f'
-PARENTS = ['3c974ad3cb1d828e5c89464fd8424d8ae853d9dd', 'eb6f725e0b40ac81e50a374304e54a5ff6859fcf']
+TARGET = 'd371d95cfcc44b9133cda4bba55304f727917f18'
+TREE = '93faf6e9a6875026c1eb9bc2f0f9bdada308d296'
+PARENTS = ['c2f72180d2f0d6ecd5b92d8e5197c5344be2c699']
 LEGACY = '6484d09afbba64d7de24cd18ae4dbd246caffd17'
 LEGACY_TREE = 'fb8d1443f705731cfa5dfc89b065b4ca1bcf2ab0'
-TARGET_SHA = 'd56bcfd0a47c83f220a81ebd4de3b3e18b5c4952ecc10024a889b1e64f99999a'
-BINDING_SHA = 'dd3c4500be119cd8802d24486ad4ea3073fb1fe7e7e1977bcd6762a6ab76fa2a'
+TARGET_SHA = 'bbc3d9bfae5ef7ae9e0c5b1ccb5327f02a212552220ca10c8c3052efc8e5b78e'
+BINDING_SHA = 'd3a7cc0e8e10bbb6f0c9af87adce755e845a84be338f90566ef6247dbc5690e5'
 PROFILE = 'manager-explicit-governor-v1'
+LOCAL_CONTAINER_PROFILE = 'retained-local-v1'
+HOSTED_CONTAINER_PROFILE = 'github-ubuntu-source-legacy-v1'
+CONTAINER_PROFILE_SHA = '56c570848ae28ba1afc06334c3ca467e860efd0e6d46efddd4bb753cd7daf65f'
 HEX64 = re.compile(r'^[0-9a-f]{64}$')
 HEX40 = re.compile(r'^[0-9a-f]{40}$')
 TXHASH = re.compile(r'^0x[0-9a-fA-F]{64}$')
@@ -35,7 +38,7 @@ CORE_ERROR = 'MANAGER_CORE_COMMAND_FAILED: Stop and preserve private inputs and 
 EXPORT_ERROR = 'MANAGER_VERIFICATION_EXPORT_FAILED: Stop and preserve private inputs and any incomplete export. No explorer acceptance or activation was established.'
 COMMAND_FIELDS = ('label', 'exitCode', 'expectedFailure', 'failureAfterSubmission', 'privateMaterialExcluded', 'failureBoundary', 'boundary', 'relayHttpSubmissions', 'scriptSha256', 'stderr')
 CASE_FIELDS = ('name', 'commands', 'receipts', 'state', 'configurationTransactions', 'activationTransactions')
-BASE_PINS = {'scripts/qualification/run-native-campaigns.py', 'scripts/qualification/select-source-profile.py', 'config/expected-campaigns.json', 'config/reviewed-c2-target.json', 'config/c2-source-review-binding.json', 'scripts/qualification/test-run-native-campaigns.py'}
+BASE_PINS = {'config/hosted-container-profile.json', 'scripts/qualification/prove-container-profile.mjs', 'scripts/qualification/test-prove-container-profile.mjs', 'scripts/qualification/run-native-campaigns.py', 'scripts/qualification/select-source-profile.py', 'config/d371-campaign-expectations.json', 'config/reviewed-d371-target.json', 'config/d371-source-review-binding.json', 'scripts/qualification/test-run-native-campaigns.py'}
 SCOPE = 'FINITE_DISPOSABLE_LOCAL_NATIVE_FUNCTIONAL_CAMPAIGNS_ONLY'
 
 
@@ -199,12 +202,12 @@ def verify_pins(root, pins_path, digest):
     for name, expected in pins['files'].items():
         require(isinstance(expected, str) and HEX64.fullmatch(expected), 'Invalid file digest')
         require(sha(read_regular(root, name)) == expected, 'Harness file pin mismatch: ' + name)
-    expected = strict_json(read_regular(root, 'config/expected-campaigns.json'))
+    expected = strict_json(read_regular(root, 'config/d371-campaign-expectations.json'))
     require(expected.get('schema') == 'agijobmanager/native-campaign-expectations/v1' and
             set(expected.get('campaigns', {})) == {'full', 'marker'}, 'Unexpected campaign expectations')
     require(pins['files']['scripts/qualification/select-source-profile.py'] == expected.get('selectorSha256'), 'Selector reviewed pin mismatch')
-    require(sha(read_regular(root, 'config/reviewed-c2-target.json')) == TARGET_SHA and
-            sha(read_regular(root, 'config/c2-source-review-binding.json')) == BINDING_SHA, 'Reviewed source pin mismatch')
+    require(sha(read_regular(root, 'config/reviewed-d371-target.json')) == TARGET_SHA and
+            sha(read_regular(root, 'config/d371-source-review-binding.json')) == BINDING_SHA, 'Reviewed source pin mismatch')
     for suite, oracle in expected['campaigns'].items():
         runner_root = root / 'runners' / suite
         actual = set()
@@ -218,6 +221,47 @@ def verify_pins(root, pins_path, digest):
         for name, digest in oracle['harnessFiles'].items():
             require(pins['files'].get('runners/' + suite + '/' + name) == digest, 'Runner oracle pin mismatch')
     return pins['files'], expected['campaigns']
+
+
+def select_container_profile(root, expectations, profile):
+    """Two exact reviewed containers, never normalization or discovery/fallback."""
+    require(profile in (LOCAL_CONTAINER_PROFILE, HOSTED_CONTAINER_PROFILE), 'Unknown exact container profile')
+    if profile == LOCAL_CONTAINER_PROFILE:
+        return expectations
+    raw = read_regular(root, 'config/hosted-container-profile.json')
+    require(sha(raw) == CONTAINER_PROFILE_SHA, 'Exact hosted container profile bytes changed')
+    fixed = strict_json(raw)
+    require(fixed['profile'] == profile and fixed['sourceCommit'] == TARGET and fixed['sourceTree'] == TREE,
+            'Hosted container source mismatch')
+    require(sha(read_regular(root, 'config/d371-campaign-expectations.json')) == fixed['baselineExpectationsSha256'],
+            'Original local campaign baseline changed')
+    selected = strict_json(json.dumps(expectations))
+    for row in fixed['containers']:
+        targets = [selected[suite]['build'] for suite in ('full', 'marker')] if row['group'] == 'new' else [selected['full']['historicalCatalog']]
+        for target in targets:
+            if row['name'] in ('input', 'output'):
+                field = row['name'] + 'Sha256'
+                require(target[field] == row['originalSha256'], 'Original compiler container mismatch')
+                target[field] = row['hostedSha256']
+                require(target['compilerBuildInfoId'] in (row['originalId'], row['hostedId']), 'Original compiler ID mismatch')
+                target['compilerBuildInfoId'] = row['hostedId']
+            else:
+                target = target['artifactHashes'][row['name']]
+                require(target['artifactSha256'] == row['originalSha256'], 'Original artifact container mismatch')
+                target['artifactSha256'] = row['hostedSha256']
+    return selected
+
+
+def prove_container_profile(harness, source, legacy, node, profile, env, logs, label, launcher):
+    if profile == LOCAL_CONTAINER_PROFILE:
+        return None
+    require(profile == HOSTED_CONTAINER_PROFILE, 'Unknown exact container profile')
+    command = [str(node), '--max-old-space-size=384', str(harness / 'scripts/qualification/prove-container-profile.mjs'),
+        '--profile-file', str(harness / 'config/hosted-container-profile.json'), '--profile', 'hosted',
+        '--source-root', str(source), '--legacy-root', str(legacy), '--dependency-root', str(source / 'node_modules')]
+    result = launcher(command, harness, env, logs / label, 120)
+    require(result['exitCode'] == 0 and result['timedOut'] is False, 'Exact hosted container derivation failed')
+    return result
 
 
 def launch(command, cwd, env, log_base, timeout):
@@ -243,9 +287,9 @@ def launch(command, cwd, env, log_base, timeout):
 def source_gate(root, harness, env, logs, label, launcher=launch):
     command = [sys.executable, '-I', str(harness / 'scripts/qualification/select-source-profile.py'),
         '--profile', PROFILE, '--mode', 'bound', '--source-root', str(root),
-        '--target-manifest', str(harness / 'config/reviewed-c2-target.json'),
+        '--target-manifest', str(harness / 'config/reviewed-d371-target.json'),
         '--target-manifest-sha256', TARGET_SHA,
-        '--review-binding', str(harness / 'config/c2-source-review-binding.json'),
+        '--review-binding', str(harness / 'config/d371-source-review-binding.json'),
         '--review-binding-sha256', BINDING_SHA]
     result = launcher(command, harness, env, logs / label, 900)
     require(result['exitCode'] == 0 and result['timedOut'] is False, 'Bound source selector failed')
@@ -413,7 +457,7 @@ def validate_report(root, suite, expected, source, runner, node, build_id):
     require(not (root / 'INCOMPLETE').exists() and not (root / 'INCOMPLETE').is_symlink(), 'Incomplete runner directory')
     require(report.get('status') == 'PASS_IMPLEMENTED_CASES' and report.get('suite') == suite and
             report.get('failures') == [], 'Campaign failed or incomplete')
-    target = strict_json(read_regular(Path(__file__).resolve().parents[2], 'config/reviewed-c2-target.json'))
+    target = strict_json(read_regular(Path(__file__).resolve().parents[2], 'config/reviewed-d371-target.json'))
     identity = {'commit': TARGET, 'tree': TREE,
                 'rootLockSha256': target['lockSha256']['package-lock.json'],
                 'hardhatLockSha256': target['lockSha256']['hardhat/package-lock.json']}
@@ -565,6 +609,8 @@ def run(args, launcher=launch):
     require(HEX40.fullmatch(args.expected_harness_commit) and args.expected_harness_commit != TARGET, 'Separate explicit harness commit required')
     require(re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,127}', args.build_id), 'Invalid build ID')
     pins, expectations = verify_pins(harness, pins_path, args.pins_sha256)
+    container_profile = getattr(args, 'container_profile', LOCAL_CONTAINER_PROFILE)
+    expectations = select_container_profile(harness, expectations, container_profile)
     output = fresh_output(args.output, [source, legacy, harness])
     logs = output / 'launcher-logs'; logs.mkdir(mode=0o700)
     home = output / 'private-home'; home.mkdir(mode=0o700)
@@ -572,6 +618,7 @@ def run(args, launcher=launch):
     env = child_environment(node, home)
     summary = {'schema': 'agijobmanager/native-campaign-result/v1', 'status': 'INCOMPLETE', 'scope': SCOPE,
         'source': {'commit': TARGET, 'tree': TREE, 'parents': PARENTS}, 'harnessPinsSha256': args.pins_sha256,
+        'containerProfile': container_profile,
         'acceptanceComplete': False, 'nativeCLIQualified': False, 'functionalCampaignsComplete': False,
         'configurationAuthorized': False, 'activationAuthorized': False, 'campaigns': [], 'sourceGates': [],
         'claimsExcluded': ['production/provider/wallet or physical Ledger qualification', 'independent no-invocation security evidence',
@@ -590,6 +637,7 @@ def run(args, launcher=launch):
             observe_git(harness, env, args.expected_harness_commit)
             observe_git(source, env, TARGET, TREE, PARENTS)
             summary['sourceGates'].append(source_gate(source, harness, env, logs, 'before-' + suite, launcher))
+            prove_container_profile(harness, source, legacy, node, container_profile, env, logs, 'containers-before-' + suite, launcher)
             current = suite
             runner = harness / 'runners' / suite
             command = [str(node), '--max-old-space-size=384', str(runner / 'scripts/qualification/core-session-native.mjs'),
@@ -613,6 +661,7 @@ def run(args, launcher=launch):
         verify_pins(harness, pins_path, args.pins_sha256)
         observe_git(harness, env, args.expected_harness_commit)
         observe_git(source, env, TARGET, TREE, PARENTS)
+        prove_container_profile(harness, source, legacy, node, container_profile, env, logs, 'containers-final', launcher)
         for suite in ('full', 'marker'):
             validate_report(output / suite, suite, expectations[suite], source, harness / 'runners' / suite, node, args.build_id)
             _, raw_inventory = evidence_inventory(output / suite)
@@ -667,6 +716,7 @@ def publish_success_summary(output, summary, pins):
     safe = {key: summary[key] for key in ('schema', 'status', 'scope', 'source', 'harness',
         'harnessPinsSha256', 'nodeExecutableSha256', 'acceptanceComplete', 'nativeCLIQualified',
         'functionalCampaignsComplete', 'configurationAuthorized', 'activationAuthorized', 'claimsExcluded')}
+    safe['containerProfile'] = summary.get('containerProfile', LOCAL_CONTAINER_PROFILE)
     safe['harnessFiles'] = pins
     safe['sourceGates'] = summary['sourceGates']
     safe['campaigns'] = []
@@ -691,6 +741,7 @@ def parse_args(argv):
     for name in ('source-root', 'legacy-source-root', 'legacy-artifacts-root', 'node', 'build-id', 'output', 'pins', 'pins-sha256', 'expected-harness-commit'):
         parser.add_argument('--' + name, required=True)
     parser.add_argument('--timeout-seconds', type=int, default=10800)
+    parser.add_argument('--container-profile', choices=(LOCAL_CONTAINER_PROFILE, HOSTED_CONTAINER_PROFILE), default=LOCAL_CONTAINER_PROFILE)
     seen = set()
     for value in argv:
         if value.startswith('--'):

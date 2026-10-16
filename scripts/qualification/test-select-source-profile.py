@@ -20,6 +20,7 @@ import types
 import unittest
 from unittest import mock
 
+sys.dont_write_bytecode = True
 SCRIPT = pathlib.Path(__file__).resolve().with_name('select-source-profile.py')
 SPEC = importlib.util.spec_from_file_location('reviewed_profile_selector', SCRIPT)
 M = importlib.util.module_from_spec(SPEC)
@@ -44,7 +45,7 @@ class RoutingUnits(unittest.TestCase):
         self.store.mkdir()
         self.binding_path = self.base / 'binding.json'
         self.target_path = self.base / 'target.json'
-        self.target = json.loads((HARNESS / 'config/reviewed-c2-target.json').read_text())
+        self.target = json.loads((HARNESS / 'config/reviewed-d371-target.json').read_text())
         for key, name in M.POLICY_PATHS.items():
             path = self.root / name
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -128,6 +129,14 @@ class RoutingUnits(unittest.TestCase):
     def test_duplicate_security_options_rejected(self):
         self.assert_parse_rejected(self.cli() + ['--profile', 'legacy-v114'])
         self.assert_parse_rejected(self.cli() + ['--mode=bound'])
+
+    def test_corrected_checkpoint_requires_exactly_one_parent(self):
+        for parents in ([], ['1' * 40, '2' * 40]):
+            with self.subTest(parents=parents):
+                self.target['sourceParents'] = parents
+                self.write_fixture()
+                with mock.patch.object(M, 'REVIEWED_TARGET_MANIFEST_SHA256', self.target_hash):
+                    self.assert_preflight_rejected(match='Complete target commit/tree/ordered parents required')
 
     def test_mutable_expected_manifest_hash_cannot_authorize_new_target(self):
         self.target['sourceCommit'] = '0' * 40
@@ -379,14 +388,13 @@ class RoutingUnits(unittest.TestCase):
 
 class FrozenProductionInputs(unittest.TestCase):
     def test_target_anchor_and_binding_are_exact(self):
-        target_bytes = (HARNESS / 'config/reviewed-c2-target.json').read_bytes()
-        binding_bytes = (HARNESS / 'config/c2-source-review-binding.json').read_bytes()
+        target_bytes = (HARNESS / 'config/reviewed-d371-target.json').read_bytes()
+        binding_bytes = (HARNESS / 'config/d371-source-review-binding.json').read_bytes()
         self.assertEqual(M.sha(target_bytes), M.REVIEWED_TARGET_MANIFEST_SHA256)
         target, binding = json.loads(target_bytes), json.loads(binding_bytes)
-        self.assertEqual(target['sourceCommit'], 'c2f72180d2f0d6ecd5b92d8e5197c5344be2c699')
-        self.assertEqual(target['sourceTree'], '8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f')
-        self.assertEqual(target['sourceParents'], ['3c974ad3cb1d828e5c89464fd8424d8ae853d9dd',
-                                                 'eb6f725e0b40ac81e50a374304e54a5ff6859fcf'])
+        self.assertEqual(target['sourceCommit'], 'd371d95cfcc44b9133cda4bba55304f727917f18')
+        self.assertEqual(target['sourceTree'], '93faf6e9a6875026c1eb9bc2f0f9bdada308d296')
+        self.assertEqual(target['sourceParents'], ['c2f72180d2f0d6ecd5b92d8e5197c5344be2c699'])
         self.assertEqual(M.sha(binding_bytes), target['reviewBindingSha256'])
         expected = {key: target[key] for key in M.BINDING_FIELDS}
         expected['schema'] = 'agijobmanager/source-review-binding/v1'
