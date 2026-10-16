@@ -13,6 +13,7 @@ import V from '../scripts/core-creation-verifier.cjs';
 import R from '../scripts/raw-transaction-relay.cjs';
 import locks from '../scripts/creator-transaction.cjs';
 import F from './helpers/core-session-fixture.cjs';
+import deploymentExample from '../deploy.config.example.cjs';
 const {ethers}=await runtime.getRuntime();
 const local=ethers.provider;
 // Test-only EDR bridge: canonical-hash check before/after genuine numbered EVM
@@ -30,7 +31,7 @@ suite('Core external signing sessions on disposable Osaka EVM',function(){
   const code='0x'+output.contracts['Fixture.sol'].Fixture.evm.deployedBytecode.object;registry='0x2222222222222222222222222222222222222222';await local.send('hardhat_setCode',[F.config(E.Wallet.createRandom().address).constructorArgs.usdcTokenAddress,code]);await local.send('hardhat_setCode',[registry,code]);await local.send('hardhat_mine',['0x1']);});
  beforeEach(()=>{dir=fs.mkdtempSync(path.join(os.tmpdir(),'core-session-evm-'));qualified=F.actualCatalog(dir);fs.mkdirSync(path.join(dir,'locks'));});
  afterEach(()=>fs.rmSync(dir,{recursive:true,force:true}));
- async function setup(delegated=false){
+ async function setup(delegated=false,rootNodes=null){
   const wallet=E.Wallet.createRandom();await local.send('hardhat_setBalance',[wallet.address,E.toQuantity(E.parseEther('10'))]);
   let policy={mode:A.EMPTY},evidence=null;
   if(delegated){const auth=await wallet.authorize({address:registry,chainId:1,nonce:0});const [relayer]=await ethers.getSigners();await(await relayer.sendTransaction({type:4,to:relayer.address,authorizationList:[auth],gasLimit:100000})).wait();const data=new E.Interface(['function marker() view returns(uint256)']).encodeFunctionData('marker');const checks=[{to:wallet.address,data,resultHash:E.keccak256(E.AbiCoder.defaultAbiCoder().encode(['uint256'],[17]))}];
@@ -39,6 +40,7 @@ suite('Core external signing sessions on disposable Osaka EVM',function(){
    policy={mode:A.DELEGATED,delegationCode:'0xef0100'+registry.slice(2).toLowerCase(),target:registry,targetCodeHash,stateChecks:checks,qualification:Object.fromEntries(Object.entries(reports).map(([k,r])=>[k,T.digest(r)]))};evidence={schema:'manager-delegated-qualification-evidence-v1',creator:wallet.address,target:registry,targetCodeHash,reports};
   }
   const block=await A.pin(rpc,'latest'),config=F.config(wallet.address,{nonce:await local.getTransactionCount(wallet.address),block:{number:block.number,hash:block.hash},registry});config.creatorPolicy=policy;if(delegated){const scope=A.qualificationScope(policy,wallet.address,{source:F.source,buildId:qualified.id,buildDigest:qualified.buildDigest,catalogSha256:qualified.catalogSha256,block:config.block,executionHardfork:'osaka'});const reports=Object.fromEntries(Object.keys(policy.qualification).map(k=>[k,{scope,disposition:'pass',reviewReference:'SYNTHETIC LOCAL TEST ONLY '+k}]));policy.qualification=Object.fromEntries(Object.entries(reports).map(([k,r])=>[k,T.digest(r)]));evidence={schema:'manager-delegated-qualification-evidence-v2',scope,reports};}config.qualificationEvidence=evidence;
+  if(rootNodes)config.constructorArgs.rootNodes=rootNodes;
   const plan=P.makePlan(config,qualified,F.source),context={directory:path.join(dir,'session'),qualified,source:F.source,rpc,revalidateSource:()=>{ /* Explicit synthetic fixture; native CLI uses actual Git observation. */ return true; }};await S.initialize({...context,lockDirectory:path.join(dir,'locks'),plan});return {wallet,plan,context};
  }
  async function signed(context,wallet){const handoff=await S.handoff(context);const raw=await wallet.signTransaction(T.unsignedTransaction(handoff.envelope));const imported=await S.importSigned(context,raw);return {handoff,raw,imported};}
@@ -48,6 +50,22 @@ suite('Core external signing sessions on disposable Osaka EVM',function(){
   const report=await S.complete(context);assert.equal(report.status,'CORE_CREATED_PAUSED_CONFIGURATION_SEPARATE');assert.equal(report.activationAuthorized,false);assert.equal(report.proofs.length,9);assert.equal(fs.readdirSync(path.join(dir,'locks')).length,0);assert.equal(S.readSession(context.directory).released,true);
   const c=new E.Contract(plan.operations[8].predictedAddress,qualified.records.AGIJobManager.artifact.abi,local);assert.equal(await c.owner(),P.GOVERNOR);assert.equal(await c.pendingOwner(),E.ZeroAddress);assert.equal(await c.paused(),true);assert.equal(await c.ensJobPages(),E.ZeroAddress);assert.equal(await c.wallet30(),plan.config.constructorArgs.settlementWallets[0]);assert.equal(await c.wallet10(),plan.config.constructorArgs.settlementWallets[1]);assert.equal(await c.additionalAgents(wallet.address),false);
   await assert.rejects(c.connect(wallet.connect(local)).addModerator(wallet.address));const savedLock=S.readSession(context.directory).meta.creatorLock;fs.mkdirSync(savedLock.path);fs.writeFileSync(path.join(savedLock.path,'owner.json'),JSON.stringify(savedLock));assert.equal((await S.complete(context)).proofs.length,9);const tombstone=savedLock.path+'.released-'+savedLock.token;fs.mkdirSync(tombstone);assert.equal((await S.complete(context)).proofs.length,9);assert(!fs.existsSync(tombstone));fs.mkdirSync(savedLock.path);await assert.rejects(S.complete(context),/ENOENT/);assert(fs.existsSync(savedLock.path));
+ });
+ it('verifies four distinct ENS roots in constructor order and rejects every root mismatch',async()=>{
+  const roots=['club.agi.eth','agent.agi.eth','alpha.club.agi.eth','alpha.agent.agi.eth'].map(E.namehash);
+  assert.deepEqual(deploymentExample.mainnet.rootNodes,roots);
+  assert.equal(new Set(roots).size,4);
+  const {wallet,plan,context}=await setup(false,roots);
+  for(let i=0;i<9;i++)assert.equal((await finishOne(context,wallet)).index,i);
+  const report=await S.complete(context);assert.equal(report.proofs.length,9);assert.equal(report.activationAuthorized,false);
+  const c=new E.Contract(plan.operations[8].predictedAddress,qualified.records.AGIJobManager.artifact.abi,local);
+  const fields=['clubRootNode','agentRootNode','alphaClubRootNode','alphaAgentRootNode'];
+  for(let i=0;i<4;i++)assert.equal(await c[fields[i]](),roots[i]);
+  const latest=await A.pin(rpc,'latest');await V.verifyRuntime(plan,qualified,rpc,8,latest);
+  for(let i=0;i<4;i++){const bad=structuredClone(plan);bad.config.constructorArgs.rootNodes[i]=E.ZeroHash;await assert.rejects(V.verifyRuntime(bad,qualified,rpc,8,latest),new RegExp('Manager '+fields[i]+' changed'));}
+  const swapped=structuredClone(plan);[swapped.config.constructorArgs.rootNodes[1],swapped.config.constructorArgs.rootNodes[2]]=[roots[2],roots[1]];
+  await assert.rejects(V.verifyRuntime(swapped,qualified,rpc,8,latest),/Manager (agentRootNode|alphaClubRootNode) changed/);
+  assert.equal(await c.owner(),P.GOVERNOR);assert.equal(await c.pendingOwner(),E.ZeroAddress);assert.equal(await c.paused(),true);
  });
  it('persists attempted submission before lost response, recovers actual receipt and never resends',async()=>{const {wallet,context}=await setup();const {imported}=await signed(context,wallet);let sends=0;await assert.rejects(S.submit(context,{acknowledgement:imported.relayAcknowledgement,transmit:async raw=>{sends++;await local.send('eth_sendRawTransaction',[raw]);throw Error('test lost response');}}),/lost response/);assert.equal(S.readSession(context.directory).state[0].status,'submission-attempted');const retrieval=S.retrieveHandoff(context);assert.equal(retrieval.relayAcknowledgement,null);assert.equal(retrieval.relayAlreadyAttempted,true);await assert.rejects(S.submit(context,{acknowledgement:imported.relayAcknowledgement,transmit:()=>{sends++;}}),/already attempted/);const proof=await S.recover(context);assert.equal(proof.index,0);assert.equal(proof.journalModified,false);await S.reconcile(context);assert.equal(sends,1);});
  it('recovers externally broadcast hashless handoff without signing or broadcasting again',async()=>{const {wallet,context}=await setup();const h=await S.handoff(context);assert.equal(S.retrieveHandoff(context).relayAcknowledgement,null);const raw=await wallet.signTransaction(T.unsignedTransaction(h.envelope));await local.send('eth_sendRawTransaction',[raw]);const before=fs.readdirSync(path.join(context.directory,'events')).length;assert.equal((await S.recover(context)).transactionHash,E.keccak256(raw));assert.equal(fs.readdirSync(path.join(context.directory,'events')).length,before);await S.reconcile(context);assert.equal(S.readSession(context.directory).state[0].status,'finalized');});
