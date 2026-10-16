@@ -175,13 +175,13 @@
     },
     {
       "path": "scripts/browser-README.md",
-      "bytes": 4432,
-      "sha256": "13de7c20ee795b8b527ef70dcf5c0ccecd51a66326db96a6edc82c8b9b3e8b18"
+      "bytes": 5282,
+      "sha256": "bda27ffe0e48afbe8db02b555a2304e23284e98ab5edf26fb2badda4759a926a"
     },
     {
       "path": "scripts/browser-acceptance.workflow.yml",
-      "bytes": 2561,
-      "sha256": "f3b8e5afc0465d98f10be4637609739b804b68d408a68f0bf51db9b8da69dcfa"
+      "bytes": 2799,
+      "sha256": "90964565c8d93486223527dae0e541610a13b5d93cee37e59c8d6f62caea8ee1"
     },
     {
       "path": "scripts/browser-build.mjs",
@@ -192,6 +192,11 @@
       "path": "scripts/browser-check-production.mjs",
       "bytes": 530,
       "sha256": "e9e91188c51f46ca0182c457d59e36c0379e3b91152fdcdfaeb3fc7ec6e709b6"
+    },
+    {
+      "path": "scripts/browser-ci-init.mjs",
+      "bytes": 1074,
+      "sha256": "127e5803bd24ad973db3591b23a0c0e35dc65311add53ebb7c7b08033111972c"
     },
     {
       "path": "scripts/browser-regression-check.mjs",
