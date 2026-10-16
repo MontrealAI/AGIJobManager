@@ -148,6 +148,8 @@ After exact source verification and fresh independent owner/pending-owner/role r
 
 The FeePool setters are forwarded through SystemPause because it owns FeePool. These are five separate, zero-ETH, owner-approved governor transactions, conditional on actual pending state. They do not unpause, fund, admit participants or alter economic parameters. If the reviewed treasury/governance roles differ, use those exact approved addresses; if StakeManager treasury differs from its initial d76 value, its allowlist/treasury changes likewise go through SystemPause in a separately reviewed sequence. Never choose or infer a treasury merely from this example.
 
+The exact artifact hashes and method selectors are retained in the [public ABI readback](../qualification/jobs-9a79-governor-abi-readback.json); it records zero chain transactions and no signing approval.
+
 For d76 specifically, the following **inner calldata only** was encoded/decoded against the exact 9a79 FeePool artifact ABI. The actual outer transaction still targets the **new SystemPause** and must wrap the inner data with the **new FeePool** address using `executeGovernanceCall`; this is not a standalone transaction or approval.
 
 ```text
@@ -168,6 +170,14 @@ Then read back the **complete setup interval and authority inventory**: owner/pe
 The original bounded Jobs audit and companion authority reports deliberately retain `authorityComplete:false`. Their checks remain useful; this route does not flip those flags or treat a bounded report as complete indirect/external authority acceptance. Production handover stays incomplete until the full inventory and setup history are reviewed with no residual deployer privileges. No funding, participant admission or activation follows automatically.
 
 On the Mac, Alpha's separately reviewed governor calls are `AscensionRiskOracle.bindMarketplace(new AscensionJobMarket)` then `AscensionJobMarket.bindMark(new AscensionMark)`. Use Etherscan/MetaMask/Ledger to inspect and manually approve only these exact calls after source/authority verification. See [Mac governor handover](MAC_MANUAL_LEDGER_CREATION.md).
+
+## Terminal qualification
+
+[Hosted run 38975488543](https://github.com/MontrealAI/AGIJobManager/actions/runs/38975488543) passed on Ubuntu **24.04.5 LTS / Node 22.23.3** at tooling commit `97bcb531c673a60ee7f8e94922748377a9999a43`. The [original public summary](../qualification/ubuntu-hardhat-hosted-38975488543.json) is retained byte for byte. It records all three exact source builds, **24/24 security/transport tests with zero skips**, one actual hidden-terminal CLI round trip, and **53 native operations / 39 creations** (Manager 9 + Alpha 5 + Jobs 39). Five read-only administrative checks include valid governor controls and deployer rejection; all nine Jobs creator-permission probes pass and 25 source records were checked.
+
+Artifact **12080725444**, ZIP SHA256 `1a96a0ad80bdf4681ee8e67c4f8af207d1defc401dc7e335367ec29ba714e81d`, was downloaded and matched GitHub's digest and every inventory member hash. The six production terminal files have canonical SHA256 `baee8cccb754215546d72779febad1a67c5cab16f7a64e94414e1b2d7a9356e0`; the [acceptance record](../qualification/ubuntu-hardhat-terminal-acceptance.json) binds their individual hashes and the exact workflow provenance.
+
+This is disposable functional qualification. Jobs' original staged writer runs in process against the owned EVM; its previously accepted 39-operation fresh-CLI qualification remains separate. The new test uses no real key, public provider or governor signature, and explicitly adapts canonical reads/finality only in the fixture. Jobs' seven bounded blockers are exactly the expected pending IdentityRegistry/TaxPolicy ownership and FeePool governance/treasury steps described above. Complete authority acceptance, actual account/provider/bootstrap acceptance, explorer acceptance, cross-project production planning and owner initiation remain separate; their acceptance flags stay false.
 
 ## Reproduction
 

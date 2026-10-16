@@ -1,13 +1,14 @@
 {
   "schema": "ubuntu-hardhat-terminal-acceptance-v1",
-  "status": "LOCAL_FULL_REHEARSAL_INTERRUPTED_HOSTED_QUALIFICATION_PENDING",
+  "status": "PASS_DISPOSABLE_FUNCTIONAL_PRODUCTION_NOT_ACCEPTED",
   "preparedFromToolingBase": "644feb032b6d03ca8b0a0aa02dae8b6c0bccdeed",
   "environment": {
     "os": "Ubuntu 24.04.3 LTS",
     "node": "22.23.3",
     "hardhat": "3.17.0",
     "ethers": "6.17.0",
-    "nodeExecutableSha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48"
+    "nodeExecutableSha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48",
+    "scope": "Local tests on Ubuntu 24.04.3; hosted qualification separately records Ubuntu 24.04.5."
   },
   "toolSourceSha256": "baee8cccb754215546d72779febad1a67c5cab16f7a64e94414e1b2d7a9356e0",
   "productionSourceFiles": {
@@ -23,7 +24,14 @@
       "passed": 24,
       "failed": 0,
       "skipped": 0,
-      "tapSha256": "11cec4c0a8b63661543dadf031fdfaf00251f2128e4ec31fb7918adb2673f4dd"
+      "tapSha256": "11cec4c0a8b63661543dadf031fdfaf00251f2128e4ec31fb7918adb2673f4dd",
+      "hosted": {
+        "failed": 0,
+        "passed": 24,
+        "skipped": 0,
+        "tapSha256": "76c9e3e53808e3a56321782f12f437fdb5d6590f23dd90fbd9b5e2e2bbe16f84",
+        "tests": 24
+      }
     },
     "existingCompanionRequiredCompilerSuite": {
       "passed": 448,
@@ -34,7 +42,8 @@
     "releaseGates": {
       "passed": 99,
       "failed": 0,
-      "logSha256": "482da5f5fce626735d1d5f572f84b6ac123f442cc382bca8a907ed437d0db1ee"
+      "logSha256": "be2670279f50db77eb6350617aa07affdddc62ba73a8223331c05d8c33aad17b",
+      "scope": "Re-run after hosted qualification evidence/runbook update; production terminal source unchanged."
     },
     "actualHiddenTerminalCLI": {
       "status": "PASS",
@@ -61,6 +70,13 @@
           }
         ],
         "status": "PASS"
+      },
+      "hosted": {
+        "status": "PASS",
+        "backendSubmissions": 1,
+        "qualificationMemberSha256": "400458226ba95dd12a372c1b45a2fe9d2c340bf901d2407be67736d8369a3df5",
+        "echoRestored": true,
+        "keyAbsentFromCapturedOutput": true
       }
     },
     "coreAuthorityPositiveAndNegativeControls": {
@@ -165,10 +181,14 @@
     }
   },
   "nativeDisposableRehearsal": {
+    "environment": "Hosted Ubuntu 24.04.5 disposable unforked EVM",
+    "totalOperations": 53,
+    "totalCreations": 39,
     "manager": {
       "status": "PASS",
       "operations": 9,
       "creations": 9,
+      "source": "d371d95cfcc44b9133cda4bba55304f727917f18",
       "nativeCompletion": "CORE_CREATED_PAUSED_CONFIGURATION_SEPARATE",
       "governor": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99"
     },
@@ -176,21 +196,33 @@
       "status": "PASS",
       "operations": 5,
       "creations": 5,
+      "source": "38064bec3423218f87c6b81760ac6768b3e7d4e5",
       "governorBindings": 0,
-      "nativeFiveCreationPrefixPassed": true
+      "nativeFiveCreationPrefixPassed": true,
+      "uncommissioned": true
     },
     "jobs": {
-      "status": "INTERRUPTED_BY_EXECUTION_ENVIRONMENT_RESET",
-      "expectedOperations": 39,
-      "expectedCreations": 25,
+      "status": "PASS_CREATOR_PHASE_GOVERNOR_COMMISSIONING_SEPARATE",
+      "operations": 39,
+      "creations": 25,
+      "source": "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5",
       "compilerInputSha256": "a962576832d4540c4cd682f9251b6eed2a333c87a1ce5fa61ed5716e7091b891",
-      "expectedCloseout": "39 creator operations / 25 creations, awaiting-commissioning; pending governor settings are not an unexpected native failure",
-      "boundedAuthorityChecksMayRemainIncomplete": true,
-      "observedLocalPrefixBeforeReset": {
-        "acceptedOperations": 14,
-        "preparedOperations": 15,
-        "complete": false
-      }
+      "nativeCloseout": "awaiting-commissioning",
+      "sourceRecords": 25,
+      "creatorPermissionChecksPassed": 9,
+      "boundedAuthorityChecksComplete": false,
+      "boundedBlockers": [
+        "TaxPolicy.owner",
+        "IdentityRegistry.owner",
+        "IdentityRegistry.pendingOwner",
+        "TaxPolicy.pendingOwner",
+        "FeePool.treasury",
+        "FeePool.governance",
+        "FeePool.treasuryAllowlist(0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99)"
+      ],
+      "authorityComplete": false,
+      "normalizedEnsSha256": "395ea0a49d70f8e6777c0d611c40546cc7dc24ab1b71eeafbb765099fed8eb61",
+      "stagedWriterExecution": "Original TypeScript entrypoint in process; explicit read-only contract runner and owned HRE backend; not a fresh-CLI qualification claim"
     }
   },
   "keyHandling": {
@@ -238,13 +270,117 @@
     "scope": "Disposable test HRE reader adapter only",
     "status": "Stopped after paused-finalization preparation by forbidden eth_accounts query",
     "logSha256": "11f78a50932a219ef458ce214e12e1694d2f09f6d5abfce2ef03347693e00da4",
-    "fix": "Test HRE getContractAt now supplies the explicit read-only provider instead of discovering a signer. Original contract/native API source unchanged. Fresh full rerun is required and in progress."
+    "fix": "The test HRE getContractAt supplies the explicit read-only provider instead of discovering a signer. Original contract/native API source is unchanged. Successful full hosted rerun 38975488543 supersedes this diagnostic; the failed local run is not counted as a pass."
   },
   "receiptRecheckPolicy": "First Jobs prefix verification in each process checks every receipt; reuse is in memory only and requires an identical head/view plus fresh native canonical last-receipt validation. Any drift/failure or process restart requires full verification.",
   "hostedQualification": {
-    "status": "PENDING",
+    "status": "PASS_DISPOSABLE_FUNCTIONAL",
     "workflow": ".github/workflows/ubuntu-hardhat-terminal.yml",
-    "scope": "Ubuntu 24.04 / Node22.23.3, exact source builds, 24 security cases, real PTY CLI and all 9+5+39 disposable operations",
+    "repository": "MontrealAI/AGIJobManager",
+    "qualifiedToolingHead": "97bcb531c673a60ee7f8e94922748377a9999a43",
+    "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/38975488543",
+    "runId": 38975488543,
+    "runAttempt": 1,
+    "event": "pull_request",
+    "conclusion": "success",
+    "jobId": 117223796500,
+    "allJobStepsSucceeded": true,
+    "artifactId": 12080725444,
+    "artifactName": "ubuntu-hardhat-terminal-97bcb531c673a60ee7f8e94922748377a9999a43-38975488543",
+    "archiveBytes": 4822,
+    "archiveSha256": "1a96a0ad80bdf4681ee8e67c4f8af207d1defc401dc7e335367ec29ba714e81d",
+    "githubArtifactDigestMatched": true,
+    "downloadedArchiveVerified": true,
+    "allInventoryMemberHashesMatched": true,
+    "publicMemberSha256": {
+      "SHA256SUMS.json": "3b6797dd2671a03cb32ad990452db8c701b4b8007c3dbd1ca895492f257b7e4a",
+      "cli.log": "26445f06f9cdf691bf14fb91e4bdbdb027ffef23557097d1b4c7c87c8c00f1a9",
+      "native.log": "617d9d133ab717da9d7b485a9591f28e0d4af2e4bf2b73a6537ab0c527a51957",
+      "qualification.json": "400458226ba95dd12a372c1b45a2fe9d2c340bf901d2407be67736d8369a3df5",
+      "terminal-tests.tap": "76c9e3e53808e3a56321782f12f437fdb5d6590f23dd90fbd9b5e2e2bbe16f84"
+    },
+    "publicSummaryFile": "ubuntu-hardhat-hosted-38975488543.json",
+    "publicSummaryCopiedByteForByte": true,
+    "node": "v22.23.3",
+    "nodeExecutableSha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48",
+    "os": "Ubuntu 24.04.5 LTS",
+    "unit": {
+      "failed": 0,
+      "passed": 24,
+      "skipped": 0,
+      "tapSha256": "76c9e3e53808e3a56321782f12f437fdb5d6590f23dd90fbd9b5e2e2bbe16f84",
+      "tests": 24
+    },
+    "actualCliSubmissions": 1,
+    "nativeOperations": 53,
+    "creations": 39,
+    "readOnlyAdministrativeDenialChecks": 5,
+    "jobsCreatorPermissionChecksPassed": 9,
+    "jobsSourceRecords": 25,
+    "sourceBuilds": [
+      "d371d95cfcc44b9133cda4bba55304f727917f18",
+      "38064bec3423218f87c6b81760ac6768b3e7d4e5",
+      "9a79f38ad9edc448dc0b8d8cfa6157ee0c6f2bc5"
+    ],
+    "governorSignatures": 0,
+    "publicProviderCalls": 0,
+    "realKeys": false,
+    "finality": "synthetic finalized=latest",
+    "eip1898": "canonical hash verified then adapted to numbered local EDR read",
+    "otherQualifiedHeadWorkflows": [
+      {
+        "id": 38975488462,
+        "name": "Docs Integrity",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "97bcb531c673a60ee7f8e94922748377a9999a43"
+      },
+      {
+        "id": 38975488315,
+        "name": "Mainnet USDC Fork Qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "97bcb531c673a60ee7f8e94922748377a9999a43"
+      },
+      {
+        "id": 38975488357,
+        "name": "Security Verification",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "97bcb531c673a60ee7f8e94922748377a9999a43"
+      },
+      {
+        "id": 38975488370,
+        "name": "Ledger companion real-browser acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "97bcb531c673a60ee7f8e94922748377a9999a43"
+      },
+      {
+        "id": 38975488385,
+        "name": "UI CI",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "97bcb531c673a60ee7f8e94922748377a9999a43"
+      }
+    ],
     "mainnetAuthorized": false
+  },
+  "manualGovernorAbiReadback": {
+    "file": "jobs-9a79-governor-abi-readback.json",
+    "sha256": "9e99c234118b32853d49126e98d7518f36c2522fbcc9382f120302a98066c192",
+    "chainTransactions": 0,
+    "approval": false,
+    "scope": "Exact 9a79 artifact ABI/method-selector readback only; no governor execution qualification."
+  },
+  "recordedAt": "2026-10-16T23:05:56.246484+00:00",
+  "qualifiedToolingHead": "97bcb531c673a60ee7f8e94922748377a9999a43",
+  "priorLocalFullRehearsal": {
+    "status": "INTERRUPTED_BY_EXECUTION_ENVIRONMENT_RESET",
+    "jobsAcceptedOperations": 14,
+    "jobsPreparedOperations": 15,
+    "complete": false,
+    "countedAsPass": false,
+    "supersededBySuccessfulHostedRun": 38975488543
   }
 }
