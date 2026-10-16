@@ -7,7 +7,7 @@ function hiddenKey({ input = process.stdin, output = process.stdout, signals = p
   if (!input.isTTY || !output.isTTY || !tty.isatty(input.fd))
     return Promise.reject(Error('LOCAL_TERMINAL_REQUIRED'));
   return new Promise((resolve, reject) => {
-    const ascii = Buffer.alloc(66); let length = 0, done = false;
+    const ascii = Buffer.alloc(66); let length = 0, done = false, invalid = false;
     const wasRaw = Boolean(input.isRaw);
     const finish = (error, key) => {
       if (done) return; done = true;
@@ -25,6 +25,7 @@ function hiddenKey({ input = process.stdin, output = process.stdout, signals = p
         for (let i = 0; i < chunk.length; i++) {
           const c = chunk[i];
           if (c === 3 || c === 4 || c === 26) return abort();
+          if (invalid) { if (c === 13 || c === 10) return abort(); continue; }
           if (c === 127 || c === 8) { if (length) ascii[--length] = 0; continue; }
           if (c === 13 || c === 10) {
             const offset = length === 66 && ascii[0] === 48 && ascii[1] === 120 ? 2 : 0;
@@ -37,7 +38,11 @@ function hiddenKey({ input = process.stdin, output = process.stdout, signals = p
             }
             return finish(false, key);
           }
-          if (length >= 66 || (digit(c) < 0 && !(length === 1 && ascii[0] === 48 && c === 120))) return abort();
+          if (length >= 66) {
+            // Even an oversized line stays hidden until Enter. Validate other
+            // characters only at Enter, allowing corrections with Backspace.
+            invalid = true; ascii.fill(0); length = 0; continue;
+          }
           ascii[length++] = c;
         }
       } finally { if (Buffer.isBuffer(chunk)) chunk.fill(0); }

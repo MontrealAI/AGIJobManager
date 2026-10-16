@@ -14,6 +14,8 @@ async function rehearseJobs({ jobsRoot, privateRoot, runtime, backend, rpc, E, a
     h2.network.name = 'localhost'; h2.network.config = { chainId: 1, accounts: [] };
     h2.network.provider = { request, send: (method, params) => rpc(method, params), on() {}, removeListener() {} };
     h2.ethers.provider = runtime.provider;
+    const nativeGetContractAt = h2.ethers.getContractAt;
+    h2.ethers.getContractAt = (name, address, runner) => nativeGetContractAt(name, address, runner || runtime.provider);
     jr('ts-node').register({ transpileOnly: true, compilerOptions: { module: 'commonjs', moduleResolution: 'node' } });
     const configApi = jr('./scripts/config/index.js');
     const normalized = configApi.loadEnsConfig({ network: 'localhost', persist: false });
@@ -54,10 +56,18 @@ async function rehearseJobs({ jobsRoot, privateRoot, runtime, backend, rpc, E, a
     }
     const hashes = await execute({ project: 'jobs', checkout: jobsRoot, profilePath: profileFile, profileSha256: sha(fs.readFileSync(profileFile)), deploymentConfigPath: configFile }, 39, actorData, undefined, stage);
     await stage(39);
-    const cert = report.authorityCertificate; assert.equal(cert.boundedChecksComplete, true); assert.equal(cert.authorityComplete, false);
+    const cert = report.authorityCertificate; assert.equal(cert.authorityComplete, false);
+    const pendingGovernorOnly = /^(?:(?:IdentityRegistry|TaxPolicy)\.(?:owner|pendingOwner)|FeePool\.(?:governance|treasury(?:$|Allowlist\())|StakeManager\.treasury(?:$|Allowlist\())/;
+    assert(cert.boundedBlockers.every(role => pendingGovernorOnly.test(role)), JSON.stringify(cert.boundedBlockers));
+    for (const check of cert.checks.filter(c => /\.(?:owner|governance|pendingOwner)$/.test(c.role))) assert.notEqual(String(check.actual).toLowerCase(), actorData.address.toLowerCase());
+    const creatorPermissions = cert.checks.filter(c => c.role.endsWith(`(${actorData.address})`));
+    assert(creatorPermissions.length >= 9); assert(creatorPermissions.every(c => c.actual === false && c.passed));
+    assert.equal(cert.checks.find(c => c.role === 'Deployer.owner').actual, GOVERNOR);
+    assert.equal(cert.checks.find(c => c.role === 'SystemPause.owner').actual, GOVERNOR);
+    writeNew(path.join(privateRoot, 'jobs-closeout-checked.json'), { nativeCloseout: report.status, boundedBlockers: cert.boundedBlockers, creatorPermissionChecks: creatorPermissions.length, sourceRecords: cert.sourceRecords.length });
     for (const op of Object.values(report.authorityOperations)) assert.equal(op.creator, actorData.address);
-    console.log('Disposable Jobs: 39 exact terminal-signed operations; 25 creations, native paused closeout and bounded authority checks passed.');
-    return { project: 'jobs', source: manifest.sourceCommit, operations: hashes.length, creations: 25, governor: GOVERNOR, nativeCloseout: report.status, boundedAuthorityChecksComplete: cert.boundedChecksComplete, authorityComplete: false, explorerAccepted: false, qualificationLimit: 'Native complete-history and indirect/external authority acceptance remain separate', normalizedEnsSha256: sha(normalizedBytes), stagedWriterExecution: 'Original TypeScript entrypoint in process; HRE test backend replaced; not a fresh-CLI qualification claim' };
+    console.log('Disposable Jobs: 39 exact terminal-signed operations; 25 creations and native paused closeout passed; governor commissioning remains separate.');
+    return { project: 'jobs', source: manifest.sourceCommit, operations: hashes.length, creations: 25, governor: GOVERNOR, nativeCloseout: report.status, boundedAuthorityChecksComplete: cert.boundedChecksComplete, boundedBlockers: cert.boundedBlockers, creatorPermissionChecksPassed: creatorPermissions.length, sourceRecords: cert.sourceRecords.length, authorityComplete: false, explorerAccepted: false, qualificationLimit: 'Pending governor ownership/treasury configuration, complete-history and indirect/external authority acceptance remain separate', normalizedEnsSha256: sha(normalizedBytes), stagedWriterExecution: 'Original TypeScript entrypoint in process; explicit read-only contract runner and owned HRE backend; not a fresh-CLI qualification claim' };
   } finally {
     console.log = originalConsole; fs.writeFileSync(ensFile, originalEns); fs.chmodSync(ensFile, originalMode);
     process.chdir(oldCwd); for (const key of Object.keys(process.env)) if (!(key in oldEnv)) delete process.env[key]; Object.assign(process.env, oldEnv);

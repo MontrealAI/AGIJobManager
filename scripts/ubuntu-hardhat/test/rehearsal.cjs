@@ -5,7 +5,7 @@ const { loadNative } = require('../native.cjs'), { review, sendOne } = require('
 
 async function main() {
   const [authorization, managerRoot, alphaRoot, jobsRoot, output] = process.argv.slice(2);
-  assert(['--disposable-only', '--disposable-cli-only'].includes(authorization)); assert.equal(process.version, 'v22.23.3');
+  assert(['--disposable-only', '--disposable-cli-only', '--disposable-core-only'].includes(authorization)); assert.equal(process.version, 'v22.23.3');
   assert(managerRoot && alphaRoot && jobsRoot && output && !fs.existsSync(output));
   for (const key of ['NODE_PATH', 'NODE_OPTIONS', 'HARDHAT_CONFIG', 'DEBUG', 'HARDHAT_VERBOSE', 'NODE_V8_COVERAGE']) delete process.env[key];
   process.umask(0o077); fs.mkdirSync(output, { mode: 0o700 });
@@ -81,7 +81,9 @@ async function main() {
     const completed = await S.complete({ directory: sessionPath, qualified: catalog.qualified, source: P.observedRevision(), revalidateSource: P.createSourceGuard().assertUnchanged, rpc }); assert.equal(completed.status, 'CORE_CREATED_PAUSED_CONFIGURATION_SEPARATE');
     const manager = new E.Contract(plan.operations[8].predictedAddress, ['function owner() view returns(address)', 'function pendingOwner() view returns(address)', 'function moderators(address) view returns(bool)', 'function paused() view returns(bool)'], runtime.provider);
     assert.equal(await manager.owner(), GOVERNOR); assert.equal(await manager.pendingOwner(), E.ZeroAddress); assert.equal(await manager.moderators(a.address), false); assert.equal(await manager.paused(), true);
-    metrics.reports.push({ project: 'manager', source: sourceGuard(managerRoot, 'manager').commit, operations: managerHashes.length, creations: 9, nativeCompletion: completed.status, governor: GOVERNOR, deployerPrivileges: 'constructor governor; pending owner zero; deployer moderator false; native exact runtime/state verification passed', explorerAccepted: false });
+    const { authorityDenials } = require('./authority-denials.cjs');
+    const managerDenials = await authorityDenials({ E, rpc, creator: a.address, targets: [['AGIJobManager', plan.operations[8].predictedAddress, GOVERNOR]] });
+    metrics.reports.push({ project: 'manager', source: sourceGuard(managerRoot, 'manager').commit, operations: managerHashes.length, creations: 9, nativeCompletion: completed.status, governor: GOVERNOR, deployerPrivileges: 'constructor governor; pending owner zero; deployer moderator false; native exact runtime/state verification passed', authorityDenials: managerDenials, explorerAccepted: false });
     console.log('Disposable Manager: 9 exact terminal-signed operations and native completion passed.');
     // Five exact Alpha creations, with d76 constructor governor and no governor key.
     const ar = createRequire(path.join(alphaRoot, 'package.json')), AP = ar('./tests/contracts/scripts/mainnet-authority.js'), AS = ar('./tests/contracts/scripts/authority-session.js'), revision = ar('./tests/contracts/scripts/authority-revision.js').reviewedRevision();
@@ -93,8 +95,10 @@ async function main() {
     const alphaHashes = await execute({ project: 'alpha', checkout: alphaRoot, planFile: alphaFile, sessionPath: alphaSession }, 5, aa);
     const alphaPrefix = await AP.preflight(alphaPlan, rpc, revision, alphaHashes, alphaPlan.journal, []); assert.equal(alphaPrefix.nextOperation.index, 5);
     for (const name of AP.OWNED) { const c = new E.Contract(alphaPlan.addresses[name], ['function owner() view returns(address)', 'function pendingOwner() view returns(address)'], runtime.provider); assert.equal(await c.owner(), GOVERNOR); assert.equal(await c.pendingOwner(), E.ZeroAddress); }
-    metrics.reports.push({ project: 'alpha', source: revision.commit, operations: alphaHashes.length, creations: 5, governor: GOVERNOR, governorBindings: 0, nativePrefixPassed: true, globallyPaused: false, uncommissioned: true, explorerAccepted: false });
+    const alphaDenials = await authorityDenials({ E, rpc, creator: aa.address, targets: AP.OWNED.map(name => [name, alphaPlan.addresses[name], GOVERNOR]) });
+    metrics.reports.push({ project: 'alpha', source: revision.commit, operations: alphaHashes.length, creations: 5, governor: GOVERNOR, governorBindings: 0, nativePrefixPassed: true, globallyPaused: false, uncommissioned: true, authorityDenials: alphaDenials, explorerAccepted: false });
     console.log('Disposable Alpha: 5 exact terminal-signed creations; governor ownership and uncommissioned prefix passed.');
+    if (authorization === '--disposable-core-only') { metrics.status = 'PASS'; writeNew(path.join(output, 'qualification.json'), metrics); return; }
     const { rehearseJobs } = require('./staged-jobs.cjs');
     metrics.reports.push(await rehearseJobs({ jobsRoot, privateRoot, runtime, backend, rpc, E, actor, execute, url }));
     metrics.status = 'PASS'; metrics.sourceFiles = Object.fromEntries(fs.readdirSync(path.resolve(__dirname, '..')).filter(n => n.endsWith('.cjs')).map(n => [n, sha(fs.readFileSync(path.resolve(__dirname, '..', n)))]));

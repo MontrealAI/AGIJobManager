@@ -64,16 +64,18 @@ test('authorization lists, governor keys and altered transaction fields are reje
   for (const change of [{ authorizationList: [] }, { type: 4 }, { chainId: 2 }, { from: GOVERNOR }, { value: '1' }, { accessList: [{ address: f.envelope.from, storageKeys: [] }] }, { nonce: -1 }]) assert.throws(() => unsigned(E, { ...f.envelope, ...change }, f.native.binding.creator));
 });
 test('key/seed/loaders/debug configuration and unknown CLI options are rejected', () => {
-  for (const name of ['PRIVATE_KEY', 'MAINNET_PRIVATE_KEY', 'MNEMONIC', 'NODE_OPTIONS', 'NODE_PATH', 'DEBUG', 'HARDHAT_CONFIG', 'NODE_V8_COVERAGE']) assert.throws(() => environment({ [name]: 'synthetic-forbidden' }));
+  for (const name of ['PRIVATE_KEY', 'MAINNET_PRIVATE_KEY', 'MNEMONIC', 'NODE_OPTIONS', 'NODE_PATH', 'DEBUG', 'NODE_DEBUG', 'NODE_DEBUG_NATIVE', 'HARDHAT_CONFIG', 'NODE_V8_COVERAGE']) assert.throws(() => environment({ [name]: 'synthetic-forbidden' }));
   for (const args of [['send', '--key', 'forbidden'], ['send', '--config', 'a', '--config', 'b'], ['deploy'], ['review']]) assert.throws(() => flags(args));
 });
 test('real Linux terminal hides paste, restores echo on success/backspace/abort/malformed input, rejects redirected input', async () => {
   const helper = path.join(__dirname, 'pty-runner.py'), child = path.join(__dirname, 'prompt-child.cjs');
-  for (const [entry, code] of [['ab'.repeat(32) + '\r', 0], ['0x' + 'cd'.repeat(32) + '\r', 0], ['aa' + '\u007f\u007f' + 'ef'.repeat(32) + '\r', 0], ['ab'.repeat(12) + '\u0003', 1], ['z\r', 1], ['ab'.repeat(33) + '\r', 1], ['ab'.repeat(32) + '\rhidden-extra', 1]]) {
+  for (const [entry, code] of [['ab'.repeat(32) + '\r', 0], ['0x' + 'cd'.repeat(32) + '\r', 0], ['aa' + '\u007f\u007f' + 'ef'.repeat(32) + '\r', 0], ['z\u007f' + 'ab'.repeat(32) + '\r', 0], ['ab'.repeat(12) + '\u0003', 1], ['z\r', 1], ['ab'.repeat(33) + '\r', 1], ['ab'.repeat(32) + '\rhidden-extra', 1]]) {
     const result = cp.spawnSync('python3', [helper, process.execPath, child], { input: JSON.stringify({ entry, secrets: [entry.slice(0, 20)].filter(s => s.length >= 20) }), encoding: 'utf8', timeout: 50000 });
     assert.equal(result.status, 0, result.stderr); const report = JSON.parse(result.stdout); assert.equal(report.code, code, report.output); assert(report.echoRestored && report.secretAbsent && report.promptObserved);
   }
   const redirected = cp.spawnSync(process.execPath, [child], { input: 'ab'.repeat(32) + '\n', encoding: 'utf8' }); assert.equal(redirected.status, 1); assert(!redirected.stdout.includes('ab'.repeat(32)));
+  const malformed = cp.spawnSync('python3', [helper, process.execPath, child], { input: JSON.stringify({ chunks: ['z', 'ab'.repeat(32) + '\r'], secrets: ['ab'.repeat(32)] }), encoding: 'utf8', timeout: 50000 });
+  assert.equal(malformed.status, 0, malformed.stderr); const refused = JSON.parse(malformed.stdout); assert.equal(refused.code, 1); assert(refused.echoRestored && refused.secretAbsent);
 });
 test('production CLI failures never render malformed arguments, private config values or exception detail', t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ubuntu-hardhat-redaction-')); t.after(() => fs.rmSync(dir, { recursive: true }));

@@ -29,7 +29,10 @@ try:
             if not sent and b"Deployer private key (hidden; local memory only): " in captured:
                 # Raw-mode echo is observed before the disposable bytes enter.
                 assert not termios.tcgetattr(slave)[3] & termios.ECHO
-                os.write(master, payload["entry"].encode())
+                for chunk in payload.get("chunks", [payload.get("entry", "")]):
+                    assert not termios.tcgetattr(slave)[3] & termios.ECHO
+                    os.write(master, chunk.encode())
+                    time.sleep(0.05)
                 sent = True
         if child.poll() is not None:
             break

@@ -140,33 +140,6 @@
       ],
       "creatorTransactionNonce": "firstNonce + operationIndex; 39 creator nonces",
       "compilerInputSha256": "a962576832d4540c4cd682f9251b6eed2a333c87a1ce5fa61ed5716e7091b891",
-      "expectedOwners": {
-        "Deployer": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "StakeManagerConfiguration": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "StakeManagerStaking": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "StakeManagerEscrow": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "StakeManagerSlashing": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "JobRegistryConfiguration": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "JobRegistryLifecycle": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "JobRegistrySettlement": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "ValidationModuleConfiguration": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "ValidationModuleVoting": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "ValidationModuleSelection": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "StakeManager": "new:SystemPause",
-        "JobRegistry": "new:SystemPause",
-        "ValidationModule": "new:SystemPause",
-        "ReputationEngine": "new:SystemPause",
-        "DisputeModule": "new:SystemPause",
-        "CertificateNFT": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "PlatformRegistry": "new:SystemPause",
-        "JobRouter": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "PlatformIncentives": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "FeePool": "new:SystemPause",
-        "TaxPolicy": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "IdentityRegistry": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "SystemPause": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
-        "ArbitratorCommittee": "new:SystemPause"
-      },
       "managedBySystemPause": [
         "StakeManager",
         "JobRegistry",
@@ -201,10 +174,66 @@
         "TaxPolicy": [
           "acknowledgerAllowed"
         ]
-      }
+      },
+      "expectedOwnersAfterGovernorHandover": {
+        "Deployer": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "StakeManagerConfiguration": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "StakeManagerStaking": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "StakeManagerEscrow": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "StakeManagerSlashing": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "JobRegistryConfiguration": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "JobRegistryLifecycle": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "JobRegistrySettlement": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "ValidationModuleConfiguration": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "ValidationModuleVoting": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "ValidationModuleSelection": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "StakeManager": "new:SystemPause",
+        "JobRegistry": "new:SystemPause",
+        "ValidationModule": "new:SystemPause",
+        "ReputationEngine": "new:SystemPause",
+        "DisputeModule": "new:SystemPause",
+        "CertificateNFT": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "PlatformRegistry": "new:SystemPause",
+        "JobRouter": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "PlatformIncentives": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "FeePool": "new:SystemPause",
+        "TaxPolicy": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "IdentityRegistry": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "SystemPause": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+        "ArbitratorCommittee": "new:SystemPause"
+      },
+      "creatorPhaseCloseout": "awaiting-commissioning; pending governor calls are not initial creation",
+      "conditionalGovernorStepsAfterSourceVerification": [
+        {
+          "target": "new IdentityRegistry",
+          "method": "acceptOwnership()",
+          "condition": "pendingOwner equals d76 and owner is original new coordinator"
+        },
+        {
+          "target": "new TaxPolicy",
+          "method": "acceptOwnership()",
+          "condition": "pendingOwner equals d76 and owner is original new coordinator"
+        },
+        {
+          "target": "new SystemPause",
+          "method": "executeGovernanceCall(new FeePool, encode setGovernance(authority.feePoolGovernance))",
+          "valueWei": "0"
+        },
+        {
+          "target": "new SystemPause",
+          "method": "executeGovernanceCall(new FeePool, encode setTreasuryAllowlist(authority.feePoolTreasury,true))",
+          "valueWei": "0"
+        },
+        {
+          "target": "new SystemPause",
+          "method": "executeGovernanceCall(new FeePool, encode setTreasury(authority.feePoolTreasury))",
+          "valueWei": "0"
+        }
+      ]
     }
   },
   "containsLiveProductionValues": false,
   "authorityAcceptancePolicy": "Expected core topology and listed probes are bounded checks, not complete setup-history/indirect/external authority clearance. All pending owners, roles, aliases, approvals and external controllers require complete review before zero residual deployer privileges can be accepted.",
-  "crossProjectPlanAcceptance": "Not yet accepted. Fix actual-sender order/nonces and explicit native session/lock handoffs; no single-deployer cross-project lock-release qualification is inferred from separate project rehearsals."
+  "crossProjectPlanAcceptance": "Not yet accepted. Fix actual-sender order/nonces and explicit native session/lock handoffs; no single-deployer cross-project lock-release qualification is inferred from separate project rehearsals.",
+  "deployerSystemPrivilegesMustBeZero": true
 }

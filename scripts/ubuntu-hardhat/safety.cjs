@@ -62,7 +62,7 @@ function sourceGuard(root, project) {
   assert(); return { assert, commit: expected[0], tree: expected[1] };
 }
 function environment(env = process.env) {
-  for (const [k, v] of Object.entries(env)) if (v) need(!/(?:^|_)(PRIVATE_?KEYS?|MNEMONIC|SEED_PHRASE|KEYSTORE|ACCOUNTS|UNLOCKED(?:_ACCOUNTS?)?|SIGNING_PROVIDER|SIGNER_PROVIDER)(?:_|$)/i.test(k) && !['NODE_OPTIONS', 'NODE_PATH', 'HARDHAT_CONFIG', 'DEBUG', 'HARDHAT_VERBOSE', 'NODE_V8_COVERAGE'].includes(k), 'UNSAFE_SIGNING_ENVIRONMENT');
+  for (const [k, v] of Object.entries(env)) if (v) need(!/(?:^|_)(PRIVATE_?KEYS?|MNEMONIC|SEED_PHRASE|KEYSTORE|ACCOUNTS|UNLOCKED(?:_ACCOUNTS?)?|SIGNING_PROVIDER|SIGNER_PROVIDER)(?:_|$)/i.test(k) && !['NODE_OPTIONS', 'NODE_PATH', 'HARDHAT_CONFIG', 'DEBUG', 'NODE_DEBUG', 'NODE_DEBUG_NATIVE', 'HARDHAT_VERBOSE', 'NODE_V8_COVERAGE'].includes(k), 'UNSAFE_SIGNING_ENVIRONMENT');
 }
 function toolSourcePin(expected) {
   const files = ['hardhat.cjs', 'native.cjs', 'prompt.cjs', 'safety.cjs', 'send.cjs', 'terminal.cjs'];

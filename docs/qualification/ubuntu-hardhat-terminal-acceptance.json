@@ -9,21 +9,21 @@
     "ethers": "6.17.0",
     "nodeExecutableSha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48"
   },
-  "toolSourceSha256": "7e3465d088ef6145761b004b067e8c5e76f8a9f42b54f9420657ab911d78dfe4",
+  "toolSourceSha256": "baee8cccb754215546d72779febad1a67c5cab16f7a64e94414e1b2d7a9356e0",
   "productionSourceFiles": {
     "hardhat.cjs": "539be27e6fa2099070cb8145ed21a2a89a6ca4d866760b54d4a753297d033460",
-    "native.cjs": "533cc16cf1e7eaca25b59013644255f09416245598ecb473adadf049bf879231",
-    "prompt.cjs": "dea6031c7ea087586f8f8c484e3dd806bfd70d6c120b2dda9a482e269ee8d59c",
-    "safety.cjs": "4923a59b0a651ebc0db6a531cb60b682a85d0eb247804581be73025f85c0d292",
+    "native.cjs": "c6fec5d0b1f73976fb7109f5daaf860c01c84122d4cd8cbf9b421a3ec36b8533",
+    "prompt.cjs": "de7fae38b00f87985425e8c01e5fa20c80914ff488e7a166525972a6cf9d84d9",
+    "safety.cjs": "e9bfb1fb43c17a758fe1e47d7d1dab3f26dad82019d936a69f467c87864a2353",
     "send.cjs": "94a00db7db63a1a00c7e301cc0f293a497d254d2b2f7490df85279cbec623935",
     "terminal.cjs": "6d839dc89b8f56dc1ead2ec8b290e2df682a92a130ea539f24779232e0624acb"
   },
   "tests": {
     "terminalSecurityAndTransport": {
-      "passed": 20,
+      "passed": 24,
       "failed": 0,
       "skipped": 0,
-      "tapSha256": "33e214708d602e4f023c8bda195e651a32bc2139354faa6267187e7637f74320"
+      "tapSha256": "11cec4c0a8b63661543dadf031fdfaf00251f2128e4ec31fb7918adb2673f4dd"
     },
     "existingCompanionRequiredCompilerSuite": {
       "passed": 448,
@@ -38,7 +38,7 @@
     },
     "actualHiddenTerminalCLI": {
       "status": "PASS",
-      "reportSha256": "60b7ffc2e4197d71f178e6331103649baf6948ac63d915ab340628ea48f70272",
+      "reportSha256": "446cbdf1b5fd232ec5fd6ee75f47aa5b8096d23472b530cd90f208a92a6737ed",
       "scope": {
         "backendSubmissions": 1,
         "eip1898": "canonical hash verified then adapted to numbered local EDR read",
@@ -56,8 +56,108 @@
             "project": "manager",
             "reconciliationCommand": true,
             "reviewCommand": true,
-            "toolSourceSha256": "7e3465d088ef6145761b004b067e8c5e76f8a9f42b54f9420657ab911d78dfe4",
-            "transactionHash": "0x9a119e45772790aa2a3e26972d7d3e84a547a64537e766477de193b939217d6b"
+            "toolSourceSha256": "baee8cccb754215546d72779febad1a67c5cab16f7a64e94414e1b2d7a9356e0",
+            "transactionHash": "0xc4053cda639ee3d2e13978d0cbc37f27c0c2a75fe122560a66e69fffd9a2daf4"
+          }
+        ],
+        "status": "PASS"
+      }
+    },
+    "coreAuthorityPositiveAndNegativeControls": {
+      "status": "PASS",
+      "readOnlyChecks": 5,
+      "governorSignatures": 0,
+      "chainTransactionsForChecks": 0,
+      "reportSha256": "e353d353840e9e9a04032945a91533bb6ec466e5c41c2e246bbc510b501d406c",
+      "scope": {
+        "backendSubmissions": 14,
+        "eip1898": "canonical hash verified then adapted to numbered local EDR read",
+        "finality": "synthetic finalized=latest",
+        "governorSignatures": 0,
+        "localOnly": true,
+        "publicProviderCalls": 0,
+        "realKeys": false,
+        "reports": [
+          {
+            "authorityDenials": {
+              "chainTransactions": 0,
+              "checks": [
+                {
+                  "chainMutation": false,
+                  "contract": "AGIJobManager",
+                  "creatorDenied": true,
+                  "method": "transferOwnership",
+                  "ownerPositiveControl": true
+                },
+                {
+                  "chainMutation": false,
+                  "contract": "AGIJobManager",
+                  "creatorDenied": true,
+                  "method": "addModerator",
+                  "ownerPositiveControl": true
+                }
+              ],
+              "comprehensiveAuthorityComplete": false,
+              "governorSignatures": 0,
+              "schema": "ubuntu-hardhat-disposable-authority-denials-v1",
+              "snapshot": {
+                "hash": "0x648d9b6ac414b80220b54e42c5af14dcfd80e327b7b9d8db0f52466801ec78ec",
+                "number": 10
+              }
+            },
+            "creations": 9,
+            "deployerPrivileges": "constructor governor; pending owner zero; deployer moderator false; native exact runtime/state verification passed",
+            "explorerAccepted": false,
+            "governor": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+            "nativeCompletion": "CORE_CREATED_PAUSED_CONFIGURATION_SEPARATE",
+            "operations": 9,
+            "project": "manager",
+            "source": "d371d95cfcc44b9133cda4bba55304f727917f18"
+          },
+          {
+            "authorityDenials": {
+              "chainTransactions": 0,
+              "checks": [
+                {
+                  "chainMutation": false,
+                  "contract": "AscensionAccess",
+                  "creatorDenied": true,
+                  "method": "transferOwnership",
+                  "ownerPositiveControl": true
+                },
+                {
+                  "chainMutation": false,
+                  "contract": "AscensionRiskOracle",
+                  "creatorDenied": true,
+                  "method": "transferOwnership",
+                  "ownerPositiveControl": true
+                },
+                {
+                  "chainMutation": false,
+                  "contract": "AscensionJobMarket",
+                  "creatorDenied": true,
+                  "method": "transferOwnership",
+                  "ownerPositiveControl": true
+                }
+              ],
+              "comprehensiveAuthorityComplete": false,
+              "governorSignatures": 0,
+              "schema": "ubuntu-hardhat-disposable-authority-denials-v1",
+              "snapshot": {
+                "hash": "0x0a0d460c83fc39dae6ad493d154505c8062dbc4b3bc99542209aa30b8e5f3717",
+                "number": 15
+              }
+            },
+            "creations": 5,
+            "explorerAccepted": false,
+            "globallyPaused": false,
+            "governor": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+            "governorBindings": 0,
+            "nativePrefixPassed": true,
+            "operations": 5,
+            "project": "alpha",
+            "source": "38064bec3423218f87c6b81760ac6768b3e7d4e5",
+            "uncommissioned": true
           }
         ],
         "status": "PASS"
@@ -83,7 +183,9 @@
       "status": "RUNNING",
       "expectedOperations": 39,
       "expectedCreations": 25,
-      "compilerInputSha256": "a962576832d4540c4cd682f9251b6eed2a333c87a1ce5fa61ed5716e7091b891"
+      "compilerInputSha256": "a962576832d4540c4cd682f9251b6eed2a333c87a1ce5fa61ed5716e7091b891",
+      "expectedCloseout": "39 creator operations / 25 creations, awaiting-commissioning; pending governor settings are not an unexpected native failure",
+      "boundedAuthorityChecksMayRemainIncomplete": true
     }
   },
   "keyHandling": {
@@ -96,7 +198,9 @@
     "rawSignedTransactionExportRequired": false,
     "rawSignedTransactionsPersistedByTerminalTool": false,
     "buffersClearedAndWalletReferencesDropped": true,
-    "guaranteedJavaScriptMemoryErasureClaimed": false
+    "guaranteedJavaScriptMemoryErasureClaimed": false,
+    "malformedInputHiddenUntilEnter": true,
+    "nodeDebugStreamLoggingRejected": true
   },
   "acceptanceLimits": {
     "emptyCodeCreatorOnly": true,
@@ -124,5 +228,12 @@
       "artifact": 12072489816,
       "artifactSha256": "1da8f5a17978b92bf355537076125063b064c287d71b5c3e40858a9fcc33d025"
     }
-  }
+  },
+  "priorRehearsalDiagnostic": {
+    "scope": "Disposable test HRE reader adapter only",
+    "status": "Stopped after paused-finalization preparation by forbidden eth_accounts query",
+    "logSha256": "11f78a50932a219ef458ce214e12e1694d2f09f6d5abfce2ef03347693e00da4",
+    "fix": "Test HRE getContractAt now supplies the explicit read-only provider instead of discovering a signer. Original contract/native API source unchanged. Fresh full rerun is required and in progress."
+  },
+  "receiptRecheckPolicy": "First Jobs prefix verification in each process checks every receipt; reuse is in memory only and requires an identical head/view plus fresh native canonical last-receipt validation. Any drift/failure or process restart requires full verification."
 }

@@ -92,11 +92,13 @@ Only when ready, the owner initiates this command on their Ubuntu terminal with 
 
 The hidden prompt accepts 64 hex digits, optionally prefixed with `0x`; no characters or asterisks are echoed. Pipes/redirected input are refused. Backspace works. Enter submits the local entry; Ctrl-C/Ctrl-D cancels. Terminal echo/raw mode is restored on handled completion, cancellation and signals. A forced kill cannot run cleanup; restore a damaged terminal with `stty sane` before continuing.
 
-The tool refuses key/mnemonic/keystore/unlocked-account environment settings, loader/debug/report flags and enabled core dumps. Use a normal unsupervised local terminal without shell tracing, terminal recording, heap profiling or debugger attachment. Do not use `.env`, `export`, shell `read`, command arguments, npm logging or pasted shell assignments for this key. The prompt is the sole production key input.
+The tool refuses key/mnemonic/keystore/unlocked-account environment settings, loader/debug/report flags (including `NODE_DEBUG` and `NODE_DEBUG_NATIVE`) and enabled core dumps. Malformed and oversized entry stays hidden until Enter; an invalid early character does not restore echo and expose the rest of the line. Use a normal unsupervised local terminal without shell tracing, terminal recording, heap profiling or debugger attachment. Do not use `.env`, `export`, shell `read`, command arguments, npm logging or pasted shell assignments for this key. The prompt is the sole production key input.
 
 The key is held in-process only. Input buffers are cleared; wallet references are dropped after signing. JavaScript/ethers may make immutable internal copies, so this is **not a promise of guaranteed memory erasure**. The process is short-lived and exits after one operation. The key is never supplied to a provider, Hardhat accounts config, child process, journal or error renderer. The tool does not persist signed raw transaction bytes either.
 
 Source/config/plan/native session, latest/pending nonce, account code, balance, block gas and fees are checked again after key entry. The derived signer must equal the chosen native-plan deployer and differ from d76. Every signed field is checked by the original native verifier before submission. No factory wrapping, type 4, delegation, nonce replacement, fee bump, token transfer, unpause or arbitrary-call command is available.
+
+For Jobs, every receipt in the native prefix is verified before the first key prompt in each process. A second check can reuse only that in-memory proof, with identical journal head/operation bytes and fresh native validation of the last fixed canonical receipt (whose block hash binds all ancestors). Journal/source drift or a failed check discards reuse; a restarted process always verifies the whole prefix again. A file-supplied approval flag never seeds this proof.
 
 ## Receipt recovery and restart
 
@@ -129,6 +131,35 @@ After Manager's ninth reconciliation, run the original `core-session.cjs complet
 Manager's seven constructor arguments are ordered: `usdcTokenAddress`, `baseIpfsUrl`, `ensConfig`, `rootNodes`, `merkleRoots`, `settlementWallets`, `initialGovernor`. ENS roots are `[club, agent, alphaClub, alphaAgent]`; Merkle roots `[validator, agent]`; settlement wallets `[30% recipient, 10% recipient]`. The final argument is d76. No optional helper is silently deployed. Manager starts intake paused; NFT admission starts disabled with an empty registry.
 
 Jobs' 11 coordinator/implementation ownership transfers use its native immediate handover/readback. Do not invent eleven Ledger accept calls. Separately inspect any actual pending ownership reported for IdentityRegistry/TaxPolicy and resolve through the governor's supported path before final acceptance. SystemPause ownership must remain the source-defined contract topology; transferring every contract directly to a wallet would be incorrect.
+
+### Jobs' later governor steps on the Mac
+
+The original native `awaiting-commissioning` closeout intentionally permits pending IdentityRegistry/TaxPolicy acceptance and FeePool governance/treasury configuration. Consequently its bounded certificate need not be complete immediately after 39 creator operations. This is a later governor phase, with no requirement to import d76's key or use the optional companion.
+
+After exact source verification and fresh independent owner/pending-owner/role readback, use Etherscan → MetaMask → Ledger from d76. For the common reviewed case in which FeePool governance and treasury are both d76, the simple sequence is:
+
+| Order | Etherscan target/method | Exact parameters | Expected readback |
+| --- | --- | --- | --- |
+| 1 | New IdentityRegistry: `acceptOwnership()` | None; require its pending owner is d76 first | owner=d76, pendingOwner=0 |
+| 2 | New TaxPolicy: `acceptOwnership()` | None; require its pending owner is d76 first | owner=d76, pendingOwner=0 |
+| 3 | New SystemPause: `executeGovernanceCall(address,bytes)` | target=new FeePool; data=`FeePool.setGovernance(d76)` | FeePool governance=d76; owner remains SystemPause |
+| 4 | New SystemPause: `executeGovernanceCall(address,bytes)` | target=new FeePool; data=`FeePool.setTreasuryAllowlist(d76,true)` | FeePool treasuryAllowlist(d76)=true |
+| 5 | New SystemPause: `executeGovernanceCall(address,bytes)` | target=new FeePool; data=`FeePool.setTreasury(d76)` | FeePool treasury=d76; owner remains SystemPause |
+
+The FeePool setters are forwarded through SystemPause because it owns FeePool. These are five separate, zero-ETH, owner-approved governor transactions, conditional on actual pending state. They do not unpause, fund, admit participants or alter economic parameters. If the reviewed treasury/governance roles differ, use those exact approved addresses; if StakeManager treasury differs from its initial d76 value, its allowlist/treasury changes likewise go through SystemPause in a separately reviewed sequence. Never choose or infer a treasury merely from this example.
+
+For d76 specifically, the following **inner calldata only** was encoded/decoded against the exact 9a79 FeePool artifact ABI. The actual outer transaction still targets the **new SystemPause** and must wrap the inner data with the **new FeePool** address using `executeGovernanceCall`; this is not a standalone transaction or approval.
+
+```text
+setGovernance(d76):
+0xab033ea9000000000000000000000000d76ad27a1bcf8652e7e46be603fa742fd1c10a99
+setTreasuryAllowlist(d76,true):
+0x2d4610da000000000000000000000000d76ad27a1bcf8652e7e46be603fa742fd1c10a990000000000000000000000000000000000000000000000000000000000000001
+setTreasury(d76):
+0xf0f44260000000000000000000000000d76ad27a1bcf8652e7e46be603fa742fd1c10a99
+```
+
+Compare full outer calldata, sender, chain, target, zero value, nonce, gas and both fees before each Ledger approval. After each, reconcile the exact finalized receipt and state; never retry an uncertain wallet submission. All deployer-wallet permission probes must remain false. Even a later fully matching bounded certificate does not establish complete indirect/external authority or explorer acceptance.
 
 After receipt reconciliation, exact source verification must cover **every actual component**, including libraries, implementation contracts and coordinator. Bind Standard JSON/compiler/settings/constructor bytes/library addresses/immutables and compare all runtime bytes at a canonical finalized block. Independently observe exact explorer acceptance; a submitted verification request, matching address, green UI badge or deployment report alone is insufficient. Preserve the packages for the Mac governor's independent review.
 

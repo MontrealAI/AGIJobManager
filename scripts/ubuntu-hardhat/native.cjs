@@ -2,6 +2,28 @@
 const path = require('node:path'), fs = require('node:fs'), { createRequire } = require('node:module');
 const { GOVERNOR, SOURCES, need, canonical, pin, sourceGuard } = require('./safety.cjs');
 
+function createJobsPrefixVerifier(profile, provider) {
+  // The first check in this process verifies EVERY native receipt. After key
+  // entry, an unchanged journal plus its last fixed canonical receipt preserves
+  // that proof: the block hash also binds every ancestor. No disk flag or prior
+  // process can seed this cache; a new head or any failure requires full checks.
+  let verified = null;
+  return async () => {
+    try {
+      profile.revalidateSource();
+      const state = await profile.session.inspect(), view = canonical(state.operations);
+      if (verified?.head === state.head) need(verified.view === view, 'JOBS_JOURNAL_VIEW_CHANGED');
+      const prefix = state.operations.filter(x => ['observed', 'accepted'].includes(x.state));
+      const required = verified?.head === state.head ? prefix.slice(-1) : prefix;
+      for (const op of required) await profile.session.requireObserved(op.key, await provider.getTransaction(op.transactionHash));
+      profile.revalidateSource();
+      const end = await profile.session.inspect();
+      need(end.head === state.head && canonical(end.operations) === view, 'JOBS_JOURNAL_CHANGED_DURING_VERIFICATION');
+      verified = { head: state.head, view };
+    } catch (error) { verified = null; throw error; }
+  };
+}
+
 async function loadNative(c, runtime) {
   const guard = sourceGuard(c.checkout, c.project), requireNative = createRequire(path.join(c.checkout, 'package.json'));
   const pins = [], read = file => { const p = pin(file); pins.push(p); return JSON.parse(p.bytes); };
@@ -70,12 +92,7 @@ async function loadNative(c, runtime) {
       if (op.state === 'prepared') await profile.session.handoff({ planHash, unsignedHash: op.unsignedHash, policyHash: op.policyHash });
       return current();
     };
-    fresh = async () => {
-      profile.revalidateSource(); const s = await state();
-      for (const op of s.operations.filter(x => ['observed', 'accepted'].includes(x.state)))
-        await profile.session.requireObserved(op.key, await runtime.provider.getTransaction(op.transactionHash));
-      profile.revalidateSource();
-    };
+    fresh = createJobsPrefixVerifier(profile, runtime.provider);
     checkSigned = (raw, p) => E.importSignedEnvelope(p.packet.envelope, raw);
     reconcile = () => profile.session.observe();
   } else throw Error('UNSUPPORTED_PROJECT');
@@ -83,4 +100,4 @@ async function loadNative(c, runtime) {
   const binding = { project: c.project, sourceCommit: guard.commit, sourceTree: guard.tree, planHash, creator, governor: GOVERNOR, session };
   return { binding, plan, prepare, current, fresh: async p => { unchanged(); await fresh(p); unchanged(); }, checkSigned, reconcile, assert: unchanged };
 }
-module.exports = { loadNative };
+module.exports = { loadNative, createJobsPrefixVerifier };
