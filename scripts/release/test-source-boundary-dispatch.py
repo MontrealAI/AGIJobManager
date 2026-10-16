@@ -572,6 +572,102 @@ class SourceBoundaryDispatch(unittest.TestCase):
                     path.unlink()
 
 
+
+    def test_12_fresh_fork_provenance_and_exact_report_comparison(self):
+        """Fresh execution provenance does not promote archived evidence or flags."""
+        workflow = '.github/workflows/mainnet-fork.yml'
+        provenance = 'docs/qualification/mainnet-cutover-f274c6be-provenance.json'
+        expected = 'docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json'
+        historical = 'docs/qualification/mainnet-cutover-next-deployment.json'
+        expected_sha = '34d8d737fd540f83317551bdf3e190c0c8d72d7e7aaef60303d0234f4bbfb0b1'
+        earlier_sha = '36bc8cfb2d3d8e15b04372ea1fbed3fe407a921c0d70b525d673be4447f63746'
+        workflow_text = (self.current / workflow).read_text()
+        command = 'diff -u ' + expected + ' build/qualification/mainnet-cutover.json'
+        self.assertEqual([line.strip() for line in workflow_text.splitlines()
+                          if 'run: diff ' in line], ['run: ' + command])
+        self.assertEqual(workflow_text.count('run: npm run test:mainnet-fork'), 1)
+        self.assertEqual(workflow_text.count('run: npm run test:cutover'), 1)
+        raw = (self.current / expected).read_bytes()
+        self.assertEqual(M['sha'](raw), expected_sha)
+        self.assertEqual(M['sha']((self.current / historical).read_bytes()), earlier_sha)
+        report = M['strict_json'](raw)
+        self.assertEqual(len(report['sourceSha256']), 76)
+        for name, digest in report['sourceSha256'].items():
+            self.assertEqual(M['sha']((self.current / name).read_bytes()), digest, name)
+        self.assertEqual(report['passed'], 23)
+        self.assertEqual(len(report['assertions']), 23)
+        self.assertEqual(report['publicTransactionsBroadcast'], 0)
+        self.assertIs(report['fixtureWallets'], True)
+        self.assertIs(report['productionActivationApproved'], False)
+        receipt = M['strict_json']((self.current / provenance).read_bytes())
+        required = {
+            'sourceCommit': 'f274c6be8ff982deed8edbc1003e24fa45fc07ad',
+            'sourceTree': 'aa9874d205712d0c4ee7caf93018fc2cc9704606',
+            'run': 38980884057, 'job': 117241221836,
+            'workflowConclusion': 'failure', 'artifactId': 12081485164,
+            'artifactBytes': 8981,
+            'artifactSha256': '69f6e651297714385e6fca1a5f112872d19e1f70a4bda6394a924bd8f4f07d3d',
+            'artifactMember': 'mainnet-cutover.json', 'reportBytes': len(raw),
+            'reportSha256': expected_sha, 'expectedReport': expected,
+            'executedReportEqualsExpectedBytes': True, 'sourceInputs': 76,
+            'allSourceHashesMatchRecordedSource': True,
+            'preservedEarlierReport': {'path': historical, 'sha256': earlier_sha},
+            'usdcCasesPassed': 11, 'cutoverCasesPassed': 23,
+            'publicTransactionsBroadcast': 0, 'fixtureWallets': True,
+            'productionActivationApproved': False, 'scope': report['scope'],
+        }
+        for key, value in required.items():
+            self.assertEqual(receipt[key], value, key)
+        # Execute the same full-byte comparator as CI, without a fork/provider.
+        with tempfile.TemporaryDirectory(dir=self.directory) as temp:
+            executed = pathlib.Path(temp) / 'executed.json'
+            def compared(data):
+                executed.write_bytes(data)
+                return subprocess.run(['diff', '-u', str(self.current / expected), str(executed)],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=False).returncode
+            self.assertEqual(compared(raw), 0)
+            mutations = []
+            changed = copy.deepcopy(report)
+            changed['sourceSha256'][next(iter(changed['sourceSha256']))] = '0' * 64
+            mutations.append(('source-hash', changed))
+            for key, value in (('passed', 22), ('publicTransactionsBroadcast', 1),
+                               ('productionActivationApproved', True), ('fixtureWallets', False)):
+                changed = copy.deepcopy(report); changed[key] = value
+                mutations.append((key, changed))
+            changed = copy.deepcopy(report); changed['assertions'].pop()
+            mutations.append(('removed-assertion', changed))
+            changed = copy.deepcopy(report); changed['unreviewedField'] = 'extra'
+            mutations.append(('unknown-field', changed))
+            for label, changed in mutations:
+                with self.subTest(report_drift=label):
+                    self.assertEqual(compared((json.dumps(changed, indent=2) + '\n').encode()), 1)
+        schema = M['strict_json']((self.current / M['SCHEMA']).read_bytes())
+        for name in (workflow, provenance):
+            self.assertIn(name, M['REVIEW_PATHS'])
+            self.assertIn(name, schema['properties']['reviewedInputChanges']['items']['enum'])
+            with self.subTest(source_input=name):
+                self.mutate(self.current, name, lambda data: data + b'\n',
+                    lambda: self.assertRaises(M['BoundaryError'], M['verify_explicit'], self.args()))
+                omitted = copy.deepcopy(self.manifest); omitted['inputs'].pop(name)
+                with self.assertRaises(M['BoundaryError']):
+                    M['source_inventory'](self.current, self.objects, omitted, 'staged')
+        name = 'docs/qualification/mainnet-cutover-unreviewed-provenance.json'
+        path = self.current / name
+        self.assertFalse(path.exists()); path.write_text('{}\n')
+        try:
+            forged = copy.deepcopy(self.manifest)
+            forged['inputs'][name] = {'mode': '100644', 'sha256': M['sha'](path.read_bytes()),
+                'predecessorGitBlob': None, 'predecessorSha256': None,
+                'reviewReason': 'Self-approved adjacent evidence'}
+            forged['reviewedInputChanges'].append(name)
+            with self.assertRaisesRegex(M['BoundaryError'], 'Schema enum mismatch'):
+                M['validate_schema'](forged, schema)
+            with self.assertRaisesRegex(M['BoundaryError'], 'Unreviewed source input additions'):
+                M['source_inventory'](self.current, self.objects, forged, 'staged')
+        finally:
+            path.unlink()
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--object-store', action='append')

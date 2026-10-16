@@ -565,6 +565,7 @@
       "uniqueItems": true,
       "items": {
         "enum": [
+          ".github/workflows/mainnet-fork.yml",
           ".github/workflows/security-verification.yml",
           "docs/DEPLOYMENT_CONFIGURATION.md",
           "docs/REPO_MAP.md",
@@ -575,6 +576,7 @@
           "docs/qualification/history/expected-mainnet-cutover-v1.18.0.json",
           "docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json",
           "docs/qualification/history/next-deployment-contract-changes-v1.18.0.json",
+          "docs/qualification/mainnet-cutover-f274c6be-provenance.json",
           "docs/security/pr1586-e1ed502-evidence.json",
           "docs/security/pr1586-e1ed502-review.md",
           "forge-test/harness/AGIJobManagerHarness.sol",

@@ -66,6 +66,9 @@ ADDITIVE_HISTORY = {
 # A finite review slice, not a mutable baseline or blanket directory exclusion.
 REVIEW_PATHS = {
     MANIFEST, SCHEMA, VERIFIER, DISPATCHER, TESTS,
+    # Exact current-source fork comparison/provenance slice; no history exclusion.
+    '.github/workflows/mainnet-fork.yml',
+    'docs/qualification/mainnet-cutover-f274c6be-provenance.json',
     # Exact PR1595 review/order/gate evidence slice; no directory exclusion.
     '.github/workflows/security-verification.yml',
     'docs/security/pr1586-e1ed502-evidence.json',

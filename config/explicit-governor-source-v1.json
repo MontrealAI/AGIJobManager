@@ -101,10 +101,10 @@
     },
     ".github/workflows/mainnet-fork.yml": {
       "mode": "100644",
-      "sha256": "37c0ea32eea0705db125832ea2f65a2a941b6be883bb93219b47f6958fc18e5b",
+      "sha256": "95f52a48583736cd5e422a5e58baa3f67dea86f30a36329583102da8b5f49258",
       "predecessorGitBlob": "3cb7624c24df6d7acef2086beaab8452532c080d",
       "predecessorSha256": "37c0ea32eea0705db125832ea2f65a2a941b6be883bb93219b47f6958fc18e5b",
-      "reviewReason": null
+      "reviewReason": "Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives."
     },
     ".github/workflows/pages.yml": {
       "mode": "100644",
@@ -1578,10 +1578,10 @@
     },
     "docs/REPO_MAP.md": {
       "mode": "100644",
-      "sha256": "5a48652868c4419ac2d3733db1bc24e583fbfb3b0021b8118b703a9310fdc1ae",
+      "sha256": "75ef845d4f83abfccba6c63730011de954f3b852fbc62b2517ebfec8f6dabf77",
       "predecessorGitBlob": "bd6172a92b71a42488c80a5dd540536322bde20f",
       "predecessorSha256": "dce24cd65376525355e075b80c8999f074437ddae1f091fc4116e9e57a01220f",
-      "reviewReason": "Document exact read/relay RPC configuration and qualify generated repository-map/documentation coverage."
+      "reviewReason": "Document exact read/relay RPC configuration and qualify generated repository-map/documentation coverage. Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives."
     },
     "docs/SCRIPTS_REFERENCE.md": {
       "mode": "100644",
@@ -2359,6 +2359,13 @@
       "predecessorGitBlob": null,
       "predecessorSha256": null,
       "reviewReason": "Retain exact archived historical bytes and external Git provenance, without current-source qualification or expanded authority claims."
+    },
+    "docs/qualification/mainnet-cutover-f274c6be-provenance.json": {
+      "mode": "100644",
+      "sha256": "e571ae880116773ca50355364520362d9e049cc616256e89e0d16bcc97cee753",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives."
     },
     "docs/qualification/mainnet-cutover-next-deployment.json": {
       "mode": "100644",
@@ -6842,10 +6849,10 @@
     },
     "schemas/explicit-governor-source-v1.schema.json": {
       "mode": "100644",
-      "sha256": "549626e22df7dc88dc2b9fb3e47f815023aba6ced852228f249aa05945be9cfb",
+      "sha256": "4578c29ad0187d1e7a0593dd06fac0d62f6896507f4cfc3254f6e8ae4fffd7fe",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add strict source-profile field, path and claim schema. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion."
+      "reviewReason": "Add strict source-profile field, path and claim schema. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion. Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives."
     },
     "scripts/advisor/sample_job_state.json": {
       "mode": "100644",
@@ -7451,10 +7458,10 @@
     },
     "scripts/release/check-explicit-governor-boundaries.py": {
       "mode": "100644",
-      "sha256": "f3bddfa00e79bb6adc5977c90f1e08aeb0b9bf1b37cd8ede342c620ca1e1605a",
+      "sha256": "c11e15830388b263a52ef172769f552cc0795e1d1c0d5f03983054f7b9907270",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion."
+      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion. Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives."
     },
     "scripts/release/check-source-boundaries.py": {
       "mode": "100644",
@@ -7514,10 +7521,10 @@
     },
     "scripts/release/test-source-boundary-dispatch.py": {
       "mode": "100644",
-      "sha256": "4cd8fd3e2ff929009027edc3e718fde3b075e21455a443b019a48b14d8bd8ea5",
+      "sha256": "e7e41226e26f2f2427bda4c1cdc5a6497995823ce526bfd07c3519bd386412bd",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion."
+      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion. Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives."
     },
     "scripts/release/verify-genesis-ui.mjs": {
       "mode": "100644",
@@ -10139,6 +10146,7 @@
     }
   },
   "reviewedInputChanges": [
+    ".github/workflows/mainnet-fork.yml",
     ".github/workflows/security-verification.yml",
     "docs/DEPLOYMENT_CONFIGURATION.md",
     "docs/REPO_MAP.md",
@@ -10149,6 +10157,7 @@
     "docs/qualification/history/expected-mainnet-cutover-v1.18.0.json",
     "docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json",
     "docs/qualification/history/next-deployment-contract-changes-v1.18.0.json",
+    "docs/qualification/mainnet-cutover-f274c6be-provenance.json",
     "docs/security/pr1586-e1ed502-evidence.json",
     "docs/security/pr1586-e1ed502-review.md",
     "forge-test/harness/AGIJobManagerHarness.sol",
