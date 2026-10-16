@@ -9,7 +9,7 @@ import subprocess
 import time
 import tempfile
 from urllib.parse import quote
-from release_common import REPOSITORY, TAG, TITLE, require, validate_qualification, verify_assets
+from release_common import REPOSITORY, TAG, TITLE, require, validate_qualification, verify_assets, github_release_notes
 
 root = pathlib.Path(__file__).resolve().parents[2]
 meta = root / 'docs/releases' / TAG
@@ -186,7 +186,8 @@ while True:
         break
     page += 1
 if not (len(matches) <= 1): raise AssertionError('Multiple releases have this tag.')
-notes = (meta / 'RELEASE_NOTES.md').read_text()
+manifest = json.loads((out / 'RELEASE_MANIFEST.json').read_text())
+notes = github_release_notes((meta / 'RELEASE_NOTES.md').read_bytes(), f'docs/releases/{tag}/RELEASE_NOTES.md', manifest['files'])
 if matches:
     existing = matches[0]
     if not (existing['draft']): raise AssertionError('Published releases are immutable by policy; refusing to edit.')

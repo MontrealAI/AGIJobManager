@@ -42,15 +42,19 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 **En français :** l’intégration ENS est vérifiée dans le relevé daté, mais l’ouverture des travaux payants reste suspendue. Ce relevé ne constitue ni un état en temps réel ni une autorisation de paiement.
 
+## Ideas behind the work
+
+[Read four selected essays](https://montrealai.github.io/AGIJobManager/#reading) on choosing workers, public work history and delivery evidence. Each article links to its current guide. [Reading notes and version context](docs/READING.md) · Articles en anglais, résumés français disponibles.
+
 ## For developers, operators and release reviewers
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Source candidate: v1.17.2 — Recoverable Alpha project Builder and guarded router verification.**
+**Source candidate: v1.18.0 — Recoverable Alpha project Builder and guarded router verification.**
 [Operate the already deployed instance](docs/OPERATIONS/COMMISSIONING.md) ·
-[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Candidate notes](docs/releases/v1.17.2/RELEASE_NOTES.md).
+[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Candidate notes](docs/releases/v1.18.0/RELEASE_NOTES.md).
 
-**[previously published v1.17.1 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.17.1/AGIJobManager-v1.17.1-COMPLETE.zip)** · [previously published v1.17.1 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.17.1/QUALIFICATION.json).
+**[previously published v1.17.2 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.17.2/AGIJobManager-v1.17.2-COMPLETE.zip)** · [previously published v1.17.2 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.17.2/QUALIFICATION.json).
 The source candidate is not yet published and does not inherit the prior release's qualification.
 Software publication and intake activation are separate decisions.
 

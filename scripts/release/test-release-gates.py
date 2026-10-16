@@ -16,7 +16,7 @@ import unittest
 import zipfile
 from unittest.mock import Mock, patch
 from urllib.parse import quote
-from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, LIMIT, source_path, validate_qualification, verify_assets, sha, packaged_guide, require_builder_outputs, verify_builder_rebuild, builder_archive_context, verified_builder_context, verify_builder_context_outputs
+from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, LIMIT, source_path, validate_qualification, verify_assets, sha, packaged_guide, github_release_notes, require_builder_outputs, verify_builder_rebuild, builder_archive_context, verified_builder_context, verify_builder_context_outputs
 
 PUBLISHER = Path(__file__).with_name('publish-release.py')
 SOURCE = 'a' * 40
@@ -157,7 +157,7 @@ class PublicationIntegrationTests(ReleaseGateTests):
         self.out=self.root/'assets';self.out.mkdir()
         (self.out/f'AGIJobManager-{TAG}-COMPLETE.zip').write_bytes(b'mocked qualified package')
         (self.out/'agijobmanager-usdc.html').write_text('mocked console')
-        (self.out/'RELEASE_MANIFEST.json').write_text(json.dumps({'sourceCommit':SOURCE,'sourceTree':TREE}))
+        (self.out/'RELEASE_MANIFEST.json').write_text(json.dumps({'sourceCommit':SOURCE,'sourceTree':TREE,'files':{}}))
         for name in BUILDER_ASSETS: (self.out/name).write_bytes(('mocked builder '+name).encode())
         self.config['artifactDigests']={p.name:sha(p.read_bytes()) for p in self.out.iterdir()}
         self.release={'id':999,'draft':True,'tag_name':TAG,'target_commitish':SOURCE,'name':TITLE,'body':'Reviewed release notes','assets':[],'prerelease':False,'html_url':'https://github.invalid/release','upload_url':f'https://uploads.github.com/repos/{REPOSITORY}/releases/999/assets{{?name,label}}'}
@@ -787,6 +787,15 @@ class PackagedGuideTests(unittest.TestCase):
             rendered = packaged_guide(original, source_name, available, guides)
             self.assertNotIn(b'](../', rendered)
             self.assertEqual((root / source_name).read_bytes(), original)
+
+    def test_public_notes_bind_parent_and_sibling_links_to_immutable_tag(self):
+        source = f'docs/releases/{TAG}/RELEASE_NOTES.md'
+        available = {'source/docs/DEPLOYMENT/OPTIONAL_METADATA_ROUTER.md', f'source/docs/releases/{TAG}/VALIDATION.md'}
+        original = b'[router](../../DEPLOYMENT/OPTIONAL_METADATA_ROUTER.md) [validation](VALIDATION.md#source)'
+        rendered = github_release_notes(original, source, available)
+        self.assertEqual(rendered, f'[router](https://github.com/{REPOSITORY}/blob/{TAG}/docs/DEPLOYMENT/OPTIONAL_METADATA_ROUTER.md) [validation](https://github.com/{REPOSITORY}/blob/{TAG}/docs/releases/{TAG}/VALIDATION.md#source)')
+        with self.assertRaises(ValueError):
+            github_release_notes(b'[missing](../../MISSING.md)', source, available)
 
 
 if __name__ == '__main__':

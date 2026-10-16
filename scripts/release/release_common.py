@@ -6,11 +6,11 @@ import posixpath
 import re
 import stat
 import subprocess
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import quote, urlsplit, urlunsplit
 
 REPOSITORY = 'MontrealAI/AGIJobManager'
 TAG = 'v' + json.loads((pathlib.Path(__file__).resolve().parents[2] / 'package.json').read_text())['version']
-TITLE = TAG + ' — Recoverable Alpha project Builder and guarded router verification'
+TITLE = TAG + ' — Guided SUCCESSOR Builder and preserved project history'
 BUILDER_ASSETS = {'My-SUCCESSOR-Omega-en.html', 'My-SUCCESSOR-Omega-fr.html', 'SUCCESSOR-Omega-editable-source.zip', 'SOURCE_MANIFEST.json'}
 BUILDER_ARCHIVE_ONLY_ASSETS = {'MANAGER_CONTEXT.json'}
 LIMIT = 450_000_000
@@ -172,6 +172,15 @@ def packaged_guide(data, source_name, available, guide_destinations):
         destination = guide_destinations.get(resolved, source_target)
         return match.group(1) + urlunsplit(('', '', destination, target.query, target.fragment)) + match.group(3)
     return re.sub(r'(\[[^\]\n]+\]\()([^()\s]+)(\))', rebase, data.decode('utf-8')).encode('utf-8')
+
+
+def github_release_notes(data, source_name, available):
+    """Resolve release-page links against this immutable tag and packaged files."""
+    destinations = {
+        name[7:]: f'https://github.com/{REPOSITORY}/blob/{TAG}/{quote(name[7:], safe="/")}'
+        for name in available if name.startswith('source/')
+    }
+    return packaged_guide(data, source_name, available, destinations).decode('utf-8')
 
 
 def run_jobs(api, run_id, attempt):

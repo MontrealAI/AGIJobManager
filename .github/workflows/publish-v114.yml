@@ -3,18 +3,18 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Enter PUBLISH_v1.17.2 after reviewing completed final-source qualification'
+        description: 'Enter PUBLISH_v1.18.0 after reviewing completed final-source qualification'
         required: true
         type: string
 permissions:
   contents: read
   actions: read
 concurrency:
-  group: publish-v1.17.2
+  group: publish-v1.18.0
   cancel-in-progress: false
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH_v1.17.2'
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH_v1.18.0'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -36,22 +36,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PUBLISH_CONFIRMATION: ${{ inputs.confirmation }}
           SOURCE_COMMIT: ${{ github.sha }}
-        run: python3 scripts/release/collect-qualification.py --source "$SOURCE_COMMIT" --out build/release/v1.17.2
+        run: python3 scripts/release/collect-qualification.py --source "$SOURCE_COMMIT" --out build/release/v1.18.0
       - name: Verify complete published download inventory
-        run: python3 scripts/release/verify-package.py build/release/v1.17.2 --published
+        run: python3 scripts/release/verify-package.py build/release/v1.18.0 --published
       - name: Attest exact-source release assembly
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
-          subject-path: build/release/v1.17.2/*
+          subject-path: build/release/v1.18.0/*
       - name: Verify artifact, repository, workflow and source attestation bindings
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for asset in build/release/v1.17.2/*; do
+          for asset in build/release/v1.18.0/*; do
             gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY" --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/publish-v114.yml" --signer-digest "$GITHUB_SHA" --source-digest "$GITHUB_SHA" --source-ref refs/heads/main --deny-self-hosted-runners
           done
       - name: Validate evidence, create draft, verify assets, then publish
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PUBLISH_CONFIRMATION: ${{ inputs.confirmation }}
-        run: python3 scripts/release/publish-release.py --qualification build/release/v1.17.2/QUALIFICATION.json --assets build/release/v1.17.2 --publish
+        run: python3 scripts/release/publish-release.py --qualification build/release/v1.18.0/QUALIFICATION.json --assets build/release/v1.18.0 --publish
