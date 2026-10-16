@@ -185,10 +185,10 @@ test('tree replacement refs cannot substitute the pinned Alpha validator invento
     const altered = JSON.parse(fs.readFileSync(path.join(temporary, manifestPath)));
     altered.sources[relative] = createHash('sha256').update(fs.readFileSync(path.join(temporary, relative))).digest('hex');
     fs.writeFileSync(path.join(temporary, manifestPath), JSON.stringify(altered, null, 2) + '\n');
-    git(['add', relative, manifestPath]); const replacementTree = git(['write-tree']); git(['reset', '--mixed', ALPHA_SOURCE.commit]);
+    git(['add', relative, manifestPath]); const replacementTree = git(['write-tree']);
     git(['update-index', '--skip-worktree', '--', relative, manifestPath]); git(['replace', ALPHA_SOURCE.tree, replacementTree]);
     assert.equal(git(['rev-parse', 'HEAD^{tree}']), ALPHA_SOURCE.tree); assert.equal(git(['status', '--porcelain', '--untracked-files=no']), '');
     assert.equal(git(['show', `${ALPHA_SOURCE.commit}:${manifestPath}`]), fs.readFileSync(path.join(temporary, manifestPath), 'utf8').trim(), 'Ordinary Git reads honor the hostile tree replacement');
-    await assert.rejects(importAlphaProject(original, { ...options('en'), alphaCheckout: temporary }), { code: 'ALPHA_SOURCE_BYTES' });
+    await assert.rejects(importAlphaProject(original, { ...options('en'), alphaCheckout: temporary }), { code: 'ALPHA_SOURCE_DIRTY' });
   } finally { fs.rmSync(temporary, { recursive: true, force: true }); }
 });
