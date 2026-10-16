@@ -99,7 +99,7 @@ fs.writeFileSync(
 );
 fs.writeFileSync(
   path.join(output, "sitemap.xml"),
-  '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://montrealai.github.io/AGIJobManager/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/employers/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/employers/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/successor/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/successor/</loc></url></urlset>',
+  '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://montrealai.github.io/AGIJobManager/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/employers/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/employers/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/workflows/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/workflows/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/successor/</loc></url><url><loc>https://montrealai.github.io/AGIJobManager/fr/successor/</loc></url></urlset>',
 );
 const files = {};
 function inventory(dir) {
