@@ -320,8 +320,8 @@
     },
     {
       "path": "test/browser-acceptance.mjs",
-      "bytes": 15306,
-      "sha256": "637acfb5609af0c19290aa4bb586ddf5b52e1a6dfff55f9f5b72ba734a46f687"
+      "bytes": 15551,
+      "sha256": "9c3ee82cf0855828fdc258399aa0715a8b83479a0229400e59661e6b808269ce"
     },
     {
       "path": "test/browser-campaign.mjs",
@@ -330,8 +330,8 @@
     },
     {
       "path": "test/browser-smoke.mjs",
-      "bytes": 3488,
-      "sha256": "99eb89a063335ff73500555e815e8e363d8f20189da21f843080f97a99d3a337"
+      "bytes": 3807,
+      "sha256": "a298ab7b8ddb880be551f2f7710717ac1b4467e0f1b54c1cbed43e33fb494533"
     },
     {
       "path": "test/campaign-device.test.mjs",

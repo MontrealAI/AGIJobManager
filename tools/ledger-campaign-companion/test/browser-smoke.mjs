@@ -33,6 +33,10 @@ try {
   await page.locator('#expectedHash').fill(`0x${'00'.repeat(32)}`);
   assert.equal(await page.locator('#sign').isDisabled(), true);
   await page.locator('#validate').click();
+  assert.equal(await page.locator('#status').textContent(), 'POLICY_HASH_MISMATCH');
+  // The independent policy binds the unsigned hash; exercise the later bytes gate separately.
+  await page.locator('#expectedPolicyHash').fill(policyDigest(review, `0x${'00'.repeat(32)}`));
+  await page.locator('#validate').click();
   assert.equal(await page.locator('#status').textContent(), 'UNSIGNED_HASH_MISMATCH');
   const blocked = await page.evaluate(async () => {
     const violations = [];
