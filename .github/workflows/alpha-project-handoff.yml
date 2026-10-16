@@ -1,22 +1,9 @@
 name: Alpha project handoff
 on:
   pull_request:
-    paths:
-      - 'scripts/successor/**'
-      - 'config/successor-builder-source.json'
-      - 'site/**'
-      - 'package.json'
-      - 'LICENSE'
-      - '.github/workflows/alpha-project-handoff.yml'
+    branches: [main]
   push:
     branches: [main]
-    paths:
-      - 'scripts/successor/**'
-      - 'config/successor-builder-source.json'
-      - 'site/**'
-      - 'package.json'
-      - 'LICENSE'
-      - '.github/workflows/alpha-project-handoff.yml'
 permissions:
   contents: read
 jobs:
@@ -29,6 +16,12 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Verify qualified source checkout
+        env:
+          QUALIFICATION_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$QUALIFICATION_SOURCE"
+          printf 'QUALIFIED_SOURCE_COMMIT=%s\n' "$QUALIFICATION_SOURCE"
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 22.23.2

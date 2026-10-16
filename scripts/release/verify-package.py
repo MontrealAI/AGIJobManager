@@ -6,7 +6,7 @@ import stat
 import subprocess
 import tempfile
 import zipfile
-from release_common import TAG, TITLE, REPOSITORY, WORKFLOWS, LIMIT, BUILDER_ASSETS, require, sha, valid_sha, verify_assets, source_path
+from release_common import TAG, TITLE, REPOSITORY, WORKFLOWS, LIMIT, require, sha, valid_sha, verify_assets, source_path, verify_builder_rebuild, builder_archive_context, verify_builder_context_outputs, strict_json
 
 def package_inventory(assets, *, published=False):
     """Verify local bytes and recorded bindings, without claiming live CI/provenance verification."""
@@ -17,10 +17,10 @@ def package_inventory(assets, *, published=False):
         config = json.loads(qualification.read_text())
         require(config.get('repository') == REPOSITORY and config.get('tag') == TAG and config.get('name') == TITLE and config.get('status') == 'qualified', 'Published qualification identity differs')
         require(valid_sha(config.get('sourceCommit')) and valid_sha(config.get('sourceTree')) and config.get('checkoutCommit') == config['sourceCommit'], 'Published source binding differs')
-        require(set(config.get('requiredSourceRuns', {})) == set(WORKFLOWS), 'Published qualification must record all seven workflows')
+        require(set(config.get('requiredSourceRuns', {})) == set(WORKFLOWS), f'Published qualification must record all {len(WORKFLOWS)} workflows')
     verify_assets(assets, config)
     manifest_bytes = (assets / 'RELEASE_MANIFEST.json').read_bytes()
-    manifest = json.loads(manifest_bytes)
+    manifest = strict_json(manifest_bytes)
     require(valid_sha(manifest.get('sourceCommit')) and valid_sha(manifest.get('sourceTree')), 'Invalid manifest source identity')
     return manifest, manifest_bytes
 
@@ -68,11 +68,11 @@ def verify_package(assets, *, published=False):
                 target.chmod(mode & 0o777)
         require((pathlib.Path(temp) / 'agijobmanager-usdc.html').read_bytes() == (assets / 'agijobmanager-usdc.html').read_bytes(), 'Standalone console differs')
         source_dir = pathlib.Path(temp) / 'source'
-        (source_dir / 'SOURCE.json').write_text(json.dumps({'commit': manifest['sourceCommit'], 'version': TAG[1:]}))
+        (source_dir / 'SOURCE.json').write_bytes(builder_archive_context(source_dir, manifest.get('builderSource')))
+        verify_builder_context_outputs(manifest['builderSource'], temp)
         regenerated = pathlib.Path(temp) / 'rebuilt'
         subprocess.run(['node', 'scripts/successor/build.mjs', '--out', str(regenerated)], cwd=source_dir, check=True)
-        for name in BUILDER_ASSETS:
-            require((regenerated / name).read_bytes() == (assets / name).read_bytes() == (pathlib.Path(temp) / name).read_bytes(), 'Clean Builder rebuild differs: ' + name)
+        verify_builder_rebuild(regenerated, assets, temp)
         subprocess.run(['node', '--test', 'scripts/successor/portable.test.mjs'], cwd=source_dir, check=True)
         subprocess.run(['node', 'scripts/release/verify-usdc-ui.mjs', '.'], cwd=source_dir, check=True)
         subprocess.run(['python3', 'scripts/release/test-release-gates.py'], cwd=source_dir, check=True)

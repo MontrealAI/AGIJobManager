@@ -11,6 +11,12 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); const orig
 const browser = await chromium.launch({ headless: true, ...(process.env.SUCCESSOR_CHROMIUM ? { executablePath: process.env.SUCCESSOR_CHROMIUM } : {}), args: ['--no-sandbox', '--disable-dev-shm-usage'] });
 const original = await fixture(), results = [];
 async function download(page, id, name) { const pending = page.waitForEvent('download'); await page.locator('#' + id).click(); const item = await pending, target = path.join(evidence, name); await item.saveAs(target); return fs.readFileSync(target, 'utf8'); }
+async function assertNativeLeaveWarning(page) {
+  const currentURL = page.url(), pending = page.waitForEvent('dialog');
+  const navigation = page.goto('about:blank').then(() => null, error => error);
+  const dialog = await pending; assert.equal(dialog.type(), 'beforeunload'); await dialog.dismiss();
+  assert.ok(await navigation, 'Dismissing the warning must cancel navigation'); assert.equal(page.url(), currentURL);
+}
 try {
   for (const lang of ['en', 'fr']) {
     const context = await browser.newContext({ viewport: { width: 390, height: 1000 } }), page = await context.newPage(), errors = [], external = [];
@@ -19,6 +25,8 @@ try {
     await context.route('**/*', route => { const url = route.request().url(); if (/^https?:/.test(url) && new URL(url).origin !== origin) { external.push(url); return route.abort(); } return route.continue(); });
     const url = `${origin}/AGIJobManager/${lang === 'fr' ? 'fr/' : ''}successor/#alpha-project`;
     await page.goto(url);
+    const dirty = () => page.evaluate(() => { const event = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(event); return event.defaultPrevented; });
+    await page.locator('#alpha-clear').click(); assert.equal(await dirty(), false, 'Clearing an empty workspace must not create unsaved work');
     for (const [name, buffer, code] of [['bom.json', Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(original)]), 'INPUT_BOM'], ['invalid-utf8.json', Buffer.from([0xff, 0xfe, 0x7b]), 'INPUT_UTF8']]) {
       await page.locator('#alpha-file').setInputFiles({ name, mimeType: 'application/json', buffer }); await page.locator('#error').waitFor({ state: 'visible' });
       assert.ok((await page.locator('#error').textContent()).includes(code)); assert.equal(await page.locator('#alpha-preview').isVisible(), false); assert.equal(await page.locator('#alpha-workspace').isVisible(), false);
@@ -34,13 +42,12 @@ try {
     await page.locator('#alpha-budget').fill('1.0000001'); await page.locator('#alpha-select').check(); await page.locator('#alpha-draft').click(); await page.locator('#error').waitFor({ state: 'visible' }); assert.equal(await page.locator('#alpha-plan').isVisible(), false);
     await page.locator('#alpha-budget').fill('100'); await page.locator('#alpha-draft').click(); await page.locator('#alpha-plan').waitFor({ state: 'visible' });
     const raw = await download(page, 'alpha-download', `planned-${lang}.json`), planned = JSON.parse(raw); assert.equal(planned.history.length, 3); assert.equal(planned.authority, 'none'); assert.equal(planned.settlement, 'not-connected'); assert.equal(await page.locator('#alpha-run').isDisabled(), true);
-    const dirty = () => page.evaluate(() => { const event = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(event); return event.defaultPrevented; });
     assert.equal(await dirty(), true, 'A download request cannot confirm a durable save');
     await page.evaluate(() => { window.__savedAnchorClick = HTMLAnchorElement.prototype.click; HTMLAnchorElement.prototype.click = function() {}; });
     await page.locator('#alpha-download').click(); assert.equal(await dirty(), true, 'Blocked download must preserve leave-page protection');
     await page.evaluate(() => { HTMLAnchorElement.prototype.click = window.__savedAnchorClick; });
     const cancelled = page.waitForEvent('download'); await page.locator('#alpha-download').click(); await (await cancelled).cancel();
-    assert.equal(await dirty(), true, 'Cancelled download must preserve leave-page protection');
+    assert.equal(await dirty(), true, 'Cancelled download must preserve leave-page protection'); await assertNativeLeaveWarning(page);
     assert.equal(await download(page, 'alpha-download', `after-cancel-${lang}.json`), raw);
     assert.equal(await download(page, 'alpha-original', `original-${lang}.json`), original);
     const proposal = JSON.parse(await download(page, 'alpha-download-plan', `proposal-${lang}.json`)); assert.equal(proposal.currency.symbol, 'USDC'); assert.equal(proposal.pricing.jobBaseUnits, '100000000');
@@ -49,15 +56,29 @@ try {
     await page.locator('#language').click(); assert.equal(await download(page, 'alpha-download', `language-${lang}.json`), raw);
     for (const width of [320, 390, 768, 1440]) { await page.setViewportSize({ width, height: 1000 }); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)); }
     await download(page, 'alpha-download-source', `source-${lang}.zip`); assert.deepEqual(fs.readFileSync(path.join(evidence, `source-${lang}.zip`)), Buffer.from(builderArtifacts().zip));
+    const previousSaved = await page.evaluate(() => localStorage.getItem('agijobmanager_alpha_project_transfer_v1'));
+    await page.evaluate(() => { window.__storageSetItem = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new DOMException('Quota exceeded', 'QuotaExceededError'); }; });
+    await page.locator('#alpha-save').click(); await page.locator('#error').waitFor({ state: 'visible' }); assert.equal(await dirty(), true, 'Failed storage save must preserve the warning');
+    assert.equal(await page.evaluate(() => localStorage.getItem('agijobmanager_alpha_project_transfer_v1')), previousSaved);
+    await page.evaluate(() => { Storage.prototype.setItem = window.__storageSetItem; });
     await page.locator('#alpha-save').click(); assert.equal(await dirty(), false, 'Confirmed successful browser save can clear leave-page protection');
     await page.screenshot({ path: path.join(evidence, `manager-${lang}.png`), fullPage: true });
     await page.reload(); await page.locator('#alpha-load').click(); await page.locator('#alpha-preview').waitFor({ state: 'visible' }); assert.equal(await page.locator('#alpha-workspace').isVisible(), false);
     await page.locator('#alpha-mapping').check(); await page.locator('#alpha-rights').check(); await page.locator('#alpha-confirm').click(); await page.locator('#alpha-workspace').waitFor({ state: 'visible' });
     assert.equal(await download(page, 'alpha-download', `restored-${lang}.json`), raw);
     await page.evaluate(() => { globalThis.DecompressionStream = undefined; }); await page.locator('#alpha-download-source').click(); await page.locator('#error').waitFor({ state: 'visible' }); assert.ok((await page.locator('#error').textContent()).includes('DecompressionStream')); assert.equal(await download(page, 'alpha-download', `source-fallback-${lang}.json`), raw);
+    assert.equal(await dirty(), false, 'Restored saved history starts clean');
     await page.locator('#alpha-save').click(); assert.equal(await dirty(), false);
-    await page.locator('#alpha-clear').click(); assert.equal(await dirty(), true, 'Clearing the saved copy must rearm protection for open history'); assert.equal(await page.evaluate(() => localStorage.getItem('agijobmanager_alpha_project_transfer_v1')), null); assert.equal(await download(page, 'alpha-download', `after-clear-${lang}.json`), raw); assert.equal(await dirty(), true, 'A download request after clearing cannot confirm a durable save'); assert.equal(await page.evaluate(() => window.__walletCalls), 0); assert.deepEqual(errors, []); assert.deepEqual(external, []);
-    results.push({ lang, originalBytesRetained: true, explicitImport: true, actualWork: true, unfundedUSDC: true, corruptionPreservesWorkspace: true, recovery: true, clearingSavedHistoryRearmsLeaveProtection: true, noWalletOrExternalNetwork: true, widths: [320, 390, 768, 1440] }); await context.close();
+    await page.locator('#alpha-clear').click(); assert.equal(await page.evaluate(() => localStorage.getItem('agijobmanager_alpha_project_transfer_v1')), null);
+    assert.equal(await dirty(), true, 'Clearing the saved copy must protect remaining in-memory history');
+    assert.equal(await download(page, 'alpha-download', `after-clear-${lang}.json`), raw); assert.equal(await dirty(), true); await assertNativeLeaveWarning(page);
+    await page.locator('#alpha-save').click(); assert.equal(await dirty(), false);
+    assert.equal(await page.evaluate(() => localStorage.getItem('agijobmanager_alpha_project_transfer_v1')), raw);
+    await page.reload(); await page.locator('#alpha-load').click(); await page.locator('#alpha-preview').waitFor({ state: 'visible' }); assert.equal(await page.locator('#alpha-workspace').isVisible(), false);
+    await page.locator('#alpha-mapping').check(); await page.locator('#alpha-rights').check(); await page.locator('#alpha-confirm').click(); await page.locator('#alpha-workspace').waitFor({ state: 'visible' });
+    assert.equal(await download(page, 'alpha-download', `resaved-after-clear-${lang}.json`), raw); assert.equal(await dirty(), false);
+    assert.equal(await page.evaluate(() => window.__walletCalls), 0); assert.deepEqual(errors, []); assert.deepEqual(external, []);
+    results.push({ lang, originalBytesRetained: true, explicitImport: true, actualWork: true, unfundedUSDC: true, corruptionPreservesWorkspace: true, recovery: true, clearingSavedHistoryRearmsLeaveProtection: true, cancelledDownloadKeepsWarning: true, nativeLeaveWarning: true, failedSaveKeepsWarning: true, clearSavedCopyKeepsWarning: true, clearEmptyWorkspaceStaysClean: true, resaveAfterClearRecovers: true, noWalletOrExternalNetwork: true, widths: [320, 390, 768, 1440] }); await context.close();
   }
   fs.writeFileSync(path.join(evidence, 'results.json'), JSON.stringify(results, null, 2)); console.log('Alpha project browser checks PASS: EN/FR, actual native replay, USDC draft, corruption, recovery, four widths, no network/wallet.');
 } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

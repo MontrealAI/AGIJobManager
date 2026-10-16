@@ -15,36 +15,8 @@ on:
         default: ''
   push:
     branches: [main]
-    paths:
-      - 'site/**'
-      - 'scripts/site/**'
-      - 'scripts/successor/**'
-      - 'config/successor-builder-source.json'
-      - 'ui/agijobmanager-usdc.html'
-      - 'ui/dist-ipfs/agijobmanager.html'
-      - 'config/usdc-deployment.json'
-      - 'docs/**'
-      - 'hardhat/README.md'
-      - 'package.json'
-      - 'LICENSE'
-      - 'package-lock.json'
-      - '.github/workflows/pages.yml'
   pull_request:
     branches: [main]
-    paths:
-      - 'site/**'
-      - 'scripts/site/**'
-      - 'scripts/successor/**'
-      - 'config/successor-builder-source.json'
-      - 'ui/agijobmanager-usdc.html'
-      - 'ui/dist-ipfs/agijobmanager.html'
-      - 'config/usdc-deployment.json'
-      - 'docs/**'
-      - 'hardhat/README.md'
-      - 'package.json'
-      - 'LICENSE'
-      - 'package-lock.json'
-      - '.github/workflows/pages.yml'
 
 permissions:
   contents: read
