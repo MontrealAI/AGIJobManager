@@ -20,7 +20,7 @@ This matrix distinguishes implemented behavior from qualification. Local evidenc
 | 14 security | Strict parser/CSP/sandbox/public policy; SECURITY threat matrix; adversarial tests | Host/browser trust, pattern-scanner limits, live adapter review |
 | 15 scale | Worker cancellation and fixed budgets; <750 KB initial HTML gate | Real low-end device, CDN capacity, workforce/provider/review load |
 | 16 regression | Commands below and all existing CI jobs | Failures remain blocking; no gate waived |
-| 17–18 delivery | Candidate package, exact-source seven-workflow qualification, attestation and Pages gates | Review, actual released download/provenance and live-route verification |
+| 17–18 delivery | Candidate package, exact-source eight-workflow qualification (including Alpha project handoff), attestation and Pages gates | Review, actual released download/provenance and live-route verification |
 
 ## Twelve acceptance gates
 
@@ -78,3 +78,5 @@ The v1.16.1 recovery regressions add held real-worker responses in both language
 | Existing activation owners | Current evidence for each original A1–A5 gate plus explicit operational authorization | Follow the unchanged production activation record; publishing this software cannot close those gates |
 
 No claim of universal accessibility, independent audit, Specialist ASI, full computer-work competence, profitability or live readiness follows from this implementation.
+
+The release wrapper and immutable selected Builder source have separate identities. Qualification and Pages metadata bind the final wrapper; Builder exports bind the verified tracked selector and its complete source closure. Release assembly retains the strict v2 archive context in `RELEASE_MANIFEST.json.builderSource`, cross-checks all selected bytes and package checksum, and reconstructs both the standalone assets and archive-only manager context offline. Clearing saved browser storage marks retained open Alpha history dirty again.

@@ -3,10 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { createHash } from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { importAlphaProject, inspectAlphaProject, advanceAlphaProject, ALPHA_SOURCE } from './alpha-project.mjs';
 import { canonical, sha256 } from '../../site/assets/successor/safe.mjs';
+import { builderArtifacts } from './build.mjs';
+import { importAlphaProject as browserImport, inspectAlphaProject as browserInspect, validateBrowserAlpha } from '../../site/assets/successor/alpha-project.mjs';
 import { appendEvent, continueHistory, exportCapsule, inspectCapsule } from '../../site/assets/successor/model.mjs';
 const root = process.env.SUCCESSOR_ALPHA_SOURCE;
 if (!root) throw Error('SUCCESSOR_ALPHA_SOURCE must identify the pinned, clean Alpha checkout; these integration tests never skip');
@@ -160,4 +163,32 @@ test('hidden tracked edits are rejected before loading the pinned native validat
     execFileSync('git', ['-C', root, 'worktree', 'remove', '--force', temporary], { timeout: 30000, stdio: 'pipe' });
     fs.rmSync(temporary, { recursive: true, force: true });
   }
+});
+
+test('Node and browser native receivers produce byte-identical transfers and inspect each other with trusted context', async () => {
+  const raw = await fixture(), artifacts = builderArtifacts();
+  const context = { sourceManifest: artifacts.sourceManifest, managerSource: artifacts.managerSource, validateNative: validateBrowserAlpha };
+  const fromNode = await importAlphaProject(raw, options('fr'));
+  const fromBrowser = await browserImport(raw, { language: 'fr', mappingAcknowledgement: 'alpha-public-data-to-manager-rows/v1' }, context);
+  assert.equal(fromBrowser, fromNode);
+  assert.equal(canonical(await browserInspect(fromNode, context)), canonical(await inspectAlphaProject(fromBrowser, { alphaCheckout: root })));
+});
+
+test('tree replacement refs cannot substitute the pinned Alpha validator inventory', { timeout: 120000 }, async () => {
+  const original = await fixture(), temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'alpha-tree-replacement-'));
+  const git = args => execFileSync('git', ['-C', temporary, ...args], { encoding: 'utf8', timeout: 60000, stdio: 'pipe' }).trim();
+  try {
+    execFileSync('git', ['clone', '--shared', '--no-checkout', root, temporary], { timeout: 60000, stdio: 'pipe' });
+    git(['checkout', '--detach', ALPHA_SOURCE.commit]);
+    const relative = 'examples/successor-project/engine.mjs', manifestPath = 'docs/successor/mission/sources.json';
+    fs.appendFileSync(path.join(temporary, relative), '\n/* supplied replacement tree */\n');
+    const altered = JSON.parse(fs.readFileSync(path.join(temporary, manifestPath)));
+    altered.sources[relative] = createHash('sha256').update(fs.readFileSync(path.join(temporary, relative))).digest('hex');
+    fs.writeFileSync(path.join(temporary, manifestPath), JSON.stringify(altered, null, 2) + '\n');
+    git(['add', relative, manifestPath]); const replacementTree = git(['write-tree']);
+    git(['update-index', '--skip-worktree', '--', relative, manifestPath]); git(['replace', ALPHA_SOURCE.tree, replacementTree]);
+    assert.equal(git(['rev-parse', 'HEAD^{tree}']), ALPHA_SOURCE.tree); assert.equal(git(['status', '--porcelain', '--untracked-files=no']), '');
+    assert.equal(git(['show', `${ALPHA_SOURCE.commit}:${manifestPath}`]), fs.readFileSync(path.join(temporary, manifestPath), 'utf8').trim(), 'Ordinary Git reads honor the hostile tree replacement');
+    await assert.rejects(importAlphaProject(original, { ...options('en'), alphaCheckout: temporary }), { code: 'ALPHA_SOURCE_DIRTY' });
+  } finally { fs.rmSync(temporary, { recursive: true, force: true }); }
 });

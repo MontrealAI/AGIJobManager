@@ -5,12 +5,14 @@ import pathlib
 import posixpath
 import re
 import stat
+import subprocess
 from urllib.parse import urlsplit, urlunsplit
 
 REPOSITORY = 'MontrealAI/AGIJobManager'
 TAG = 'v' + json.loads((pathlib.Path(__file__).resolve().parents[2] / 'package.json').read_text())['version']
-TITLE = TAG + ' — Guarded optional-router verification and precise Pages inventory'
+TITLE = TAG + ' — Recoverable Alpha project Builder and guarded router verification'
 BUILDER_ASSETS = {'My-SUCCESSOR-Omega-en.html', 'My-SUCCESSOR-Omega-fr.html', 'SUCCESSOR-Omega-editable-source.zip', 'SOURCE_MANIFEST.json'}
+BUILDER_ARCHIVE_ONLY_ASSETS = {'MANAGER_CONTEXT.json'}
 LIMIT = 450_000_000
 BASE = '191cf3590e5cdc08df1bb0af500ee28a91c8b010'
 WORKFLOWS = {
@@ -21,8 +23,10 @@ WORKFLOWS = {
     'mainnet-fork.yml': ['mainnet-usdc'],
     'current-state-release.yml': ['qualify'],
     'pages.yml': ['Build and check website'],
+    'alpha-project-handoff.yml': ['receiver-validation'],
 }
 REQUIRED_STEPS = {
+    'alpha-project-handoff.yml': ['Fetch the exact reviewed native Alpha validator', 'Exercise actual receiver validation, work and bilingual history'],
     'pages.yml': ['Build and verify static pages', 'SUCCESSOR local and adversarial checks', 'Verify mobile, desktop and bilingual interactions', 'SUCCESSOR browser, accessibility and isolated worker rehearsal'],
     'ci.yml': ['Lint', 'Build', 'Bytecode size check', 'Test'],
     'ui.yml': ['Run npm audit --audit-level=low', 'Run npm run lint', 'Run npm run typecheck', 'Run npm run test', 'Run npm run test:e2e', 'Run npm run test:a11y', 'Run npm run verify:deterministic'],
@@ -44,6 +48,103 @@ def sha(data):
 
 def valid_sha(value):
     return isinstance(value, str) and re.fullmatch(r'[0-9a-f]{40}', value) is not None
+
+def strict_json(data):
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            require(key not in result, 'Duplicate JSON field: ' + key)
+            result[key] = value
+        return result
+    return json.loads(data, object_pairs_hook=unique)
+
+def builder_archive_context(source, context):
+    """Cross-bind a retained v2 context to the archived selector and exact bytes.
+
+    This validates an offline trust checkpoint, not publication or Git provenance.
+    The unchanged Builder resolver additionally checks its complete ordered closure.
+    """
+    source = pathlib.Path(source).resolve()
+    def read(name):
+        source_path(name, stat.S_IFREG | 0o644)
+        target = source / name
+        require(target.is_file() and not target.is_symlink() and target.resolve() == target,
+                'Builder source must be a regular file: ' + name)
+        return target.read_bytes()
+    require(isinstance(context, dict) and set(context) == {'schema', 'commit', 'tree', 'version', 'packageSha256', 'sourceManifest'}, 'Builder archive context fields differ')
+    require(context['schema'] == 'agijobmanager/successor-editable-source/v2' and valid_sha(context['commit']) and valid_sha(context['tree']), 'Builder archive context identity differs')
+    selector = strict_json(read('config/successor-builder-source.json'))
+    require(isinstance(selector, dict) and set(selector) == {'schema', 'repository', 'commit', 'tree', 'version', 'engineSha256'}, 'Builder selector fields differ')
+    require(selector['schema'] == 'agijobmanager/successor-builder-source/v1' and selector['repository'] == REPOSITORY, 'Builder selector identity differs')
+    require(all(context[key] == selector[key] for key in ['commit', 'tree', 'version']), 'Builder selected-source binding differs')
+    package = read('package.json')
+    require(context['packageSha256'] == sha(package) and context['version'] == strict_json(package)['version'] == TAG[1:], 'Builder selected package differs')
+    manifest = context['sourceManifest']
+    require(isinstance(manifest, dict) and set(manifest) == {'repository', 'commit', 'engineSha256', 'files', 'license'}, 'Builder source manifest fields differ')
+    require(manifest['repository'] == REPOSITORY and manifest['commit'] == context['commit'] and manifest['license'] == 'MIT', 'Builder source manifest identity differs')
+    files = manifest['files']
+    require(isinstance(files, list) and 0 < len(files) <= 50, 'Builder source inventory differs')
+    seen = set()
+    for item in files:
+        require(isinstance(item, dict) and set(item) == {'path', 'sha256'} and isinstance(item['path'], str), 'Builder source inventory entry differs')
+        require(item['path'] not in seen and item['path'] not in {'config/successor-builder-source.json', 'SOURCE.json', 'package.json'}, 'Builder source inventory is duplicated or self-referential')
+        seen.add(item['path'])
+        require(item['sha256'] == sha(read(item['path'])), 'Builder archived source bytes differ: ' + item['path'])
+    digest = sha(json.dumps(files, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode())
+    require(manifest['engineSha256'] == selector['engineSha256'] == digest, 'Builder source inventory digest differs')
+    return (json.dumps(context, indent=2, ensure_ascii=False) + '\n').encode()
+
+def verified_builder_context(repository, archived, expected_source):
+    """Use the committed resolver in normal Git-pin mode; never bootstrap."""
+    program = '''
+      import path from 'node:path';
+      import { pathToFileURL } from 'node:url';
+      const [repository, archived] = process.argv.slice(1);
+      const { SOURCE_FILES } = await import(pathToFileURL(path.join(archived, 'scripts/successor/build.mjs')));
+      const { resolveBuilderSource, actualRepositoryCommit, ARCHIVE_SCHEMA } = await import(pathToFileURL(path.join(archived, 'scripts/successor/source-identity.mjs')));
+      const identity = resolveBuilderSource(repository, SOURCE_FILES);
+      if (identity.verification.mode !== 'git-object-pin') throw Error('SOURCE_GIT_PIN_REQUIRED');
+      console.log(JSON.stringify({ checkoutCommit: actualRepositoryCommit(repository), context: {
+        schema: ARCHIVE_SCHEMA, commit: identity.commit, tree: identity.tree, version: identity.version,
+        packageSha256: identity.packageSha256, sourceManifest: identity.sourceManifest
+      }}));
+    '''
+    result = strict_json(subprocess.check_output(['node', '--input-type=module', '-e', program, str(repository), str(archived)]))
+    require(result.get('checkoutCommit') == expected_source, 'Builder qualification checkout differs')
+    context = result['context']
+    builder_archive_context(archived, context)
+    return context
+
+def require_builder_outputs(directory):
+    """Accept only reviewed standalone and archive-only generated Builder files."""
+    files = list(pathlib.Path(directory).iterdir())
+    require({p.name for p in files} == BUILDER_ASSETS | BUILDER_ARCHIVE_ONLY_ASSETS,
+            'Builder release inventory differs')
+    require(all(p.is_file() and not p.is_symlink() for p in files),
+            'Builder outputs must be regular files')
+
+def verify_builder_context_outputs(context, directory):
+    """Check retained selected identity before executing an offline rebuild."""
+    directory = pathlib.Path(directory)
+    for name in ['SOURCE_MANIFEST.json', 'MANAGER_CONTEXT.json']:
+        target = directory / name
+        require(target.is_file() and not target.is_symlink(), 'Missing regular Builder identity output: ' + name)
+        value = strict_json(target.read_bytes())
+        if name == 'MANAGER_CONTEXT.json':
+            require(isinstance(value, dict) and set(value) == {'sourceManifest', 'managerSource'}, 'Builder manager context fields differ')
+            value = value['sourceManifest']
+        require(value == context['sourceManifest'], 'Builder retained source manifest differs: ' + name)
+
+def verify_builder_rebuild(regenerated, assets, extracted):
+    """Bind standalone outputs and archive-only context to clean source output."""
+    regenerated, assets, extracted = map(pathlib.Path, (regenerated, assets, extracted))
+    require_builder_outputs(regenerated)
+    for name in BUILDER_ASSETS | BUILDER_ARCHIVE_ONLY_ASSETS:
+        archived = extracted / name
+        require(archived.is_file() and not archived.is_symlink(), 'Missing regular Builder archive output: ' + name)
+        require((regenerated / name).read_bytes() == archived.read_bytes(), 'Clean Builder archive rebuild differs: ' + name)
+        if name in BUILDER_ASSETS:
+            require((assets / name).read_bytes() == archived.read_bytes(), 'Standalone Builder rebuild differs: ' + name)
 
 def source_path(name, mode):
     p = pathlib.PurePosixPath(name)
@@ -118,7 +219,7 @@ def validate_qualification(config, api, logs, *, publication=False):
     source = config['sourceCommit']
     require(config.get('checkoutCommit') == source, 'Qualification did not check out exact source')
     require(api(f'git/commits/{source}')['tree']['sha'] == config['sourceTree'], 'Source tree differs')
-    require(set(config.get('requiredSourceRuns', {})) == set(WORKFLOWS), 'All seven qualification workflows are required')
+    require(set(config.get('requiredSourceRuns', {})) == set(WORKFLOWS), f'All {len(WORKFLOWS)} qualification workflows are required')
     for workflow, item in config['requiredSourceRuns'].items():
         validate_run(api, logs, workflow, item, source, publication=publication)
     return source

@@ -3,18 +3,21 @@ import argparse
 import datetime
 import io
 import json
+import os
 import pathlib
 import stat
 import subprocess
 import tarfile
 import tempfile
 import zipfile
-from release_common import TAG, TITLE, LIMIT, BUILDER_ASSETS, REPOSITORY, sha, require, source_path, packaged_guide
+from release_common import TAG, TITLE, LIMIT, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, REPOSITORY, sha, require, source_path, packaged_guide, require_builder_outputs, verified_builder_context, builder_archive_context, verify_builder_context_outputs
 
 root = pathlib.Path(__file__).resolve().parents[2]
 
 def git(*args):
-    return subprocess.check_output(['git', *args], cwd=root)
+    env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
+    env.update(GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_SYSTEM='/dev/null', GIT_CONFIG_GLOBAL='/dev/null', GIT_NO_REPLACE_OBJECTS='1', GIT_TERMINAL_PROMPT='0')
+    return subprocess.check_output(['git', '--no-replace-objects', '-c', 'core.fsmonitor=false', '-c', 'core.hooksPath=/dev/null', *args], cwd=root, env=env)
 
 def package(out):
     source = git('rev-parse', 'HEAD').decode().strip()
@@ -47,14 +50,16 @@ def package(out):
                 target = pathlib.Path(temp) / name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
-        (extracted / 'SOURCE.json').write_text(json.dumps({'commit': source, 'version': TAG[1:]}))
+        builder_source = verified_builder_context(root, extracted, source)
+        (extracted / 'SOURCE.json').write_bytes(builder_archive_context(extracted, builder_source))
         generated = pathlib.Path(temp) / 'builder'
         subprocess.run(['node', 'scripts/successor/build.mjs', '--out', str(generated)], cwd=extracted, check=True)
-        require({f.name for f in generated.iterdir()} == BUILDER_ASSETS, 'Builder release inventory differs')
-        for name in BUILDER_ASSETS:
+        require_builder_outputs(generated)
+        verify_builder_context_outputs(builder_source, generated)
+        for name in BUILDER_ASSETS | BUILDER_ARCHIVE_ONLY_ASSETS:
             payload[name] = ((generated / name).read_bytes(), stat.S_IFREG | 0o644)
     manifest = {'schemaVersion': 2, 'repository': REPOSITORY, 'tag': TAG, 'name': TITLE,
-        'sourceCommit': source, 'sourceTree': tree, 'stage': 'source-package',
+        'sourceCommit': source, 'sourceTree': tree, 'builderSource': builder_source, 'stage': 'source-package',
         'qualification': 'See the external QUALIFICATION.json accompanying an approved published release. This manifest alone is byte identity, not qualification.',
         'archiveLimitBytes': LIMIT, 'toolchain': {'node': '22.23.2 (qualification workflow)', 'solc': '0.8.37', 'hardhat': '3.17.0'},
         'exclusions': ['untracked files', 'Git internals', 'operator transcripts and private configuration', 'dependencies and caches', 'transport/bootstrap material', 'unreviewed symlinks (hardhat/contracts -> ../contracts is retained)', 'ui/test-results/.last-run.json', 'archives and signer material'],

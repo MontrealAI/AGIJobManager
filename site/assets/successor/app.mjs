@@ -8,10 +8,32 @@ import {inputColumns, previewMapping} from './mapping.mjs';
 import { sourceZip } from './archive.mjs';
 
 export function initialize() {
-  let lang = document.documentElement.lang, state = null, candidate = null, plan = null, inspected = null, previewURL = null, currentWorker = null, rejectWork = null, runNumber = 0, backupRaw = null, actionBusy = false, reuseRequested = false, mappingPreview = null, approvedMapping = null;
+  let lang = document.documentElement.lang, state = null, candidate = null, plan = null, inspected = null, previewURL = null, currentWorker = null, rejectWork = null, runNumber = 0, backupRaw = null, actionBusy = false, reuseRequested = false, mappingPreview = null, approvedMapping = null, alphaPending = null, alphaTransfer = null, alphaRead = null, alphaDirty = false, alphaSavedRaw = null;
+  const alphaStorageKey = 'agijobmanager_alpha_project_transfer_v1';
+  const storedAlphaMatches = raw => { try { return localStorage.getItem(alphaStorageKey) === raw; } catch { return false; } };
+  const pendingAlphaUnstored = () => Boolean(alphaPending?.saved && !storedAlphaMatches(alphaPending.raw));
+  window.addEventListener('beforeunload', event => { if (alphaDirty || alphaSavedRaw && !storedAlphaMatches(alphaSavedRaw) || pendingAlphaUnstored()) { event.preventDefault(); event.returnValue = ''; } });
+  window.addEventListener('storage', event => {
+    if (event.key !== null && event.key !== alphaStorageKey) return;
+    if (alphaSavedRaw && !storedAlphaMatches(alphaSavedRaw)) { alphaDirty = true; alphaSavedRaw = null; }
+    if (pendingAlphaUnstored()) { resetAlphaConsent(); redrawAlpha(); }
+  });
   const pristine = '<!doctype html>\n' + document.documentElement.outerHTML;
   const source = JSON.parse(document.querySelector('#successor-source').textContent);
-  const sources = JSON.parse(document.querySelector('#successor-sources').textContent);
+  const packedSources = JSON.parse(document.querySelector('#successor-sources').textContent);
+  let sources = Array.isArray(packedSources) ? packedSources : null;
+  async function editableSources() {
+    if (sources) return sources;
+    fail(packedSources?.format === 'trusted-source-gzip/v1' && typeof DecompressionStream !== 'undefined', 'SOURCE_DECOMPRESSION_UNAVAILABLE');
+    fail(Number.isInteger(packedSources.bytes) && packedSources.bytes <= 8_000_000 && typeof packedSources.data === 'string' && packedSources.data.length <= 2_000_000, 'SOURCE_SIZE');
+    const bytes = Uint8Array.from(atob(packedSources.data), char => char.charCodeAt(0));
+    const reader = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')).getReader();
+    const chunks = []; let size = 0;
+    for (;;) { const { value, done } = await reader.read(); if (done) break; size += value.length; if (size > packedSources.bytes) { await reader.cancel(); fail(false, 'SOURCE_SIZE'); } chunks.push(value); }
+    fail(size === packedSources.bytes, 'SOURCE_SIZE');
+    const decoded = await new Blob(chunks).text(); fail(await sha256(decoded) === packedSources.sha256, 'SOURCE_CHANGED');
+    sources = JSON.parse(decoded); return sources;
+  }
   const workerSource = JSON.parse(document.querySelector('#successor-worker').textContent);
   const layouts = JSON.parse(document.querySelector('#successor-layouts').textContent);
   const $ = id => document.getElementById(id), t = (en, fr) => lang === 'fr' ? fr : en;
@@ -25,6 +47,11 @@ export function initialize() {
     const messages = {
       CAPSULE_CAPACITY: ['This change would exceed the 4 MB capsule limit. Your previous workspace is preserved. Download it, then reuse its selected method on new inputs.', 'Cette modification dépasserait la limite de 4 Mo. Votre espace précédent est conservé. Téléchargez-le, puis réutilisez sa méthode choisie sur de nouvelles données.'],
       HISTORY_LIMIT: ['This history segment is full. You can inspect, restore and download every file. Save a checkpoint, then explicitly continue history below before running again.', 'Ce segment d’historique est plein. Vous pouvez examiner, restaurer et télécharger tous les fichiers. Enregistrez un repère, puis confirmez la continuation de l’historique ci-dessous avant de relancer.'],
+      INPUT_BOM: ['This JSON file begins with a UTF-8 byte-order mark. Preserve the original and export valid UTF-8 JSON without a BOM; the file was not imported.', 'Ce fichier JSON commence par une marque d’ordre des octets UTF-8. Conservez l’original et exportez du JSON UTF-8 sans cette marque; le fichier n’a pas été importé.'],
+      INPUT_UTF8: ['This file is not valid UTF-8. Preserve the original and export valid UTF-8 JSON before importing.', 'Ce fichier n’est pas du UTF-8 valide. Conservez l’original et exportez du JSON UTF-8 valide avant l’importation.'],
+      ALPHA_PENDING: ['Continue or cancel the inspected project before changing its saved browser copy.', 'Continuez ou annulez le projet examiné avant de modifier sa copie enregistrée dans le navigateur.'],
+      ALPHA_PENDING_STORAGE_CHANGED: ['The inspected browser copy changed or disappeared in another tab. Its exact bytes remain here. Continue this inspected project and save it before cancelling or replacing the preview; downloads remain available.', 'La copie examinée a changé ou disparu dans un autre onglet. Ses octets exacts restent ici. Continuez ce projet examiné et enregistrez-le avant d’annuler ou de remplacer l’aperçu; les téléchargements restent disponibles.'],
+      SOURCE_DECOMPRESSION_UNAVAILABLE: ['Editable source download needs a browser with gzip DecompressionStream. Work, history and report downloads remain available; the repository provides uncompressed sources.', 'Le téléchargement des sources exige DecompressionStream gzip. Le travail, l’historique et les rapports restent disponibles; le dépôt fournit les sources non compressées.'],
       HISTORY_CONFIRMATION: ['Confirm that you want a new bounded segment. Earlier history and all files remain inside the new capsule.', 'Confirmez un nouveau segment limité. L’historique précédent et tous les fichiers restent dans le nouveau fichier JSON.'],
       HISTORY_ARCHIVE_LIMIT: ['All ten archive slots are used. Keep and export this project; start a new mission with the selected method on new input. No history will be discarded.', 'Les dix archives sont utilisées. Conservez et exportez ce projet; commencez une nouvelle mission avec la méthode choisie sur de nouvelles données. Aucun historique ne sera supprimé.'],
       MAPPING_CONFIRMATION: ['Preview the mapping and approve the exact text-only transformation first.', 'Prévisualisez les colonnes et approuvez la transformation exacte des champs texte.'],
@@ -136,12 +163,53 @@ export function initialize() {
     inspected = await work('inspect', { raw }); $('restore-summary').textContent = (inspected.summary.name || 'SUCCESSOR Ω') + ' · ' + inspected.summary.kind + ' · ' + inspected.summary.candidates + t(' saved candidates. Historical local checks only; no authority or payments.', ' candidats enregistrés. Vérifications locales historiques; aucune autorité ni transaction.'); $('restore-preview').hidden = false; $('restore-preview').closest('details').open = true; $('restore-consent').checked = false; $('restore-preview').scrollIntoView({ block: 'center' });
   }
   function clearPlan() { plan = null; $('job-results').hidden = true; $('replace-console').hidden = true; $('handoff-consent').checked = false; $('replace-consent').checked = false; $('console-link').replaceChildren(); backupRaw = null; $('comparison').textContent = ''; }
+  async function exactFileText(file) {
+    let raw;
+    try { raw = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(await file.arrayBuffer()); }
+    catch { fail(false, 'INPUT_UTF8'); }
+    fail(raw.charCodeAt(0) !== 0xfeff, 'INPUT_BOM'); return raw;
+  }
+  function resetAlphaConsent() { $('alpha-mapping').checked = false; $('alpha-rights').checked = false; }
+  async function previewAlpha(raw, saved = false) {
+    fail(!pendingAlphaUnstored(), 'ALPHA_PENDING_STORAGE_CHANGED');
+    resetAlphaConsent();
+    const value = parseStrict(raw);
+    const transfer = value.schema === 'agijobmanager/alpha-project-transfer/v1';
+    const preview = transfer ? await work('alpha-inspect', { raw }) : await work('alpha-preview', { raw });
+    const identity = transfer ? preview.transfer.project : preview;
+    alphaPending = { raw, transfer, identity, saved }; redrawAlpha();
+  }
+  function redrawAlpha() {
+    $('alpha-preview').hidden = !alphaPending;
+    $('alpha-clear').disabled = Boolean(alphaPending);
+    $('alpha-pending-storage').hidden = !pendingAlphaUnstored();
+    if (alphaPending) {
+      const { identity } = alphaPending;
+      $('alpha-preview-text').textContent = JSON.stringify({ projectId: identity.projectId, cycleId: identity.cycleId, revision: identity.revision, route: 'USDC', originalPreserved: true, authority: 'none', qualification: 'not-evaluated', settlement: 'not-connected' }, null, 2);
+    }
+    $('alpha-workspace').hidden = !alphaRead;
+    if (!alphaRead) return;
+    const { transfer, state: current, originalProject } = alphaRead;
+    const latest = current.candidates.at(-1), proposal = current.plans.at(-1);
+    $('alpha-summary').textContent = transfer.project.projectId + ' · ' + transfer.project.cycleId + ' · ' + originalProject.cycles.length + t(' original Alpha cycles · ', ' cycles Alpha originaux · ') + transfer.history.length + t(' Manager checkpoints · USDC · unfunded', ' étapes Manager · USDC · non financé');
+    const full = transfer.history.length >= 8, reserved = transfer.history.length >= 7;
+    $('alpha-run').disabled = Boolean(alphaPending) || current.active !== null || current.plans.length > 0 || reserved;
+    $('alpha-save').disabled = Boolean(alphaPending); $('alpha-draft').disabled = Boolean(alphaPending) || full;
+    $('alpha-price').hidden = !latest || Boolean(proposal) || full;
+    $('alpha-capacity').hidden = !reserved;
+    $('alpha-capacity').textContent = full ? t('All eight Manager checkpoints are retained. This history is complete: inspect, save and download remain available. No further run or USDC draft can be added.', 'Les huit étapes Manager sont conservées. Cet historique est complet : examen, enregistrement et téléchargement restent disponibles. Aucun calcul ni brouillon USDC supplémentaire ne peut être ajouté.') : t('One checkpoint remains, reserved for your separately priced USDC draft. Inspect this result and prepare the draft, or keep and export the history.', 'Une étape reste disponible, réservée à votre brouillon USDC avec son prix distinct. Examinez ce résultat et préparez le brouillon, ou conservez et exportez l’historique.');
+    $('alpha-result').textContent = latest ? JSON.stringify({ checks: latest.checker, result: JSON.parse(latest.files.find(file => file.name === 'result.json').content) }, null, 2) : t('Import inspected. No work has run. Choose Run when ready.', 'Importation vérifiée. Aucun travail exécuté. Choisissez Recalculer lorsque vous êtes prêt.');
+    $('alpha-artifacts').replaceChildren();
+    if (latest) for (const file of latest.files) { const button = document.createElement('button'); button.type = 'button'; button.textContent = t('Download ', 'Télécharger ') + file.name; button.onclick = () => download(file.name, file.content, file.mediaType); $('alpha-artifacts').append(button); }
+    $('alpha-plan').hidden = !proposal; $('alpha-plan-text').textContent = proposal ? JSON.stringify(proposal, null, 2) : '';
+    $('alpha-history').textContent = JSON.stringify({ project: transfer.project, originalSha256: transfer.original.sha256, originalAlphaHistory: originalProject.history, managerCheckpoints: transfer.history.map((entry, index) => ({ index, kind: entry.kind, sha256: entry.sha256 })), authority: transfer.authority, qualification: transfer.qualification, settlement: transfer.settlement }, null, 2);
+  }
   function attach() {
     if (location.protocol === 'file:') for (const link of document.querySelectorAll('#interface a[href]')) { const href = link.getAttribute('href'); if (href.startsWith('./') || href.startsWith('../')) link.href = new URL(href, 'https://montrealai.github.io/AGIJobManager/' + (lang === 'fr' ? 'fr/' : '') + 'successor/').href; }
     document.querySelectorAll('button:disabled,input:disabled').forEach(el => { el.disabled = false; }); $('stop').disabled = true;
     $('larger').setAttribute('aria-pressed', String(document.documentElement.classList.contains('large-text')));
     bind('larger', () => { const enabled = document.documentElement.classList.toggle('large-text'); $('larger').setAttribute('aria-pressed', String(enabled)); });
-    bind('language', () => { fail(!currentWorker, 'BUSY'); const mission = formMission(), consent = $('public-consent').checked, pendingReuse = reuseRequested; lang = lang === 'en' ? 'fr' : 'en'; document.documentElement.lang = lang; $('interface').innerHTML = layouts[lang]; attach(); showMission(mission); reuseRequested = pendingReuse; $('public-consent').checked = consent; clearPlan(); redraw(); say(t('Interface language changed. Your own text is unchanged.', 'La langue de l’interface a changé. Votre texte reste inchangé.')); });
+    bind('language', () => { fail(!currentWorker, 'BUSY'); const mission = formMission(), consent = $('public-consent').checked, pendingReuse = reuseRequested; lang = lang === 'en' ? 'fr' : 'en'; document.documentElement.lang = lang; $('interface').innerHTML = layouts[lang]; attach(); showMission(mission); reuseRequested = pendingReuse; $('public-consent').checked = consent; clearPlan(); redraw(); redrawAlpha(); say(t('Interface language changed. Your own text is unchanged.', 'La langue de l’interface a changé. Votre texte reste inchangé.')); });
     for (const input of document.querySelectorAll('[name="kind"]')) input.addEventListener('change', () => { if (actionBusy || currentWorker) return; showMission(defaultMission(input.value, lang)); $('public-consent').checked = false; $('new-mission-wrap').hidden = !state; });
     bind('example', () => { showMission(defaultMission(document.querySelector('[name="kind"]:checked').value, lang)); $('public-consent').checked = true; $('new-mission-wrap').hidden = !state; });
     bind('add-section', () => addSection());
@@ -183,15 +251,50 @@ export function initialize() {
     });
     bind('download-capsule', async () => download('My-SUCCESSOR-Omega.json', await exportCapsule(state, workspaceSource)));
     bind('download-brief', () => download('My-SUCCESSOR-Omega.txt', readableSummary(state), 'text/plain'));
-    bind('download-source', () => { fail(sources?.length, 'SOURCE_FILES'); download('SUCCESSOR-Omega-editable-source.zip', sourceZip(sources), 'application/zip'); });
+    bind('download-source', async () => { const files = await editableSources(); fail(files?.length, 'SOURCE_FILES'); download('SUCCESSOR-Omega-editable-source.zip', sourceZip(files), 'application/zip'); });
     bind('download-html', async () => { const capsule = await exportCapsule(state, workspaceSource); const html = pristine.replace(/(<script id="successor-capsule" type="application\/json">)[\s\S]*?(<\/script>)/, (_, start, end) => start + capsule.replace(/</g, '\\u003c') + end); download('My-SUCCESSOR-Omega.html', html, 'text/html'); });
     bind('save', async () => { const capsule = await exportCapsule(state, workspaceSource); try { localStorage.setItem(STORAGE_KEY, capsule); } catch { fail(false, 'STORAGE'); } say(t('Saved only in this browser. Download a durable copy too.', 'Enregistré uniquement dans ce navigateur. Téléchargez aussi une copie durable.')); });
     bind('load', async () => { clearInspection(); let raw; try { raw = localStorage.getItem(STORAGE_KEY); } catch { fail(false, 'STORAGE'); } fail(raw, 'STORAGE'); await inspect(raw); });
     bind('clear', () => { try { localStorage.removeItem(STORAGE_KEY); } catch { fail(false, 'STORAGE'); } say(t('Saved browser copy cleared. Your open workspace and downloaded copies remain.', 'Copie enregistrée effacée. L’espace ouvert et les téléchargements sont conservés.')); });
     bind('print', () => window.print());
-    bind('import-file', async () => { clearInspection(); const file = $('import-file').files[0]; fail(file && file.size <= LIMITS.capsule, 'INPUT_SIZE'); await inspect(await file.text()); }, 'change');
+    bind('import-file', async () => { clearInspection(); const file = $('import-file').files[0]; fail(file && file.size <= LIMITS.capsule, 'INPUT_SIZE'); await inspect(await exactFileText(file)); }, 'change');
     bind('restore', async () => { fail(inspected && $('restore-consent').checked, 'RESTORE_CONFIRMATION'); const consent = $('public-consent'), disabled = consent.disabled; consent.disabled = true; try { const restored = await work('restore', { inspected, confirmed: true }); await commitState(restored, inspected.capsule.payload.sourceManifest); candidate = state.candidates.find(c => c.id === state.active) || state.candidates.at(-1) || null; showMission(state.mission); $('public-consent').checked = false; clearInspection(); clearPlan(); redraw(); say(t('Restored as historical local work. Review the inputs and rerun for fresh measurements.', 'Restauré comme travail local historique. Vérifiez les données et relancez pour obtenir de nouvelles mesures.')); } finally { consent.disabled = disabled; } });
     bind('cancel-restore', clearInspection);
+    bind('alpha-file', async () => {
+      resetAlphaConsent(); const file = $('alpha-file').files[0]; if (!file) return;
+      fail(file.size <= LIMITS.capsule, 'INPUT_SIZE');
+      await previewAlpha(await exactFileText(file));
+    }, 'change');
+    bind('alpha-cancel', () => { fail(!pendingAlphaUnstored(), 'ALPHA_PENDING_STORAGE_CHANGED'); alphaPending = null; resetAlphaConsent(); redrawAlpha(); });
+    bind('alpha-preview-download', () => { fail(alphaPending, 'RUN_REQUIRED'); download(alphaPending.transfer ? 'Inspected-Alpha-Manager-project-history.json' : 'Inspected-Alpha-project.json', alphaPending.raw); });
+    bind('alpha-confirm', async () => {
+      fail(alphaPending && $('alpha-mapping').checked && $('alpha-rights').checked, 'EXPLICIT_MAPPING_REQUIRED');
+      const raw = alphaPending.transfer ? alphaPending.raw : await work('alpha-import', { raw: alphaPending.raw, options: { language: lang, mappingAcknowledgement: 'alpha-public-data-to-manager-rows/v1' } });
+      const checked = await work('alpha-inspect', { raw });
+      alphaDirty = !alphaPending.transfer || alphaPending.saved && !storedAlphaMatches(raw); alphaSavedRaw = alphaPending.saved && storedAlphaMatches(raw) ? raw : null; alphaTransfer = raw; alphaRead = checked; alphaPending = null; $('alpha-preview').hidden = true; $('alpha-select').checked = false; $('alpha-budget').value = ''; redrawAlpha();
+      say(t('Project continued. Original Alpha history is retained. No authority or funding was imported.', 'Projet repris. L’historique Alpha original est conservé. Aucune autorité ni financement importé.'));
+    });
+    bind('alpha-run', async () => {
+      fail(!alphaPending, 'ALPHA_PENDING'); fail(alphaTransfer, 'RUN_REQUIRED');
+      const raw = await work('alpha-advance', { raw: alphaTransfer, options: { action: 'run' } });
+      const checked = await work('alpha-inspect', { raw }); alphaTransfer = raw; alphaRead = checked; alphaDirty = true; $('alpha-select').checked = false; redrawAlpha();
+      say(t('Manager recomputed and checked every source row. Inspect the result before choosing a USDC budget.', 'Manager a recalculé et vérifié chaque ligne source. Examinez le résultat avant de choisir un budget USDC.'));
+    });
+    bind('alpha-draft', async () => {
+      fail(!alphaPending, 'ALPHA_PENDING');
+      fail(alphaTransfer && $('alpha-select').checked, 'SELECT_VERSION'); fail($('alpha-budget').value.trim(), 'USDC_PRICE_REQUIRED');
+      const raw = await work('alpha-advance', { raw: alphaTransfer, options: { action: 'select-and-draft', budget: $('alpha-budget').value } });
+      const checked = await work('alpha-inspect', { raw }); alphaTransfer = raw; alphaRead = checked; alphaDirty = true; $('alpha-select').checked = false; redrawAlpha();
+      say(t('Unfunded USDC draft prepared. Download the complete history before continuing.', 'Brouillon USDC non financé préparé. Téléchargez tout l’historique avant de poursuivre.'));
+    });
+    bind('alpha-download', () => { fail(alphaTransfer, 'RUN_REQUIRED'); download('Alpha-Manager-project-history.json', alphaTransfer); });
+    bind('alpha-save', () => { fail(!alphaPending, 'ALPHA_PENDING'); fail(alphaTransfer, 'RUN_REQUIRED'); try { localStorage.setItem(alphaStorageKey, alphaTransfer); } catch { fail(false, 'STORAGE'); } alphaSavedRaw = alphaTransfer; alphaDirty = false; say(t('Alpha history saved in this browser. Retain a complete-history download too.', 'Historique Alpha enregistré dans ce navigateur. Conservez aussi un téléchargement complet.')); });
+    bind('alpha-load', async () => { let raw; try { raw = localStorage.getItem(alphaStorageKey); } catch { fail(false, 'STORAGE'); } fail(raw, 'STORAGE'); await previewAlpha(raw, true); });
+    bind('alpha-clear', () => { fail(!alphaPending, 'ALPHA_PENDING'); try { localStorage.removeItem(alphaStorageKey); } catch { fail(false, 'STORAGE'); } alphaDirty = Boolean(alphaTransfer); say(t('Saved Alpha browser copy cleared. The open Alpha workspace and downloaded files remain.', 'Copie Alpha du navigateur effacée. L’espace Alpha ouvert et les fichiers téléchargés sont conservés.')); });
+    bind('alpha-download-source', async () => { const files = await editableSources(); download('SUCCESSOR-Omega-editable-source.zip', sourceZip(files), 'application/zip'); });
+    bind('alpha-original', () => { fail(alphaRead, 'RUN_REQUIRED'); download('Original-Alpha-project.json', alphaRead.transfer.original.raw); });
+    bind('alpha-download-plan', () => { fail(alphaRead?.state.plans.length, 'PLAN'); download('Alpha-Manager-unfunded-USDC-request.json', JSON.stringify(alphaRead.state.plans.at(-1), null, 2)); });
+
   }
   attach(); showMission(defaultMission('analyst', lang)); redraw();
   const saved = $('successor-capsule').textContent.trim();

@@ -18,13 +18,13 @@ The public archive contains no private Fleet/Agent/Node application, production 
 
 ## Published download versus current source
 
-**{{TAG}} adds guarded optional metadata-router deployment/verification and accurate Pages file inventories.** The router remains unconfigured after verification, and actual-address evidence remains pending. Local `.nojekyll` is classified separately from public Pages files. Solidity source, compiler settings, dependency resolutions, ABI and settlement rules are preserved from v1.17.1. Private Fleet {{FLEET}}, Agent {{AGENT}} and Node {{NODE}} are separate unchanged companion editions; this release does not qualify their hardware or execution.
+**{{TAG}} adds native Alpha project transfers in the recoverable bilingual Builder, guarded optional metadata-router deployment/verification and accurate Pages file inventories.** The local transfer retains original dossier bytes and complete history, requires explicit row/unit mapping, runs local work and prepares a separately priced, unfunded USDC draft. Its pinned Alpha validator and nested Jobs compiler retain their Apache-2.0/MIT licenses and provenance; this is not production commissioning or settlement. The router remains unconfigured after verification, and actual-address evidence remains pending. Local `.nojekyll` is classified separately from public Pages files. Solidity source, compiler settings, dependency resolutions, ABI and settlement rules are preserved from v1.17.1. Private Fleet {{FLEET}}, Agent {{AGENT}} and Node {{NODE}} are separate unchanged companion editions; this release does not qualify their hardware or execution.
 
 Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md` and `RELEASE_MANIFEST.json`, plus the published external `QUALIFICATION.json`, identify the qualified source and publication evidence. Main may contain later work; never combine its scripts with an older release's instructions or attestations. Current guides apply to their checkout. Historical releases, dated qualification records and legal notices retain their original versions.
 
 | Edition | Change introduced |
 | --- | --- |
-| {{TAG}} candidate | Guarded optional-router verification/recovery, native-fragment browser waits and accurate Pages file inventories |
+| {{TAG}} candidate | Recoverable bilingual Alpha project Builder, exact-source handoff qualification, guarded optional-router verification/recovery and accurate Pages file inventories |
 | [v1.17.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.17.1) | Read-only USDC implementation binding, second-deployment qualification decision and bilingual workflow directory |
 | [v1.13.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.13.0) | Reviewer-window reservations and separate pilot quality/economics targets |
 | [v1.12.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.12.0) | Participant project cash scenarios, cohort loss/supervision gates and private stale-observation rejection |

@@ -16,7 +16,7 @@ import unittest
 import zipfile
 from unittest.mock import Mock, patch
 from urllib.parse import quote
-from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, LIMIT, source_path, validate_qualification, verify_assets, sha, packaged_guide
+from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, LIMIT, source_path, validate_qualification, verify_assets, sha, packaged_guide, require_builder_outputs, verify_builder_rebuild, builder_archive_context, verified_builder_context, verify_builder_context_outputs
 
 PUBLISHER = Path(__file__).with_name('publish-release.py')
 SOURCE = 'a' * 40
@@ -48,8 +48,51 @@ class ReleaseGateTests(unittest.TestCase):
         return self.responses[endpoint]
     def verify(self):
         return validate_qualification(self.config, self.api, lambda job: self.logs[job], publication=True)
-    def test_complete_seven_workflow_success(self):
+    def test_complete_eight_workflow_success(self):
+        self.assertEqual(len(WORKFLOWS), 8)
         self.assertEqual(self.verify(), SOURCE)
+    def test_alpha_handoff_is_required_on_exact_final_source(self):
+        self.assertEqual(WORKFLOWS['alpha-project-handoff.yml'], ['receiver-validation'])
+        del self.config['requiredSourceRuns']['alpha-project-handoff.yml']
+        with self.assertRaisesRegex(ValueError, 'All 8 qualification workflows'):
+            self.verify()
+    def test_alpha_handoff_wrong_head_or_failed_run_is_rejected(self):
+        run_id = self.config['requiredSourceRuns']['alpha-project-handoff.yml']['id']
+        run = self.responses[f'actions/runs/{run_id}']
+        for key, value in [('head_sha', 'c' * 40), ('conclusion', 'failure'), ('conclusion', 'cancelled'), ('conclusion', 'skipped'), ('status', 'queued')]:
+            with self.subTest(key=key, value=value):
+                original = run[key]; run[key] = value
+                with self.assertRaises(ValueError): self.verify()
+                run[key] = original
+    def test_alpha_handoff_source_marker_and_receiver_steps_are_required(self):
+        run_id = self.config['requiredSourceRuns']['alpha-project-handoff.yml']['id']
+        job = self.responses[f'actions/runs/{run_id}/attempts/1/jobs?per_page=100&page=1']['jobs'][0]
+        for step in job['steps']:
+            with self.subTest(step=step['name']):
+                step['conclusion'] = 'skipped'
+                with self.assertRaises(ValueError): self.verify()
+                step['conclusion'] = 'success'
+        for log in ['', f'QUALIFIED_SOURCE_COMMIT={"c" * 40}\n']:
+            self.logs[job['id']] = log
+            with self.assertRaises(ValueError): self.verify()
+    def test_alpha_handoff_triggers_and_checkout_match_release_policy(self):
+        workflow = (PUBLISHER.parents[2] / '.github/workflows/alpha-project-handoff.yml').read_text()
+        self.assertIn('  pull_request:\n    branches: [main]\n', workflow)
+        self.assertIn('  push:\n    branches: [main]\n', workflow)
+        self.assertNotIn('paths:', workflow)
+        self.assertNotIn('paths-ignore:', workflow)
+        self.assertIn('ref: ${{ github.event.pull_request.head.sha || github.sha }}', workflow)
+        self.assertIn('test "$(git rev-parse HEAD)" = "$QUALIFICATION_SOURCE"', workflow)
+        self.assertIn("printf 'QUALIFIED_SOURCE_COMMIT=%s\\n'", workflow)
+        for name in ['Verify qualified source checkout', *REQUIRED_STEPS['alpha-project-handoff.yml']]:
+            self.assertIn('- name: ' + name, workflow)
+        self.assertIn('fetch-depth: 0', workflow)
+        self.assertIn('scripts/successor/source-identity.test.mjs', workflow)
+        pages = (PUBLISHER.parents[2] / '.github/workflows/pages.yml').read_text()
+        self.assertIn('  pull_request:\n    branches: [main]\n', pages)
+        self.assertIn('  push:\n    branches: [main]\n', pages)
+        self.assertNotIn('paths:', pages)
+        self.assertNotIn('paths-ignore:', pages)
     def test_missing_workflow(self):
         for workflow in WORKFLOWS:
             item=self.config['requiredSourceRuns'].pop(workflow)
@@ -225,6 +268,19 @@ class PublicationIntegrationTests(ReleaseGateTests):
         self.responses['git/ref/heads/main']['object']['sha']='c'*40
         with self.assertRaises(ValueError):self.publish()
         self.assertEqual(self.mutations,[])
+    def test_missing_wrong_head_or_failed_alpha_handoff_blocks_before_mutation(self):
+        original_config, original_responses = copy.deepcopy(self.config), copy.deepcopy(self.responses)
+        for scenario in ['missing', 'wrong-head', 'failure']:
+            with self.subTest(scenario=scenario):
+                self.config, self.responses = copy.deepcopy(original_config), copy.deepcopy(original_responses)
+                item = self.config['requiredSourceRuns']['alpha-project-handoff.yml']
+                if scenario == 'missing':
+                    del self.config['requiredSourceRuns']['alpha-project-handoff.yml']
+                else:
+                    run = self.responses[f'actions/runs/{item["id"]}']
+                    run['head_sha' if scenario == 'wrong-head' else 'conclusion'] = 'c' * 40 if scenario == 'wrong-head' else 'failure'
+                with self.assertRaises(ValueError): self.publish()
+                self.assertEqual(self.mutations, [])
     def test_conflicting_tag_never_moves(self):
         self.responses['git/ref/tags/'+TAG]={'object':{'type':'commit','sha':'c'*40}}
         with self.assertRaises(AssertionError):self.publish()
@@ -487,6 +543,19 @@ class PackageVerificationTests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(ValueError): self.verifier['package_inventory'](self.out, published=True)
             self.config[key] = original
 
+    def test_historical_seven_workflow_inventory_cannot_qualify_current_assets(self):
+        del self.config['requiredSourceRuns']['alpha-project-handoff.yml']
+        self.published()
+        with self.assertRaisesRegex(ValueError, 'all 8 workflows'):
+            self.verifier['package_inventory'](self.out, published=True)
+
+    def test_duplicate_manifest_context_field_is_rejected_before_extraction(self):
+        manifest = json.dumps(self.manifest)
+        manifest = '{"builderSource":null,"builderSource":{},' + manifest[1:]
+        (self.out / 'RELEASE_MANIFEST.json').write_text(manifest); self.checksums()
+        with self.assertRaisesRegex(ValueError, 'Duplicate JSON field: builderSource'):
+            self.verifier['package_inventory'](self.out)
+
     def test_recomputed_checksums_do_not_override_qualified_asset_bindings(self):
         self.published(); (self.out / 'My-SUCCESSOR-Omega-en.html').write_text('substituted'); self.checksums()
         with self.assertRaisesRegex(ValueError, 'Qualification asset binding'): self.verifier['package_inventory'](self.out, published=True)
@@ -518,6 +587,170 @@ class PackageVerificationTests(unittest.TestCase):
 
 
 
+class BuilderOutputInventoryTests(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory(); self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name)
+        for name in BUILDER_ASSETS | BUILDER_ARCHIVE_ONLY_ASSETS:
+            (self.root / name).write_text('generated fixture ' + name)
+
+    def test_context_is_required_in_archive_without_expanding_standalone_assets(self):
+        self.assertEqual(len(BUILDER_ASSETS), 4)
+        self.assertEqual(BUILDER_ARCHIVE_ONLY_ASSETS, {'MANAGER_CONTEXT.json'})
+        require_builder_outputs(self.root)
+
+    def test_missing_context_is_rejected(self):
+        (self.root / 'MANAGER_CONTEXT.json').unlink()
+        with self.assertRaisesRegex(ValueError, 'inventory differs'):
+            require_builder_outputs(self.root)
+
+    def test_unreviewed_extra_output_is_rejected(self):
+        (self.root / 'UNREVIEWED.json').write_text('{}')
+        with self.assertRaisesRegex(ValueError, 'inventory differs'):
+            require_builder_outputs(self.root)
+
+    def test_context_directory_or_symlink_is_rejected(self):
+        context = self.root / 'MANAGER_CONTEXT.json'; context.unlink(); context.mkdir()
+        with self.assertRaisesRegex(ValueError, 'regular files'):
+            require_builder_outputs(self.root)
+        context.rmdir(); context.symlink_to(self.root / 'SOURCE_MANIFEST.json')
+        with self.assertRaisesRegex(ValueError, 'regular files'):
+            require_builder_outputs(self.root)
+
+    def test_rebuild_rejects_wrong_or_missing_archived_context(self):
+        with tempfile.TemporaryDirectory() as temp:
+            extracted = Path(temp)
+            for item in self.root.iterdir():
+                (extracted / item.name).write_bytes(item.read_bytes())
+            verify_builder_rebuild(self.root, self.root, extracted)
+            context = extracted / 'MANAGER_CONTEXT.json'
+            context.write_text('substituted source context')
+            with self.assertRaisesRegex(ValueError, 'archive rebuild differs: MANAGER_CONTEXT.json'):
+                verify_builder_rebuild(self.root, self.root, extracted)
+            context.unlink()
+            with self.assertRaisesRegex(ValueError, 'Missing regular Builder archive output: MANAGER_CONTEXT.json'):
+                verify_builder_rebuild(self.root, self.root, extracted)
+
+
+class BuilderSourceContextTests(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory(); self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name)
+        (self.root / 'config').mkdir(); (self.root / 'scripts').mkdir()
+        (self.root / 'LICENSE').write_text('MIT\n')
+        (self.root / 'scripts/engine.mjs').write_text('export const fixed = true;\n')
+        (self.root / 'package.json').write_text(json.dumps({'version': TAG[1:]}))
+        self.files = [{'path': name, 'sha256': sha((self.root / name).read_bytes())} for name in ['LICENSE', 'scripts/engine.mjs']]
+        self.engine = sha(json.dumps(self.files, sort_keys=True, separators=(',', ':')).encode())
+        self.selector = {'schema': 'agijobmanager/successor-builder-source/v1', 'repository': REPOSITORY, 'commit': 'c' * 40, 'tree': 'd' * 40, 'version': TAG[1:], 'engineSha256': self.engine}
+        self.write_selector()
+        self.context = {'schema': 'agijobmanager/successor-editable-source/v2', 'commit': 'c' * 40, 'tree': 'd' * 40, 'version': TAG[1:], 'packageSha256': sha((self.root / 'package.json').read_bytes()), 'sourceManifest': {'repository': REPOSITORY, 'commit': 'c' * 40, 'engineSha256': self.engine, 'files': self.files, 'license': 'MIT'}}
+
+    def write_selector(self):
+        (self.root / 'config/successor-builder-source.json').write_text(json.dumps(self.selector))
+
+    def test_selected_context_remains_distinct_from_wrapper_source(self):
+        encoded = builder_archive_context(self.root, self.context)
+        self.assertEqual(json.loads(encoded), self.context)
+        self.assertNotEqual(self.context['commit'], SOURCE)
+        self.assertNotEqual(self.context['tree'], TREE)
+
+    def test_missing_legacy_malformed_or_unexpected_context_is_rejected(self):
+        for value in [None, {}, {'commit': SOURCE, 'version': TAG[1:]}, [], {**self.context, 'unexpected': True}]:
+            with self.subTest(value=value), self.assertRaises(ValueError): builder_archive_context(self.root, value)
+        for key, value in [('schema', 'legacy'), ('commit', 'not-a-sha'), ('tree', 'not-a-tree')]:
+            altered = {**self.context, key: value}
+            with self.subTest(key=key), self.assertRaises(ValueError): builder_archive_context(self.root, altered)
+
+    def test_relabelled_context_cannot_substitute_wrapper_or_another_selected_source(self):
+        for key, value in [('commit', SOURCE), ('tree', TREE), ('version', '0.0.0')]:
+            altered = copy.deepcopy(self.context); altered[key] = value
+            if key == 'commit': altered['sourceManifest']['commit'] = value
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'selected-source binding'): builder_archive_context(self.root, altered)
+
+    def test_selected_package_bytes_and_version_are_bound(self):
+        for value in ['wrong checksum', '0' * 64]:
+            altered = {**self.context, 'packageSha256': value}
+            with self.assertRaisesRegex(ValueError, 'selected package'): builder_archive_context(self.root, altered)
+        (self.root / 'package.json').write_text(json.dumps({'version': '0.0.0'}))
+        with self.assertRaisesRegex(ValueError, 'selected package'): builder_archive_context(self.root, self.context)
+
+    def test_missing_substituted_or_symlinked_selected_source_is_rejected(self):
+        target = self.root / 'scripts/engine.mjs'; original = target.read_bytes()
+        target.write_text('substitution')
+        with self.assertRaisesRegex(ValueError, 'source bytes differ'): builder_archive_context(self.root, self.context)
+        target.unlink()
+        with self.assertRaisesRegex(ValueError, 'regular file'): builder_archive_context(self.root, self.context)
+        target.symlink_to(self.root / 'LICENSE')
+        with self.assertRaisesRegex(ValueError, 'regular file'): builder_archive_context(self.root, self.context)
+
+    def test_selector_is_required_exact_regular_and_unambiguous(self):
+        selector = self.root / 'config/successor-builder-source.json'
+        selector.write_text(selector.read_text().replace('"schema":', '"commit":"forged","schema":', 1))
+        with self.assertRaisesRegex(ValueError, 'Duplicate JSON'): builder_archive_context(self.root, self.context)
+        selector.unlink()
+        with self.assertRaisesRegex(ValueError, 'regular file'): builder_archive_context(self.root, self.context)
+        self.selector['extra'] = True; self.write_selector()
+        with self.assertRaisesRegex(ValueError, 'selector fields'): builder_archive_context(self.root, self.context)
+
+    def test_manifest_fields_identity_and_order_are_bound(self):
+        for change in [lambda m: m.update(extra=True), lambda m: m.update(repository='wrong/repo'), lambda m: m.update(commit=SOURCE), lambda m: m.update(license='unknown'), lambda m: m['files'].reverse(), lambda m: m['files'].pop(), lambda m: m['files'].append(m['files'][0])]:
+            altered = copy.deepcopy(self.context); change(altered['sourceManifest'])
+            with self.assertRaises(ValueError): builder_archive_context(self.root, altered)
+
+    def test_existing_strict_reader_checks_complete_ordered_closure(self):
+        resolver = PUBLISHER.parents[2] / 'scripts/successor/source-identity.mjs'
+        program = "import { resolveBuilderSource } from " + json.dumps(resolver.as_uri()) + "; resolveBuilderSource(process.argv[1], ['LICENSE', 'scripts/engine.mjs']);"
+        (self.root / 'SOURCE.json').write_bytes(builder_archive_context(self.root, self.context))
+        subprocess.run(['node', '--input-type=module', '-e', program, str(self.root)], check=True, capture_output=True)
+        for files in [list(reversed(self.files)), self.files[:1], self.files + [{'path': 'scripts/extra.mjs', 'sha256': sha(b'extra')}]]:
+            altered = copy.deepcopy(self.context); altered['sourceManifest']['files'] = files
+            digest = sha(json.dumps(files, sort_keys=True, separators=(',', ':')).encode())
+            altered['sourceManifest']['engineSha256'] = digest
+            self.selector['engineSha256'] = digest; self.write_selector()
+            (self.root / 'scripts/extra.mjs').write_bytes(b'extra')
+            # Even an internally consistent supplied inventory cannot change the reader's closure.
+            (self.root / 'SOURCE.json').write_bytes(builder_archive_context(self.root, altered))
+            result = subprocess.run(['node', '--input-type=module', '-e', program, str(self.root)], capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b'SOURCE_ARCHIVE_CHANGED', result.stderr)
+
+    def test_assembly_requires_normal_git_pin_and_actual_wrapper_checkout(self):
+        response = {'checkoutCommit': SOURCE, 'context': self.context}
+        with patch('release_common.subprocess.check_output', return_value=json.dumps(response).encode()) as command:
+            self.assertEqual(verified_builder_context(self.root, self.root, SOURCE), self.context)
+            args = command.call_args.args[0]
+            self.assertIn("identity.verification.mode !== 'git-object-pin'", args[3])
+            self.assertIn('resolveBuilderSource(repository, SOURCE_FILES)', args[3])
+            self.assertNotIn('bootstrap:', args[3])
+        response['checkoutCommit'] = 'e' * 40
+        with patch('release_common.subprocess.check_output', return_value=json.dumps(response).encode()), self.assertRaisesRegex(ValueError, 'qualification checkout'):
+            verified_builder_context(self.root, self.root, SOURCE)
+
+    def test_source_and_manager_context_outputs_cannot_relabel_the_selected_source(self):
+        for name in ['SOURCE_MANIFEST.json', 'MANAGER_CONTEXT.json']:
+            value = self.context['sourceManifest'] if name == 'SOURCE_MANIFEST.json' else {'sourceManifest': self.context['sourceManifest'], 'managerSource': {}}
+            (self.root / name).write_text(json.dumps(value))
+        verify_builder_context_outputs(self.context, self.root)
+        for name in ['SOURCE_MANIFEST.json', 'MANAGER_CONTEXT.json']:
+            target = self.root / name; original = target.read_bytes()
+            target.write_bytes(original.replace(('c' * 40).encode(), SOURCE.encode()))
+            with self.assertRaisesRegex(ValueError, 'retained source manifest differs'): verify_builder_context_outputs(self.context, self.root)
+            target.write_bytes(original); target.unlink()
+            with self.assertRaisesRegex(ValueError, 'Missing regular'): verify_builder_context_outputs(self.context, self.root)
+            target.write_bytes(original)
+
+    def test_wrapper_git_reads_disable_replacement_and_inherited_redirection(self):
+        packager = runpy.run_path(str(PUBLISHER.with_name('package-release.py')), run_name='package_test')
+        with patch.dict(os.environ, {'GIT_DIR': '/untrusted', 'GIT_WORK_TREE': '/wrong', 'GIT_CONFIG_COUNT': '1', 'GIT_CONFIG_KEY_0': 'core.worktree', 'GIT_CONFIG_VALUE_0': '/wrong'}), patch('subprocess.check_output', return_value=b'qualified') as command:
+            self.assertEqual(packager['git']('rev-parse', 'HEAD'), b'qualified')
+            args, kwargs = command.call_args
+            self.assertIn('--no-replace-objects', args[0])
+            self.assertEqual(kwargs['env']['GIT_NO_REPLACE_OBJECTS'], '1')
+            for name in ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_CONFIG_COUNT', 'GIT_CONFIG_KEY_0', 'GIT_CONFIG_VALUE_0']:
+                self.assertNotIn(name, kwargs['env'])
+
+
 class PackagedGuideTests(unittest.TestCase):
     source = f'docs/releases/{TAG}/START_HERE.md'
     sibling = f'docs/releases/{TAG}/VALIDATION.md'
@@ -547,7 +780,7 @@ class PackagedGuideTests(unittest.TestCase):
     def test_current_release_root_guide_links_resolve(self):
         root = Path(__file__).resolve().parents[2]
         guides = {f'docs/releases/{TAG}/{name}': name for name in ['START_HERE.md', 'RELEASE_NOTES.md', 'RECOVERY_GUIDE.md', 'VALIDATION.md']}
-        available = {'source/' + str(p.relative_to(root)) for p in (root / 'docs').rglob('*.md')}
+        available = {'source/' + str(p.relative_to(root)) for p in (root / 'docs').rglob('*') if p.is_file()}
         available.add('source/hardhat/README.md')
         for source_name in guides:
             original = (root / source_name).read_bytes()

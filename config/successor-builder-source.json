@@ -1,0 +1,8 @@
+{
+  "schema": "agijobmanager/successor-builder-source/v1",
+  "repository": "MontrealAI/AGIJobManager",
+  "commit": "ab516fbd32fd7cf1a9620fd630947fee1455fca2",
+  "tree": "b011643b56115c5baa39ca796cbf0a944c152eda",
+  "version": "1.17.2",
+  "engineSha256": "0cc9fe36376b10232c53e2b2dd87e0264f368bace07b499f185f83fa3361f4d0"
+}

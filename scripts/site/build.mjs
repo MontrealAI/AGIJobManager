@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { execFileSync } from "node:child_process";
+import { actualRepositoryCommit } from "../successor/source-identity.mjs";
 import { createHash } from "node:crypto";
 import { render } from "../../site/template.mjs";
 import { renderWorkflows } from "../../site/workflows.mjs";
@@ -15,10 +15,7 @@ const root = path.resolve(
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const json = (file) => JSON.parse(read(file));
 const output = path.join(root, "build/pages");
-const commit = execFileSync("git", ["rev-parse", "HEAD"], {
-  cwd: root,
-  encoding: "utf8",
-}).trim();
+const commit = actualRepositoryCommit(root);
 if (!/^[a-f0-9]{40}$/.test(commit))
   throw Error("Cannot identify source commit");
 const pkg = json("package.json"),
@@ -49,7 +46,7 @@ if (
   );
 fs.rmSync(output, { recursive: true, force: true });
 fs.mkdirSync(path.join(output, "assets"), { recursive: true });
-const successor = buildSuccessor(path.join(output, 'successor/downloads'), { commit, version: pkg.version });
+const successor = buildSuccessor(path.join(output, 'successor/downloads'));
 for (const name of ["app.mjs", "payments.mjs", "style.css", "home.css", "mark.svg", "employer.mjs", "employer-model.mjs", "employer.css", "workflows.css"])
   fs.copyFileSync(
     path.join(root, "site/assets", name),
@@ -131,6 +128,7 @@ fs.writeFileSync(
       historicalEvidence: evidencePath,
       consoleSource: "ui/agijobmanager-usdc.html",
       successorSource: successor.sourceManifest,
+      successorSourceVerification: successor.identityVerification,
       files,
       buildOnlyFiles,
     },
