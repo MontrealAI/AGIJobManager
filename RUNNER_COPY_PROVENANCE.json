@@ -1,5 +1,5 @@
 {
-  "scope": "Exact separate external runners; no merge or production edit",
+  "scope": "Separate external runners; one explicitly inventoried portable test dependency-root correction, no production edit",
   "files": {
     "runners/full/scripts/qualification/core-session-native.mjs": {
       "sha256": "0814f181302b387c705d75528b4c76e8061fe75701396966915e807071eafe52",
@@ -54,8 +54,10 @@
       "original": "/tmp/manager-marker-native-harness-r2-20261016/scripts/qualification/marker-native-evidence.mjs"
     },
     "runners/marker/hardhat/test/marker-native-evidence.test.cjs": {
-      "sha256": "4d2aaec2f1b3519457554c1d319db0582021a457d477c1c2cae772df78cbe30b",
-      "original": "/tmp/manager-marker-native-harness-r2-20261016/hardhat/test/marker-native-evidence.test.cjs"
+      "sha256": "0b320d45ec0e34d639331a4f5675c050212eb6178de7dfa98c34bb6775589c4a",
+      "original": "/tmp/manager-marker-native-harness-r2-20261016/hardhat/test/marker-native-evidence.test.cjs",
+      "originalCopySha256": "4d2aaec2f1b3519457554c1d319db0582021a457d477c1c2cae772df78cbe30b",
+      "correction": "Require explicit canonical selected-checkout package root and pinned ethers6.17.0; remove scratch-path dependency lookup. Root-approved CI-only portability correction after failed41f118 native job117117447783."
     },
     "runners/marker/MARKER_NATIVE.md": {
       "sha256": "176febc615237f1ececd3ee9c9e178ae01dcc5724bff38e78bf16df87bd64814",

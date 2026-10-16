@@ -3,7 +3,13 @@
 const test = require('node:test'), assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path'), { createRequire } = require('node:module'), { pathToFileURL } = require('node:url');
 const root = path.resolve(__dirname, '../..');
 const load = () => import(pathToFileURL(path.join(root, 'scripts/qualification/marker-native-evidence.mjs')).href);
-const E = createRequire('/tmp/manager-combined-r5-20261016/package.json')('ethers');
+// This external test uses the explicitly selected checkout's existing install.
+// No scratch-path fallback, package installation, or production source override.
+const sourceRoot = process.env.MANAGER_QUALIFICATION_SOURCE_ROOT;
+assert(sourceRoot && path.isAbsolute(sourceRoot), 'Set the absolute qualification source root.');
+assert.equal(fs.realpathSync(sourceRoot), sourceRoot, 'Use the canonical qualification source root.');
+const E = createRequire(path.join(sourceRoot, 'package.json'))('ethers');
+assert.equal(E.version, '6.17.0', 'Use the existing exact source ethers dependency.');
 const digest = x => require('node:crypto').createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const creator = '0x1111111111111111111111111111111111111111', target = '0x2222222222222222222222222222222222222222', alias = '0x3333333333333333333333333333333333333333';
 const step = (op = 'STOP') => ({ op, depth: 1, pc: 0, gas: 1, gasCost: 0, stack: [] });

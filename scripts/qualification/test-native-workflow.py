@@ -52,6 +52,14 @@ class WorkflowInvariants(unittest.TestCase):
         self.assertIn('test-source-boundary-dispatch.py', self.text)
         self.assertNotIn('--mode staged', self.text)
 
+    def test_external_marker_helper_selects_checkout_dependency_without_scratch_fallback(self):
+        self.assertIn('MANAGER_QUALIFICATION_SOURCE_ROOT="$(realpath source)" node', self.text)
+        test = (ROOT / 'runners/marker/hardhat/test/marker-native-evidence.test.cjs').read_text()
+        self.assertIn('process.env.MANAGER_QUALIFICATION_SOURCE_ROOT', test)
+        self.assertIn('fs.realpathSync(sourceRoot)', test)
+        self.assertIn("createRequire(path.join(sourceRoot, 'package.json'))", test)
+        self.assertNotIn('/tmp/manager-', test)
+
     def test_exact_tooling_suite_and_no_native_subset(self):
         self.assertIn('--test-concurrency=1 hardhat/test/*.test.cjs', self.text)
         self.assertIn("{'tests': 867, 'pass': 867, 'fail': 0, 'cancelled': 0, 'skipped': 0, 'todo': 0}", self.text)
