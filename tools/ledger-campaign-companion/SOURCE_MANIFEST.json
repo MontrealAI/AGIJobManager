@@ -180,8 +180,8 @@
     },
     {
       "path": "scripts/browser-acceptance.workflow.yml",
-      "bytes": 2562,
-      "sha256": "befaa5a181cc246baba75bbc0b7a0483980bd309b026ee6780816e4c32858dc1"
+      "bytes": 2561,
+      "sha256": "f3b8e5afc0465d98f10be4637609739b804b68d408a68f0bf51db9b8da69dcfa"
     },
     {
       "path": "scripts/browser-build.mjs",
