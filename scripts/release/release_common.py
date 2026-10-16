@@ -1,11 +1,13 @@
 """Exact-source qualification and archive policy; no network or writes on import."""
 import hashlib
+import contextlib
 import json
 import pathlib
 import posixpath
 import re
 import stat
 import subprocess
+import zipfile
 from urllib.parse import quote, urlsplit, urlunsplit
 
 REPOSITORY = 'MontrealAI/AGIJobManager'
@@ -58,7 +60,7 @@ def strict_json(data):
         return result
     return json.loads(data, object_pairs_hook=unique)
 
-def builder_archive_context(source, context):
+def builder_archive_context(source, context, selected_package=None):
     """Cross-bind a retained v2 context to the archived selector and exact bytes.
 
     This validates an offline trust checkpoint, not publication or Git provenance.
@@ -77,8 +79,13 @@ def builder_archive_context(source, context):
     require(isinstance(selector, dict) and set(selector) == {'schema', 'repository', 'commit', 'tree', 'version', 'engineSha256'}, 'Builder selector fields differ')
     require(selector['schema'] == 'agijobmanager/successor-builder-source/v1' and selector['repository'] == REPOSITORY, 'Builder selector identity differs')
     require(all(context[key] == selector[key] for key in ['commit', 'tree', 'version']), 'Builder selected-source binding differs')
-    package = read('package.json')
-    require(context['packageSha256'] == sha(package) and context['version'] == strict_json(package)['version'] == TAG[1:], 'Builder selected package differs')
+    wrapper_package = read('package.json')
+    wrapper = strict_json(wrapper_package)
+    require(isinstance(wrapper, dict) and wrapper.get('version') == TAG[1:], 'Builder wrapper package differs')
+    package = wrapper_package if selected_package is None else selected_package
+    require(isinstance(package, bytes) and 0 < len(package) <= 1_000_000, 'Builder selected package bytes differ')
+    selected = strict_json(package)
+    require(isinstance(selected, dict) and context['packageSha256'] == sha(package) and context['version'] == selected.get('version'), 'Builder selected package differs')
     manifest = context['sourceManifest']
     require(isinstance(manifest, dict) and set(manifest) == {'repository', 'commit', 'engineSha256', 'files', 'license'}, 'Builder source manifest fields differ')
     require(manifest['repository'] == REPOSITORY and manifest['commit'] == context['commit'] and manifest['license'] == 'MIT', 'Builder source manifest identity differs')
@@ -104,7 +111,7 @@ def verified_builder_context(repository, archived, expected_source):
       const { resolveBuilderSource, actualRepositoryCommit, ARCHIVE_SCHEMA } = await import(pathToFileURL(path.join(archived, 'scripts/successor/source-identity.mjs')));
       const identity = resolveBuilderSource(repository, SOURCE_FILES);
       if (identity.verification.mode !== 'git-object-pin') throw Error('SOURCE_GIT_PIN_REQUIRED');
-      console.log(JSON.stringify({ checkoutCommit: actualRepositoryCommit(repository), context: {
+      console.log(JSON.stringify({ checkoutCommit: actualRepositoryCommit(repository), packageRaw: identity.packageRaw, context: {
         schema: ARCHIVE_SCHEMA, commit: identity.commit, tree: identity.tree, version: identity.version,
         packageSha256: identity.packageSha256, sourceManifest: identity.sourceManifest
       }}));
@@ -112,8 +119,43 @@ def verified_builder_context(repository, archived, expected_source):
     result = strict_json(subprocess.check_output(['node', '--input-type=module', '-e', program, str(repository), str(archived)]))
     require(result.get('checkoutCommit') == expected_source, 'Builder qualification checkout differs')
     context = result['context']
-    builder_archive_context(archived, context)
-    return context
+    require(isinstance(result.get('packageRaw'), str), 'Builder selected package bytes are missing')
+    selected_package = result['packageRaw'].encode('utf-8')
+    builder_archive_context(archived, context, selected_package)
+    return context, selected_package
+
+
+def retained_builder_package(directory):
+    """Read only the unique regular package entry in the retained Builder ZIP."""
+    target = pathlib.Path(directory) / 'SUCCESSOR-Omega-editable-source.zip'
+    require(target.is_file() and not target.is_symlink(), 'Missing regular Builder ZIP')
+    with zipfile.ZipFile(target) as archive:
+        entries = [item for item in archive.infolist() if item.filename == 'package.json']
+        require(len(entries) == 1, 'Builder selected package entry is missing or duplicated')
+        item = entries[0]
+        require(stat.S_IFMT(item.external_attr >> 16) in {0, stat.S_IFREG} and 0 < item.file_size <= 1_000_000,
+                'Builder selected package must be a bounded regular entry')
+        package = archive.read(item)
+        require(len(package) == item.file_size, 'Builder selected package size differs')
+        return package
+
+
+@contextlib.contextmanager
+def builder_reconstruction(source, context, selected_package):
+    """Use selected bytes only in a temporary rebuild; restore the wrapper."""
+    source = pathlib.Path(source)
+    encoded = builder_archive_context(source, context, selected_package)
+    marker, package = source / 'SOURCE.json', source / 'package.json'
+    require(not marker.exists() and not marker.is_symlink(), 'Unexpected Builder reconstruction context')
+    wrapper = package.read_bytes()
+    try:
+        package.write_bytes(selected_package)
+        marker.write_bytes(encoded)
+        yield
+    finally:
+        package.write_bytes(wrapper)
+        if marker.exists() or marker.is_symlink():
+            marker.unlink()
 
 def require_builder_outputs(directory):
     """Accept only reviewed standalone and archive-only generated Builder files."""

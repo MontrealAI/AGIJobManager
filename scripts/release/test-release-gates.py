@@ -13,10 +13,12 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import warnings
 import zipfile
 from unittest.mock import Mock, patch
 from urllib.parse import quote
 from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, LIMIT, source_path, validate_qualification, verify_assets, sha, packaged_guide, github_release_notes, require_builder_outputs, verify_builder_rebuild, builder_archive_context, verified_builder_context, verify_builder_context_outputs
+from release_common import builder_reconstruction, retained_builder_package
 
 PUBLISHER = Path(__file__).with_name('publish-release.py')
 SOURCE = 'a' * 40
@@ -673,7 +675,60 @@ class BuilderSourceContextTests(unittest.TestCase):
             altered = {**self.context, 'packageSha256': value}
             with self.assertRaisesRegex(ValueError, 'selected package'): builder_archive_context(self.root, altered)
         (self.root / 'package.json').write_text(json.dumps({'version': '0.0.0'}))
-        with self.assertRaisesRegex(ValueError, 'selected package'): builder_archive_context(self.root, self.context)
+        with self.assertRaisesRegex(ValueError, 'wrapper package'): builder_archive_context(self.root, self.context)
+
+    def test_distinct_selected_version_requires_exact_package_bytes(self):
+        package = b'{"version":"0.0.1"}\n'
+        self.selector['version'] = '0.0.1'; self.write_selector()
+        self.context.update(version='0.0.1', packageSha256=sha(package))
+        self.assertEqual(json.loads(builder_archive_context(self.root, self.context, package)), self.context)
+        with self.assertRaisesRegex(ValueError, 'selected package'):
+            builder_archive_context(self.root, self.context)
+        with self.assertRaisesRegex(ValueError, 'selected package'):
+            builder_archive_context(self.root, self.context, package + b' ')
+        (self.root / 'package.json').write_text('{"version":"wrong-wrapper"}')
+        with self.assertRaisesRegex(ValueError, 'wrapper package'):
+            builder_archive_context(self.root, self.context, package)
+
+    def test_temporary_rebuild_restores_wrapper_even_after_failure(self):
+        wrapper = (self.root / 'package.json').read_bytes()
+        package = b'{"version":"0.0.1"}\n'
+        self.selector['version'] = '0.0.1'; self.write_selector()
+        self.context.update(version='0.0.1', packageSha256=sha(package))
+        with self.assertRaisesRegex(RuntimeError, 'rebuild failed'):
+            with builder_reconstruction(self.root, self.context, package):
+                self.assertEqual((self.root / 'package.json').read_bytes(), package)
+                self.assertEqual(json.loads((self.root / 'SOURCE.json').read_bytes()), self.context)
+                raise RuntimeError('rebuild failed')
+        self.assertEqual((self.root / 'package.json').read_bytes(), wrapper)
+        self.assertFalse((self.root / 'SOURCE.json').exists())
+
+    def test_rebuild_refuses_to_overwrite_existing_context(self):
+        package = (self.root / 'package.json').read_bytes()
+        marker = self.root / 'SOURCE.json'; marker.write_bytes(b'existing context')
+        with self.assertRaisesRegex(ValueError, 'Unexpected Builder reconstruction context'):
+            with builder_reconstruction(self.root, self.context, package):
+                self.fail('must reject before reconstruction')
+        self.assertEqual(marker.read_bytes(), b'existing context')
+        self.assertEqual((self.root / 'package.json').read_bytes(), package)
+
+    def test_retained_package_entry_is_unique_regular_and_bounded(self):
+        target = self.root / 'SUCCESSOR-Omega-editable-source.zip'
+        package = (self.root / 'package.json').read_bytes()
+        with zipfile.ZipFile(target, 'w') as archive:
+            archive.writestr('package.json', package)
+        self.assertEqual(retained_builder_package(self.root), package)
+        with warnings.catch_warnings(), zipfile.ZipFile(target, 'w') as archive:
+            warnings.simplefilter('ignore', UserWarning)
+            archive.writestr('package.json', package); archive.writestr('package.json', package)
+        with self.assertRaisesRegex(ValueError, 'duplicated'):
+            retained_builder_package(self.root)
+        for mode, data in [(stat.S_IFLNK | 0o777, b'outside'), (stat.S_IFREG | 0o644, b'x' * 1_000_001)]:
+            item = zipfile.ZipInfo('package.json'); item.external_attr = mode << 16
+            with zipfile.ZipFile(target, 'w') as archive:
+                archive.writestr(item, data)
+            with self.assertRaisesRegex(ValueError, 'bounded regular'):
+                retained_builder_package(self.root)
 
     def test_missing_substituted_or_symlinked_selected_source_is_rejected(self):
         target = self.root / 'scripts/engine.mjs'; original = target.read_bytes()
@@ -716,9 +771,10 @@ class BuilderSourceContextTests(unittest.TestCase):
             self.assertIn(b'SOURCE_ARCHIVE_CHANGED', result.stderr)
 
     def test_assembly_requires_normal_git_pin_and_actual_wrapper_checkout(self):
-        response = {'checkoutCommit': SOURCE, 'context': self.context}
+        package = (self.root / 'package.json').read_bytes()
+        response = {'checkoutCommit': SOURCE, 'packageRaw': package.decode(), 'context': self.context}
         with patch('release_common.subprocess.check_output', return_value=json.dumps(response).encode()) as command:
-            self.assertEqual(verified_builder_context(self.root, self.root, SOURCE), self.context)
+            self.assertEqual(verified_builder_context(self.root, self.root, SOURCE), (self.context, package))
             args = command.call_args.args[0]
             self.assertIn("identity.verification.mode !== 'git-object-pin'", args[3])
             self.assertIn('resolveBuilderSource(repository, SOURCE_FILES)', args[3])

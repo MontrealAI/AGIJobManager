@@ -1,4 +1,4 @@
-# Start here — AGIJobManager v1.17.2
+# Start here — AGIJobManager v1.18.0
 
 **[SUCCESSOR Ω Builder for everyone](successor/README.md)** · [Guide français](successor/GUIDE_FR.md): run two useful local missions, improve, download, restore and rerun without a wallet.
 

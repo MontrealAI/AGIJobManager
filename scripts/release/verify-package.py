@@ -6,7 +6,8 @@ import stat
 import subprocess
 import tempfile
 import zipfile
-from release_common import TAG, TITLE, REPOSITORY, WORKFLOWS, LIMIT, require, sha, valid_sha, verify_assets, source_path, verify_builder_rebuild, builder_archive_context, verify_builder_context_outputs, strict_json
+from release_common import TAG, TITLE, REPOSITORY, WORKFLOWS, LIMIT, require, sha, valid_sha, verify_assets, source_path, verify_builder_rebuild, verify_builder_context_outputs, strict_json
+from release_common import builder_reconstruction, retained_builder_package
 
 def package_inventory(assets, *, published=False):
     """Verify local bytes and recorded bindings, without claiming live CI/provenance verification."""
@@ -68,12 +69,13 @@ def verify_package(assets, *, published=False):
                 target.chmod(mode & 0o777)
         require((pathlib.Path(temp) / 'agijobmanager-usdc.html').read_bytes() == (assets / 'agijobmanager-usdc.html').read_bytes(), 'Standalone console differs')
         source_dir = pathlib.Path(temp) / 'source'
-        (source_dir / 'SOURCE.json').write_bytes(builder_archive_context(source_dir, manifest.get('builderSource')))
-        verify_builder_context_outputs(manifest['builderSource'], temp)
         regenerated = pathlib.Path(temp) / 'rebuilt'
-        subprocess.run(['node', 'scripts/successor/build.mjs', '--out', str(regenerated)], cwd=source_dir, check=True)
-        verify_builder_rebuild(regenerated, assets, temp)
-        subprocess.run(['node', '--test', 'scripts/successor/portable.test.mjs'], cwd=source_dir, check=True)
+        selected_package = retained_builder_package(temp)
+        with builder_reconstruction(source_dir, manifest.get('builderSource'), selected_package):
+            verify_builder_context_outputs(manifest['builderSource'], temp)
+            subprocess.run(['node', 'scripts/successor/build.mjs', '--out', str(regenerated)], cwd=source_dir, check=True)
+            verify_builder_rebuild(regenerated, assets, temp)
+            subprocess.run(['node', '--test', 'scripts/successor/portable.test.mjs'], cwd=source_dir, check=True)
         subprocess.run(['node', 'scripts/release/verify-usdc-ui.mjs', '.'], cwd=source_dir, check=True)
         subprocess.run(['python3', 'scripts/release/test-release-gates.py'], cwd=source_dir, check=True)
     print('Verified complete inventory and clean-extraction offline smoke checks. No wallet, credentials or network required.')
