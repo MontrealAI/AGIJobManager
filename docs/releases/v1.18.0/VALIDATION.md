@@ -1,0 +1,15 @@
+# v1.18.0 validation and source identities
+
+This is preparation, not a qualification receipt. Inputs are merged guided-Builder main `9349af93b829d6d95c8ad93811dbefbe468829f0` and curated-reading head `1bbd8d79179ae74c8f5b2867f2f010b47bbd5969`. Each passed its eight recorded workflows; those input results do not qualify this new version/metadata combination. Final publication requires every gate on the exact merged main commit.
+
+The required workflows are CI, UI CI, Docs Integrity, Security Verification, Mainnet USDC Fork Qualification, Release Candidate Preparation, GitHub Pages and Alpha project handoff. Required jobs, steps, checkout markers, immutable candidate artifacts, uploaded checksums and attestations must bind the final source. Missing, stale, skipped, failed or incomplete required evidence blocks publication.
+
+Builder source is separately frozen at `ab516fbd32fd7cf1a9620fd630947fee1455fca2`, tree `b011643b56115c5baa39ca796cbf0a944c152eda`, version 1.17.2. The selector, selected package bytes and complete source closure are preserved. Release wrapper v1.18.0 and Builder source 1.17.2 are distinct identities. Source, English/French HTML, editable ZIP and retained context must agree on the selected code. Original native validator bytes and licenses remain unchanged.
+
+Root, Hardhat, UI and deployment-registry software labels advance together. Lockfile dependency resolutions and all Solidity/compiler settings remain unchanged. Only four package source hashes change in the current expected cutover comparison fixture; its original v1.17.2 bytes remain under `docs/qualification/history/expected-mainnet-cutover-v1.17.2.json`. The v1.18.0 static-review binding changes only the root lock hash and retains every finding disposition. These are expected comparison inputs, not newly executed fork/scanner evidence. Fresh hosted execution remains mandatory.
+
+The published v1.17.2 source is `142d2d2c302debba55452398a72a4bbe99ea564c`. Its four release guides are restored byte-for-byte from that frozen source. Later expanded v1.17.2 preparation is preserved in [the historical snapshot](history/expanded-v1.17.2-preparation.json), together with its earlier preparation records. No existing release tag or asset is moved or replaced.
+
+Download all nine assets. Verify each assembly attestation against the exact release commit and `.github/workflows/publish-v114.yml`, then run `sha256sum -c SHA256SUMS.txt` and `python3 scripts/release/verify-package.py PATH --published` from the reviewed source. The published release must report `immutable: true`. Verify Pages build-info and its actual public-file inventory against the same wrapper source. Archive verification is offline; attestation lookup requires network access.
+
+Local computation, fixture wallets, browser/RPC test doubles and internal checks do not establish live settlement, independent review, physical hosts or production activation. Existing deployment/activation requirements and owner-accepted omissions remain separate.

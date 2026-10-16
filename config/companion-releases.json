@@ -1,8 +1,8 @@
 {
-  "public": "1.17.2",
+  "public": "1.18.0",
   "fleet": "1.10.0",
   "agent": "1.16.0",
   "node": "2.17.0",
   "scope": "SUCCESSOR \u03a9 local Builder and existing mainnet inspection/recovery. Candidate only; live providers, independent qualification and A1\u2013A5 intake authorization remain separate.",
-  "previousPublished": "1.17.1"
+  "previousPublished": "1.17.2"
 }

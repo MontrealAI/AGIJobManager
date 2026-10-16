@@ -2,7 +2,7 @@
 
 ## Software candidate
 
-AGIJobManager v1.17.2. Status: **deployment-required**.
+AGIJobManager v1.18.0. Status: **deployment-required**.
 
 Candidate software; no transaction target is selected by default. The separately recorded mainnet instance was deployed and ENS-connected at block 26165026. Activation remains held pending separate review. Use the recorded-instance inspection workflow for fresh state. Public-input work, no new review retainers, existing credits/claims and deployed contract behavior remain unchanged.
 
@@ -18,9 +18,9 @@ Candidate software; no transaction target is selected by default. The separately
 
 ## Constructor arguments
 
-Follow the [Hardhat deployment guide](../../hardhat/README.md), [readiness guide](../MAINNET_READINESS.md) and [deployment runbook](../DEPLOY_RUNBOOK.md). Supply the two settlement wallets and accepted owner explicitly. All monetary arguments use six-decimal base units. Preserve original-asset jobs on their existing manager; legacy deployment snapshots are not USDC configurations. v1.17.2 retains the manager ABI and eight fixed library links; the ENS membership correction introduced in v1.17.0 changes linked ENS library bytecode and requires a new deployment to take effect; it retains the v1.0.3 constructor default with NFT admission disabled. A verified v0.9.6 manager remains compatible with this console. v0.9.5 and older managers lack the getJobBonds getter and must keep their original interfaces for existing jobs. First deployments and moves from incompatible older versions require a fresh manager.
+Follow the [Hardhat deployment guide](../../hardhat/README.md), [readiness guide](../MAINNET_READINESS.md) and [deployment runbook](../DEPLOY_RUNBOOK.md). Supply the two settlement wallets and accepted owner explicitly. All monetary arguments use six-decimal base units. Preserve original-asset jobs on their existing manager; legacy deployment snapshots are not USDC configurations. v1.18.0 retains the manager ABI and eight fixed library links; the ENS membership correction introduced in v1.17.0 changes linked ENS library bytecode and requires a new deployment to take effect; it retains the v1.0.3 constructor default with NFT admission disabled. A verified v0.9.6 manager remains compatible with this console. v0.9.5 and older managers lack the getJobBonds getter and must keep their original interfaces for existing jobs. First deployments and moves from incompatible older versions require a fresh manager.
 
-AGI Agents use agent.agi.eth or alpha.agent.agi.eth subnames; AGI Club validators use club.agi.eth or alpha.club.agi.eth. The contract preserves owner-managed allowlist and Merkle exceptions, and agents need a configured NFT eligibility credential only when their job requires it. Fresh v1.17.2 managers start with NFT admission disabled and an empty registry; owner changes affect future jobs only. Existing deployed settings remain unchanged. To opt in, register reviewed collections and enable the requirement before posting the affected jobs. Readiness requires READINESS_NFT_CONFIG with the chosen mode and complete collection registry. Optional job-page ENS wiring is separate from member identity. Review the four membership root nodes and any exceptions in the deployment plan.
+AGI Agents use agent.agi.eth or alpha.agent.agi.eth subnames; AGI Club validators use club.agi.eth or alpha.club.agi.eth. The contract preserves owner-managed allowlist and Merkle exceptions, and agents need a configured NFT eligibility credential only when their job requires it. Fresh v1.18.0 managers start with NFT admission disabled and an empty registry; owner changes affect future jobs only. Existing deployed settings remain unchanged. To opt in, register reviewed collections and enable the requirement before posting the affected jobs. Readiness requires READINESS_NFT_CONFIG with the chosen mode and complete collection registry. Optional job-page ENS wiring is separate from member identity. Review the four membership root nodes and any exceptions in the deployment plan.
 
 ## Verification
 

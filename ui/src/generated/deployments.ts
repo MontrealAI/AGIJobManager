@@ -1,6 +1,6 @@
 // Generated from config/usdc-deployment.json. Never infer deployment from historical receipts.
 export const OFFICIAL_DEPLOYMENTS = {
-  "version": "1.17.2",
+  "version": "1.18.0",
   "status": "deployment-required",
   "chainId": 1,
   "explorerBaseUrl": "https://etherscan.io",

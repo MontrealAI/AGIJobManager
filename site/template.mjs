@@ -1,3 +1,4 @@
+import { renderReading } from "./reading.mjs";
 const escape = (value) =>
   String(value).replace(
     /[&<>"']/g,
@@ -135,8 +136,10 @@ export function render(t, data) {
       <div class="search-wrap" hidden><label for="guide-search">${e(t.searchLabel)}</label><input id="guide-search" type="search" placeholder="${e(t.searchPlaceholder)}" autocomplete="off" aria-controls="resource-grid"><span id="search-count" class="small" role="status"></span></div>
       <p><a class="button button-secondary" href="./workflows/">${fr ? "Explorer toutes les démos et parcours" : "Explore all demos and workflows"}</a></p>
       <div id="resource-grid" class="resources">${t.resources.map(([title, desc, p, keywords]) => `<a class="resource" href="${doc(p)}" data-search="${e(title + " " + desc + " " + keywords)}"><div><h3>${e(title)}</h3><p>${e(desc)}</p></div><span aria-hidden="true">↗</span></a>`).join("")}</div>
+      <p><a class="text-link" href="#reading">${fr ? "Lire les articles choisis" : "Read selected articles"} <span aria-hidden="true">↓</span></a></p>
       <p id="no-results" hidden>${e(t.noResults)}</p>${link(doc("docs/README.md"), t.docsAll)}
     </section>
+    ${renderReading(t.lang, doc)}
     <section class="section container faq-section"><h2>${e(t.faqTitle)}</h2><div class="faq-list">${t.faqs.map(([q, a]) => `<details><summary>${e(q)}</summary><p>${e(a)}</p></details>`).join("")}</div></section>
     <section class="end-section container"><div><p class="eyebrow">AGI JOBS</p><h2>${e(t.endTitle)}</h2><p>${e(t.endText)}</p></div><a class="button" data-employer-entry="footer" href="./employers/">${e(t.easyStart.cta)} <span aria-hidden="true">→</span></a></section>
   </main>

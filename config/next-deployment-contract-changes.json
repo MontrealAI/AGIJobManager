@@ -1,6 +1,6 @@
 {
   "baseline": "191cf3590e5cdc08df1bb0af500ee28a91c8b010",
-  "scope": "Inherited v1.17.0 ENS membership correction with v1.17.2 release identity; source review is not runtime qualification, independent audit or activation approval.",
+  "scope": "Inherited v1.17.0 ENS membership correction with v1.18.0 release identity; source review is not runtime qualification, independent audit or activation approval.",
   "files": {
     "contracts/utils/ENSOwnership.sol": {
       "beforeSha256": "5178a64b4618bf861a300b57fa4c4ca183313c46005509e14dc0c87ca8254209",
@@ -21,23 +21,23 @@
     },
     "package.json": {
       "beforeSha256": "cb4c469111c491557d769ae80baef09f99c094a64f02574c610749def000f517",
-      "afterSha256": "8671c75a2013f5c81cd0be378bc8acdb4a8e2fbeb22d9ee73f581bdb5784dab1",
-      "purpose": "Fresh v1.17.2 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
+      "afterSha256": "de69b473303eef544521e348b495c2507c6402abca3b333e7a90a00aafb671e4",
+      "purpose": "Fresh v1.18.0 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
     },
     "package-lock.json": {
       "beforeSha256": "d526341337e5bf94e6fee8aca003fcf3bac865fc43ec8fa8c3507d9db1743980",
-      "afterSha256": "a46357854f022f3e85b686d257398fe71616b3461e0fec6be0b329703dfc8b3e",
-      "purpose": "Fresh v1.17.2 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
+      "afterSha256": "cdd3b46e8de3be61efb0a60648eb1915f8127db0ed2ea01eb69cf2b6898e18f0",
+      "purpose": "Fresh v1.18.0 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
     },
     "hardhat/package.json": {
       "beforeSha256": "bdb8956d86342623b763a654799886f36e3abb5bec59559c27bbdbfca7c718ff",
-      "afterSha256": "8b1aaf5891c53c76370f543214e55f82b94615666e1701cf6c526d1d4e077060",
-      "purpose": "Fresh v1.17.2 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
+      "afterSha256": "edca08385ddfc61a083589dea7111215c53363dffda42f3ce210044ac72460cc",
+      "purpose": "Fresh v1.18.0 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
     },
     "hardhat/package-lock.json": {
       "beforeSha256": "65a889b2611afe2327602c9899b6bb2eacd7a6f1259ba0924f31bdc052fe757d",
-      "afterSha256": "52d637e3a532eedbe599d4c67fa8d80ca3fb84f17107f36e4416fbdab3cef34e",
-      "purpose": "Fresh v1.17.2 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
+      "afterSha256": "ebdb3e307e42e6ea0739451252f2606789cdc9f47a21044dea095f6ab4b5638a",
+      "purpose": "Fresh v1.18.0 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
     }
   }
 }

@@ -10,7 +10,8 @@ import subprocess
 import tarfile
 import tempfile
 import zipfile
-from release_common import TAG, TITLE, LIMIT, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, REPOSITORY, sha, require, source_path, packaged_guide, require_builder_outputs, verified_builder_context, builder_archive_context, verify_builder_context_outputs
+from release_common import TAG, TITLE, LIMIT, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, REPOSITORY, sha, require, source_path, packaged_guide, require_builder_outputs, verified_builder_context, verify_builder_context_outputs
+from release_common import builder_reconstruction
 
 root = pathlib.Path(__file__).resolve().parents[2]
 
@@ -50,12 +51,12 @@ def package(out):
                 target = pathlib.Path(temp) / name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
-        builder_source = verified_builder_context(root, extracted, source)
-        (extracted / 'SOURCE.json').write_bytes(builder_archive_context(extracted, builder_source))
+        builder_source, selected_package = verified_builder_context(root, extracted, source)
         generated = pathlib.Path(temp) / 'builder'
-        subprocess.run(['node', 'scripts/successor/build.mjs', '--out', str(generated)], cwd=extracted, check=True)
-        require_builder_outputs(generated)
-        verify_builder_context_outputs(builder_source, generated)
+        with builder_reconstruction(extracted, builder_source, selected_package):
+            subprocess.run(['node', 'scripts/successor/build.mjs', '--out', str(generated)], cwd=extracted, check=True)
+            require_builder_outputs(generated)
+            verify_builder_context_outputs(builder_source, generated)
         for name in BUILDER_ASSETS | BUILDER_ARCHIVE_ONLY_ASSETS:
             payload[name] = ((generated / name).read_bytes(), stat.S_IFREG | 0o644)
     manifest = {'schemaVersion': 2, 'repository': REPOSITORY, 'tag': TAG, 'name': TITLE,
