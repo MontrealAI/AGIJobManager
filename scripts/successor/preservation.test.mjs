@@ -6,16 +6,35 @@ import { normalizeConsole } from './preservation-normalize.mjs';
 const digest = data => createHash('sha256').update(data).digest('hex');
 const baseline = JSON.parse(fs.readFileSync(new URL('../../docs/successor/PRESERVATION_BASELINE.json', import.meta.url)));
 const changes = JSON.parse(fs.readFileSync(new URL('../../config/next-deployment-contract-changes.json', import.meta.url)));
-const reviewedChanges = { ...changes.files, ...changes.evidenceInputs };
+const candidate = JSON.parse(fs.readFileSync(new URL('../../config/explicit-governor-source-v1.json', import.meta.url)));
+const compiler = JSON.parse(fs.readFileSync(new URL('../../config/compiler-optimizer-transition-v1.json', import.meta.url)));
+const compilerChanges = Object.fromEntries(Object.entries(compiler.configs).map(([file, change]) => [file, { ...change, purpose: compiler.scope }]));
+const reviewedChanges = [changes.files, changes.evidenceInputs, candidate.changedContracts, compilerChanges,
+  Object.fromEntries(Object.entries(candidate.inputs).filter(([, input]) => input.reviewReason).map(([file, input]) => [file, {
+    beforeSha256: input.predecessorSha256, afterSha256: input.sha256, purpose: input.reviewReason,
+  }]))];
 function currentExpected(file, historicalHash) {
-  const change = reviewedChanges[file];
-  if (!change) return historicalHash;
-  assert.equal(change.beforeSha256, historicalHash, file + ' must bind the preserved historical source');
-  assert.ok(change.purpose, file + ' requires an explicit change rationale');
-  return change.afterSha256;
+  const transitions = reviewedChanges.map(inventory => inventory?.[file]).filter(Boolean);
+  const seen = new Set();
+  let expected = historicalHash;
+  while (true) {
+    assert.ok(!seen.has(expected), file + ' must not contain a review transition cycle');
+    seen.add(expected);
+    const next = transitions.filter(change => change.beforeSha256 === expected && change.afterSha256 !== expected);
+    if (!next.length) return expected;
+    assert.equal(new Set(next.map(change => change.afterSha256)).size, 1, file + ' must have one reviewed source successor');
+    for (const change of next) {
+      assert.equal(change.beforeSha256, expected, file + ' must bind the preserved historical source');
+      assert.ok(change.purpose || change.reason, file + ' requires an explicit change rationale');
+    }
+    expected = next[0].afterSha256;
+  }
 }
 
 test('historical baseline is preserved with only exact inventoried next-deployment source changes', () => {
+  const originalTest = 'test/fixtures/preservation.pre-c174-integration.test.mjs.txt';
+  assert.equal(candidate.protectedHistory['scripts/successor/preservation.test.mjs'].retainedPath, originalTest);
+  assert.equal(digest(fs.readFileSync(originalTest)), 'a8803040142613f6b193b74aa42522813ebc94056673947dbd8a183ae0a3577b', 'Original preservation assertions must remain available unchanged');
   for (const [file, expected] of Object.entries(baseline.protectedFiles)) {
     const normalized = baseline.normalizedConsoleFiles[file];
     assert.equal(digest(normalized ? normalizeConsole(fs.readFileSync(file, 'utf8')) : fs.readFileSync(file)), normalized || currentExpected(file, expected), file + ' must match preserved or explicitly reviewed source');
@@ -48,10 +67,11 @@ test('historical reviews stay unchanged and new fork evidence binds the candidat
   }
   const oldFork = read('docs/qualification/mainnet-cutover.json'), newFork = read('docs/qualification/mainnet-cutover-v1.16.1.json');
   const { sourceSha256: oldHashes, ...oldOutcomes } = oldFork, { sourceSha256: newHashes, ...newOutcomes } = newFork;
-  const currentFork = read('docs/qualification/mainnet-cutover-next-deployment.json');
+  assert.equal(digest(fs.readFileSync('docs/qualification/mainnet-cutover-next-deployment.json')), '36bc8cfb2d3d8e15b04372ea1fbed3fe407a921c0d70b525d673be4447f63746', 'Historical next-deployment fork evidence must remain unchanged');
+  const currentFork = read('docs/qualification/mainnet-cutover-integrated-20261017.json');
   const { sourceSha256: currentHashes, ...currentOutcomes } = currentFork;
   assert.deepEqual(currentOutcomes, oldOutcomes);
-  assert.deepEqual(Object.keys(currentHashes), Object.keys(oldHashes));
+  assert.deepEqual(Object.keys(currentHashes).sort(), [...Object.keys(oldHashes), 'hardhat/compiler-optimizer.cjs', 'config/compiler-optimizer-transition-v1.json'].sort());
   for (const [file, hash] of Object.entries(currentHashes)) assert.equal(digest(fs.readFileSync(file)), hash, file);
   // Historical Slither records are preserved, not promoted into a current review.
   // The separate strict security workflow must re-run and review changed source.
@@ -59,7 +79,7 @@ test('historical reviews stay unchanged and new fork evidence binds the candidat
   assert.deepEqual(newOutcomes, oldOutcomes);
   assert.deepEqual(Object.keys(newHashes), Object.keys(oldHashes));
   for (const [file, hash] of Object.entries(newHashes)) {
-    assert.equal(digest(fs.readFileSync(file)), currentExpected(file, hash), file);
+    assert.ok(Object.hasOwn(currentHashes, file), file + ' must remain covered by the separate actual integrated execution');
     if (!['package.json', 'package-lock.json', 'hardhat/package.json', 'hardhat/package-lock.json'].includes(file)) assert.equal(hash, oldHashes[file]);
   }
 });

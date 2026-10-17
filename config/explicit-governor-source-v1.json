@@ -87,10 +87,10 @@
     },
     ".github/workflows/current-state-release.yml": {
       "mode": "100644",
-      "sha256": "78dd3bed424d7083d5fc479ad9f4fb99a3bdb94a9b03e0560d818d03c57d83ea",
+      "sha256": "4c8e67d4608e18a2e35e3688d2accfda3ff038c74847d8be1f13548230310ff3",
       "predecessorGitBlob": "dedafb63d9f01bf9f8437a31e3f51383ee8da813",
       "predecessorSha256": "78dd3bed424d7083d5fc479ad9f4fb99a3bdb94a9b03e0560d818d03c57d83ea",
-      "reviewReason": null
+      "reviewReason": "Explicit finite candidate input checks and reproducible nonpublishing source packages; clean checkout identity is not independent review or release qualification."
     },
     ".github/workflows/docs.yml": {
       "mode": "100644",
@@ -101,10 +101,10 @@
     },
     ".github/workflows/mainnet-fork.yml": {
       "mode": "100644",
-      "sha256": "b7c931646a4d232dc4866e5c26d95b47f67916ba60c3ace7d5a4cc73bcc93f2c",
+      "sha256": "530add3cf6174ed5d56e0544d9b101c72106c143823b68c1ee3b1cd2fc479f7b",
       "predecessorGitBlob": "3cb7624c24df6d7acef2086beaab8452532c080d",
       "predecessorSha256": "37c0ea32eea0705db125832ea2f65a2a941b6be883bb93219b47f6958fc18e5b",
-      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+      "reviewReason": "Compare fresh fork execution against the separate integrated actual-input report; retain historical expectation and execution records unchanged."
     },
     ".github/workflows/pages.yml": {
       "mode": "100644",
@@ -122,10 +122,10 @@
     },
     ".github/workflows/security-verification.yml": {
       "mode": "100644",
-      "sha256": "3420f4f1a077cd0703a6e32ba3401858eaed04e48eda35ad404f3dedf489defc",
+      "sha256": "0f6d92655adfdf238f6b89ae65bbd8793e76b9f29e3774c048a26cbdee3fd647",
       "predecessorGitBlob": "a9c63d67876704c9423501c750ed5e9c6d9f4217",
       "predecessorSha256": "b52bace7a33834bfb7be500b20ccb161cb2babcc49ba116f7fea93cf472ef91a",
-      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+      "reviewReason": "Run the exact configured compiler semantic regressions before candidate static analysis; retain all compiler and security gates."
     },
     ".github/workflows/ui.yml": {
       "mode": "100644",
@@ -2213,6 +2213,13 @@
       "predecessorSha256": "2b4038311550316c16ca52e788ee308408052f2ab4a0f804292e8a377e990c8b",
       "reviewReason": null
     },
+    "docs/qualification/INTEGRATED_CANDIDATE_20261017.md": {
+      "mode": "100644",
+      "sha256": "ea4aba534dd69e44d753ad85c43dacbe54419ccf9d492a731f4f200283abfb54",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Describe integrated candidate scope and observed evidence separately from historical guides, release selection and active deployment campaigns."
+    },
     "docs/qualification/MAINNET_UPDATE_2026-10-10.md": {
       "mode": "100644",
       "sha256": "fae7d3f27fe4f04814536dfc52a35caa3a0a79c829e0c057f6eaa0e2f5e0d0f7",
@@ -2387,6 +2394,20 @@
       "predecessorGitBlob": null,
       "predecessorSha256": null,
       "reviewReason": "Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives."
+    },
+    "docs/qualification/mainnet-cutover-integrated-20261017-provenance.json": {
+      "mode": "100644",
+      "sha256": "9345bf5c8353f8a7f62ac1f3a3e4ee312632d6bbf018a5cd43074f40337b90f6",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Attribute actual local integrated-input fork execution without claiming a future final-head hosted qualification."
+    },
+    "docs/qualification/mainnet-cutover-integrated-20261017.json": {
+      "mode": "100644",
+      "sha256": "9531bf2526e515875d5430bb17937d168dc62c43d83accc182f8a375e7f3c80a",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Retain separately executed local integrated-input fork output with every actual source hash and unchanged no-public-transaction/no-activation scope."
     },
     "docs/qualification/mainnet-cutover-next-deployment.json": {
       "mode": "100644",
@@ -5862,10 +5883,10 @@
     },
     "hardhat/test/compiler-knowledge-base.test.js": {
       "mode": "100644",
-      "sha256": "311bb85b93c37b58434b092c6d2252bb564df8bf1b2629f608d62bbe5a2f7430",
+      "sha256": "1493a7cee7740ec3ac8211e44c5fb534ebafe9cf6659533908333523a0739154",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+      "reviewReason": "Add memory alias-hash and raw Yul storage-alias regression cases with default-compiler negative controls while retaining all original semantic fixtures."
     },
     "hardhat/test/conventional-creator.test.cjs": {
       "mode": "100644",
@@ -5946,10 +5967,10 @@
     },
     "hardhat/test/deployment-preflight.test.cjs": {
       "mode": "100644",
-      "sha256": "9d55cc9186b2fe6946915ef9932448aa1aed235d9d8529f88bcb96fd3527d947",
+      "sha256": "d3f7bb593f27f5a947b30d5ece411a762d1edce8e8ea5c4318eee0bce7c4f5ab",
       "predecessorGitBlob": "4e7fae5faaf82571d7f954e50e8732b9ccea6124",
       "predecessorSha256": "1b7ca2748fc4a1221ce74a6c9ddb117a4cc38521a7ac5d80d2a4ea38516252ed",
-      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+      "reviewReason": "Reject candidate optimizer profile drift, including absent or reintroduced E/L passes."
     },
     "hardhat/test/deployment-readiness.test.cjs": {
       "mode": "100644",
@@ -6051,17 +6072,17 @@
     },
     "hardhat/test/job-pages-deployment.test.cjs": {
       "mode": "100644",
-      "sha256": "29c6df0330dccd495d857c2eb14416de4c14a0da6e85c208a467c3f273446aef",
+      "sha256": "3a2389868bdeece431ec16e9da1e7095a196c051760ec59b39306d3d480d4725",
       "predecessorGitBlob": "6439366238e03c0b287af7fd20ba2f86cca48d2c",
       "predecessorSha256": "9736d3e22a8a1d8343e6b26e147f39f0f05aaeab934d158f4dbb54dfc1869da9",
-      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+      "reviewReason": "Reject candidate optimizer profile drift in page deployment planning, including absent or reintroduced E/L passes."
     },
     "hardhat/test/mainnet-cutover.test.js": {
       "mode": "100644",
-      "sha256": "818d1049c39a6de454cf4761188f7f4a68c6c8c35d72baf2371f960170489944",
+      "sha256": "926cad3958d61f8d6d3326cc33de0a40cf6fe3dff03d69be298c2a5df7a64368",
       "predecessorGitBlob": "b20d75943338ff49d96e03bd404a0d3eb9d02ab3",
       "predecessorSha256": "818d1049c39a6de454cf4761188f7f4a68c6c8c35d72baf2371f960170489944",
-      "reviewReason": null
+      "reviewReason": "Bind actual fork evidence to the central optimizer helper and exact compiler-transition record in addition to all existing source inputs."
     },
     "hardhat/test/mainnet-deployment.test.js": {
       "mode": "100644",
@@ -6100,10 +6121,10 @@
     },
     "hardhat/test/nft-registry-native.test.js": {
       "mode": "100644",
-      "sha256": "8a633e3d019e7672d32e442067e9d962d07bab5501a26e47da8c24c164b036f0",
+      "sha256": "49e0c322b9b3383f0af8c2bbc510f9a1352f9f2f78a9dc75fab3b8f89c4837a7",
       "predecessorGitBlob": "0da85684b28140fa32212e5554fdc858323fc66a",
       "predecessorSha256": "8a633e3d019e7672d32e442067e9d962d07bab5501a26e47da8c24c164b036f0",
-      "reviewReason": null
+      "reviewReason": "Reconstruct frozen historical runtime using its original optimizer while retaining candidate optimizer and historical ABI/source fixtures."
     },
     "hardhat/test/nft-registry-snapshot.test.cjs": {
       "mode": "100644",
@@ -6933,10 +6954,10 @@
     },
     "schemas/explicit-governor-source-v1.schema.json": {
       "mode": "100644",
-      "sha256": "29d1db02a3382f6c7aeda24d02f1b1bd5bfad72cd09f2ee90e7876b7583b7914",
+      "sha256": "a98cba0333903f93f314f0b8ec94a76b900e03896aa1115c32c42ca90d7dca86",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+      "reviewReason": "Enumerate only the named integrated candidate source, tests and evidence inputs; preserve schema claim and historical identity constraints."
     },
     "scripts/advisor/sample_job_state.json": {
       "mode": "100644",
@@ -7540,19 +7561,26 @@
       "predecessorSha256": null,
       "reviewReason": "Add isolated local native core-session qualification harness; no public provider or signer-control claim."
     },
-    "scripts/release/check-explicit-governor-boundaries.py": {
+    "scripts/release/candidate-profile.py": {
       "mode": "100644",
-      "sha256": "55a77289fd08af355c8987575c39560e6f5b83fe536d906b8cf75a68e9938dbe",
+      "sha256": "cb798d54acbcc04aba90f2212812293f512ef24248bf94bfe04ef805be8969f7",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+      "reviewReason": "Validate exact candidate policy pins, source-package metadata and complete archived source inventory without Git, dependencies or runtime qualification claims."
+    },
+    "scripts/release/check-explicit-governor-boundaries.py": {
+      "mode": "100644",
+      "sha256": "3a2fbd68190e3b0bad07b1e7d20fdb3fbb3d73eff1f23c353bf842568391a9f6",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Extend the finite reviewed integration inventory and exact original-test retention, with clean raw checkout identity checks and no release or external-review claim."
     },
     "scripts/release/check-source-boundaries.py": {
       "mode": "100644",
-      "sha256": "ad709686244d87320276285e69594d3f8c17ff93f73bd8695fc872b6e250c016",
+      "sha256": "25301e3cc812175591865991295dd5a326cde877a8daadb15125eaa5cd25f950",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim."
+      "reviewReason": "Add explicit clean-checkout input identity mode; retain legacy, staged and externally bound policy routes without automatic fallback."
     },
     "scripts/release/check-v114-boundaries.py": {
       "mode": "100644",
@@ -7570,10 +7598,10 @@
     },
     "scripts/release/package-release.py": {
       "mode": "100644",
-      "sha256": "f1ec32e360a2ca0b9ff977eeb6a60f715c086663f68211443c0278c2122ac7ff",
+      "sha256": "7996e844e829b4e9bcb58c0c8d1ddaad5ad6aae697083f2402d7ef090a5b7cf0",
       "predecessorGitBlob": "580b6513f2a3695118675349cef51a042d025d78",
       "predecessorSha256": "f1ec32e360a2ca0b9ff977eeb6a60f715c086663f68211443c0278c2122ac7ff",
-      "reviewReason": null
+      "reviewReason": "Explicit candidate-profile packaging validates clean finite source identity and emits nonpublishing, unselected-release metadata; legacy default remains unchanged."
     },
     "scripts/release/publish-release.py": {
       "mode": "100644",
@@ -7584,10 +7612,17 @@
     },
     "scripts/release/release_common.py": {
       "mode": "100644",
-      "sha256": "03ba87b0319304c964bf449c29c5956e1f963ab90c325026e2b8e93a87f23b6a",
+      "sha256": "e3e8583c39d7dcecdcc9f53f4324ddff5e49c1c4d6809c9e5b562fac0c32f6db",
       "predecessorGitBlob": "0a33cf78f365dcb5bcf5f2b40aee7a9dc8b83ad6",
       "predecessorSha256": "03ba87b0319304c964bf449c29c5956e1f963ab90c325026e2b8e93a87f23b6a",
-      "reviewReason": null
+      "reviewReason": "Reject input-only candidate source packages in publication asset verification; existing qualified legacy assets retain their gates."
+    },
+    "scripts/release/test-candidate-package-profile.py": {
+      "mode": "100644",
+      "sha256": "f654630a4b07de0d84f3bc4d46cd852a4e1385cd2f80867ffa2478cb37bed114",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Exercise candidate profile/pin/source/history drift and publication rejection without provider or signing operations."
     },
     "scripts/release/test-dependency-boundaries.py": {
       "mode": "100644",
@@ -7598,17 +7633,17 @@
     },
     "scripts/release/test-release-gates.py": {
       "mode": "100644",
-      "sha256": "0f1bf963594e49be158bf3820b3f0a211298160ccdb9f8265f3a1bf6aadf772d",
+      "sha256": "44ab71eb4709a9ba3a7d9bb9fc76f7e6f8517b4f70731a4f804d405fbcc8954e",
       "predecessorGitBlob": "14a4f9ca65d32fbaec3eb7e62280ea445d82d9fe",
       "predecessorSha256": "0f1bf963594e49be158bf3820b3f0a211298160ccdb9f8265f3a1bf6aadf772d",
-      "reviewReason": null
+      "reviewReason": "Add regression preventing candidate-only asset promotion even when checksums and external qualification digest bindings are supplied."
     },
     "scripts/release/test-source-boundary-dispatch.py": {
       "mode": "100644",
-      "sha256": "dadc9c0f6410c75577b6d70105dced59c6350d260f64c150a649eb88a313ce74",
+      "sha256": "013ab4086bcf65eb7cd349b9b08046d889ae949ca4b9b492f17146cd8237433e",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+      "reviewReason": "Retain historical/compiler/dependency tamper cases and add clean-checkout, exact relocation and complete integrated actual-fork evidence checks."
     },
     "scripts/release/verify-genesis-ui.mjs": {
       "mode": "100644",
@@ -7619,10 +7654,10 @@
     },
     "scripts/release/verify-package.py": {
       "mode": "100644",
-      "sha256": "eedc77f643a33852e66a19077fe1e45aa8e3c3dc61f37dea82233ea675909d83",
+      "sha256": "1f392749e847a3185d7c196160f996c40bcae574b42291e197b7b50fe26dbf14",
       "predecessorGitBlob": "1d6cd54949870646e1f54dfe9ee7a32bfa1531b5",
       "predecessorSha256": "eedc77f643a33852e66a19077fe1e45aa8e3c3dc61f37dea82233ea675909d83",
-      "reviewReason": null
+      "reviewReason": "Require explicit candidate policy pins and complete offline extraction checks while rejecting candidate promotion through published mode."
     },
     "scripts/release/verify-usdc-ui.mjs": {
       "mode": "100644",
@@ -7668,10 +7703,10 @@
     },
     "scripts/security/run-slither-extended.sh": {
       "mode": "100644",
-      "sha256": "d1f9747d1695e6d19e558b59f660e40925a3b68c6da48124a334fc3ea5f17722",
+      "sha256": "2403895691a0c19d25bd0c9892a8f03891e65a32c432cc49302e81a2f9a82732",
       "predecessorGitBlob": "6c4a7040d4f721994b769c3f6f9a6e869f7378c0",
       "predecessorSha256": "ae23abf938d410c88ff340ec828f3bb30441fd6a22aaa0be34499f4fb72c38cb",
-      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
+      "reviewReason": "Use the existing deterministic full-detector wrapper with fixed seed and clean complete compiler outputs for all three retained raw scans."
     },
     "scripts/security/run-slither.sh": {
       "mode": "100755",
@@ -7700,6 +7735,13 @@
       "predecessorGitBlob": "2731e02203da90e8220496d490d1e1ee69dfed23",
       "predecessorSha256": "7c6e5346fe75f6fd15d5877a834042925f0486352caff80d930f9c877e5c2bba",
       "reviewReason": null
+    },
+    "scripts/security/slither-reviewed-findings-c174-integrated-yul.json": {
+      "mode": "100644",
+      "sha256": "f3304ca5b7c5854a61855db7bc2408aaa2017c88a0201cfe6ae32180dba6f34f",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Separately disposition actual repeated integrated scans with exact compiler inputs; do not relabel historical acceptance or bind a circular source manifest."
     },
     "scripts/security/slither-reviewed-findings-pr1586-e1ed502.json": {
       "mode": "100644",
@@ -7780,24 +7822,24 @@
     },
     "scripts/security/test-slither-deterministic.py": {
       "mode": "100644",
-      "sha256": "baf6d3c4e5bc4c6631973c58d705f7a4f43ecfe039c89b3dd1c5093373e07ef4",
+      "sha256": "002366fabff199b62c57e88050f3bf055d34d08ce141889174701598a818836d",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
+      "reviewReason": "Retain deterministic wrapper checks for complete detector coverage and raw finding metadata."
     },
     "scripts/security/test-slither-review.py": {
       "mode": "100644",
-      "sha256": "239d5c1071e7d47bbf9adbdf8d0947dc9499a87a5a6d1342c6d30aa9837b7180",
+      "sha256": "0effea22f0cec436c462b6cb11acf0449276edc7698a691f67de5ed351191647",
       "predecessorGitBlob": "b40a4546cd3df56c5035dfc560a0cda677e5001f",
       "predecessorSha256": "23e262346104266f0de547efa0d2a80f8b764de21e18a613e5672c74f17ce041",
-      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
+      "reviewReason": "Retain all static-review tamper checks and require the separate exact integrated review record."
     },
     "scripts/security/verify-slither-review.py": {
       "mode": "100755",
-      "sha256": "7806e9ee48872959bddf9bd6e0eddee41daca0861e706f14cef5900c5d6875ad",
+      "sha256": "164640dc69823de629aede7b60fd1bb7a60f287dff20fdc0fe157e45245698c7",
       "predecessorGitBlob": "fc5cda1e3138a899967cd9336cbf2d28c812f654",
       "predecessorSha256": "baab2cee4711528de6c26ba6105c20bed9b4e69aa76776d0be796ed560bd4e66",
-      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
+      "reviewReason": "Select the separate exact integrated scan review; retain strict detector coverage, normalized IDs, descriptions and source-byte acceptance."
     },
     "scripts/simulate-genesis-job.mjs": {
       "mode": "100644",
@@ -7962,10 +8004,10 @@
     },
     "scripts/successor/preservation.test.mjs": {
       "mode": "100644",
-      "sha256": "a8803040142613f6b193b74aa42522813ebc94056673947dbd8a183ae0a3577b",
+      "sha256": "efecb2250d408981c24561cd3b5c6faeb166b79a9ada8668709e1953d4fc93f8",
       "predecessorGitBlob": "1512e65011367fd79615060c847194de80eac102",
       "predecessorSha256": "a8803040142613f6b193b74aa42522813ebc94056673947dbd8a183ae0a3577b",
-      "reviewReason": null
+      "reviewReason": "Follow exact before/after reviewed source transitions and separate actual integrated fork evidence while preserving original test bytes and all historical records."
     },
     "scripts/successor/rehearse.mjs": {
       "mode": "100644",
@@ -8694,6 +8736,13 @@
       "predecessorGitBlob": "90b47355b2f837b714cc03cd535ab77cf680c884",
       "predecessorSha256": "5178a64b4618bf861a300b57fa4c4ca183313c46005509e14dc0c87ca8254209",
       "reviewReason": null
+    },
+    "test/fixtures/preservation.pre-c174-integration.test.mjs.txt": {
+      "mode": "100644",
+      "sha256": "a8803040142613f6b193b74aa42522813ebc94056673947dbd8a183ae0a3577b",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Retain exact predecessor preservation assertions with original source attribution; this fixture is historical code, not current qualification."
     },
     "test/happyPath.test.js": {
       "mode": "100644",
@@ -10244,6 +10293,7 @@
     }
   },
   "reviewedInputChanges": [
+    ".github/workflows/current-state-release.yml",
     ".github/workflows/mainnet-fork.yml",
     ".github/workflows/security-verification.yml",
     "config/compiler-optimizer-transition-v1.json",
@@ -10253,12 +10303,15 @@
     "docs/deployment/direct-origination-profile.md",
     "docs/deployment/ubuntu-ephemeral-creator.md",
     "docs/qualification/CORE_SESSION_NATIVE.md",
+    "docs/qualification/INTEGRATED_CANDIDATE_20261017.md",
     "docs/qualification/expected-mainnet-cutover-sol-2026-7-provenance.json",
     "docs/qualification/expected-mainnet-cutover-sol-2026-7.json",
     "docs/qualification/history/expected-mainnet-cutover-v1.18.0.json",
     "docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json",
     "docs/qualification/history/next-deployment-contract-changes-v1.18.0.json",
     "docs/qualification/mainnet-cutover-f274c6be-provenance.json",
+    "docs/qualification/mainnet-cutover-integrated-20261017-provenance.json",
+    "docs/qualification/mainnet-cutover-integrated-20261017.json",
     "docs/security/pr1586-e1ed502-evidence.json",
     "docs/security/pr1586-e1ed502-review.md",
     "docs/security/sol-2026-7-workaround.md",
@@ -10302,24 +10355,35 @@
     "hardhat/test/fixtures/SOL-2026-7/reassigned_reference_storage_alias.sol",
     "hardhat/test/helpers/native-core-rpc.cjs",
     "hardhat/test/job-pages-deployment.test.cjs",
+    "hardhat/test/mainnet-cutover.test.js",
     "hardhat/test/native-core-session.test.cjs",
+    "hardhat/test/nft-registry-native.test.js",
     "hardhat/test/operator-private-state.regression.test.cjs",
     "hardhat/test/source-qualification.test.cjs",
     "schemas/explicit-governor-source-v1.schema.json",
     "scripts/docs/generate-repo-map.mjs",
     "scripts/qualification/core-session-native.mjs",
     "scripts/qualification/prepare-core-catalog.mjs",
+    "scripts/release/candidate-profile.py",
     "scripts/release/check-explicit-governor-boundaries.py",
     "scripts/release/check-source-boundaries.py",
+    "scripts/release/package-release.py",
+    "scripts/release/release_common.py",
+    "scripts/release/test-candidate-package-profile.py",
+    "scripts/release/test-release-gates.py",
     "scripts/release/test-source-boundary-dispatch.py",
+    "scripts/release/verify-package.py",
     "scripts/security/check-forge-optimizer.cjs",
     "scripts/security/run-slither-deterministic.py",
     "scripts/security/run-slither-extended.sh",
+    "scripts/security/slither-reviewed-findings-c174-integrated-yul.json",
     "scripts/security/slither-reviewed-findings-pr1586-e1ed502.json",
     "scripts/security/test-forge-optimizer.cjs",
     "scripts/security/test-slither-deterministic.py",
     "scripts/security/test-slither-review.py",
-    "scripts/security/verify-slither-review.py"
+    "scripts/security/verify-slither-review.py",
+    "scripts/successor/preservation.test.mjs",
+    "test/fixtures/preservation.pre-c174-integration.test.mjs.txt"
   ],
   "compilerSourceClosure": {
     "@openzeppelin/contracts/access/Ownable.sol": "a8e4e1ae19d9bd3e8b0a6d46577eec098c01fbaffd3ec1252fd20d799e73393b",
@@ -12307,7 +12371,7 @@
     "scripts/successor/preservation.test.mjs": {
       "originalCommit": "3c974ad3cb1d828e5c89464fd8424d8ae853d9dd",
       "originalPath": "scripts/successor/preservation.test.mjs",
-      "retainedPath": "scripts/successor/preservation.test.mjs",
+      "retainedPath": "test/fixtures/preservation.pre-c174-integration.test.mjs.txt",
       "sha256": "a8803040142613f6b193b74aa42522813ebc94056673947dbd8a183ae0a3577b"
     }
   },

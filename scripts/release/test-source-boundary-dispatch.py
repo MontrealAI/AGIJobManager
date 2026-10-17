@@ -157,7 +157,8 @@ class SourceBoundaryDispatch(unittest.TestCase):
 
     def test_02_selection_fails_without_fallback(self):
         for arguments in ([], ['--profile', 'auto'], ['--profile', 'manager-explicit-governor-v1'],
-                          self.explicit_cli() + ['--source-commit', M['PREDECESSOR']]):
+                          self.explicit_cli() + ['--source-commit', M['PREDECESSOR']],
+                          ['--profile', 'legacy-v114', '--mode', 'checkout']):
             with self.subTest(arguments=arguments[:3]):
                 self.assertNotEqual(self.dispatch(arguments).returncode, 0)
         args = self.args(mode='bound')
@@ -460,9 +461,23 @@ class SourceBoundaryDispatch(unittest.TestCase):
         args.review_binding = str(binding_path)
         args.review_binding_sha256 = M['sha'](binding_path.read_bytes())
         try:
+            checkout = self.args(mode='checkout')
+            observed = M['verify_explicit'](checkout)
+            self.assertEqual(observed['status'], 'CHECKED_OUT_INPUT_BOUNDARIES_PASSED')
+            self.assertEqual((observed['sourceCommit'], observed['sourceTree']), (commit, tree))
+            self.assertFalse(observed['releaseQualified'])
+            self.assertFalse(observed['externalReviewBound'])
+            checkout.review_binding = str(binding_path)
+            checkout.review_binding_sha256 = M['sha'](binding_path.read_bytes())
+            with self.assertRaisesRegex(M['BoundaryError'], 'cannot claim an external'):
+                M['verify_explicit'](checkout)
+            checkout.review_binding = checkout.review_binding_sha256 = None
+            self.mutate(self.current, 'README.md', lambda data:data+b'\n',
+                lambda:self.assertRaises(M['BoundaryError'],M['verify_explicit'],checkout))
             result = M['verify_explicit'](args)
             self.assertEqual(result['status'],'CLEAN_SOURCE_BOUNDARIES_PASSED')
             self.assertFalse(result['releaseQualified'])
+            self.assertTrue(result['externalReviewBound'])
             for key, replacement in [('sourceCommit',self.legacy_commit),('sourceTree',self.legacy_tree),
                                      ('dispatcherSha256','0'*64),('verifierSha256','0'*64)]:
                 changed = dict(binding); changed[key] = replacement
@@ -518,6 +533,23 @@ class SourceBoundaryDispatch(unittest.TestCase):
                 M['source_inventory'](self.current, self.objects, self.manifest, 'staged')
         finally:
             extra.unlink()
+
+    def test_original_preservation_test_relocation_is_exact(self):
+        name='scripts/successor/preservation.test.mjs'
+        retained='test/fixtures/preservation.pre-c174-integration.test.mjs.txt'
+        review=self.manifest['protectedHistory'][name]
+        self.assertEqual(review['retainedPath'],retained)
+        original=self.objects.tree(M['PREDECESSOR'])[name]
+        data=self.objects.blobs({name:original})[original['gitBlob']]
+        self.assertEqual((self.current/retained).read_bytes(),data)
+        self.assertNotEqual((self.current/name).read_bytes(),data)
+        M['verify_explicit'](self.args())
+        self.mutate(self.current,retained,lambda before:before+b'\n',
+            lambda:self.assertRaises(M['BoundaryError'],M['verify_explicit'],self.args()))
+        forged=copy.deepcopy(self.manifest)
+        forged['protectedHistory'][name]['retainedPath']='README.md'
+        with self.assertRaisesRegex(M['BoundaryError'],'Historical attribution differs'):
+            M['source_inventory'](self.current,self.objects,forged,'staged')
 
 
 
@@ -584,7 +616,9 @@ class SourceBoundaryDispatch(unittest.TestCase):
         workflow_text = (self.current / workflow).read_text()
         current_expected = 'docs/qualification/expected-mainnet-cutover-sol-2026-7.json'
         current_provenance = 'docs/qualification/expected-mainnet-cutover-sol-2026-7-provenance.json'
-        command = 'diff -u ' + current_expected + ' build/qualification/mainnet-cutover.json'
+        integrated_report = 'docs/qualification/mainnet-cutover-integrated-20261017.json'
+        integrated_provenance = 'docs/qualification/mainnet-cutover-integrated-20261017-provenance.json'
+        command = 'diff -u ' + integrated_report + ' build/qualification/mainnet-cutover.json'
         self.assertEqual([line.strip() for line in workflow_text.splitlines()
                           if 'run: diff ' in line], ['run: ' + command])
         self.assertEqual(workflow_text.count('run: npm run test:mainnet-fork'), 1)
@@ -603,7 +637,7 @@ class SourceBoundaryDispatch(unittest.TestCase):
             self.assertEqual(M['sha'](historical_blobs[historical_tree[name]['gitBlob']]), digest, name)
             if M['sha']((self.current / name).read_bytes()) != digest:
                 changed.append(name)
-        self.assertEqual(changed, ['hardhat/hardhat.config.js'])
+        self.assertEqual(sorted(changed), ['hardhat/hardhat.config.js', 'hardhat/test/mainnet-cutover.test.js'])
         M['dependency_boundaries'](self.current, self.objects, reviewed_compiler_transition=True)
         self.assertEqual(report['passed'], 23)
         self.assertEqual(len(report['assertions']), 23)
@@ -643,32 +677,55 @@ class SourceBoundaryDispatch(unittest.TestCase):
         self.assertEqual(expectation['historicalReport'], {'path': expected, 'sha256': expected_sha})
         self.assertEqual(expectation['changedSourceInputs'], {'hardhat/hardhat.config.js': {'before': report['sourceSha256']['hardhat/hardhat.config.js'], 'after': anticipated['sourceSha256']['hardhat/hardhat.config.js']}})
         self.assertEqual(expectation['compilerTransition'], {'path': M['COMPILER_TRANSITION'], 'sha256': M['COMPILER_TRANSITION_SHA']})
+        actual_raw = (self.current / integrated_report).read_bytes()
+        actual_report = M['strict_json'](actual_raw)
+        self.assertEqual({k:v for k,v in actual_report.items() if k!='sourceSha256'},
+                         {k:v for k,v in current_report.items() if k!='sourceSha256'},
+                         'Actual integrated execution must retain every expected fork outcome')
+        self.assertEqual(set(actual_report['sourceSha256']),set(current_report['sourceSha256']) |
+                         {'hardhat/compiler-optimizer.cjs',M['COMPILER_TRANSITION']})
+        for name,digest in actual_report['sourceSha256'].items():
+            self.assertEqual(M['sha']((self.current/name).read_bytes()), digest, name)
+        actual_provenance=M['strict_json']((self.current/integrated_provenance).read_bytes())
+        self.assertEqual(actual_provenance['schema'],'agijobmanager/integrated-cutover-provenance/v1')
+        self.assertEqual(actual_provenance['status'],'executed-local-inputs-awaiting-final-head-hosted-repeat')
+        self.assertIs(actual_provenance['executed'],True)
+        self.assertEqual(actual_provenance['baseCommit'],'cae39d198017595382949ad6efc69f36fa8c028b')
+        self.assertEqual(actual_provenance['baseTree'],'4beda66094ffadca6f6b02a8217ff69c3524458b')
+        self.assertEqual(actual_provenance['reportPath'],integrated_report)
+        self.assertEqual(actual_provenance['reportSha256'],M['sha'](actual_raw))
+        self.assertEqual(actual_provenance['sourceSha256'],actual_report['sourceSha256'])
+        self.assertEqual(actual_provenance['passed'],23)
+        self.assertEqual(actual_provenance['publicTransactionsBroadcast'],0)
+        self.assertIs(actual_provenance['productionActivationApproved'],False)
+        self.assertIs(actual_provenance['finalHeadHostedQualified'],False)
         # Execute the same full-byte comparator as CI, without a fork/provider.
         with tempfile.TemporaryDirectory(dir=self.directory) as temp:
             executed = pathlib.Path(temp) / 'executed.json'
             def compared(data):
                 executed.write_bytes(data)
-                return subprocess.run(['diff', '-u', str(self.current / current_expected), str(executed)],
+                return subprocess.run(['diff', '-u', str(self.current / integrated_report), str(executed)],
                     stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=False).returncode
-            self.assertEqual(compared(current_raw), 0)
+            self.assertEqual(compared(actual_raw), 0)
+            self.assertEqual(compared(current_raw), 1)
             self.assertEqual(compared(raw), 1)
             mutations = []
-            changed = copy.deepcopy(current_report)
+            changed = copy.deepcopy(actual_report)
             changed['sourceSha256'][next(iter(changed['sourceSha256']))] = '0' * 64
             mutations.append(('source-hash', changed))
             for key, value in (('passed', 22), ('publicTransactionsBroadcast', 1),
                                ('productionActivationApproved', True), ('fixtureWallets', False)):
-                changed = copy.deepcopy(current_report); changed[key] = value
+                changed = copy.deepcopy(actual_report); changed[key] = value
                 mutations.append((key, changed))
-            changed = copy.deepcopy(current_report); changed['assertions'].pop()
+            changed = copy.deepcopy(actual_report); changed['assertions'].pop()
             mutations.append(('removed-assertion', changed))
-            changed = copy.deepcopy(current_report); changed['unreviewedField'] = 'extra'
+            changed = copy.deepcopy(actual_report); changed['unreviewedField'] = 'extra'
             mutations.append(('unknown-field', changed))
             for label, changed in mutations:
                 with self.subTest(report_drift=label):
                     self.assertEqual(compared((json.dumps(changed, indent=2) + '\n').encode()), 1)
         schema = M['strict_json']((self.current / M['SCHEMA']).read_bytes())
-        for name in (workflow, provenance, current_expected, current_provenance):
+        for name in (workflow, provenance, current_expected, current_provenance, integrated_report, integrated_provenance):
             self.assertIn(name, M['REVIEW_PATHS'])
             self.assertIn(name, schema['properties']['reviewedInputChanges']['items']['enum'])
             with self.subTest(source_input=name):

@@ -14,7 +14,7 @@ PROFILES = ('legacy-v114', 'manager-explicit-governor-v1')
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--profile', required=True, choices=PROFILES)
-    parser.add_argument('--mode', choices=('staged', 'bound'), default='bound')
+    parser.add_argument('--mode', choices=('staged', 'checkout', 'bound'), default='bound')
     parser.add_argument('--source-root', required=True)
     parser.add_argument('--object-store', action='append')
     parser.add_argument('--verifier-sha256', required=True)

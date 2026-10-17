@@ -618,7 +618,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     const tests = this.test.parent.tests;
     if (preservationFailures || tests.some(test => test.state !== 'passed')) return;
     const root = path.resolve(new URL('../..', import.meta.url).pathname);
-    const sources = ['package.json', 'package-lock.json', 'hardhat/package.json', 'hardhat/package-lock.json', 'hardhat/hardhat.config.js', 'hardhat.cutover-fork.config.mjs',
+    const sources = ['package.json', 'package-lock.json', 'hardhat/package.json', 'hardhat/package-lock.json', 'hardhat/hardhat.config.js', 'hardhat/compiler-optimizer.cjs', 'config/compiler-optimizer-transition-v1.json', 'hardhat.cutover-fork.config.mjs',
       'hardhat/test/mainnet-cutover.test.js', 'hardhat/qualification/legacy-snapshot.cjs', 'hardhat/qualification/cutover-pin.json',
       'hardhat/scripts/runtime.cjs', 'hardhat/scripts/load-env.cjs', 'hardhat/scripts/deployment-safety.cjs', 'scripts/security/patch-openzeppelin-compiler.cjs', 'scripts/security/openzeppelin-compiler-patches.json'];
     function collect(directory) {

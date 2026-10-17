@@ -4,6 +4,7 @@
 import importlib.util
 import contextlib
 import io
+import json
 from itertools import permutations
 from pathlib import Path
 from types import SimpleNamespace
@@ -53,6 +54,35 @@ class DeterministicDetectorTests(unittest.TestCase):
             with self.subTest(order=[item.ARGUMENT for item in selected]):
                 ordered = WRAPPER.ordered_selection(selected, self.available)
                 self.assertEqual(ordered, [self.balance, self.benign, self.events])
+
+    def test_all_six_configured_reentrancy_detectors_remain_complete_for_every_order(self):
+        config = json.loads(Path(__file__).with_name("slither-reentrancy.config.json").read_text())
+        names = config["detectors_to_run"].split(",")
+        self.assertEqual(len(names), 6)
+        self.assertEqual(config["detectors_to_exclude"], [])
+        high = {"reentrancy-balance", "reentrancy-eth"}
+        medium = {"reentrancy-no-eth"}
+        available = [detector(name, 0 if name in high else 1 if name in medium else 2) for name in names]
+        expected = sorted(available, key=lambda item: (item.IMPACT, item.ARGUMENT))
+        self.assertEqual(expected[0].ARGUMENT, "reentrancy-balance")
+        for selected in permutations(available):
+            ordered = WRAPPER.ordered_selection(selected, available)
+            self.assertEqual(ordered, expected)
+            self.assertEqual(set(ordered), set(selected))
+
+    def test_broad_configurations_preserve_all_selected_detectors(self):
+        for name in ["slither-all.config.json", "slither-extended.config.json"]:
+            config = json.loads(Path(__file__).with_name(name).read_text())
+            self.assertEqual(config["detectors_to_exclude"], [])
+            self.assertNotIn("detectors_to_run", config)
+        available = [detector(f"detector-{index:03}", index % 5) for index in range(102)]
+        selected = list(reversed(available))
+        cli = SimpleNamespace(choose_detectors=lambda args, classes: selected)
+        WRAPPER.install(cli, "0.11.6")
+        result = cli.choose_detectors(None, available)
+        self.assertEqual(len(result), 102)
+        self.assertEqual(set(result), set(selected))
+        self.assertEqual(result, sorted(selected, key=lambda item: (item.IMPACT, item.ARGUMENT)))
 
     def test_empty_and_set_selections_preserve_membership(self):
         self.assertEqual(WRAPPER.ordered_selection([], self.available), [])

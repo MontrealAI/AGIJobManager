@@ -32,6 +32,9 @@ INVENTORY = 'config/next-deployment-contract-changes.json'
 REPAIRS = 'config/v114-dependency-repairs.json'
 COMPILER_TRANSITION = 'config/compiler-optimizer-transition-v1.json'
 COMPILER_TRANSITION_SHA = 'cea91bbdf10799d0045e763142a33d0f01010743564b17c187c35175cdabeab5'
+HISTORICAL_RELOCATIONS = {
+    'scripts/successor/preservation.test.mjs': 'test/fixtures/preservation.pre-c174-integration.test.mjs.txt',
+}
 LEGACY_SHA = 'b0b5f608d08866f5b9f66a6d0381a34fc9c1851282113ddf4de2efb4ead54807'
 INVENTORY_SHA = '93f50d12f034ab8bdf6f951c48f71c3dd010fa82ab485d2d9f61c21f97d587d5'
 CONTRACT_CHANGES = {
@@ -134,6 +137,20 @@ REVIEW_PATHS = {
     'hardhat/test/native-core-session.test.cjs',
     'scripts/qualification/prepare-core-catalog.mjs',
     'docs/qualification/CORE_SESSION_NATIVE.md',
+    # Exact integrated-candidate evidence and nonpublishing package slice.
+    '.github/workflows/current-state-release.yml',
+    'scripts/successor/preservation.test.mjs',
+    'test/fixtures/preservation.pre-c174-integration.test.mjs.txt',
+    'docs/qualification/mainnet-cutover-integrated-20261017.json',
+    'docs/qualification/mainnet-cutover-integrated-20261017-provenance.json',
+    'docs/qualification/INTEGRATED_CANDIDATE_20261017.md',
+    'scripts/security/slither-reviewed-findings-c174-integrated-yul.json',
+    'hardhat/test/nft-registry-native.test.js',
+    'hardhat/test/mainnet-cutover.test.js',
+    'scripts/release/package-release.py', 'scripts/release/verify-package.py',
+    'scripts/release/candidate-profile.py',
+    'scripts/release/test-candidate-package-profile.py',
+    'scripts/release/release_common.py', 'scripts/release/test-release-gates.py',
 }
 REVIEW_PATHS.update(ADDITIVE_HISTORY)
 LOCAL_MOUNTS = {'node_modules', 'hardhat/node_modules', 'hardhat/artifacts'}
@@ -531,10 +548,11 @@ def source_inventory(root, objects, manifest, mode):
                       'docs/qualification/mainnet-cutover-next-deployment.json'})
     require(set(manifest['protectedHistory']) == protected, 'Protected history membership differs')
     for name, item in manifest['protectedHistory'].items():
+        retained = HISTORICAL_RELOCATIONS.get(name, name)
         require(item == {'originalCommit': PREDECESSOR, 'originalPath': name,
-                         'retainedPath': name, 'sha256': sha(old_blobs[predecessor[name]['gitBlob']])},
+                         'retainedPath': retained, 'sha256': sha(old_blobs[predecessor[name]['gitBlob']])},
                 'Historical attribution differs: ' + name)
-        require(raw_file(root, name) == (predecessor[name]['mode'], old_blobs[predecessor[name]['gitBlob']]),
+        require(raw_file(root, retained) == (predecessor[name]['mode'], old_blobs[predecessor[name]['gitBlob']]),
                 'Protected historical bytes changed: ' + name)
     require(sha(raw_file(root, LEGACY)[1]) == LEGACY_SHA and
             sha(raw_file(root, INVENTORY)[1]) == INVENTORY_SHA, 'Inherited v114 policy bytes changed')
@@ -563,7 +581,7 @@ def source_inventory(root, objects, manifest, mode):
                     actual.add(str(path.relative_to(root)))
         expected = {n for n in expected_paths if n.startswith(directory + '/')}
         require(actual == expected, 'Extra, missing or ignored source input: ' + directory)
-    if mode == 'bound':
+    if mode in ('checkout', 'bound'):
         blobs = local.blobs(expected_index)
         require(not untracked, 'Final source has untracked inputs')
         for name, item in expected_index.items():
@@ -675,6 +693,7 @@ def check_binding(root, manifest, args):
 
 
 def verify_explicit(args):
+    require(args.mode in ('staged', 'checkout', 'bound'), 'Unsupported explicit source mode')
     root = exact_root(args.source_root)
     stores = args.object_store or [str(root)]
     objects = Git(stores[0], [Git(p) for p in stores[1:]] + [Git(root)])
@@ -703,9 +722,16 @@ def verify_explicit(args):
         observed.update(check_binding(root, manifest, args))
     else:
         require(not args.review_binding and not args.review_binding_sha256,
-                'Staged checks cannot claim an external final binding')
-    return {'profile': PROFILE, 'status': 'STAGED_INPUT_BOUNDARIES_PASSED' if args.mode == 'staged'
-            else 'CLEAN_SOURCE_BOUNDARIES_PASSED', 'releaseQualified': False,
+                'Input-identity checks cannot claim an external final binding')
+        if args.mode == 'checkout':
+            git = Git(root)
+            observed.update(sourceCommit=git.run('rev-parse', 'HEAD').decode().strip(),
+                            sourceTree=git.run('rev-parse', 'HEAD^{tree}').decode().strip())
+    statuses = {'staged': 'STAGED_INPUT_BOUNDARIES_PASSED',
+                'checkout': 'CHECKED_OUT_INPUT_BOUNDARIES_PASSED',
+                'bound': 'CLEAN_SOURCE_BOUNDARIES_PASSED'}
+    return {'profile': PROFILE, 'status': statuses[args.mode], 'releaseQualified': False,
+            'externalReviewBound': args.mode == 'bound',
             'mode': args.mode, 'manifestSha256': sha(data), **observed}
 
 

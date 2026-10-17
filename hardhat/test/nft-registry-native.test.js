@@ -38,6 +38,8 @@ describe('Native v1.14.0 verification and readiness compatibility',function(){
  });
  it('reconstructs all nine historical mainnet runtimes from preserved source and rejects the changed ENS runtime',async()=>{
   const input=structuredClone(buildInfo.input);
+  // Historical runtime evidence must use its original optimizer, not the new-build mitigation.
+  input.settings.optimizer={enabled:true,runs:40};
   const source=safety.resolveInputSource(buildInfo,'contracts/utils/ENSOwnership.sol');
   const preserved=fs.readFileSync(new URL('../../test/fixtures/ENSOwnership.pre-revocation.sol.txt',import.meta.url),'utf8');
   const review=JSON.parse(fs.readFileSync(new URL('../../config/next-deployment-contract-changes.json',import.meta.url),'utf8'));

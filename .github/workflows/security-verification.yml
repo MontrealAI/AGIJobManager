@@ -48,6 +48,7 @@ jobs:
           npm ci
           npm audit --audit-level=low
           npm run compile
+          node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs test test/compiler-knowledge-base.test.js
           npm run test:preflight
           npm run test:deployment
 

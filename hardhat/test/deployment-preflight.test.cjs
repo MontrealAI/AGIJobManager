@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
 const realEthers = require('ethers');
+const compilerOptimizer = require('../compiler-optimizer.cjs').optimizer;
 const temporaryFolders = new Set();
 test.after(() => { for (const folder of temporaryFolders) fs.rmSync(folder, { recursive: true, force: true }); });
 const hash = value => realEthers.zeroPadValue(realEthers.toBeHex(value), 32);
@@ -122,7 +123,7 @@ test('runtime comparison checks immutable USDC and library self-address', () => 
   assert.equal(requireArtifactMatch({ artifact: library, buildInfo, address: B, code: `0x73${B.slice(2)}3014` }), 23);
 });
 
-function deploymentHarness({ dryRun = false, failConfirmation = false, failConfirmationAt = 2, failManagerRuntimeRead = false, failVerification = false, noSigner = false, deployerAddress = '', dryRunValue, verifierEnabled = true, verificationError, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', receiptOverride = {}, finalOwner = A, initialNftRequired = false } = {}) {
+function deploymentHarness({ dryRun = false, failConfirmation = false, failConfirmationAt = 2, failManagerRuntimeRead = false, failVerification = false, noSigner = false, deployerAddress = '', dryRunValue, verifierEnabled = true, verificationError, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', receiptOverride = {}, finalOwner = A, initialNftRequired = false, optimizer = compilerOptimizer } = {}) {
   const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'agi-deployment-preflight-'));
   const scriptsDir = path.join(folder, 'scripts');
   fs.mkdirSync(scriptsDir);
@@ -139,7 +140,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
     'function additionalValidators(address) view returns(bool)','function ensJobPages() view returns(address)',
     'function useEnsJobTokenURI() view returns(bool)',
     {type:'constructor',inputs:['address','string','address[2]','bytes32[4]','bytes32[2]','address[2]','address'].map(type=>({type})),stateMutability:'nonpayable'}];
-  const input = { settings: { optimizer: structuredClone(require('../compiler-optimizer.cjs').optimizer), evmVersion: 'shanghai', viaIR: true,
+  const input = { settings: { optimizer: structuredClone(optimizer), evmVersion: 'shanghai', viaIR: true,
     metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } };
   const buildInfo = { solcVersion: '0.8.37', solcLongVersion: '0.8.37+commit.f401782d', input, output: { contracts: {} } };
   const mockArtifacts = {
@@ -344,7 +345,7 @@ test('explorer outage fails deployment outcome while preserving paused manager a
 function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificationError, noSigner = false,
   verifierEnabled = true, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', runtimeCode = '0x6000', failAction, finalOwnerMismatch = false,
   managerPendingOwner = ZERO, managerIntakePaused = true, missingBuildInfo = false, artifactMismatch = false,
-  compilerVersion = '0.8.37', observedRuntimeCode = '0x6000', previousHelper = ZERO, nextJobId = 0n,
+  compilerVersion = '0.8.37', optimizer = compilerOptimizer, observedRuntimeCode = '0x6000', previousHelper = ZERO, nextJobId = 0n,
   rootOwner = previousHelper, rootResolver = ZERO, previousManager = B, previousRoot = 'usdc-v092.alpha.jobs.agi.eth',
   previousPrefix = 'agijob', previousRootNode, previousRegistry = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
   finalPrefixMismatch = false, managerOwner = C } = {}) {
@@ -387,7 +388,7 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
       return Object.fromEntries(Object.entries(managerValues).map(([key,value])=>[key,async()=>value]));
     },getContractAt:async(_abi,address)=>({getAddress:async()=>address,owner:async()=>rootOwner,resolver:async()=>rootResolver}),getContractFactory:async()=>factory};
   const artifact={sourceName:'contracts/ens/ENSJobPages.sol',contractName:'ENSJobPages',abi,bytecode:creationData,deployedBytecode:runtimeCode};
-  const buildInfo={solcVersion:compilerVersion,solcLongVersion:'fixture',input:{language:'Solidity',sources:{[artifact.sourceName]:{content:'// reviewed fixture'}},settings:{optimizer: structuredClone(require('../compiler-optimizer.cjs').optimizer),evmVersion:'shanghai',viaIR:true,metadata:{bytecodeHash:'none'},debug:{revertStrings:'strip'}}},output:{contracts:{[artifact.sourceName]:{ENSJobPages:{abi,evm:{bytecode:{object:artifactMismatch?'6001':creationData.slice(2)},deployedBytecode:{object:runtimeCode.slice(2)}}}}}}};
+  const buildInfo={solcVersion:compilerVersion,solcLongVersion:'fixture',input:{language:'Solidity',sources:{[artifact.sourceName]:{content:'// reviewed fixture'}},settings:{optimizer: structuredClone(optimizer),evmVersion:'shanghai',viaIR:true,metadata:{bytecodeHash:'none'},debug:{revertStrings:'strip'}}},output:{contracts:{[artifact.sourceName]:{ENSJobPages:{abi,evm:{bytecode:{object:artifactMismatch?'6001':creationData.slice(2)},deployedBytecode:{object:runtimeCode.slice(2)}}}}}}};
   const hardhat={ethers:mockEthers,network:{name:networkName},artifacts:{readArtifact:async()=>artifact,getBuildInfo:async()=>missingBuildInfo?undefined:buildInfo},config:{verify:{etherscan:{enabled:verifierEnabled,apiKey:'test-key'}}},run:async()=>{actions.push('verify');if(verificationError)throw typeof verificationError==='string'?new Error(verificationError):verificationError;return verificationResult;}};
   const mockRequire=name=>name==='./runtime.cjs'?{getRuntime:async()=>hardhat}:name.startsWith('./')?require(path.join(__dirname,'../scripts',name)):name==='../../scripts/lib/usdc'?require('../../scripts/lib/usdc'):require(name);
   const module={exports:{}};
@@ -1013,4 +1014,22 @@ test('ENS live creation requires separately reviewed creator, owner, source and 
   for(const [env,pattern] of [[{DEPLOYER_ADDRESS:''},/separately reviewed/],[{CREATOR_TRANSACTION_MODE:'factory'},/Unsupported/],[{ENS_BUILD_DIGEST:''},/ENS_BUILD_DIGEST/],[{ENS_MANAGER_CODE_HASH:''},/ENS_MANAGER_CODE_HASH/],[{FINAL_OWNER:C,NEW_OWNER:A},/conflict/]]){
     const harness=ensHarness({env});await assert.rejects(harness.main(),pattern);assert.equal(harness.broadcasts(),0);
   }
+});
+
+for (const [label, optimizer] of [
+  ['default optimizer without the mitigation', { enabled: true, runs: 40 }],
+  ...['E', 'L'].map(step => {
+    const optimizer = structuredClone(compilerOptimizer);
+    optimizer.details.yulDetails.optimizerSteps = step + optimizer.details.yulDetails.optimizerSteps;
+    return [`reintroduced ${step} optimizer pass`, optimizer];
+  }),
+]) test(`manager and ENS creation reject ${label} before broadcasting`, async () => {
+  const manager = deploymentHarness({ optimizer });
+  const ens = ensHarness({ optimizer });
+  try {
+    await assert.rejects(manager.main(), /Compiler settings do not match/);
+    await assert.rejects(ens.main(), /compiler settings do not match/);
+    assert.equal(manager.broadcasts(), 0);
+    assert.equal(ens.broadcasts(), 0);
+  } finally { manager.cleanup(); }
 });
