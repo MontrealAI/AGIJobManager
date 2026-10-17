@@ -38,7 +38,7 @@ contract('jobLifecycle.core', (accounts) => {
     agentTree = mkTree([agent]);
     validatorTree = mkTree([v1, v2, v3]);
 
-    manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
       token.address,
       'ipfs://base',
       ens.address,

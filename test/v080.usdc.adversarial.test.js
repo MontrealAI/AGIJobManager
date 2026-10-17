@@ -34,7 +34,7 @@ contract('adversarial bonded USDC settlement with reserved claims', ([owner, emp
   }
   beforeEach(async () => {
     token = await USDC.new();
-    manager = await deployActive(Manager, ...buildInitConfig(token.address, '', ZERO, ZERO, ROOT, ROOT, ROOT, ROOT, ROOT, ROOT, [wallet30, wallet10]));
+    manager = await deployActive(Manager, ...buildInitConfig(owner, token.address, '', ZERO, ZERO, ROOT, ROOT, ROOT, ROOT, ROOT, ROOT, [wallet30, wallet10]));
     const nft = await NFT.new();
     await nft.mint(agent);
     await manager.addAGIType(nft.address, 1);

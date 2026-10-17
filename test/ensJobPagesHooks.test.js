@@ -22,7 +22,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     const ens = await MockENS.new({ from: owner });
     const nameWrapper = await MockNameWrapper.new({ from: owner });
     const manager = await deployActive(AGIJobManager,
-      ...buildInitConfig(
+      ...buildInitConfig(owner,
         token.address,
         baseIpfsUrl,
         ens.address,

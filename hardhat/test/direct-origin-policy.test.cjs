@@ -1,0 +1,89 @@
+'use strict';
+// Synthetic evidence and source identity ONLY. Real compiler artifacts exercise
+// binding, but these fixtures are not reviewed evidence or production readiness.
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),E=require('ethers');
+const A=require('../scripts/actor-policy.cjs'),P=require('../scripts/core-creation-plan.cjs'),T=require('../scripts/transaction-envelope.cjs'),F=require('./helpers/core-session-fixture.cjs');
+const creator=E.getAddress('0x1111111111111111111111111111111111111111'),target=E.getAddress('0x2222222222222222222222222222222222222222'),targetCode='0x60006000fd';
+const marker=address=>'0xef0100'+address.slice(2).toLowerCase(),syntheticDigest=label=>T.digest('SYNTHETIC UNIT TEST ONLY: '+label);
+let directory,qualified,baseConfig,baseOperations;
+test.before(()=>{directory=fs.mkdtempSync(path.join(os.tmpdir(),'marker-policy-synthetic-'));qualified=F.actualCatalog(directory);baseConfig=F.config(creator,{nonce:12});baseOperations=P.makePlan(baseConfig,qualified,F.source).operations;});
+test.after(()=>fs.rmSync(directory,{recursive:true,force:true}));
+function fixture(){
+ const policy={mode:A.MARKER,delegationCode:marker(target),target,targetCodeHash:E.keccak256(targetCode),qualification:{consensusEvidenceSha256:syntheticDigest('placeholder consensus'),directExecutionEvidenceSha256:syntheticDigest('placeholder execution')}};
+ const context={source:structuredClone(F.source),buildId:qualified.id,buildDigest:qualified.buildDigest,catalogSha256:qualified.catalogSha256,block:structuredClone(baseConfig.block),executionHardfork:'osaka',operations:structuredClone(baseOperations)};
+ const scope=A.qualificationScope(policy,creator,context),reports={
+  consensusEvidenceSha256:{schema:'manager-direct-consensus-report-v1',disposition:'direct-type2-create-does-not-invoke-origin-code',scope:structuredClone(scope),reviewReference:'synthetic-unit-test-only; no consensus qualification asserted',artifacts:{consensusSourceSha256:syntheticDigest('not a consensus source'),analysisSha256:syntheticDigest('not a consensus review')}},
+  directExecutionEvidenceSha256:{schema:'manager-direct-execution-report-v1',disposition:'nine-direct-creates-no-creator-or-target-invocation',scope:structuredClone(scope),reviewReference:'synthetic-unit-test-only; no trace qualification asserted',artifacts:{sourceCallGraphSha256:syntheticDigest('not a source analysis'),initcodeCallGraphSha256:syntheticDigest('not an initcode analysis'),traceSha256:syntheticDigest('not an execution trace')},invocations:{creator:0,target:0}}
+ };
+ policy.qualification=Object.fromEntries(Object.entries(reports).map(([key,value])=>[key,T.digest(value)]));
+ const evidence={schema:'manager-marker-direct-qualification-evidence-v1',scope,reports},config={...structuredClone(baseConfig),creatorPolicy:policy,qualificationEvidence:evidence};
+ return {policy,context,evidence,config,validate:()=>A.validateEvidence(policy,creator,evidence,context),rehash:()=>{policy.qualification=Object.fromEntries(Object.entries(reports).map(([key,value])=>[key,T.digest(value)]));}};
+}
+test('marker-only additive profile binds exact nine generated direct CREATEs without asserting readiness',()=>{
+ const f=fixture();f.validate();const plan=P.makePlan(f.config,qualified,F.source);assert.equal(plan.readyToBroadcast,false);assert.equal(plan.operations.length,9);assert.equal(P.checkPlan(plan,qualified,F.source),plan);
+ assert.deepEqual(plan.operations,baseOperations);assert.equal(f.evidence.scope.delegationCode,f.policy.delegationCode);assert.equal(f.evidence.scope.targetCodeHash,E.keccak256(targetCode));
+ for(let index=0;index<9;index++){const operation=plan.operations[index],envelope=operation.envelope,commitment=f.evidence.scope.operations[index];assert.deepEqual(commitment,{index,nonce:12+index,from:creator,to:null,value:'0',predictedAddress:E.getCreateAddress({from:creator,nonce:12+index}),initcodeKeccak256:E.keccak256(envelope.data),envelopeSha256:T.digest(envelope)});assert.equal(envelope.type,2);assert.equal(envelope.chainId,1);assert.deepEqual(envelope.accessList,[]);assert.equal(Object.hasOwn(envelope,'authorizationList'),false);}
+});
+for(const [name,mutate] of Object.entries({
+ stateChecks:p=>p.stateChecks=[],factory:p=>p.factory=target,batch:p=>p.batch=[],type4:p=>p.type=4,authorizationList:p=>p.authorizationList=[],wrongMode:p=>p.mode='unsafe-account.v1',markerPrefix:p=>p.delegationCode='0xef0101'+target.slice(2),markerTrailingBytes:p=>p.delegationCode+='00',markerMissing:p=>delete p.delegationCode,targetMismatch:p=>p.target=creator,selfDelegation:p=>{p.target=creator;p.delegationCode=marker(creator);},zeroTarget:p=>{p.target=E.ZeroAddress;p.delegationCode=marker(E.ZeroAddress);},emptyHash:p=>p.targetCodeHash=E.ZeroHash,missingReportHash:p=>delete p.qualification.directExecutionEvidenceSha256,legacyTargetReview:p=>p.qualification.delegateReviewSha256=syntheticDigest('forbidden target review')
+}))test(`marker policy rejects ${name}`,()=>{const f=fixture();mutate(f.policy);assert.throws(()=>A.validatePolicy(f.policy,creator));});
+for(const [name,mutate] of Object.entries({
+ sourceCommit:c=>c.source.commit='e'.repeat(40),sourceTree:c=>c.source.tree='e'.repeat(40),rootLock:c=>c.source.rootLockSha256='e'.repeat(64),hardhatLock:c=>c.source.hardhatLockSha256='e'.repeat(64),buildId:c=>c.buildId='changed-build',buildDigest:c=>c.buildDigest='e'.repeat(64),catalog:c=>c.catalogSha256='e'.repeat(64),blockNumber:c=>c.block.number++,blockHash:c=>c.block.hash='0x'+'ef'.repeat(32),fork:c=>c.executionHardfork='prague',extraStateChecks:c=>c.stateChecks=[],missingOperations:c=>delete c.operations,missingOperation:c=>c.operations.pop(),extraOperation:c=>c.operations.push(c.operations[8]),index:c=>c.operations[3].id=4,nonce:c=>c.operations[3].envelope.nonce++,from:c=>c.operations[3].envelope.from=target,toFactory:c=>c.operations[3].envelope.to=target,toSelf:c=>c.operations[3].envelope.to=creator,type4:c=>c.operations[3].envelope.type=4,chain:c=>c.operations[3].envelope.chainId=5,value:c=>c.operations[3].envelope.value='1',accessList:c=>c.operations[3].envelope.accessList=[{address:target,storageKeys:[]}],authorizationList:c=>c.operations[3].envelope.authorizationList=[],factoryField:c=>c.operations[3].factory=target,batchField:c=>c.operations[3].envelope.batch=[],predictedAddress:c=>c.operations[3].predictedAddress=target,initcode:c=>c.operations[3].envelope.data+='00',gas:c=>c.operations[3].envelope.gasLimit='1200001',maxFee:c=>c.operations[3].envelope.maxFeePerGas='10000000001',priorityFee:c=>c.operations[3].envelope.maxPriorityFeePerGas='1000000001'
+}))test(`exact qualification scope rejects changed ${name}`,()=>{const f=fixture();mutate(f.context);assert.throws(f.validate);});
+test('valid but shifted whole nonce schedule and CREATE addresses require new evidence',()=>{const f=fixture();for(const op of f.context.operations){op.envelope.nonce+=2;op.predictedAddress=E.getCreateAddress({from:creator,nonce:op.envelope.nonce});}assert.throws(f.validate,/scope differs/);});
+test('exact marker, target and target code are scope bound',()=>{
+ for(const mutation of [p=>p.targetCodeHash=E.keccak256('0x00'),p=>{p.target=E.getAddress('0x3333333333333333333333333333333333333333');p.delegationCode=marker(p.target);}]){const f=fixture();mutation(f.policy);assert.throws(f.validate,/scope differs/);}
+ const f=fixture(),other=E.getAddress('0x3333333333333333333333333333333333333333');assert.throws(()=>A.validateEvidence(f.policy,other,f.evidence,f.context));
+});
+for(const [name,mutate] of Object.entries({
+ noEvidence:f=>f.config.qualificationEvidence=null,noConsensus:f=>delete f.evidence.reports.consensusEvidenceSha256,noExecution:f=>delete f.evidence.reports.directExecutionEvidenceSha256,oldSchema:f=>f.evidence.schema='manager-delegated-qualification-evidence-v2',extraReport:f=>f.evidence.reports.delegateReviewSha256={},extraEvidence:f=>f.evidence.stateChecks=[],scopeMarker:f=>f.evidence.scope.delegationCode=marker(creator),scopeNonce:f=>f.evidence.scope.operations[0].nonce++,scopeInitcode:f=>f.evidence.scope.operations[0].initcodeKeccak256=E.keccak256('0x00')
+}))test(`evidence rejects ${name}`,()=>{const f=fixture();mutate(f);assert.throws(()=>P.makePlan(f.config,qualified,F.source));});
+for(const key of ['consensusEvidenceSha256','directExecutionEvidenceSha256']){
+ test(`${key} rejects substituted report bytes`,()=>{const f=fixture();f.evidence.reports[key].reviewReference+=' changed';assert.throws(f.validate,/substituted/);});
+ for(const field of ['schema','disposition','scope','reviewReference','artifacts'])test(`${key} requires exact ${field} even after report rehash`,()=>{const f=fixture(),r=f.evidence.reports[key];if(field==='schema')r.schema='generic-pass-v1';if(field==='disposition')r.disposition='pass';if(field==='scope')r.scope.source.commit='e'.repeat(40);if(field==='reviewReference')r.reviewReference='';if(field==='artifacts')r.artifacts={};f.rehash();assert.throws(f.validate);});
+ test(`${key} forbids generic target audit or state checks`,()=>{for(const field of ['targetAudit','stateChecks','productionReady']){const f=fixture();f.evidence.reports[key][field]='pass';f.rehash();assert.throws(f.validate);}});
+ const fields=key==='consensusEvidenceSha256'?['consensusSourceSha256','analysisSha256']:['sourceCallGraphSha256','initcodeCallGraphSha256','traceSha256'];
+ for(const field of fields){
+  test(`${key} binds artifact ${field} digest`,()=>{const f=fixture();f.evidence.reports[key].artifacts[field]='e'.repeat(64);assert.throws(f.validate,/substituted/);});
+  test(`${key} rejects missing/zero/malformed ${field} even after report rehash`,()=>{for(const value of [undefined,'0'.repeat(64),'not-a-sha256']){const f=fixture();if(value===undefined)delete f.evidence.reports[key].artifacts[field];else f.evidence.reports[key].artifacts[field]=value;f.rehash();assert.throws(f.validate);}});
+ }
+}
+for(const mutation of [r=>r.invocations.creator=1,r=>r.invocations.target=1,r=>r.invocations.target='0',r=>delete r.invocations,r=>r.invocations.other=0])test('execution report requires exact zero creator/target invocation counts',()=>{const f=fixture();mutation(f.evidence.reports.directExecutionEvidenceSha256);f.rehash();assert.throws(f.validate);});
+test('makePlan validates new evidence only after exact operation generation and catches altered inputs',()=>{
+ for(const mutate of [c=>c.nonce++,c=>c.constructorArgs.baseIpfsUrl+='changed',c=>c.envelopes[0].gasLimit='1199999',c=>c.envelopes[8].maxFeePerGas='9000000000']){const f=fixture();mutate(f.config);assert.throws(()=>P.makePlan(f.config,qualified,F.source),/scope differs/);}
+ for(const changed of [{...F.source,rootLockSha256:'e'.repeat(64)},{...F.source,hardhatLockSha256:'e'.repeat(64)}]){const f=fixture();assert.throws(()=>P.makePlan(f.config,qualified,changed),/scope differs/);}
+ for(const changed of [{...qualified,id:'changed-build'},{...qualified,catalogSha256:'e'.repeat(64)},{...qualified,buildDigest:'e'.repeat(64)}]){const f=fixture();assert.throws(()=>P.makePlan(f.config,changed,F.source));}
+ const f=fixture(),first=P.NAMES[0],changed={...qualified,records:{...qualified.records,[first]:{...qualified.records[first],artifact:{...qualified.records[first].artifact,bytecode:qualified.records[first].artifact.bytecode+'00'}}}};assert.throws(()=>P.makePlan(f.config,changed,F.source),/scope differs/);
+});
+function actorRpc(policy,options={}){
+ const calls=[],block=baseConfig.block;
+ const rpc=async(method,params)=>{calls.push({method,params});if(method==='eth_chainId')return options.chainId||'0x1';if(method==='eth_getTransactionCount'&&params[0]===creator&&options.nonces)return E.toQuantity(options.nonces[params[1]]);if(method==='eth_getBlockByNumber')return {number:E.toQuantity(block.number),hash:options.blockHash||block.hash,gasLimit:'0x1c9c380',baseFeePerGas:'0x1'};
+  if(method==='eth_getCode'){assert.deepEqual(params[1],{blockHash:block.hash,requireCanonical:true});if(params[0]===creator)return options.creatorCode??policy.delegationCode;if(params[0]===target)return options.targetCode??targetCode;if(params[0]===P.GOVERNOR)return options.governorCode??'0x';}
+  if(method==='eth_call'){if(options.allowStateCall)return '0x';throw Error('No delegated execution or eth_call allowed in marker observation.');}throw Error('Unexpected fixture RPC '+method);
+ };return {rpc,calls,block};
+}
+test('marker observation reads only chain, exact code hashes, empty governor and canonical pin with zero eth_call',async()=>{
+ const f=fixture(),r=actorRpc(f.policy),observed=await A.observeActor(r.rpc,f.config,r.block);assert.equal(observed.creatorCodeHash,E.keccak256(f.policy.delegationCode));assert.equal(observed.policySha256,T.digest(f.policy));assert.deepEqual(r.calls.map(c=>c.method),['eth_chainId','eth_getCode','eth_getCode','eth_getCode','eth_getBlockByNumber']);assert.equal(r.calls.filter(c=>c.method==='eth_call').length,0);assert.equal(r.calls.filter(c=>c.method==='eth_getTransactionCount').length,0);
+});
+for(const [name,options] of Object.entries({chain:{chainId:'0x2'},clearedMarker:{creatorCode:'0x'},ordinaryContract:{creatorCode:'0x6000'},differentMarker:{creatorCode:marker(creator)},emptyTarget:{targetCode:'0x'},changedTarget:{targetCode:'0x00'},governorCode:{governorCode:'0x00'},canonicalPin:{blockHash:'0x'+'ef'.repeat(32)}}))test(`marker observation fails closed on ${name}`,async()=>{const f=fixture(),r=actorRpc(f.policy,options);await assert.rejects(A.observeActor(r.rpc,f.config,r.block));assert.equal(r.calls.filter(c=>c.method==='eth_call').length,0);});
+test('strict empty-EOA mode remains exact and rejects a marker without opt-in',async()=>{
+ const policy={mode:A.EMPTY};A.validateEvidence(policy,creator,null);assert.throws(()=>A.validateEvidence(policy,creator,{}));assert.throws(()=>A.validatePolicy({...policy,delegationCode:marker(target)},creator));
+ const r=actorRpc({delegationCode:marker(target)});await assert.rejects(A.observeActor(r.rpc,{creator,governor:P.GOVERNOR,creatorPolicy:policy},r.block),/Empty-code EOA/);assert.equal(r.calls.filter(c=>c.method==='eth_call').length,0);
+ const empty=actorRpc(policy,{creatorCode:'0x'});await A.observeActor(empty.rpc,{creator,governor:P.GOVERNOR,creatorPolicy:policy},empty.block);assert.deepEqual(empty.calls.map(c=>c.method),['eth_chainId','eth_getCode','eth_getCode','eth_getBlockByNumber']);
+});
+test('strict delegated policy retains its required state getters, three reports and old evidence/scope semantics',async()=>{
+ const f=fixture(),policy={mode:A.DELEGATED,delegationCode:marker(target),target,targetCodeHash:E.keccak256(targetCode),stateChecks:[{to:target,data:'0x12345678',resultHash:E.keccak256('0x')}],qualification:{consensusEvidenceSha256:syntheticDigest('old consensus'),forkEvidenceSha256:syntheticDigest('old fork'),delegateReviewSha256:syntheticDigest('old delegate')}};
+ const {operations,...context}=f.context,scope=A.qualificationScope(policy,creator,context);assert.equal(scope.schema,'manager-delegated-qualification-scope-v1');assert.equal(Object.hasOwn(scope,'operations'),false);assert.equal(Object.hasOwn(scope,'delegationCode'),false);assert.deepEqual(scope.stateChecks,policy.stateChecks);
+ const reports=Object.fromEntries(Object.keys(policy.qualification).map(key=>[key,{disposition:'pass',scope,reviewReference:'synthetic-old-policy-test'}]));policy.qualification=Object.fromEntries(Object.entries(reports).map(([key,value])=>[key,T.digest(value)]));const evidence={schema:'manager-delegated-qualification-evidence-v2',scope,reports};A.validateEvidence(policy,creator,evidence,context);
+ assert.throws(()=>A.validatePolicy({...policy,stateChecks:[]},creator));const removed=structuredClone(policy);delete removed.stateChecks;assert.throws(()=>A.validatePolicy(removed,creator));assert.throws(()=>A.validateEvidence(policy,creator,null,context));assert.throws(()=>A.validateEvidence(policy,creator,f.evidence,context));assert.throws(()=>A.validateEvidence(f.policy,creator,evidence,f.context));
+ const r=actorRpc(policy,{allowStateCall:true});await A.observeActor(r.rpc,{creator,governor:P.GOVERNOR,creatorPolicy:policy},r.block);assert.equal(r.calls.filter(c=>c.method==='eth_call').length,1);assert.deepEqual(r.calls.find(c=>c.method==='eth_call').params,[{to:target,data:'0x12345678',from:E.ZeroAddress},{blockHash:r.block.hash,requireCanonical:true}]);
+ const changed=structuredClone(policy);changed.stateChecks[0].resultHash=E.keccak256('0x00');const bad=actorRpc(changed,{allowStateCall:true});await assert.rejects(A.observeActor(bad.rpc,{creator,governor:P.GOVERNOR,creatorPolicy:changed},bad.block),/authority state/);
+});
+
+test('shared preflight still rejects latest and pending creator nonce drift for marker mode before gas/state calls',async()=>{
+ const V=require('../scripts/core-creation-verifier.cjs');
+ for(const nonces of [{latest:13,pending:12},{latest:12,pending:13}]){const f=fixture(),plan=P.makePlan(f.config,qualified,F.source),r=actorRpc(f.policy,{nonces});await assert.rejects(V.preflight(plan,qualified,F.source,r.rpc),/pending\/latest nonce drift/);assert(r.calls.some(c=>c.method==='eth_getTransactionCount'&&c.params[1]==='latest'));if(nonces.latest===12)assert(r.calls.some(c=>c.method==='eth_getTransactionCount'&&c.params[1]==='pending'));assert.equal(r.calls.filter(c=>c.method==='eth_call'||c.method==='eth_estimateGas').length,0);}
+});
+test('each of the nine operation commitments rejects independent initcode, nonce and envelope substitutions',()=>{
+ for(let index=0;index<9;index++)for(const change of [op=>op.envelope.data+='00',op=>op.envelope.nonce++,op=>op.envelope.maxFeePerGas='10000000001',op=>op.id=(index+1)%9,op=>op.predictedAddress=target]){const f=fixture();change(f.context.operations[index]);assert.throws(f.validate);}
+});

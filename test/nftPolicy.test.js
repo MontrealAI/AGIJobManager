@@ -11,7 +11,7 @@ contract('v1.0.3 posting-time NFT policy', ([owner, employer, agent, validator, 
   let manager, token, nft;
   beforeEach(async () => {
     token = await Token.new();
-    manager = await deployActive(Manager, ...buildInitConfig(token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]));
+    manager = await deployActive(Manager, ...buildInitConfig(owner, token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]));
     nft = await NFT.new();
     await manager.addAdditionalAgent(agent);
     await manager.addAdditionalValidator(validator);

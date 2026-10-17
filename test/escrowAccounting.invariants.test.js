@@ -25,7 +25,7 @@ contract('escrowAccounting.invariants', (accounts) => {
   it('keeps solvency invariants through bounded mixed outcomes', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
     const agentTree = mkTree([agent]); const validatorTree = mkTree([v1, v2, v3]);
-    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(owner, token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
     await manager.addAGIType(nft.address, 90, { from: owner }); await nft.mint(agent); await manager.addModerator(owner, { from: owner });
     await token.mint(employer, payout.muln(10)); await token.approve(manager.address, payout.muln(10), { from: employer });
     await fundValidators(token, manager, [v1, v2, v3], owner); await fundAgents(token, manager, [agent], owner);

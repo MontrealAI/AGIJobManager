@@ -32,7 +32,7 @@ contract("AGIJobManager metadata routing", (accounts) => {
     const ens = await MockENS.new({ from: owner });
     const nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
       token.address,
       "ipfs://base/",
       ens.address,
@@ -76,7 +76,7 @@ contract("AGIJobManager metadata routing", (accounts) => {
   }
 
   it("uses router tokenURI when ENS routing is enabled", async () => {
-    const router = await AGIJobPages.new("https://metadata.example/jobs/", "https://jobs.example", { from: owner });
+    const router = await AGIJobPages.new("https://metadata.example/jobs/", "https://jobs.example", owner, { from: owner });
     await manager.setEnsJobPages(router.address, { from: owner });
     await manager.setUseEnsJobTokenURI(true, { from: owner });
 
@@ -97,7 +97,7 @@ contract("AGIJobManager metadata routing", (accounts) => {
   });
 
   it("router handleHook authorizes only configured job manager and preview matches selector output", async () => {
-    const router = await AGIJobPages.new("ipfs://folder/", "", { from: owner });
+    const router = await AGIJobPages.new("ipfs://folder/", "", owner, { from: owner });
     const preview = await router.previewTokenURI(42);
     assert.equal(preview, "ipfs://folder/42.json", "preview should resolve deterministic URI");
 

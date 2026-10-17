@@ -51,7 +51,7 @@ async function deployManager(Contract, tokenAddress, agent, validator, owner) {
   if (Contract.contractName === "AGIJobManager") {
     const ens = await MockENS.new({ from: owner });
     return deployActive(Contract,
-      ...buildInitConfig(
+      ...buildInitConfig(owner,
         tokenAddress,
         "ipfs://base",
         ens.address,

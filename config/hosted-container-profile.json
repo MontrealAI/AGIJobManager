@@ -1,0 +1,166 @@
+{
+  "schema": "agijobmanager/exact-build-containers/v1",
+  "profile": "github-ubuntu-source-legacy-v1",
+  "sourceCommit": "d371d95cfcc44b9133cda4bba55304f727917f18",
+  "sourceTree": "93faf6e9a6875026c1eb9bc2f0f9bdada308d296",
+  "baselineExpectationsSha256": "5d566192b139fafc8049b83be4ea3d032681ff6f2d81fbeb431896316db5ab25",
+  "provenance": {
+    "harnessCommit": "9aa1e3deb503c75b46b8cef0dab366566654cf23",
+    "workflowRun": 38946564930,
+    "job": 117127072626,
+    "artifactId": 12067207332,
+    "artifactSha256": "1757513bb1db493f955c1677f0b426187167bb5e165465261e1e29edc9fba10f",
+    "reportSha256": "c1af0e0741161e7a17bc21655cbc7d7ff4a2cc1c5f4437ba213762383de7c72f",
+    "rawWorkflowStatus": "failure",
+    "markerExecuted": false,
+    "executedSourceCommit": "c2f72180d2f0d6ecd5b92d8e5197c5344be2c699",
+    "executedSourceTree": "8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f"
+  },
+  "compilerPaths": {
+    "local": "/workspace/scratch/1f6e2f637e9a/manager-contract-release/node_modules/solc/soljson.js",
+    "newHosted": "/home/runner/work/AGIJobManager/AGIJobManager/source/node_modules/solc/soljson.js",
+    "legacyHosted": "/home/runner/work/AGIJobManager/AGIJobManager/legacy/node_modules/solc/soljson.js"
+  },
+  "algorithmPins": {
+    "hardhatVersion": "3.17.0",
+    "files": {
+      "hardhat/dist/src/internal/builtin-plugins/solidity/build-system/compilation-job.js": "275be13130c43c5bcb4c47b4d04ad4511fade8481d3936778fa477a0c315944a",
+      "hardhat/dist/src/internal/builtin-plugins/solidity/config.js": "b840ae481dc7eed944208f1f845cef1eed9e860346d7384c7bdeb60678bb8c49",
+      "hardhat/dist/src/internal/builtin-plugins/solidity/constants.js": "f2763ebc1d110ff6ac32c096951879c4222a450958d66a68637a1b3d6a408199",
+      "@nomicfoundation/hardhat-utils/dist/src/crypto.js": "e0b55244336fcd3c0fb79c0c5b04185bad7eb8da6adaf4ceaf6e726c0fc26089",
+      "solc/soljson.js": "221d7a667378b5068d913e75fe092507e061363cd1d23b64c49ae82febabad4c"
+    }
+  },
+  "containers": [
+    {
+      "group": "new",
+      "name": "input",
+      "relativePath": "hardhat/artifacts/build-info/solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef.json",
+      "field": "id",
+      "originalId": "solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef",
+      "hostedId": "solc-0_8_37-0e0932bc08790631000b55a1ef3533986d0b3e7b",
+      "originalSha256": "63313267df76d8aa7483d80e00ea24da5d5d969e9de1824553455f46610d6702",
+      "hostedSha256": "5cf1c87cab0fb6c0b0ad184c18d882522c51ad9da020aa41ea6ef8296fdc4f48"
+    },
+    {
+      "group": "new",
+      "name": "output",
+      "relativePath": "hardhat/artifacts/build-info/solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef.output.json",
+      "field": "id",
+      "originalId": "solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef",
+      "hostedId": "solc-0_8_37-0e0932bc08790631000b55a1ef3533986d0b3e7b",
+      "originalSha256": "dd5923fccfc3830e77a172b368cc0726fc1650971db91af62707a166ab75660a",
+      "hostedSha256": "725fccf4df13f8890250b6df9b085c5b4f87cf0ee5b3129c9cf55991c88a6105"
+    },
+    {
+      "group": "new",
+      "name": "UriUtils",
+      "relativePath": "hardhat/artifacts/contracts/utils/UriUtils.sol/UriUtils.json",
+      "field": "buildInfoId",
+      "originalId": "solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef",
+      "hostedId": "solc-0_8_37-0e0932bc08790631000b55a1ef3533986d0b3e7b",
+      "originalSha256": "37beb5b6e6d82310883fcd94f549c44d841a2f7f5609ea8b4910143b639c3a41",
+      "hostedSha256": "30f876ad1faecd507306bb41a3226f5b56be434641b5ab19ff125394f0cc875d"
+    },
+    {
+      "group": "new",
+      "name": "TransferUtils",
+      "relativePath": "hardhat/artifacts/contracts/utils/TransferUtils.sol/TransferUtils.json",
+      "field": "buildInfoId",
+      "originalId": "solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef",
+      "hostedId": "solc-0_8_37-0e0932bc08790631000b55a1ef3533986d0b3e7b",
+      "originalSha256": "8576c361e87a3747fef98c01d762f8c60ffe4d9758b6403e0469d2ec0b32a639",
+      "hostedSha256": "a8377775b7832ba1fe8963024bafbbacc1b6e7c8426f9dd2abb1e57da24a08f8"
+    },
+    {
+      "group": "new",
+      "name": "BondMath",
+      "relativePath": "hardhat/artifacts/contracts/utils/BondMath.sol/BondMath.json",
+      "field": "buildInfoId",
+      "originalId": "solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef",
+      "hostedId": "solc-0_8_37-0e0932bc08790631000b55a1ef3533986d0b3e7b",
+      "originalSha256": "a2f4b797ba3974b51bd96ec85a434f90ae135c31dd047f3c2b95f234a083cd15",
+      "hostedSha256": "d9366eac0dd3d7b65b59b58b8294866f2718cd3d0650e247ba1b79df33584b49"
+    },
+    {
+      "group": "new",
+      "name": "ReputationMath",
+      "relativePath": "hardhat/artifacts/contracts/utils/ReputationMath.sol/ReputationMath.json",
+      "field": "buildInfoId",
+      "originalId": "solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef",
+      "hostedId": "solc-0_8_37-0e0932bc08790631000b55a1ef3533986d0b3e7b",
+      "originalSha256": "adf9d17824534799ae1abe2d1e7a7e0bde380f795cdcdfde1ecb842638cad1e9",
+      "hostedSha256": "0155fbecd086bc8adb7bc8a0168d82c295a5410f1766be0f618f3f80f8994702"
+    },
+    {
+      "group": "new",
+      "name": "ENSOwnership",
+      "relativePath": "hardhat/artifacts/contracts/utils/ENSOwnership.sol/ENSOwnership.json",
+      "field": "buildInfoId",
+      "originalId": "solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef",
+      "hostedId": "solc-0_8_37-0e0932bc08790631000b55a1ef3533986d0b3e7b",
+      "originalSha256": "af5b1238c42087141bcb5517dfee2709b1ddd5a7ae03d571c5634e751fecd0b0",
+      "hostedSha256": "5372989f2ad29d6033e8bc6383bb7b5b8fb778bd505b804db57ca42202ce0124"
+    },
+    {
+      "group": "new",
+      "name": "NftEligibility",
+      "relativePath": "hardhat/artifacts/contracts/utils/NftEligibility.sol/NftEligibility.json",
+      "field": "buildInfoId",
+      "originalId": "solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef",
+      "hostedId": "solc-0_8_37-0e0932bc08790631000b55a1ef3533986d0b3e7b",
+      "originalSha256": "508de1c37f2e8ea5fbfac504cb8195c5866b48d320cdaf360dd2b00af61018f5",
+      "hostedSha256": "24ba7612c198df6c2b3329a202953723b76789d2088732c47641720157a18347"
+    },
+    {
+      "group": "new",
+      "name": "JobSettlement",
+      "relativePath": "hardhat/artifacts/contracts/utils/JobSettlement.sol/JobSettlement.json",
+      "field": "buildInfoId",
+      "originalId": "solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef",
+      "hostedId": "solc-0_8_37-0e0932bc08790631000b55a1ef3533986d0b3e7b",
+      "originalSha256": "c5b727606e55fc8d00c460e8dd1a5026c22c9362cd56383f1a8ea88adf42ec62",
+      "hostedSha256": "ce2eaf62b9a893a06ea6fb21f1b473ddd9ee94383463ff19b391b27f70bafde8"
+    },
+    {
+      "group": "new",
+      "name": "JobValidation",
+      "relativePath": "hardhat/artifacts/contracts/utils/JobValidation.sol/JobValidation.json",
+      "field": "buildInfoId",
+      "originalId": "solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef",
+      "hostedId": "solc-0_8_37-0e0932bc08790631000b55a1ef3533986d0b3e7b",
+      "originalSha256": "523bc6aeccf774ae54ef93a67491f6802c8f751b042a77cf573a3123ba623d8b",
+      "hostedSha256": "ccedcf70450a4f38453aa7e479510eb6029e54c7c7a6cc3e825aae1310362a43"
+    },
+    {
+      "group": "new",
+      "name": "AGIJobManager",
+      "relativePath": "hardhat/artifacts/contracts/AGIJobManager.sol/AGIJobManager.json",
+      "field": "buildInfoId",
+      "originalId": "solc-0_8_37-c48503217d7cdeb22c885f874edf69d853ed61ef",
+      "hostedId": "solc-0_8_37-0e0932bc08790631000b55a1ef3533986d0b3e7b",
+      "originalSha256": "d4a3a959a8aa9d1399cdf3e0d0a85c4a60204c37a9a003c7af5049ac11cd38a8",
+      "hostedSha256": "7483e5a7c5b5fe8eb94d9909a406678744465fe9e1bc9a8684630ca4852800b1"
+    },
+    {
+      "group": "legacy",
+      "name": "input",
+      "relativePath": "hardhat/artifacts/build-info/solc-0_8_37-e57a67cf6480b203ed6e0d62566d9965e30cc4cc.json",
+      "field": "id",
+      "originalId": "solc-0_8_37-e57a67cf6480b203ed6e0d62566d9965e30cc4cc",
+      "hostedId": "solc-0_8_37-6abbda350a4da86f0a2ff0f321dd2dbcbd909e40",
+      "originalSha256": "e121ffd69dddcb58d90a59c98a04aa64182e56ccc0578a5a94b633a6e46b96bb",
+      "hostedSha256": "b1174a055e1ab627bcf869cae7e13838568f8aedb5114cb50d6b2fbaf7aa9281"
+    },
+    {
+      "group": "legacy",
+      "name": "output",
+      "relativePath": "hardhat/artifacts/build-info/solc-0_8_37-e57a67cf6480b203ed6e0d62566d9965e30cc4cc.output.json",
+      "field": "id",
+      "originalId": "solc-0_8_37-e57a67cf6480b203ed6e0d62566d9965e30cc4cc",
+      "hostedId": "solc-0_8_37-6abbda350a4da86f0a2ff0f321dd2dbcbd909e40",
+      "originalSha256": "62b6a975be0d7a1e30bb407d87c7df5ed63bbf097c2f5d266444749c5a2e77f5",
+      "hostedSha256": "d9c1751538d5af5197d62d68c23e27e1f5d1c32b07946ffab5140ef4d17fcf37"
+    }
+  ]
+}

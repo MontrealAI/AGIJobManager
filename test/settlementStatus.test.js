@@ -18,7 +18,7 @@ contract('Read-only settlement status', accounts => {
     const ens = await artifacts.require('MockENSRegistry').new();
     const wrapper = await artifacts.require('MockNameWrapper').new();
     const zero = '0x' + '00'.repeat(32);
-    manager = await artifacts.require('AGIJobManager').new(...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, zero, zero, zero, zero, zero, zero, [wallet30, wallet10]));
+    manager = await artifacts.require('AGIJobManager').new(...buildInitConfig(owner, token.address, 'ipfs://', ens.address, wrapper.address, zero, zero, zero, zero, zero, zero, [wallet30, wallet10]));
     await manager.addAdditionalAgent(agent);
     await manager.setCompletionReviewPeriod(100);
     for (const who of [buyer, agent]) {

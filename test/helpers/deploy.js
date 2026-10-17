@@ -1,4 +1,5 @@
 function buildInitConfig(
+  initialGovernor,
   token,
   baseIpfsUrl,
   ens,
@@ -18,6 +19,7 @@ function buildInitConfig(
     [clubRootNode, agentRootNode, alphaClubRootNode, alphaAgentRootNode],
     [validatorMerkleRoot, agentMerkleRoot],
     settlementWallets,
+    initialGovernor,
   ];
 }
 
