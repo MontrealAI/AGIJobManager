@@ -24,7 +24,7 @@ class ReviewGateTests(unittest.TestCase):
         self.root = Path(self.directory.name)
         self.out = self.root / "reports"
         self.out.mkdir()
-        names = ["contracts/Manager.sol", "foundry.toml", "package-lock.json", "scripts/security/slither-extended.config.json", "scripts/security/slither-reentrancy.config.json", "scripts/security/slither-all.config.json", "slither.config.json", "scripts/security/patch-openzeppelin-compiler.cjs", "scripts/security/openzeppelin-compiler-patches.json", "scripts/security/run-slither.sh", "scripts/security/run-slither-extended.sh"]
+        names = ["contracts/Manager.sol", "foundry.toml", "package-lock.json", "hardhat/package-lock.json", "hardhat/hardhat.config.js", "hardhat/compiler-optimizer.cjs", "config/compiler-optimizer-transition-v1.json", "scripts/security/slither-extended.config.json", "scripts/security/slither-reentrancy.config.json", "scripts/security/slither-all.config.json", "slither.config.json", "scripts/security/patch-openzeppelin-compiler.cjs", "scripts/security/openzeppelin-compiler-patches.json", "scripts/security/run-slither.sh", "scripts/security/run-slither-extended.sh", "scripts/security/run-slither-deterministic.py", "scripts/security/test-slither-deterministic.py"]
         for name in names:
             path = self.root / name
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -84,7 +84,7 @@ class ReviewGateTests(unittest.TestCase):
                 self.rejects()
 
     def test_rejects_source_and_dependency_drift(self):
-        for name in ["contracts/Manager.sol", "package-lock.json", "foundry.toml"]:
+        for name in ["contracts/Manager.sol", "package-lock.json", "foundry.toml", "hardhat/package-lock.json", "hardhat/hardhat.config.js", "hardhat/compiler-optimizer.cjs", "config/compiler-optimizer-transition-v1.json"]:
             with self.subTest(name=name):
                 path = self.root / name
                 original = path.read_text()
@@ -127,7 +127,7 @@ class ReviewGateTests(unittest.TestCase):
         path.write_text(valid)
 
     def test_rejects_all_detector_configuration_and_dependency_patch_drift(self):
-        for name in ["scripts/security/slither-all.config.json", "scripts/security/patch-openzeppelin-compiler.cjs", "scripts/security/openzeppelin-compiler-patches.json"]:
+        for name in ["scripts/security/slither-all.config.json", "scripts/security/patch-openzeppelin-compiler.cjs", "scripts/security/openzeppelin-compiler-patches.json", "scripts/security/run-slither-extended.sh", "scripts/security/run-slither-deterministic.py", "scripts/security/test-slither-deterministic.py"]:
             with self.subTest(name=name):
                 path = self.root / name
                 original = path.read_text()

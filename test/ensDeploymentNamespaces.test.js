@@ -21,7 +21,7 @@ contract('Deployment-specific ENS job names', (accounts) => {
     const created = [];
     for (const manager of [firstManager, secondManager]) {
       const root = deriveJobsRootName(1, manager);
-      const helper = await ENSJobPages.new(ens.address, zero, resolver.address, namehash(root), root, { from: owner });
+      const helper = await ENSJobPages.new(ens.address, zero, resolver.address, namehash(root), root, owner, { from: owner });
       await ens.setOwner(namehash(root), helper.address, { from: owner });
       await helper.setJobLabelPrefix('job-', { from: owner });
       await helper.createJobPage(0, employer, `ipfs://${manager.toLowerCase()}`, { from: owner });

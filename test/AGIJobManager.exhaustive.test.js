@@ -52,7 +52,7 @@ async function deployManager({
 }) {
   const resolvedAlphaValidatorRootNode = alphaValidatorRootNode || validatorRootNode;
   const resolvedAlphaAgentRootNode = alphaAgentRootNode || agentRootNode;
-  return deployActive(AGIJobManager, ...buildInitConfig(
+  return deployActive(AGIJobManager, ...buildInitConfig(owner,
       token.address,
       "ipfs://base",
       ens.address,

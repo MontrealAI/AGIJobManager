@@ -41,7 +41,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
   async function deployManager(token, ensAddress, nameWrapperAddress, baseIpfs = "ipfs://base") {
     const manager = await deployActive(AGIJobManager,
-      ...buildInitConfig(
+      ...buildInitConfig(owner,
         token.address,
         baseIpfs,
         ensAddress,
@@ -473,7 +473,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     const token = await MockERC20.new({ from: owner });
     const zeroAddress = "0x0000000000000000000000000000000000000000";
 
-    const zeroTokenArgs = buildInitConfig(
+    const zeroTokenArgs = buildInitConfig(owner,
       zeroAddress,
       "ipfs://base",
       zeroAddress,
@@ -487,7 +487,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     );
     await expectRevert.unspecified(deployActive(AGIJobManager, ...zeroTokenArgs, { from: owner }));
 
-    const nonZeroRootNoEns = buildInitConfig(
+    const nonZeroRootNoEns = buildInitConfig(owner,
       token.address,
       "ipfs://base",
       zeroAddress,
@@ -503,7 +503,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
 
     const wrapperOnly = await MockNameWrapper.new({ from: owner });
-    const rootWithNameWrapperOnly = buildInitConfig(
+    const rootWithNameWrapperOnly = buildInitConfig(owner,
       token.address,
       "ipfs://base",
       zeroAddress,

@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-BASELINE = ROOT / "scripts/security/slither-reviewed-findings-v1.18.0.json"
+BASELINE = ROOT / "scripts/security/slither-reviewed-findings-v1.19.0.json"
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 
 
@@ -62,11 +62,14 @@ def verify(output_dir):
         if path.relative_to(ROOT).parts[1] not in {"test", "legacy"}
     }
     sources.update({
-        "foundry.toml", "package-lock.json", "scripts/security/slither-extended.config.json",
+        "foundry.toml", "package-lock.json", "hardhat/package-lock.json",
+        "hardhat/hardhat.config.js", "hardhat/compiler-optimizer.cjs",
+        "config/compiler-optimizer-transition-v1.json", "scripts/security/slither-extended.config.json",
         "scripts/security/slither-reentrancy.config.json", "scripts/security/slither-all.config.json",
         "slither.config.json", "scripts/security/patch-openzeppelin-compiler.cjs",
         "scripts/security/openzeppelin-compiler-patches.json",
         "scripts/security/run-slither.sh", "scripts/security/run-slither-extended.sh",
+        "scripts/security/run-slither-deterministic.py", "scripts/security/test-slither-deterministic.py",
     })
     if not isinstance(baseline.get("source_sha256"), dict) or sources != set(baseline["source_sha256"]):
         raise ValueError("The production source/configuration file set changed; repeat the review")

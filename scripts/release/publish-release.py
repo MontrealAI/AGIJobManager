@@ -1,5 +1,6 @@
 """Validate external final-source qualification and publish only on confirmed main dispatch."""
 import argparse
+import runpy
 import hashlib
 import json
 import os
@@ -17,9 +18,18 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--qualification', type=pathlib.Path, required=True)
 parser.add_argument('--assets', type=pathlib.Path, required=True)
 parser.add_argument('--publish', action='store_true')
+policy = runpy.run_path(str(pathlib.Path(__file__).with_name('package-policy.py')))
+policy['add_selection_arguments'](parser)
 args = parser.parse_args()
+source_policy = policy['select'](args.profile, manifest=args.manifest, manifest_sha256=args.manifest_sha256, verifier_sha256=args.verifier_sha256, schema_sha256=args.schema_sha256, published=True)
+profile_args = ['--profile', args.profile]
+for option in ('manifest', 'manifest_sha256', 'verifier_sha256', 'schema_sha256'):
+    value = getattr(args, option)
+    if value is not None:
+        profile_args.extend(['--' + option.replace('_', '-'), value])
 config = json.loads(args.qualification.read_text())
 repo, tag, source = REPOSITORY, TAG, config['sourceCommit']
+require(config.get('sourcePolicy') == source_policy, 'Publisher release policy differs from qualification')
 
 def gh(*command, data=None, timeout=180):
     try:
@@ -168,7 +178,7 @@ require(not artifact['expired'] and artifact['name'] == f'AGIJobManager-{tag}-ca
 require(artifact['workflow_run']['id'] == config['requiredSourceRuns']['current-state-release.yml']['id'] and artifact['workflow_run']['head_sha'] == source, 'Candidate artifact is from another run/source')
 with tempfile.TemporaryDirectory(prefix='v114-publication-rebuild-') as temp:
     rebuilt = pathlib.Path(temp) / 'assets'
-    subprocess.run(['python3', 'scripts/release/package-release.py', '--out', str(rebuilt)], cwd=root, check=True)
+    subprocess.run(['python3', 'scripts/release/package-release.py', '--out', str(rebuilt), *profile_args], cwd=root, check=True)
     actual = verify_assets(rebuilt)
     require(config['artifactDigests'] == {n: d for n, d in actual.items() if n != 'SHA256SUMS.txt'}, 'Candidate bytes differ from deterministic exact-source rebuild')
 if not args.publish:

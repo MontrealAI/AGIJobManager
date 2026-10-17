@@ -12,7 +12,7 @@ from urllib.parse import quote, urlsplit, urlunsplit
 
 REPOSITORY = 'MontrealAI/AGIJobManager'
 TAG = 'v' + json.loads((pathlib.Path(__file__).resolve().parents[2] / 'package.json').read_text())['version']
-TITLE = TAG + ' — Guided SUCCESSOR Builder and preserved project history'
+TITLE = TAG + ' — Explicit-governor deployment and preserved source evidence'
 BUILDER_ASSETS = {'My-SUCCESSOR-Omega-en.html', 'My-SUCCESSOR-Omega-fr.html', 'SUCCESSOR-Omega-editable-source.zip', 'SOURCE_MANIFEST.json'}
 BUILDER_ARCHIVE_ONLY_ASSETS = {'MANAGER_CONTEXT.json'}
 LIMIT = 450_000_000
@@ -290,6 +290,10 @@ def verify_assets(out, config=None):
     require(set(expected) == names and {p.name for p in out.iterdir()} == names | {'SHA256SUMS.txt'}, 'Unexpected or missing assets')
     manifest = json.loads((out / 'RELEASE_MANIFEST.json').read_text())
     if config is not None:
+        require('candidateProfile' not in manifest and 'sourcePackageOnly' not in manifest,
+                'Candidate input-identity packages cannot be published')
+        if 'releaseProfile' in manifest:
+            require(manifest.get('releasePolicy') == config.get('sourcePolicy'), 'Release policy qualification binding differs')
         require(manifest['sourceCommit'] == config['sourceCommit'] and manifest['sourceTree'] == config['sourceTree'], 'Assets and qualification identify different source')
         require(config['artifactDigests'] == {n: d for n, d in expected.items() if n != 'QUALIFICATION.json'}, 'Qualification asset binding differs')
     expected['SHA256SUMS.txt'] = sha((out / 'SHA256SUMS.txt').read_bytes())

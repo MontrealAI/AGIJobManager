@@ -5,26 +5,37 @@ import io
 import json
 import os
 import pathlib
+import runpy
 import stat
 import subprocess
+import sys
 import tarfile
 import tempfile
 import zipfile
+sys.dont_write_bytecode = True
 from release_common import TAG, TITLE, LIMIT, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, REPOSITORY, sha, require, source_path, packaged_guide, require_builder_outputs, verified_builder_context, verify_builder_context_outputs
 from release_common import builder_reconstruction
 
 root = pathlib.Path(__file__).resolve().parents[2]
+candidate_policy = runpy.run_path(str(pathlib.Path(__file__).with_name('package-policy.py')))
 
 def git(*args):
     env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
     env.update(GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_SYSTEM='/dev/null', GIT_CONFIG_GLOBAL='/dev/null', GIT_NO_REPLACE_OBJECTS='1', GIT_TERMINAL_PROMPT='0')
     return subprocess.check_output(['git', '--no-replace-objects', '-c', 'core.fsmonitor=false', '-c', 'core.hooksPath=/dev/null', *args], cwd=root, env=env)
 
-def package(out):
+def package(out, *, profile='legacy-v114', manifest=None, manifest_sha256=None,
+            verifier_sha256=None, schema_sha256=None, object_store=None, dependency_root=None):
+    selection = candidate_policy['select'](profile, manifest=manifest, manifest_sha256=manifest_sha256,
+        verifier_sha256=verifier_sha256, schema_sha256=schema_sha256)
+    require(selection is not None or not any((object_store, dependency_root)), 'Legacy packaging cannot accept candidate roots')
     source = git('rev-parse', 'HEAD').decode().strip()
     tree = git('rev-parse', 'HEAD^{tree}').decode().strip()
     require(not git('status', '--porcelain', '--untracked-files=no').strip(), 'Tracked source must be clean')
-    subprocess.run(['python3', 'scripts/release/check-v114-boundaries.py'], cwd=root, check=True)
+    if selection is None:
+        subprocess.run(['python3', 'scripts/release/check-v114-boundaries.py'], cwd=root, check=True)
+    else:
+        candidate_policy['checkout'](root, selection, object_store, dependency_root, source, tree)
     payload = {}
     with tarfile.open(fileobj=io.BytesIO(git('archive', source)), mode='r:') as archive:
         for member in archive.getmembers():
@@ -51,6 +62,14 @@ def package(out):
                 target = pathlib.Path(temp) / name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
+                if selection is not None:
+                    target.chmod(mode & 0o777)
+            elif selection is not None and name == 'source/hardhat/contracts':
+                target = pathlib.Path(temp) / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.symlink_to('../contracts', target_is_directory=True)
+        if selection is not None:
+            candidate_policy['validate_source'](extracted, selection)
         builder_source, selected_package = verified_builder_context(root, extracted, source)
         generated = pathlib.Path(temp) / 'builder'
         with builder_reconstruction(extracted, builder_source, selected_package):
@@ -65,6 +84,9 @@ def package(out):
         'archiveLimitBytes': LIMIT, 'toolchain': {'node': '22.23.2 (qualification workflow)', 'solc': '0.8.37', 'hardhat': '3.17.0'},
         'exclusions': ['untracked files', 'Git internals', 'operator transcripts and private configuration', 'dependencies and caches', 'transport/bootstrap material', 'unreviewed symlinks (hardhat/contracts -> ../contracts is retained)', 'ui/test-results/.last-run.json', 'archives and signer material'],
         'files': {n: {'sha256': sha(data), 'bytes': len(data), 'mode': mode} for n, (data, mode) in sorted(payload.items())}}
+    if selection is not None:
+        manifest.update(candidate_policy['metadata'](selection))
+        candidate_policy['validate_metadata'](manifest, selection)
     manifest_bytes = (json.dumps(manifest, indent=2, ensure_ascii=False) + '\n').encode()
     payload['RELEASE_MANIFEST.json'] = (manifest_bytes, stat.S_IFREG | 0o644)
     out = pathlib.Path(out).resolve()
@@ -89,9 +111,15 @@ def package(out):
     for file in out.iterdir():
         require(file.stat().st_size < LIMIT, 'Asset exceeds 450 MB')
     (out / 'SHA256SUMS.txt').write_text(''.join(f'{sha(f.read_bytes())}  {f.name}\n' for f in sorted(out.iterdir())))
-    print(json.dumps({'sourceCommit': source, 'sourceTree': tree, 'files': len(manifest['files']), 'zipBytes': archive_path.stat().st_size, 'published': False}))
+    result = {'sourceCommit': source, 'sourceTree': tree, 'files': len(manifest['files']), 'zipBytes': archive_path.stat().st_size, 'published': False}
+    if selection is not None:
+        result.update(candidate_policy['metadata'](selection))
+    print(json.dumps(result))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', type=pathlib.Path, default=root / ('build/release/' + TAG + '-candidate'))
-    package(parser.parse_args().out)
+    candidate_policy['add_selection_arguments'](parser)
+    parser.add_argument('--object-store', action='append', help='Exact absolute Git object-store root for explicitly selected candidate input checks')
+    parser.add_argument('--dependency-root', help='Exact absolute installed compiler dependency root; never used by offline extraction')
+    package(**vars(parser.parse_args()))

@@ -1,4 +1,6 @@
 const fs = require('fs');
+const { recoverCreation, requireCreationTransaction } = require('./creator-transaction.cjs');
+const { deploymentConstructor, requireDeploymentSchema, buildDigest, readCreationAuthority } = require('./governance-deployment.cjs');
 const path = require('path');
 const { getRuntime } = require('./runtime.cjs');
 let ethers = require('ethers');
@@ -18,6 +20,7 @@ async function main() {
   const chainId = Number((await ethers.provider.getNetwork()).chainId);
   requireDeploymentNetwork(network.name, chainId);
   if (receipt.chainId !== chainId || receipt.network !== network.name) throw new Error('Saved deployment journal does not match this network and chain.');
+  const explicitGovernor = requireDeploymentSchema(receipt);
   const constructorArgs = resolveConstructor(network.name, receipt.constructorArgs);
   if (!ethers.isAddress(receipt.finalOwner) || [ethers.ZeroAddress, constructorArgs.usdcTokenAddress].some(address => address.toLowerCase() === receipt.finalOwner.toLowerCase())) throw new Error('Saved deployment journal is missing a valid final owner.');
   if (!ethers.isAddress(receipt.deployer)) throw new Error('Saved deployment journal is missing a valid deployer.');
@@ -29,14 +32,15 @@ async function main() {
   const confirmations = Math.max(chainId === 1 ? 3 : 1, parsePositiveInt(receipt.confirmations, 'Saved confirmations', 3, 1));
   const delay = parsePositiveInt(process.env.VERIFY_DELAY_MS, 'VERIFY_DELAY_MS', 3500, 0);
   const { buildInfo } = await qualifiedBuild();
+  if (explicitGovernor && receipt.buildDigest !== buildDigest(buildInfo)) throw new Error('Saved deployment buildDigest differs from the exact compiler input. Restore its original saved build.');
   const block = await ethers.provider.getBlock('latest');
   if (!block || !ethers.isHexString(block.hash, 32)) throw new Error('Cannot identify the current chain block for recovery.');
   const pinned = createCanonicalReader(ethers.provider, block);
   const contracts = {};
-  const managerArgs = [constructorArgs.usdcTokenAddress, constructorArgs.baseIpfsUrl, constructorArgs.ensConfig,
-    constructorArgs.rootNodes, constructorArgs.merkleRoots, constructorArgs.settlementWallets];
+  const managerArgs = deploymentConstructor(receipt, await artifacts.readArtifact(FQNS.AGIJobManager));
   for (const name of [...LIBRARIES, 'AGIJobManager']) {
-    const recorded = receipt.contracts?.[name];
+    let recorded = receipt.contracts?.[name];
+    if (explicitGovernor && recorded?.intent && !recorded.txHash) recorded = { ...recorded, txHash: await recoverCreation({ provider: ethers.provider, intent: recorded.intent }) };
     if (!recorded || !ethers.isAddress(recorded.address) || !ethers.isHexString(recorded.txHash, 32)) {
       throw new Error(`The journal lacks ${name} and its broadcast transaction. Partial library-only deployments cannot be resumed by this verification-only command.`);
     }
@@ -48,6 +52,10 @@ async function main() {
     if (!transaction || transaction.to !== null || transaction.from?.toLowerCase() !== receipt.deployer.toLowerCase() || transaction.data?.toLowerCase() !== expectedCreation.data.toLowerCase()) {
       throw new Error(`${name} creation transaction differs from the recorded deployer or exact constructor and linked creation code.`);
     }
+    if (explicitGovernor) {
+      if (!recorded.intent) throw new Error('New receipt lacks a durable creation intent.');
+      requireCreationTransaction(transaction, recorded.intent);
+    }
     if (block.number - transactionReceipt.blockNumber + 1 < confirmations) throw new Error(`${name} is not sufficiently confirmed; retry after ${confirmations} confirmations.`);
     const minedBlock = await ethers.provider.getBlock(transactionReceipt.blockNumber);
     if (!minedBlock || minedBlock.hash?.toLowerCase() !== transactionReceipt.blockHash.toLowerCase()) throw new Error(`${name} receipt is not in the canonical chain; reconcile before retrying.`);
@@ -58,7 +66,7 @@ async function main() {
       libraries, tokenAddress: constructorArgs.usdcTokenAddress, code });
     const runtimeCodeHash = ethers.keccak256(code);
     if (recorded.runtimeCodeHash && recorded.runtimeCodeHash.toLowerCase() !== runtimeCodeHash) throw new Error(`${name} runtime hash differs from the saved journal.`);
-    contracts[name] = { address: recorded.address, txHash: recorded.txHash, blockNumber: transactionReceipt.blockNumber,
+    contracts[name] = { ...(recorded.intent ? { intent: recorded.intent } : {}), address: recorded.address, txHash: recorded.txHash, blockNumber: transactionReceipt.blockNumber,
       blockHash: transactionReceipt.blockHash, runtimeCodeHash };
   }
   const manager = pinned.contract(contracts.AGIJobManager.address, (await artifacts.readArtifact(FQNS.AGIJobManager)).abi);
@@ -67,6 +75,7 @@ async function main() {
   if (tokenAddress.toLowerCase() !== constructorArgs.usdcTokenAddress.toLowerCase() || !paused) throw new Error('Manager token or paused intake differs from the intended deployment. Reconcile before recovery.');
   if (![receipt.finalOwner, receipt.deployer].some(address => address.toLowerCase() === owner.toLowerCase())) throw new Error('Current owner differs from the saved deployer and intended final owner.');
   if (![ethers.ZeroAddress, receipt.finalOwner].some(address => address.toLowerCase() === pendingOwner.toLowerCase())) throw new Error('Pending ownership proposal differs from the reviewed final owner.');
+  const creationAuthority = explicitGovernor ? await readCreationAuthority(manager, { governor: receipt.finalOwner, creator: receipt.deployer }) : null;
   const verification = {};
   for (const name of [...LIBRARIES, 'AGIJobManager']) {
     verification[name] = await verifyWithRetry({ name, record: contracts[name],
@@ -76,7 +85,7 @@ async function main() {
   const sameBlock = await ethers.provider.getBlock(block.number);
   if (!sameBlock || sameBlock.hash?.toLowerCase() !== block.hash.toLowerCase()) throw new Error('Recovery block changed during verification; rerun. The original journal is unchanged.');
   const accepted = owner.toLowerCase() === receipt.finalOwner.toLowerCase();
-  const recovered = { ...receipt, contracts, configHash, verification, status: 'awaiting_readiness_review', intakePaused: paused,
+  const recovered = { ...receipt, contracts, configHash, verification, ...(creationAuthority ? { creationAuthority } : {}), status: 'awaiting_readiness_review', intakePaused: paused,
     ownershipTransfer: { ...(receipt.ownershipTransfer || {}), currentOwner: owner, pendingOwner, accepted,
       acceptanceRequired: !accepted, proposalRequired: !accepted && pendingOwner === ethers.ZeroAddress },
     recovery: { originalReceipt: receiptPath, blockNumber: block.number, blockHash: block.hash,

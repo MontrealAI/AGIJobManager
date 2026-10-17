@@ -11,7 +11,7 @@ const A0 = '0x' + '00'.repeat(20);
 
 contract('v0.8.0 USDC distribution', ([owner, employer, agent, validator, wallet30, wallet10, other]) => {
   let token, manager;
-  const init = wallets => buildInitConfig(token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, wallets);
+  const init = wallets => buildInitConfig(owner, token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, wallets);
   beforeEach(async () => {
     token = await USDC.new();
     manager = await deployActive(Manager, ...init([wallet30, wallet10]));

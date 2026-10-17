@@ -1,4 +1,5 @@
 const fs = require('fs');
+const { requireDeploymentSchema, deploymentConstructor, buildDigest, readCreationAuthority } = require('./governance-deployment.cjs');
 const path = require('path');
 const { createHash } = require('crypto');
 const { getRuntime } = require('./runtime.cjs');
@@ -38,6 +39,7 @@ function requireIdentityConfig(config, label) {
 
 function requireReceipt(receipt) {
   requireObject(receipt, 'Deployment receipt');
+  requireDeploymentSchema(receipt);
   if (!['deployed_paused', 'awaiting_readiness_review'].includes(receipt.status)) {
     throw new Error('Deployment receipt status must be deployed_paused or awaiting_readiness_review. Reconcile an incomplete or failed deployment journal before running readiness; preserve the original journal.');
   }
@@ -101,6 +103,9 @@ async function main() {
   requireDeploymentNetwork(network.name, chainId);
   if (receipt.chainId !== chainId || receipt.network !== network.name) throw new Error('Receipt network or chain does not match this provider.');
   const { buildInfo } = await qualifiedBuild();
+  const explicitGovernor = requireDeploymentSchema(receipt);
+  if (explicitGovernor) deploymentConstructor(receipt, await artifacts.readArtifact(FQNS.AGIJobManager));
+  if (explicitGovernor && receipt.buildDigest !== buildDigest(buildInfo)) throw new Error('Exact reviewed deployment compiler input differs.');
   const block = await ethers.provider.getBlock('latest');
   if (!block || !Number.isSafeInteger(block.number) || !ethers.isHexString(block.hash, 32)) throw new Error('Unable to resolve the readiness block and hash.');
   const pinned = createCanonicalReader(ethers.provider, block);
@@ -155,13 +160,14 @@ async function main() {
       nftCodeHashes[entry.nftAddress] = ethers.keccak256(code);
     }
   }
+  const creationAuthority = explicitGovernor ? await readCreationAuthority(manager, { governor: receipt.finalOwner, creator: receipt.deployer, requireUnconfigured: false }) : null;
   const tokenState = await requireOperationalUSDC({ chainId, tokenAddress, token, recipients: [managerAddress, owner, wallet30, wallet10], blockTag: pinned.at });
   const confirmedBlock = await ethers.provider.getBlock(block.number);
   if (!confirmedBlock || confirmedBlock.number !== block.number || confirmedBlock.hash?.toLowerCase() !== block.hash.toLowerCase()) {
     throw new Error('Readiness block changed or disappeared during verification. No report was written; rerun against a consistent chain state.');
   }
   const report = {
-    checksPassed: true, scope: 'read-only pre-activation technical checks; owner operational review, deployment-specific legal review and independent security review remain separate',
+    checksPassed: true, activationAuthorized: false, authorityFinalization: { status: 'REQUIRES_SEPARATE_REVIEW', reason: 'Complete role inventory, governor setup transactions, ENS parent/controller/operator and resolver authority are not established by this technical check.' }, creationAuthority, scope: 'read-only pre-activation technical checks; owner operational review, deployment-specific legal review and independent security review remain separate',
     legalScope: 'Not assessed. Operator identity, fee beneficiaries, service terms, jurisdiction, required authorizations and privacy/language duties require separate review; see docs/LEGAL/README.md.',
     chainId, network: network.name, manager: managerAddress, owner, pendingOwner, intakePaused: paused,
     settlementWallets: [wallet30, wallet10], blockNumber: block.number, blockHash: block.hash,

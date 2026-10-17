@@ -26,7 +26,7 @@ contract("AGIJobManager delistJob reentrancy regression", (accounts) => {
     const ens = await MockENS.new({ from: owner });
     const nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,

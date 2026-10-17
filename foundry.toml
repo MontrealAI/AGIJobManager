@@ -15,6 +15,10 @@ remappings = [
 ]
 fs_permissions = [{ access = "read", path = "./" }]
 
+# SOL-2026-7: exact default sequence minus LoadResolver/EqualStoreEliminator.
+[profile.default.optimizer_details.yulDetails]
+optimizerSteps = "dfDvulfnTUtnIfxa[r]scMVcul[j]Trpeulxa[r]cvifMCTUca[r]SsTFOtfDnca[r]IulcscCTUtvifMx[scCTUt]TOntnfDIulvifMjmul[jul]VcTOculjmul:fDnTOcmuO"
+
 [fuzz]
 runs = 512
 

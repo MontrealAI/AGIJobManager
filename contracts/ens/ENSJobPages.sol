@@ -126,8 +126,11 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         address nameWrapperAddress,
         address publicResolverAddress,
         bytes32 rootNode,
-        string memory rootName
+        string memory rootName,
+        address initialGovernor
     ) {
+        if (initialGovernor == address(0)) revert InvalidParameters();
+        _transferOwnership(initialGovernor);
         if (ensAddress == address(0) || ensAddress.code.length == 0) revert InvalidParameters();
         if (publicResolverAddress == address(0) || publicResolverAddress.code.length == 0) revert InvalidParameters();
         if (nameWrapperAddress != address(0) && nameWrapperAddress.code.length == 0) revert InvalidParameters();

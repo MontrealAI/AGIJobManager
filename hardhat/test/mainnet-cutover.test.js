@@ -138,7 +138,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
       libraries[name] = await instance.getAddress();
     }
     manager = await (await ethers.getContractFactory('AGIJobManager', { libraries })).deploy(PIN.usdc, 'ipfs://',
-      [baseline.pages.ens, baseline.pages.nameWrapper], Array(4).fill(ethers.ZeroHash), Array(2).fill(ethers.ZeroHash), [wallet30.address, wallet10.address]);
+      [baseline.pages.ens, baseline.pages.nameWrapper], Array(4).fill(ethers.ZeroHash), Array(2).fill(ethers.ZeroHash), [wallet30.address, wallet10.address], deployer.address);
     await manager.waitForDeployment();
     managerAddress = await manager.getAddress();
     assert(ethers.dataLength(await ethers.provider.getCode(managerAddress)) <= 24576);
@@ -172,7 +172,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     rootNode = ethers.namehash(rootName);
     assert.equal(await registry.owner(rootNode), ethers.ZeroAddress, 'The rehearsal namespace must be unused at the pinned block');
     pages = await (await ethers.getContractFactory('ENSJobPages')).deploy(baseline.pages.ens, baseline.pages.nameWrapper,
-      baseline.pages.publicResolver, rootNode, rootName);
+      baseline.pages.publicResolver, rootNode, rootName, deployer.address);
     await pages.waitForDeployment();
     pagesAddress = await pages.getAddress();
     await send(wrapper.setSubnodeOwner(baseline.pages.jobsRootNode, 'usdc-v095', pagesAddress, 0, BigInt(baseline.rootData[2])));
@@ -618,7 +618,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     const tests = this.test.parent.tests;
     if (preservationFailures || tests.some(test => test.state !== 'passed')) return;
     const root = path.resolve(new URL('../..', import.meta.url).pathname);
-    const sources = ['package.json', 'package-lock.json', 'hardhat/package.json', 'hardhat/package-lock.json', 'hardhat/hardhat.config.js', 'hardhat.cutover-fork.config.mjs',
+    const sources = ['package.json', 'package-lock.json', 'hardhat/package.json', 'hardhat/package-lock.json', 'hardhat/hardhat.config.js', 'hardhat/compiler-optimizer.cjs', 'config/compiler-optimizer-transition-v1.json', 'hardhat.cutover-fork.config.mjs',
       'hardhat/test/mainnet-cutover.test.js', 'hardhat/qualification/legacy-snapshot.cjs', 'hardhat/qualification/cutover-pin.json',
       'hardhat/scripts/runtime.cjs', 'hardhat/scripts/load-env.cjs', 'hardhat/scripts/deployment-safety.cjs', 'scripts/security/patch-openzeppelin-compiler.cjs', 'scripts/security/openzeppelin-compiler-patches.json'];
     function collect(directory) {

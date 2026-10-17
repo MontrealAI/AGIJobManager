@@ -101,7 +101,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     clubRoot = rootNode("club");
     agentRoot = rootNode("agent");
 
-    manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         baseIpfsUrl,
         ens.address,
@@ -574,7 +574,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.setFailTransferFroms(true);
 
-      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(
+      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
           failingToken.address,
           baseIpfsUrl,
           ens.address,
@@ -600,7 +600,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.mint(owner, payout);
 
-      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(
+      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
           failingToken.address,
           baseIpfsUrl,
           ens.address,
@@ -637,7 +637,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.mint(owner, payout);
 
-      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(
+      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
           failingToken.address,
           baseIpfsUrl,
           ens.address,
@@ -683,7 +683,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.mint(buyer, payout);
 
-      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(
+      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
           failingToken.address,
           baseIpfsUrl,
           ens.address,

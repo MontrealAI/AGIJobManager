@@ -1,5 +1,7 @@
 # Second mainnet deployment: release review and operator checklist
 
+**17 October update:** the owner reported completion of the integrated 8815 Manager deployment. Use the [dated deployment and authority record](../deployments/MAINNET_MANAGER_2026-10-17.md) for its identity and evidence limits. The preparation checklist below is retained for context; it is not an instruction to repeat completed creation or configuration transactions.
+
 This is a checklist for a **new** manager, not an instruction to redeploy or alter
 an existing instance. Deployment, ownership acceptance and opening paid intake
 are separate decisions. A successful test run does not establish a flawless

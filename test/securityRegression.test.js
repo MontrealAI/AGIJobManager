@@ -47,7 +47,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     clubRoot = rootNode("club-root");
     agentRoot = rootNode("agent-root");
 
-    manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,
@@ -302,7 +302,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const failing = await FailingERC20.new({ from: owner });
     await failing.mint(employer, toBN(toWei("10")), { from: owner });
 
-    const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(
+    const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         failing.address,
         "ipfs://base",
         ens.address,
@@ -332,7 +332,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const failing = await FailingERC20.new({ from: owner });
     await failing.mint(employer, toBN(toWei("10")), { from: owner });
 
-    const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(
+    const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         failing.address,
         "ipfs://base",
         ens.address,

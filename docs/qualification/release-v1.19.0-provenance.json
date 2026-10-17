@@ -1,0 +1,33 @@
+{
+  "schema": "agijobmanager/release-comparison-inputs/v1",
+  "status": "EXPECTED_ONLY_PENDING_FINAL_SOURCE_EXECUTION",
+  "baseCommit": "8815ed3181778664595f951befd672afbd7a9352",
+  "baseTree": "913e49d65263bc53026916f7fc3b4cbfb93549f8",
+  "version": "1.19.0",
+  "executed": false,
+  "fork": {
+    "previousPath": "docs/qualification/mainnet-cutover-integrated-20261017.json",
+    "previousSha256": "9531bf2526e515875d5430bb17937d168dc62c43d83accc182f8a375e7f3c80a",
+    "expectedPath": "docs/qualification/mainnet-cutover-v1.19.0-expected.json",
+    "expectedSha256": "290a658dd8b8b8e0f873f9dc6a2f70305f9ae2154f27c9fd19078aaf9b7672c3",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "hardhat/package.json",
+      "package-lock.json",
+      "package.json"
+    ],
+    "observationsChanged": false
+  },
+  "staticAnalysis": {
+    "previousPath": "scripts/security/slither-reviewed-findings-c174-integrated-yul.json",
+    "previousSha256": "f3304ca5b7c5854a61855db7bc2408aaa2017c88a0201cfe6ae32180dba6f34f",
+    "expectedPath": "scripts/security/slither-reviewed-findings-v1.19.0.json",
+    "expectedSha256": "dc606560d26c531f80861274f1a802ec252010de8a122daceea249440bffcffc",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "package-lock.json"
+    ],
+    "findingsOrDispositionsChanged": false
+  },
+  "scope": "Only software-version metadata changes. New exact-main-source hosted execution is mandatory; these comparison inputs are not execution receipts."
+}
