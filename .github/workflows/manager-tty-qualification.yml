@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGIJobManager
-          ref: 49c01eb3b3fae4d99fd90940f0f28b8cfb71795e
+          ref: c174b0552cf50ed13e3b98d74176544d45b4d200
           path: source
           fetch-depth: 0
           persist-credentials: false
@@ -47,8 +47,8 @@ jobs:
           root=pathlib.Path('qualifier')
           expected={
             'scripts/qualification/qualify-tty-inspect.mjs':'8acb79bae9f6de07f8b46071d1606a2480993d2b5df7d5da5b415243bb416710',
-            'config/tty-source-target.json':'a22ea41f3ac8d4dc1d5b8df67014e2324544d1f59d8abca592c1f85e33275968',
-            'config/tty-source-review-binding.json':'4847f32e8f8d872f410f87a37b8af1d08ffe56535faed79e81ff871e5ae491ab'
+            'config/tty-source-target.json':'08080a32a340f49463daee49fd0c010fa3b11e153833688cf2b3db1c74ed16c0',
+            'config/tty-source-review-binding.json':'02e95580b51a61cab0b601258920091cbf9327d29f5457c78c7d9d42e6bf9f0f'
           }
           for name,digest in expected.items():
               p=root/name
@@ -69,11 +69,11 @@ jobs:
             --source-root "$(realpath source)" --object-store "$(realpath source)" \
             --dependency-root "$(realpath source/node_modules)" \
             --manifest config/explicit-governor-source-v1.json \
-            --manifest-sha256 c401684707c44e04f1f659c7ec4e3f183c34b7158b2978f85d7c6a2bece58e67 \
-            --verifier-sha256 ce0a8051ba8827f5be7fe4bc6d4047845191b1d0371aadaa2358e3be2fb067ee \
-            --schema-sha256 d98c25463a4f4c800270e252a4ad6134a88231965f82e166e473c4d0b267cd4a \
+            --manifest-sha256 9324e23ee3e13d256b45399dffe879c4baf36250bce9f17961a2647a8b43e8ef \
+            --verifier-sha256 0dfa6cf11c22e12637496ebf7087bddea5d1dca51d5617a72d750928d98f702c \
+            --schema-sha256 ee0c0146692155389016ddcb167d9a3fc7abc53c2c4f1e463cd433ab5567db7d \
             --review-binding "$(realpath qualifier/config/tty-source-review-binding.json)" \
-            --review-binding-sha256 4847f32e8f8d872f410f87a37b8af1d08ffe56535faed79e81ff871e5ae491ab
+            --review-binding-sha256 02e95580b51a61cab0b601258920091cbf9327d29f5457c78c7d9d42e6bf9f0f
           python3 -I source/scripts/release/test-source-boundary-dispatch.py \
             --object-store "$(realpath source)" --dependency-root "$(realpath source/node_modules)"
       - name: Compile unchanged exact contract closure before artifact consumers
@@ -100,6 +100,18 @@ jobs:
           import pathlib,os,re
           text=(pathlib.Path(os.environ['RUNNER_TEMP'])/'manager-conventional-unit.tap').read_text()
           for key,n in {'tests':6,'pass':6,'fail':0,'cancelled':0,'skipped':0,'todo':0}.items():
+              values=re.findall(r'^# '+key+r' (\d+)$',text,re.M)
+              assert values and int(values[-1])==n,(key,values)
+          PYCODE
+      - name: Run bounded read-only rollover regression cases
+        working-directory: source
+        run: |
+          set -euo pipefail
+          node --max-old-space-size=384 --test --test-concurrency=1 hardhat/test/core-preflight-rollover.test.cjs | tee "$RUNNER_TEMP/manager-rollover-unit.tap"
+          python3 -I - <<'PYCODE'
+          import pathlib,os,re
+          text=(pathlib.Path(os.environ['RUNNER_TEMP'])/'manager-rollover-unit.tap').read_text()
+          for key,n in {'tests':8,'pass':8,'fail':0,'cancelled':0,'skipped':0,'todo':0}.items():
               values=re.findall(r'^# '+key+r' (\d+)$',text,re.M)
               assert values and int(values[-1])==n,(key,values)
           PYCODE
@@ -142,7 +154,7 @@ jobs:
           import pathlib,os,json,subprocess,hashlib
           temp=pathlib.Path(os.environ['RUNNER_TEMP']);cases=[]
           source={'commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'tree':subprocess.check_output(['git','rev-parse','HEAD^{tree}'],text=True).strip()}
-          assert source=={'commit':'49c01eb3b3fae4d99fd90940f0f28b8cfb71795e','tree':'91d6fc376f4bd52edfc3b5d8f9564628df082a40'}
+          assert source=={'commit':'c174b0552cf50ed13e3b98d74176544d45b4d200','tree':'f69686df0bb78ff92c35dea6e884ab69ea38cae6'}
           for account,prompts,selected in [('empty',1,'empty account'),('marker',2,'marker with lost-response resume')]:
               file=temp/('manager-conventional-'+account+'.jsonl');rows=[json.loads(x) for x in file.read_text().splitlines()]
               assert len(rows)==1
@@ -165,6 +177,7 @@ jobs:
         with:
           name: manager-tty-source-qualified-evidence
           path: |
+            ${{ runner.temp }}/manager-rollover-unit.tap
             ${{ runner.temp }}/manager-conventional-unit.tap
             ${{ runner.temp }}/manager-conventional-empty.log
             ${{ runner.temp }}/manager-conventional-empty.jsonl
