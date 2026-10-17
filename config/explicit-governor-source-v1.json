@@ -983,10 +983,10 @@
     },
     "docs/DEPLOYMENT_CONFIGURATION.md": {
       "mode": "100644",
-      "sha256": "3bedc06de83a8b7484bcb6602f5c607a8f972491872657117e6653bf1952fcb4",
+      "sha256": "51c27dee5ba688613fa816c01457582ce56f5cd3dad4fc4af16cfab4f95a3fd2",
       "predecessorGitBlob": "85e6ed4f5c18a3757d954acd13df902dcf50ecdb",
       "predecessorSha256": "61b87bafea7e384e1674d187073874ff7cb54fb66bf695d13b33611b616106c3",
-      "reviewReason": "Document exact read/relay RPC configuration and qualify generated repository-map/documentation coverage."
+      "reviewReason": "Document exact read/relay RPC configuration and qualify generated repository-map/documentation coverage. Complete the public deployment-setting inventory with MANAGER_CREATOR_RUN and shell-only/no-dotenv TTY guidance; no secret value or runtime change."
     },
     "docs/DEPLOYMENT_OPERATIONS.md": {
       "mode": "100644",
@@ -5337,10 +5337,10 @@
     },
     "hardhat/.env.example": {
       "mode": "100644",
-      "sha256": "1208674fb282d684d2551250fbe726f530f47f397fc3aaed73661d55670cf4f6",
+      "sha256": "26c31e5fa7bc4f1eb98138fcff0e783abdc036ec4ebdc889a97e0de9dea76c30",
       "predecessorGitBlob": "359b6ad41b4db5c86b606c4754e8b33f70d042aa",
       "predecessorSha256": "a74f15863b33483a9aa733e6a24c95fea793255780660268d60a81dc9ff23035",
-      "reviewReason": "Document exact read/relay RPC configuration and qualify generated repository-map/documentation coverage."
+      "reviewReason": "Document exact read/relay RPC configuration and qualify generated repository-map/documentation coverage. Complete the public deployment-setting inventory with MANAGER_CREATOR_RUN and shell-only/no-dotenv TTY guidance; no secret value or runtime change."
     },
     "hardhat/.gitignore": {
       "mode": "100644",

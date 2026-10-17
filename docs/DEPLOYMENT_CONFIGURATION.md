@@ -169,3 +169,19 @@ The unreleased [core external-signing CLI](deployment/core-external-signing.md) 
 | `MANAGER_RELAY_RPC_URL` | Separate explicit HTTPS endpoint used only by the user-run `relay` command, after its exact acknowledgement and durable attempt record. It submits the already checked raw transaction once; it does not sign, retry or bump fees. |
 
 The offline `plan`, `import`, `retrieve-handoff`, `inspect-journal`, `repair-journal` and verification-export commands do not need either endpoint. Retrieval and journal repair operate only on the saved local evidence. Both transports reject embedded username/password credentials, URL fragments and non-HTTPS URLs. Supplying an endpoint grants no signing, configuration or activation approval; all source, actor, envelope and receipt checks remain required.
+
+## Ubuntu hidden-TTY creator run input
+
+The [Ubuntu creator entry point](deployment/ubuntu-ephemeral-creator.md) uses
+`MANAGER_CREATOR_RUN` for the absolute path to its reviewed public
+`manager-tty-creator-run-v1` JSON file. Set this path in the launch environment.
+The blank entry in `hardhat/.env.example` documents the setting; this route rejects
+deployment `.env` files and never loads them. No private key belongs in the run
+JSON, environment, command arguments, example file or logs.
+
+The same `MANAGER_READ_RPC_URL` and `MANAGER_RELAY_RPC_URL` names configure this
+wrapper's bounded read and once-only submission stages. Keep endpoint credentials
+local. In `inspect` mode no endpoint is required; the command validates the exact
+source, catalog and public plan without creating operator state. In `new` or
+`resume` mode, current preflight and deliberate public-plan confirmation precede
+the hidden local key prompt. Governor configuration remains a separate workflow.
