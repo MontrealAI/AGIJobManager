@@ -38,7 +38,12 @@ async function verifyPrefix(plan,qualified,source,rpc,hashes){
  for(let i=0;i<hashes.length;i++)await verifyRuntime(plan,qualified,rpc,i,latest);
  await A.canonicalCheck(rpc,finalBlock);await A.canonicalCheck(rpc,latest);checkPlan(plan,qualified,source);return {proofs,finalBlock,latest,activationAuthorized:false,configurationAuthorized:false};
 }
-async function preflight(plan,qualified,source,rpc,hashes=[]){
+// Only this local marker is retryable; provider or policy errors never match by text.
+class PreflightBlockRollover extends Error {
+ constructor(){super('Latest block changed during preflight; repeat read-only checks.');}
+}
+const MAX_PREFLIGHT_ATTEMPTS=5;
+async function preflightOnce(plan,qualified,source,rpc,hashes){
  const result=await verifyPrefix(plan,qualified,source,rpc,hashes),latest=result.latest;
  T.need(latest.number<=plan.config.expiresAfterBlock,'Plan validity expired; reconcile outstanding capabilities before replacing the plan.');
  await A.observeActor(rpc,plan.config,latest);
@@ -54,9 +59,18 @@ async function preflight(plan,qualified,source,rpc,hashes=[]){
   const tx={type:'0x2',from:e.from,to:null,value:'0x0',data:e.data,gas:E.toQuantity(e.gasLimit),maxFeePerGas:E.toQuantity(e.maxFeePerGas),maxPriorityFeePerGas:E.toQuantity(e.maxPriorityFeePerGas),nonce:E.toQuantity(e.nonce),accessList:[]};
   estimate=String(BigInt(await rpc('eth_estimateGas',[tx,at])));T.need(BigInt(estimate)>0n&&BigInt(estimate)<=BigInt(e.gasLimit),'Creation estimate exceeds reviewed gas limit.');
  }
- const end=await A.pin(rpc,'latest');T.need(end.hash===latest.hash,'Latest block changed during preflight; repeat read-only checks.');
+ const end=await A.pin(rpc,'latest');if(end.hash!==latest.hash)throw new PreflightBlockRollover();
  checkPlan(plan,qualified,source);
  return {...result,nextIndex:hashes.length,nextNonce:nonce,estimatedGas:estimate,preflightPassed:true,readyToBroadcast:false};
+}
+async function preflight(plan,qualified,source,rpc,hashes=[]){
+ // Rerun every read and guard against fresh finalized/latest pins. Keep the same
+ // transport so its cumulative request/byte/deadline limits cannot be reset.
+ // This function never signs, mutates a journal or submits a transaction.
+ for(let attempt=1;attempt<=MAX_PREFLIGHT_ATTEMPTS;attempt++){
+  try{return await preflightOnce(plan,qualified,source,rpc,hashes);}
+  catch(error){if(!(error instanceof PreflightBlockRollover)||attempt===MAX_PREFLIGHT_ATTEMPTS)throw error;}
+ }
 }
 async function recoverHash(plan,index,rpc,startBlock,knownHash){
  const op=plan.operations[index];T.integer(startBlock);if(knownHash){T.hash(knownHash);const tx=await rpc('eth_getTransactionByHash',[knownHash]);if(tx){T.need(T.decodeSigned(T.rpcTransactionRaw(tx),op.envelope).hash===knownHash,'Known hash differs from intent.');return knownHash;}}
