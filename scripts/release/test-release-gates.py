@@ -15,6 +15,8 @@ import tempfile
 import unittest
 import warnings
 import zipfile
+sys.dont_write_bytecode = True
+os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
 from unittest.mock import Mock, patch
 from urllib.parse import quote
 from release_common import REPOSITORY, TAG, TITLE, WORKFLOWS, REQUIRED_STEPS, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, LIMIT, source_path, validate_qualification, verify_assets, sha, packaged_guide, github_release_notes, require_builder_outputs, verify_builder_rebuild, builder_archive_context, verified_builder_context, verify_builder_context_outputs
@@ -544,6 +546,17 @@ class PackageVerificationTests(unittest.TestCase):
             original = self.config[key]; self.config[key] = value; self.published()
             with self.subTest(key=key), self.assertRaises(ValueError): self.verifier['package_inventory'](self.out, published=True)
             self.config[key] = original
+
+    def test_candidate_profile_assets_cannot_be_promoted_with_qualification(self):
+        for key,value in [('candidateProfile','manager-explicit-governor-v1'),('sourcePackageOnly',True)]:
+            with self.subTest(marker=key):
+                manifest={**self.manifest,key:value}
+                (self.out/'RELEASE_MANIFEST.json').write_text(json.dumps(manifest))
+                self.config['artifactDigests']={p.name:sha(p.read_bytes()) for p in self.out.iterdir()
+                    if p.name not in ('QUALIFICATION.json','SHA256SUMS.txt')}
+                self.published()
+                with self.assertRaisesRegex(ValueError,'Candidate input-identity packages cannot be published'):
+                    verify_assets(self.out,self.config)
 
     def test_historical_seven_workflow_inventory_cannot_qualify_current_assets(self):
         del self.config['requiredSourceRuns']['alpha-project-handoff.yml']

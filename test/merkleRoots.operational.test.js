@@ -26,7 +26,7 @@ contract('merkleRoots.operational', (accounts) => {
     const nameWrapper = await MockNameWrapper.new({ from: owner });
 
     manager = await deployActive(AGIJobManager,
-      ...buildInitConfig(
+      ...buildInitConfig(owner,
         token.address,
         'ipfs://base',
         ens.address,

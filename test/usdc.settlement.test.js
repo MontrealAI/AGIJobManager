@@ -12,7 +12,7 @@ const zero = '0x' + '00'.repeat(32);
 
 contract('USDC-only settlement', ([owner, employer]) => {
   let usdc, ens, wrapper, manager;
-  const args = token => buildInitConfig(token, 'ipfs://', ens.address, wrapper.address, zero, zero, zero, zero, zero, zero);
+  const args = token => buildInitConfig(owner, token, 'ipfs://', ens.address, wrapper.address, zero, zero, zero, zero, zero, zero);
   beforeEach(async () => {
     usdc = await USDC.new(); ens = await ENS.new(); wrapper = await Wrapper.new();
     manager = await deployActive(Manager, ...args(usdc.address));

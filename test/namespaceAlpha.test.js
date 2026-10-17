@@ -55,7 +55,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     alphaClubRoot = namehash("alpha.club.agi.eth");
     alphaAgentRoot = namehash("alpha.agent.agi.eth");
 
-    manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,
@@ -165,7 +165,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     const agentLeaf = Buffer.from(leafFor(agent).slice(2), "hex");
     const validatorLeaf = Buffer.from(leafFor(validator).slice(2), "hex");
 
-    const merkleManager = await deployActive(AGIJobManager, ...buildInitConfig(
+    const merkleManager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,

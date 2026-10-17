@@ -9,7 +9,7 @@ const Z = '0x' + '00'.repeat(32);
 contract('v0.8.0 atomic paused launch', ([owner, employer, nextOwner, outsider, wallet30, wallet10]) => {
   it('rejects self-directed generic rescue calls without changing completion NFT state', async () => {
     const token = await USDC.new();
-    const manager = await deployActive(Manager, ...buildInitConfig(token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]));
+    const manager = await deployActive(Manager, ...buildInitConfig(owner, token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]));
     const tokenId = await manager.nextTokenId();
     const data = manager.contract.methods.safeMintCompletionNFT(owner, tokenId.toString()).encodeABI();
     await expectRevert.unspecified(manager.rescueToken(manager.address, data));
@@ -18,7 +18,7 @@ contract('v0.8.0 atomic paused launch', ([owner, employer, nextOwner, outsider, 
   });
   it('rejects unsafe duration limits and admits the maximum supported duration', async () => {
     const token = await USDC.new();
-    const manager = await deployActive(Manager, ...buildInitConfig(token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]));
+    const manager = await deployActive(Manager, ...buildInitConfig(owner, token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]));
     for (const value of ['0', '31536001', ((1n << 256n) - 1n).toString()]) {
       await expectRevert.unspecified(manager.setJobDurationLimit(value));
       assert.equal((await manager.jobDurationLimit()).toString(), '10000000');
@@ -32,7 +32,7 @@ contract('v0.8.0 atomic paused launch', ([owner, employer, nextOwner, outsider, 
   });
   it('blocks admission from deployment until the accepted owner explicitly opens intake', async () => {
     const token = await USDC.new();
-    const manager = await Manager.new(...buildInitConfig(token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]), { from: owner });
+    const manager = await Manager.new(...buildInitConfig(owner, token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]), { from: owner });
     assert.equal(await manager.paused(), true);
     assert.equal(await manager.settlementPaused(), false);
     await token.mint(employer, 100000000);

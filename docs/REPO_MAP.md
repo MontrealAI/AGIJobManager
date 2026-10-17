@@ -1,7 +1,7 @@
 # Repository Map (Generated)
 
-- Generated at (deterministic source fingerprint): `38ee52686db6`.
-- Source snapshot fingerprint: `38ee52686db6`.
+- Generated at (deterministic source fingerprint): `877eae9f52e7`.
+- Source snapshot fingerprint: `877eae9f52e7`.
 
 ## Curated high-signal map
 
@@ -11,6 +11,8 @@
 | `contracts/ens/` | ENS and NameWrapper integration interfaces/helpers | Best-effort identity checks |
 | `contracts/utils/` | Math, transfer, URI, and ENS ownership helpers | Used by core contract |
 | `hardhat/scripts/deploy.cjs` | Official public-network deployment and verification | Starts with intake paused; preserves transaction journals |
+| `hardhat/scripts/core-session.cjs` | Unreleased core-only external-signing coordinator | Exact source-bound nine-CREATE handoffs; user-run relay; configuration and activation separate |
+| `hardhat/scripts/qualified-build-catalog.cjs` | Explicit historical or new core build selection | Pins exact sources, artifacts and constructor schemas; no current-build fallback |
 | `hardhat/scripts/check-readiness.cjs` | Read-only instance qualification before activation | No transactions; inspect report and owner acceptance |
 | `migrations/1_deploy_contracts.js` | Retired Truffle fixture | Never use for public-network signing |
 | `migrations/deploy-config.js` | Archived legacy fixture configuration | Use hardhat/deploy.config.example.cjs for public networks |
@@ -39,6 +41,7 @@
 | `lib/` | Project-scoped directory discovered at repository root |
 | `migrations/` | Project-scoped directory discovered at repository root |
 | `presentations/` | Project-scoped directory discovered at repository root |
+| `schemas/` | Project-scoped directory discovered at repository root |
 | `scripts/` | Project-scoped directory discovered at repository root |
 | `site/` | Project-scoped directory discovered at repository root |
 | `test/` | Project-scoped directory discovered at repository root |
@@ -53,6 +56,8 @@
 - [`test/AGIJobManager.test.js`](../test/AGIJobManager.test.js)
 - [`hardhat/README.md`](../hardhat/README.md)
 - [`hardhat/scripts/deploy.cjs`](../hardhat/scripts/deploy.cjs)
+- [`hardhat/scripts/core-session.cjs`](../hardhat/scripts/core-session.cjs)
+- [`docs/deployment/core-external-signing.md`](../docs/deployment/core-external-signing.md)
 - [`hardhat/scripts/check-readiness.cjs`](../hardhat/scripts/check-readiness.cjs)
 - [`docs/START_HERE.md`](../docs/START_HERE.md)
 - [`docs/DEPLOYMENT_OPERATIONS.md`](../docs/DEPLOYMENT_OPERATIONS.md)

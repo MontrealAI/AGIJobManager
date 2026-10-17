@@ -49,6 +49,7 @@ function fixture() {
     requireOperationalUSDC:async()=>{trace.push('issuer');if(state.issuerFailure)throw new Error('USDC issuer check');return {paused:false};}};
   const main=load(candidate,{'fs':{readFileSync:file=>JSON.stringify(file.endsWith('policy.json')?expectedPolicy:receipt),writeFileSync:(file,text,options)=>writes.push({file,text,options})},
     'path':path,'crypto':crypto,'./runtime.cjs':{getRuntime:async()=>({ethers,network:{name:'mainnet'},artifacts:{readArtifact:async()=>({})}})},
+    './governance-deployment.cjs':require('../scripts/governance-deployment.cjs'),
     'ethers':ethers,'./deploy.cjs':{qualifiedBuild:async()=>({buildInfo:{}}),FQNS:fqns,LIBRARIES:libraries},'./deployment-safety.cjs':safety,
     './canonical-state.cjs':{createCanonicalReader:()=>({at:{blockHash:H,requireCanonical:true},contract:address=>address===C?new ethers.Contract():manager})},
     './nft-policy.cjs':policy,'./nft-registry-snapshot.cjs':{readRegistrySnapshot:async options=>{trace.push('registry');assert.equal(options.calls.blockTag.blockHash,H);assert.equal(options.calls.blockTag.requireCanonical,true);if(state.snapshotError)throw state.snapshotError;return snapshot;}}}).main;

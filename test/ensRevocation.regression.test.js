@@ -24,7 +24,7 @@ contract('ENS resolver membership revocation', accounts => {
     wrapper = await Wrapper.new();
     resolver = await Resolver.new();
     harness = await Harness.new();
-    manager = await deployActive(Manager, ...buildInitConfig(token.address, 'ipfs://', ens.address,
+    manager = await deployActive(Manager, ...buildInitConfig(owner, token.address, 'ipfs://', ens.address,
       wrapper.address, clubRoot, agentRoot, ZERO32, ZERO32, ZERO32, ZERO32));
     for (const who of [employer, agent, voter, otherVoter]) {
       await token.mint(who, '1000000000');

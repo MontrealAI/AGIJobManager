@@ -11,7 +11,7 @@ contract('v0.8.0 owner controls', ([owner, employer, nextOwner, outsider, wallet
   let token, manager;
   beforeEach(async () => {
     token = await USDC.new();
-    manager = await deployActive(Manager, ...buildInitConfig(token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]));
+    manager = await deployActive(Manager, ...buildInitConfig(owner, token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]));
   });
   it('requires owner authorization, paused intake and zero outstanding job reserves for rotation', async () => {
     await expectRevert.unspecified(manager.setSettlementWallets(replacement30, replacement10));

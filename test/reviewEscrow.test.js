@@ -19,7 +19,7 @@ contract('Funded review retainers', accounts => {
   beforeEach(async function(){
     token=await (this.currentTest.title.includes('reentrant token')?artifacts.require('ReentrantReviewToken'):Token).new();const ens=await ENS.new(),wrapper=await Wrapper.new();
     const tree=new MerkleTree([Buffer.from(web3.utils.soliditySha3({type:'address',value:agent}).slice(2),'hex')],keccak256,{sortPairs:true});
-    manager=await deployActive(Manager,...buildInitConfig(token.address,'ipfs://base',ens.address,wrapper.address,rootNode('club'),rootNode('agent'),rootNode('club'),rootNode('agent'),'0x'+'00'.repeat(32),tree.getHexRoot()),{from:owner});
+    manager=await deployActive(Manager,...buildInitConfig(owner, token.address,'ipfs://base',ens.address,wrapper.address,rootNode('club'),rootNode('agent'),rootNode('club'),rootNode('agent'),'0x'+'00'.repeat(32),tree.getHexRoot()),{from:owner});
     await token.mint(employer,cash(10000));await token.approve(manager.address,cash(1000),{from:employer});
     await manager.createJob('ipfs://spec',cash(1000),5000,'details',{from:employer});
     await fundAgents(token,manager,[agent],owner);await manager.applyForJob(0,'agent',tree.getHexProof(tree.getLeaves()[0]),{from:agent});

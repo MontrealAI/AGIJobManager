@@ -15,6 +15,8 @@ jobs:
   qualify:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
@@ -34,11 +36,26 @@ jobs:
       - run: npm ci
       - run: npm --prefix hardhat ci
       - name: Source and dependency compatibility boundaries
-        run: python3 scripts/release/check-v114-boundaries.py
-      - name: Complete preflight and real entrypoint regressions
-        run: npm --prefix hardhat run test:preflight
+        id: source-policy
+        run: |
+          set -euo pipefail
+          manifest_sha=$(sha256sum config/explicit-governor-source-v1.json | cut -d' ' -f1)
+          verifier_sha=$(sha256sum scripts/release/check-explicit-governor-boundaries.py | cut -d' ' -f1)
+          schema_sha=$(sha256sum schemas/explicit-governor-source-v1.schema.json | cut -d' ' -f1)
+          # This checks the complete clean checkout's finite input identity.
+          # Independent external review binding and release selection remain separate.
+          python3 -I scripts/release/check-source-boundaries.py \
+            --profile manager-explicit-governor-v1 --mode checkout \
+            --source-root "$PWD" --object-store "$PWD" \
+            --dependency-root "$(realpath node_modules)" \
+            --manifest config/explicit-governor-source-v1.json \
+            --manifest-sha256 "$manifest_sha" --verifier-sha256 "$verifier_sha" \
+            --schema-sha256 "$schema_sha"
+          printf 'manifest=%s\nverifier=%s\nschema=%s\n' "$manifest_sha" "$verifier_sha" "$schema_sha" >> "$GITHUB_OUTPUT"
       - name: Compile reviewed candidate contracts
         run: npm run build
+      - name: Complete preflight and real entrypoint regressions
+        run: npm --prefix hardhat run test:preflight
       - name: Native compiler, provider, storage and historical runtime compatibility
         run: npm --prefix hardhat run test:registry-native
       - name: Check bytecode sizes
@@ -49,6 +66,8 @@ jobs:
         run: |
           python3 scripts/release/test-release-gates.py
           python3 scripts/release/test-dependency-boundaries.py
+          python3 scripts/release/test-source-boundary-dispatch.py --object-store "$PWD" --dependency-root "$(realpath node_modules)"
+          python3 scripts/release/test-candidate-package-profile.py
       - name: Resolve candidate identity from package metadata
         id: candidate
         run: |
@@ -62,12 +81,30 @@ jobs:
               output.write(f'tag={TAG}\n')
           PY
       - name: Build and independently rebuild candidate assets
+        env:
+          CANDIDATE_MANIFEST_SHA: ${{ steps.source-policy.outputs.manifest }}
+          CANDIDATE_VERIFIER_SHA: ${{ steps.source-policy.outputs.verifier }}
+          CANDIDATE_SCHEMA_SHA: ${{ steps.source-policy.outputs.schema }}
         run: |
-          python3 scripts/release/package-release.py
-          python3 scripts/release/package-release.py --out /tmp/agi-candidate-rebuild
+          for output in "build/release/${{ steps.candidate.outputs.tag }}-candidate" /tmp/agi-candidate-rebuild; do
+            python3 scripts/release/package-release.py --out "$output" \
+              --profile manager-explicit-governor-v1 --object-store "$PWD" \
+              --dependency-root "$(realpath node_modules)" \
+              --manifest config/explicit-governor-source-v1.json \
+              --manifest-sha256 "$CANDIDATE_MANIFEST_SHA" \
+              --verifier-sha256 "$CANDIDATE_VERIFIER_SHA" --schema-sha256 "$CANDIDATE_SCHEMA_SHA"
+          done
           diff -r "build/release/${{ steps.candidate.outputs.tag }}-candidate" /tmp/agi-candidate-rebuild
       - name: Clean extraction and offline smoke test
-        run: python3 scripts/release/verify-package.py "build/release/${{ steps.candidate.outputs.tag }}-candidate"
+        env:
+          CANDIDATE_MANIFEST_SHA: ${{ steps.source-policy.outputs.manifest }}
+          CANDIDATE_VERIFIER_SHA: ${{ steps.source-policy.outputs.verifier }}
+          CANDIDATE_SCHEMA_SHA: ${{ steps.source-policy.outputs.schema }}
+        run: |
+          python3 scripts/release/verify-package.py "build/release/${{ steps.candidate.outputs.tag }}-candidate" \
+            --profile manager-explicit-governor-v1 --manifest config/explicit-governor-source-v1.json \
+            --manifest-sha256 "$CANDIDATE_MANIFEST_SHA" \
+            --verifier-sha256 "$CANDIDATE_VERIFIER_SHA" --schema-sha256 "$CANDIDATE_SCHEMA_SHA"
       - name: Retain source-pinned candidate assets
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:

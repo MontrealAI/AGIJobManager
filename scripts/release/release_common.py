@@ -290,6 +290,8 @@ def verify_assets(out, config=None):
     require(set(expected) == names and {p.name for p in out.iterdir()} == names | {'SHA256SUMS.txt'}, 'Unexpected or missing assets')
     manifest = json.loads((out / 'RELEASE_MANIFEST.json').read_text())
     if config is not None:
+        require('candidateProfile' not in manifest and 'sourcePackageOnly' not in manifest,
+                'Candidate input-identity packages cannot be published')
         require(manifest['sourceCommit'] == config['sourceCommit'] and manifest['sourceTree'] == config['sourceTree'], 'Assets and qualification identify different source')
         require(config['artifactDigests'] == {n: d for n, d in expected.items() if n != 'QUALIFICATION.json'}, 'Qualification asset binding differs')
     expected['SHA256SUMS.txt'] = sha((out / 'SHA256SUMS.txt').read_bytes())

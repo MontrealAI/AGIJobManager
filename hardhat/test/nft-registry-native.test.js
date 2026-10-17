@@ -33,24 +33,29 @@ describe('Native v1.14.0 verification and readiness compatibility',function(){
   accounts=await ethers.getSigners();
   const token=await(await ethers.getContractFactory('MockERC20')).deploy();await token.waitForDeployment();
   const links={};for(const name of LIBRARIES){const lib=await(await ethers.getContractFactory(name,{libraries:links})).deploy();await lib.waitForDeployment();links[FQNS[name]]=await lib.getAddress();}
-  manager=await(await ethers.getContractFactory('AGIJobManager',{libraries:links})).deploy(await token.getAddress(),'ipfs://',[ethers.ZeroAddress,ethers.ZeroAddress],Array(4).fill(ethers.ZeroHash),Array(2).fill(ethers.ZeroHash),[accounts[1].address,accounts[2].address]);
+  manager=await(await ethers.getContractFactory('AGIJobManager',{libraries:links})).deploy(await token.getAddress(),'ipfs://',[ethers.ZeroAddress,ethers.ZeroAddress],Array(4).fill(ethers.ZeroHash),Array(2).fill(ethers.ZeroHash),[accounts[1].address,accounts[2].address],accounts[0].address);
   await manager.waitForDeployment();
  });
  it('reconstructs all nine historical mainnet runtimes from preserved source and rejects the changed ENS runtime',async()=>{
   const input=structuredClone(buildInfo.input);
+  // Historical runtime evidence must use its original optimizer, not the new-build mitigation.
+  input.settings.optimizer={enabled:true,runs:40};
   const source=safety.resolveInputSource(buildInfo,'contracts/utils/ENSOwnership.sol');
   const preserved=fs.readFileSync(new URL('../../test/fixtures/ENSOwnership.pre-revocation.sol.txt',import.meta.url),'utf8');
   const review=JSON.parse(fs.readFileSync(new URL('../../config/next-deployment-contract-changes.json',import.meta.url),'utf8'));
   assert.equal(ethers.sha256(ethers.toUtf8Bytes(preserved)).slice(2),review.files['contracts/utils/ENSOwnership.sol'].beforeSha256);
   assert(input.sources[source],'Historical source must replace the exact compiler input unit');
   input.sources[source]={content:preserved};
+  const historicalManager=fs.readFileSync(new URL('../../test/fixtures/AGIJobManager.pre-explicit-governor.sol.txt',import.meta.url),'utf8');
+  assert.equal(ethers.sha256(ethers.toUtf8Bytes(historicalManager)).slice(2),'e9be32b61afb55818d4108f295c5b80d9e2f5649e4697b9a199f8c000d8285c4');
+  input.sources[safety.resolveInputSource(buildInfo,'contracts/AGIJobManager.sol')]={content:historicalManager};
   const output=JSON.parse(require('solc').compile(JSON.stringify(input)));
   assert.deepEqual((output.errors||[]).filter(item=>item.severity==='error'||item.severity==='warning'),[]);
   const historicalBuild={...buildInfo,input,output};
   for(const name of [...LIBRARIES,'AGIJobManager']){
    const current=await artifacts.readArtifact(FQNS[name]);
    const compiled=output.contracts[current.inputSourceName||current.sourceName][name];
-   const a={...current,bytecode:'0x'+compiled.evm.bytecode.object,deployedBytecode:'0x'+compiled.evm.deployedBytecode.object,deployedLinkReferences:compiled.evm.deployedBytecode.linkReferences};
+   const a={...current,abi:compiled.abi,bytecode:'0x'+compiled.evm.bytecode.object,deployedBytecode:'0x'+compiled.evm.deployedBytecode.object,deployedLinkReferences:compiled.evm.deployedBytecode.linkReferences};
    const address=name==='AGIJobManager'?evidence.manager:evidence.libraries[FQNS[name]];
    let code=a.deployedBytecode.slice(2).toLowerCase();
    const replace=(start,length,value)=>{const hex=value.slice(2).toLowerCase().padStart(length*2,'0');assert.equal(hex.length,length*2);code=code.slice(0,start*2)+hex+code.slice((start+length)*2);};

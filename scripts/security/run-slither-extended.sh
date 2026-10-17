@@ -3,6 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/../.."
 export PATH="$HOME/.foundry/bin:$PATH"
+export PYTHONHASHSEED=0
 if ! command -v slither >/dev/null 2>&1; then
   echo "Install slither-analyzer==0.11.6 before running the extended review." >&2
   exit 1
@@ -19,17 +20,19 @@ rm -f "$output_dir/slither-extended.json" "$output_dir/slither-reentrancy.json" 
 scan_dir="$(mktemp -d)"
 trap 'rm -rf "$scan_dir"' EXIT
 foundry_out="$(forge config --json | python3 -c 'import json, sys; print(json.load(sys.stdin)["out"])')"
+# Remove lightweight preliminary build-info before requesting full compiler input/output.
+forge clean
 
 # Findings remain in the raw reports. The strict verifier below, rather than a
 # broad detector exclusion or Slither's severity exit code, decides acceptance.
-slither . --compile-force-framework foundry --config-file scripts/security/slither-extended.config.json \
+python3 scripts/security/run-slither-deterministic.py . --compile-force-framework foundry --config-file scripts/security/slither-extended.config.json \
   --json "$scan_dir/slither-extended.json" --fail-none
 mv "$scan_dir/slither-extended.json" "$output_dir/slither-extended.json"
-slither . --compile-force-framework foundry --foundry-ignore-compile --foundry-out-directory "$foundry_out" \
+python3 scripts/security/run-slither-deterministic.py . --compile-force-framework foundry --foundry-ignore-compile --foundry-out-directory "$foundry_out" \
   --config-file scripts/security/slither-reentrancy.config.json \
   --json "$scan_dir/slither-reentrancy.json" --fail-none
 mv "$scan_dir/slither-reentrancy.json" "$output_dir/slither-reentrancy.json"
-slither . --compile-force-framework foundry --foundry-ignore-compile --foundry-out-directory "$foundry_out" \
+python3 scripts/security/run-slither-deterministic.py . --compile-force-framework foundry --foundry-ignore-compile --foundry-out-directory "$foundry_out" \
   --config-file scripts/security/slither-all.config.json \
   --json "$scan_dir/slither-all.json" --fail-none
 mv "$scan_dir/slither-all.json" "$output_dir/slither-all.json"

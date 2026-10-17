@@ -1,5 +1,6 @@
 # Deployment and Release Operations
 
+> Unreleased candidate: new Manager/helper/router creation assigns an explicit nonzero governor atomically and leaves configuration/activation separate. See the [candidate authority matrix](DEPLOYMENT/EXPLICIT_GOVERNOR_CANDIDATE.md). Deployer-handover instructions below describe historical ownership semantics, not the new creation flow. Previous deployments, funds and permissions must remain untouched; historical liabilities are not a prerequisite for an independent new deployment.
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 Use [Hardhat](../hardhat/README.md) for Ethereum mainnet and Sepolia deployments. Truffle migrations are retired. Supported read-only operational commands use ethers; the legacy owner-configuration helper permits writes only on a disposable local chain. Publishing software does not deploy or upgrade any live contract.
@@ -63,13 +64,13 @@ The documented boolean form is `DRY_RUN=1`; malformed boolean flag values fail r
 
 ### 3. Rehearse before an authorized broadcast
 
-Use a reviewed Sepolia profile and the intended operational signer arrangement. Rehearse ownership acceptance, agent authorization and the reviewed optional/required NFT policy, posting, bonds, voting, successful settlement, cancellation, refunds, disputes and both pause controls. The [local walkthrough](QUINTESSENTIAL_USE_CASE.md) also provides a disposable mock-token fixture, but its shortened timers and local migration behavior are not public deployment defaults.
+Use a reviewed Sepolia profile and the intended operational signer arrangement. Rehearse explicit constructor governance, agent authorization and the reviewed optional/required NFT policy, posting, bonds, voting, successful settlement, cancellation, refunds, disputes and both pause controls. The [local walkthrough](QUINTESSENTIAL_USE_CASE.md) also provides a disposable mock-token fixture, but its shortened timers and local migration behavior are not public deployment defaults.
 
 For a separately authorized mainnet deployment, follow the Hardhat guide's explicit confirmation phrase and signing instructions. The script deploys eight libraries plus the manager, checks their runtime code and preserves a journal. It does not open intake. Do not rerun a failed command until the journal's transaction hashes and chain receipts have been reconciled; failure may occur after one or more broadcasts.
 
-### 4. Verify, accept ownership and configure
+### 4. Verify constructor governance and configure
 
-Verify the manager and all eight libraries on the explorer against the exact saved build. The deployment script stops before proposing ownership if verification fails. When all nine deployments were broadcast but verification or a later step failed, run this recovery command from `hardhat/` without a private key:
+Verify the manager and all eight libraries on the explorer against the exact saved build. The explicit governor is already owner atomically at creation; verification failure stops the workflow without any ownership or configuration transaction. When all nine deployments were broadcast but verification or a later step failed, run this recovery command from `hardhat/` without a private key:
 
 ```bash
 DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mainnet
@@ -77,9 +78,9 @@ DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mai
 
 It reconciles successful canonical receipts, recorded deployer, exact creation input and runtime, then retries explorer source verification. It writes a separate `.reverified.<block>.json` receipt on success and preserves the original journal. It sends no blockchain transactions; explorer verification still requires its configured API access. It cannot complete a partial library-only deployment or recover the separate ENSJobPages workflow. Use the recovered receipt for readiness; do not manually mark failed verification entries successful.
 
-A pending ownership proposal leaves authority with the deployer. If the recovery report shows no proposal, the current owner must first call `transferOwnership(finalOwner)` where needed. The intended owner then calls `acceptOwnership()`; verify `owner()`, zero `pendingOwner()` and the transfer receipt. The recovery command performs neither ownership action.
+For a new-schema deployment, require `owner() == finalOwner` and zero `pendingOwner()` immediately. A pending proposal or wrong owner is a reconciliation failure, not a reason for the creator to send a handover transaction. Historical six-argument receipts retain their original two-step semantics for read-only interpretation; this candidate does not authorize changing those deployments.
 
-While intake remains paused, configure moderators, enabled NFT types, participant authorization, limits, bonds and review policy through the accepted owner. Check every setting against the [owner controls](OWNER_CONTROLS.md). Record successful transaction receipts and actual getter values; some role setters have no role-specific event.
+While intake remains paused, configure moderators, enabled NFT types, participant authorization, limits, bonds and review policy through the explicit governor. Check every setting against the [owner controls](OWNER_CONTROLS.md). Record successful transaction receipts and actual getter values; some role setters have no role-specific event.
 
 Keep the original deployment receipt as evidence. If deliberately reviewed identity settings differ from the initial constructor values, the current readiness workflow can use a separate `READINESS_CONFIG` file for expected ENS/wrapper, namespace and Merkle values. It changes checker expectations only and sends no transactions. Follow the exact schema in the [Hardhat guide](../hardhat/README.md); do not rewrite historical constructor data to make a check pass.
 

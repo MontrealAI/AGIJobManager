@@ -24,7 +24,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
 
   async function deployManager(token, ens, wrapper) {
     return deployActive(AGIJobManager,
-      ...buildInitConfig(
+      ...buildInitConfig(owner,
         token.address,
         "",
         ens.address,
@@ -111,7 +111,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     const rootName = "jobs.agi.eth";
     const rootNode = namehash(rootName);
 
-    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, {
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, owner, {
       from: owner,
     });
     await pages.setJobManager(caller.address, { from: owner });
@@ -150,7 +150,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     const rootName = "jobs.agi.eth";
     const rootNode = namehash(rootName);
 
-    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, {
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, owner, {
       from: owner,
     });
     await pages.setJobManager(caller.address, { from: owner });
@@ -181,7 +181,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     const rootName = "jobs.agi.eth";
     const rootNode = namehash(rootName);
 
-    const pages = await ENSJobPages.new(gasBurnerEns.address, wrapper.address, resolver.address, rootNode, rootName, {
+    const pages = await ENSJobPages.new(gasBurnerEns.address, wrapper.address, resolver.address, rootNode, rootName, owner, {
       from: owner,
     });
     await pages.setJobManager(caller.address, { from: owner });
@@ -205,7 +205,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     const rootName = "jobs.agi.eth";
     const rootNode = namehash(rootName);
 
-    const pages = await ENSJobPages.new(revertingEns.address, wrapper.address, resolver.address, rootNode, rootName, {
+    const pages = await ENSJobPages.new(revertingEns.address, wrapper.address, resolver.address, rootNode, rootName, owner, {
       from: owner,
     });
     await pages.setJobManager(caller.address, { from: owner });
@@ -254,7 +254,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     const rootNode = namehash(rootName);
 
     const manager = await deployActive(AGIJobManager,
-      ...buildInitConfig(
+      ...buildInitConfig(owner,
         token.address,
         "",
         ens.address,
@@ -268,7 +268,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
       ),
       { from: owner }
     );
-    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, {
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, owner, {
       from: owner,
     });
     await pages.setJobManager(manager.address, { from: owner });
@@ -294,7 +294,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
 
     const rootName = "jobs.agi.eth";
     const rootNode = namehash(rootName);
-    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, {
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, owner, {
       from: owner,
     });
     await pages.setJobManager(manager.address, { from: owner });

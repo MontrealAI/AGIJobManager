@@ -1,0 +1,32 @@
+{
+  "schema": "manager-fork-compatibility-provenance-v1",
+  "sourceCommit": "f274c6be8ff982deed8edbc1003e24fa45fc07ad",
+  "sourceTree": "aa9874d205712d0c4ee7caf93018fc2cc9704606",
+  "run": 38980884057,
+  "job": 117241221836,
+  "runUrl": "https://github.com/MontrealAI/AGIJobManager/actions/runs/38980884057",
+  "jobUrl": "https://github.com/MontrealAI/AGIJobManager/actions/runs/38980884057/job/117241221836",
+  "workflowConclusion": "failure",
+  "failureStage": "Comparison with the preserved earlier-source report, after both test suites passed.",
+  "artifactId": 12081485164,
+  "artifactBytes": 8981,
+  "artifactSha256": "69f6e651297714385e6fca1a5f112872d19e1f70a4bda6394a924bd8f4f07d3d",
+  "artifactMember": "mainnet-cutover.json",
+  "reportBytes": 28054,
+  "reportSha256": "34d8d737fd540f83317551bdf3e190c0c8d72d7e7aaef60303d0234f4bbfb0b1",
+  "expectedReport": "docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json",
+  "executedReportEqualsExpectedBytes": true,
+  "sourceInputs": 76,
+  "allSourceHashesMatchRecordedSource": true,
+  "preservedEarlierReport": {
+    "path": "docs/qualification/mainnet-cutover-next-deployment.json",
+    "sha256": "36bc8cfb2d3d8e15b04372ea1fbed3fe407a921c0d70b525d673be4447f63746"
+  },
+  "usdcCasesPassed": 11,
+  "cutoverCasesPassed": 23,
+  "publicTransactionsBroadcast": 0,
+  "fixtureWallets": true,
+  "productionActivationApproved": false,
+  "scope": "isolated local Ethereum fork; no public transactions or live signer-control proof",
+  "interpretation": "This is provenance of the actual f274 run and its failed overall workflow. Exact report equality supports the stated 23-case compatibility scope only. It does not qualify a future source commit, the distinct final-governor terminal workflow, Mainnet signing, or deployment activation."
+}

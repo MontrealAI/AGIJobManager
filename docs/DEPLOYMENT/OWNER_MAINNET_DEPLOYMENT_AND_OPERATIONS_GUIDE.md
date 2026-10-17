@@ -1,5 +1,6 @@
 # Owner Mainnet Deployment & Operations Guide — current USDC deployment
 
+> Unreleased candidate: new Manager/helper/router creation assigns an explicit nonzero governor atomically and leaves configuration/activation separate. See the [candidate authority matrix](EXPLICIT_GOVERNOR_CANDIDATE.md). Deployer-handover instructions below describe historical ownership semantics, not the new creation flow. Previous deployments, funds and permissions must remain untouched; historical liabilities are not a prerequisite for an independent new deployment.
 Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
 
 ## 1) Start here
@@ -63,7 +64,7 @@ Complete a separately authorized Sepolia rehearsal and the [mainnet qualificatio
 
 ## 4) Deploy, verify and preserve evidence
 
-The manager workflow deploys eight linked libraries and the manager, verifies runtime bytes, confirms paused intake and completes explorer source verification before proposing the intended ownership handover when needed. Failed verification stops before a proposal. It does not configure every operational role or open intake.
+The manager workflow deploys eight linked libraries and the manager with its explicit governor already assigned atomically, verifies runtime bytes, confirms paused intake and completes explorer source verification. It sends no ownership proposal, operational configuration or activation transaction. Failed verification preserves the creation journal for read-only recovery.
 
 Preserve the journal under `hardhat/deployments/<network>/`, the exact Solidity input, constructor values, linked-library addresses, successful transaction receipts and verification results. **A failed command may already have broadcast transactions.** Reconcile the saved journal before retrying; do not blindly deploy again.
 
@@ -75,9 +76,9 @@ DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mai
 
 Recovery verifies canonical receipts, recorded deployer, exact creation input and linked runtime before retrying explorer verification. It sends no blockchain transactions and preserves the original journal, writing a separate `.reverified.<block>.json` receipt on success. Use that receipt for readiness. It requires explorer API access but no private key; it does not complete missing deployments, perform ownership actions or recover ENSJobPages. Follow the report and the [Hardhat recovery instructions](../../hardhat/README.md) for any unresolved condition.
 
-## 5) Accept ownership and configure while paused
+## 5) Check constructor governance and configure while paused
 
-The current owner proposes a manager transfer using `transferOwnership(newOwner)`. After a recovered deployment, check whether this proposal is still required; verification recovery performs no ownership writes. The proposed owner independently checks the manager and calls `acceptOwnership()` through its own signing interface. Until acceptance, the deployer/current owner retains authority. Verify `owner()`, zero `pendingOwner()` and `OwnershipTransferred` afterward. Renunciation is disabled; a current owner can cancel an unaccepted proposal with `transferOwnership(address(0))`.
+New-schema creation must already report the explicit governor as `owner()` and zero `pendingOwner()`. There is no creator handover or acceptance stage. Reject a different state and reconcile the exact journal. Later voluntary Manager governor changes retain `transferOwnership` / `acceptOwnership` semantics; renunciation remains disabled. Historical six-argument records keep their authentic two-step readback but no old-deployment action is authorized by this new deployment plan.
 
 Configure moderators, participant authorization, enabled NFT types, job limits, bonds and review policy while intake remains paused. The default vote thresholds/quorum are not a substitute for a reviewed validator operating model. Fresh managers start with NFT admission disabled and no collections: keep `agentNftRequired: false` and `agiTypes: []` in the reviewed policy to retain this default, with no NFT-setting transaction. An allowlisted agent needs an eligible ERC-721 only when the job's posting-time policy requires it. To opt in for future jobs, register reviewed collections and call `setAgentNftRequired(true)`; update the complete readiness policy. NFT scores never override payouts.
 
