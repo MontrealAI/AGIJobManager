@@ -26,7 +26,7 @@ ALLOWED = VERSION_ONLY | {
     'docs/RELEASE_GUIDE.md', 'docs/REFERENCE/VERSIONS.md', 'docs/ui/DEPLOYMENT_MAINNET.md',
     'docs/MAINNET_READINESS.md', 'scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl', 'docs/REPO_MAP.md', 'scripts/docs/templates/README.md.tpl', 'ui/agijobmanager-usdc.html',
     '.github/workflows/current-state-release.yml', '.github/workflows/publish-v114.yml',
-    '.github/workflows/mainnet-fork.yml', '.github/workflows/security-verification.yml',
+    '.github/workflows/pages.yml', 'scripts/release/run-release-preservation.py', '.github/workflows/mainnet-fork.yml', '.github/workflows/security-verification.yml',
     'scripts/release/release_common.py', 'scripts/release/package-release.py',
     'scripts/release/verify-package.py', 'scripts/release/collect-qualification.py',
     'scripts/release/publish-release.py', VERIFIER, 'scripts/release/package-policy.py',

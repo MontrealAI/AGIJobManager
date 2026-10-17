@@ -28,6 +28,17 @@
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
+    ".github/workflows/pages.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "1864f6387e8b10115b6a0c1b4ebd76513d9ab066e82017050142989b0abcb4f7"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "81b770b4cf6df10f5cb1eb2fa8ce9f26ba5e1aed6e50145d1d40bd0ffd3b2896"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
     ".github/workflows/publish-v114.yml": {
       "before": {
         "mode": "100644",
@@ -357,7 +368,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "8c38fb64ce5e67a29fa1c0d2bc8162abc42492feb8837d4c18aa0f8947e4d333"
+        "sha256": "b5a8552238ab029b12d8f4cff189f3afef57cfd8d2704b5e745255417d21f65a"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -380,6 +391,14 @@
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
+    "scripts/release/run-release-preservation.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "319e37196104e66465edff78d01fae59ba757446d480b1e8cde227f304317588"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
     "scripts/release/test-release-gates.py": {
       "before": {
         "mode": "100644",
@@ -395,7 +414,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "9d0a76d9089ffaab6711bbfdcaf7f1b13dabd22b57010cde2a0c1122a7511f52"
+        "sha256": "83349c6794b0fcf50babf6ac643ad02c831f4ed4442532048b1d261affbb5add"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },

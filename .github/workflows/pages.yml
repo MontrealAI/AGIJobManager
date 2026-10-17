@@ -63,7 +63,7 @@ jobs:
         run: |
           npm run successor:test
           node --test scripts/successor/source-identity.test.mjs
-          node --test scripts/successor/preservation.test.mjs
+          python3 scripts/release/run-release-preservation.py
       - name: Install browser test dependencies
         run: |
           npm ci

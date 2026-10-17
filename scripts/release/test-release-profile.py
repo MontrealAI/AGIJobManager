@@ -158,4 +158,44 @@ class ReleaseProfile(unittest.TestCase):
             with self.assertRaises(ValueError):P['checkout'](target,self.selection,None,None,'0'*40,tree)
         finally:shutil.rmtree(target)
 
+    def test_preservation_runner_rejects_current_mutations_with_clean_historical_fixture(self):
+        runner=runpy.run_path(str(ROOT/'scripts/release/run-release-preservation.py'))
+        target=pathlib.Path(self.tmp.name)/'preservation-checkout'
+        subprocess.run(['git','clone','--quiet','--shared',str(ROOT),str(target)],check=True)
+        try:
+            runner['validate_current'](target,P)
+            runner['validate_fixture_tree'](P['git'](target,'rev-parse',P['BASE']+'^{tree}').decode().strip(),P)
+            for name in ('ui/agijobmanager-usdc.html','package-lock.json','scripts/successor/preservation.test.mjs'):
+                path=target/name;old=path.read_bytes()
+                try:
+                    path.write_bytes(old+b'\nmalicious mutation\n')
+                    with self.subTest(name=name),self.assertRaises(ValueError):runner['validate_current'](target,P)
+                finally:path.write_bytes(old)
+            with self.assertRaisesRegex(ValueError,'fixture tree identity'):runner['validate_fixture_tree']('0'*40,P)
+            with patch.dict(runner['main'].__globals__, ROOT=pathlib.Path(self.tmp.name)/'missing-release'):
+                with self.assertRaisesRegex(ValueError,'manifest is required'):runner['main']()
+        finally:shutil.rmtree(target)
+    def test_preservation_runner_rejects_missing_corrupt_or_misbound_current_pages(self):
+        runner=runpy.run_path(str(ROOT/'scripts/release/run-release-preservation.py'))
+        pages=pathlib.Path(self.tmp.name)/'pages-test'
+        pages.mkdir()
+        baseline=json.loads((ROOT/'docs/successor/PRESERVATION_BASELINE.json').read_bytes())
+        routes=set(baseline['routes']+['successor/index.html','fr/successor/index.html']) - {'build-info.json'}
+        files={}
+        for name in routes:
+            path=pages/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b'fixture')
+            files[name]={'bytes':7,'sha256':sha(b'fixture')}
+        (pages/'.nojekyll').write_bytes(b'')
+        info={'sourceCommit':'a'*40,'sourceVersion':'1.19.0','files':files,'buildOnlyFiles':{'.nojekyll':{'bytes':0,'sha256':sha(b'')}}}
+        (pages/'build-info.json').write_text(json.dumps(info))
+        try:
+            runner['validate_pages'](ROOT,pages,'a'*40)
+            with self.assertRaisesRegex(ValueError,'source identity'):runner['validate_pages'](ROOT,pages,'b'*40)
+            path=pages/next(iter(routes));path.write_bytes(b'corrupt')
+            with self.assertRaisesRegex(ValueError,'asset differs'):runner['validate_pages'](ROOT,pages,'a'*40)
+            path.unlink()
+            with self.assertRaisesRegex(ValueError,'inventory differs'):runner['validate_pages'](ROOT,pages,'a'*40)
+            with self.assertRaisesRegex(ValueError,'missing or indirect'):runner['validate_pages'](ROOT,pages/'missing','a'*40)
+        finally:shutil.rmtree(pages)
+
 if __name__=='__main__':unittest.main(verbosity=2)
