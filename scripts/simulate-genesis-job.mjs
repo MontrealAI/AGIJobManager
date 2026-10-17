@@ -102,7 +102,7 @@ try {
   const send = async transaction => (await transaction).wait();
   const raw = value => E.parseUnits(value, 6);
   const fmt = value => E.formatUnits(value, 6);
-  const [, wallet30, wallet10, moderator, other] = await E.getSigners();
+  const [owner, wallet30, wallet10, moderator, other] = await E.getSigners();
   async function signer(address) {
     await rpc('hardhat_impersonateAccount', [address]);
     await rpc('hardhat_setBalance', [address, E.toQuantity(E.parseEther('100'))]);
@@ -135,7 +135,7 @@ try {
   const pages = await deploy('MockENSJobPages');
   const roots = ['club.agi.eth', 'agent.agi.eth', 'alpha.club.agi.eth', 'alpha.agent.agi.eth'].map(E.namehash);
   const manager = await deploy('AGIJobManager', [token.target, 'ipfs://', [ens.target, wrapper.target],
-    roots, [E.ZeroHash, E.ZeroHash], [wallet30.address, wallet10.address]]);
+    roots, [E.ZeroHash, E.ZeroHash], [wallet30.address, wallet10.address], owner.address]);
   const runtimeBytes = (await E.provider.getCode(manager.target)).length / 2 - 1;
   assert(runtimeBytes <= 24576, 'EIP-170 deployment size');
   assert.equal(await token.decimals(), 6n);

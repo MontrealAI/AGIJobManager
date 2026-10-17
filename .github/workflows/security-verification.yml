@@ -81,6 +81,7 @@ jobs:
       - name: Run and review extended Slither findings
         run: |
           python3 scripts/security/test-slither-review.py
+          python3 scripts/security/test-slither-deterministic.py
           npm run slither:extended
 
       - name: Preserve static analysis evidence

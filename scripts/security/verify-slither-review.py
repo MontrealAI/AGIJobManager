@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-BASELINE = ROOT / "scripts/security/slither-reviewed-findings-v1.18.0.json"
+BASELINE = ROOT / "scripts/security/slither-reviewed-findings-pr1586-e1ed502.json"
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 
 
@@ -67,6 +67,7 @@ def verify(output_dir):
         "slither.config.json", "scripts/security/patch-openzeppelin-compiler.cjs",
         "scripts/security/openzeppelin-compiler-patches.json",
         "scripts/security/run-slither.sh", "scripts/security/run-slither-extended.sh",
+        "scripts/security/run-slither-deterministic.py",
     })
     if not isinstance(baseline.get("source_sha256"), dict) or sources != set(baseline["source_sha256"]):
         raise ValueError("The production source/configuration file set changed; repeat the review")

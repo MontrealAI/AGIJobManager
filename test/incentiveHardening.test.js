@@ -34,7 +34,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
     manager = await deployActive(AGIJobManager,
-      ...buildInitConfig(
+      ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,

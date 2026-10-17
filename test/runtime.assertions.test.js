@@ -12,7 +12,7 @@ contract('Contract test runtime assertion canaries', ([owner, recipient, emptyAc
   before(async () => {
     token = await MockERC20.new({ from: owner });
     otherToken = await MockERC20.new({ from: owner });
-    pages = await AGIJobPages.new('ipfs://canary/', 'https://example.invalid/', { from: owner });
+    pages = await AGIJobPages.new('ipfs://canary/', 'https://example.invalid/', owner, { from: owner });
   });
 
   it('recognizes genuine EVM reverts from both transactions and eth_call', async () => {

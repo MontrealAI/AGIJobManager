@@ -25,7 +25,7 @@ foundry_out="$(forge config --json | python3 -c 'import json, sys; print(json.lo
 slither . --compile-force-framework foundry --config-file scripts/security/slither-extended.config.json \
   --json "$scan_dir/slither-extended.json" --fail-none
 mv "$scan_dir/slither-extended.json" "$output_dir/slither-extended.json"
-slither . --compile-force-framework foundry --foundry-ignore-compile --foundry-out-directory "$foundry_out" \
+python3 scripts/security/run-slither-deterministic.py . --compile-force-framework foundry --foundry-ignore-compile --foundry-out-directory "$foundry_out" \
   --config-file scripts/security/slither-reentrancy.config.json \
   --json "$scan_dir/slither-reentrancy.json" --fail-none
 mv "$scan_dir/slither-reentrancy.json" "$output_dir/slither-reentrancy.json"

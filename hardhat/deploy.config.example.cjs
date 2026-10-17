@@ -1,13 +1,14 @@
 // Copy to deploy.config.cjs (or set DEPLOY_CONFIG to a reviewed copy).
 // Fill the owner and both settlement wallets before even a read-only deployment plan.
 // New managers start with NFT admission disabled and no registered collections.
-// To opt in, accept ownership, register collections and setAgentNftRequired(true), then
+// To opt in, the explicit governor registers collections and setAgentNftRequired(true), then
 // verify the explicit choice with READINESS_NFT_CONFIG before unpausing.
 // Membership roots identify agents/validators; they are separate from JOBS_ROOT_NAME.
 const ZERO_ROOT = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 module.exports = {
   mainnet: {
+    creator: { address: '', transactionMode: 'eoa-create' }, // Independent creation wallet; empty-code EOA only until other modes qualify.
     usdcTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
     settlementWallets: ['', ''], // Required: 30% wallet, then distinct 10% wallet. Owner rotation requires paused intake and zero job escrow/bonds; pending claims retain their beneficiaries.
     baseIpfsUrl: 'https://ipfs.io/ipfs/',
@@ -26,9 +27,10 @@ module.exports = {
       ZERO_ROOT, // agents: no Merkle exception unless an explicit reviewed list is configured
     ],
     // Owner-managed Merkle/additional allowlist exceptions remain available after identity locking.
-    finalOwner: '', // Required: reviewed governance wallet; manager ownership is accepted in two steps.
+    finalOwner: '', // Required: reviewed governance wallet; assigned atomically at construction; later changes remain two-step.
   },
   sepolia: {
+    creator: { address: '', transactionMode: 'eoa-create' },
     // Supply verified Sepolia ENS contracts, controlled membership roots and the intended owner.
     usdcTokenAddress: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
     settlementWallets: ['', ''], // Required: 30% wallet, then distinct 10% wallet. Owner rotation requires paused intake and zero job escrow/bonds; pending claims retain their beneficiaries.

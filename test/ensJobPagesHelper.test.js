@@ -23,7 +23,7 @@ contract("ENSJobPages helper", (accounts) => {
       nameWrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -73,7 +73,7 @@ contract("ENSJobPages helper", (accounts) => {
       nameWrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -108,7 +108,7 @@ contract("ENSJobPages helper", (accounts) => {
       "0x0000000000000000000000000000000000000000",
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -126,7 +126,7 @@ contract("ENSJobPages helper", (accounts) => {
       nameWrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -155,7 +155,7 @@ contract("ENSJobPages helper", (accounts) => {
       nameWrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -172,7 +172,7 @@ contract("ENSJobPages helper", (accounts) => {
       nameWrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -190,7 +190,7 @@ contract("ENSJobPages helper", (accounts) => {
       nameWrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -212,7 +212,7 @@ contract("ENSJobPages helper", (accounts) => {
       nameWrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -234,7 +234,7 @@ contract("ENSJobPages helper", (accounts) => {
       nameWrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -254,7 +254,7 @@ contract("ENSJobPages helper", (accounts) => {
     const resolver = await MockPublicResolver.new({ from: owner });
 
     await expectRevert.unspecified(
-      ENSJobPages.new(owner, owner, resolver.address, rootNode, rootName, { from: owner }),
+      ENSJobPages.new(owner, owner, resolver.address, rootNode, rootName, owner, { from: owner }),
     );
 
     const helper = await ENSJobPages.new(
@@ -262,7 +262,7 @@ contract("ENSJobPages helper", (accounts) => {
       "0x0000000000000000000000000000000000000000",
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -281,7 +281,7 @@ contract("ENSJobPages helper", (accounts) => {
       "0x0000000000000000000000000000000000000000",
       resolver.address,
       "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "",
+      "", owner,
       { from: owner }
     );
 
@@ -298,7 +298,7 @@ contract("ENSJobPages helper", (accounts) => {
       "0x0000000000000000000000000000000000000000",
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -318,7 +318,7 @@ contract("ENSJobPages helper", (accounts) => {
       "0x0000000000000000000000000000000000000000",
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -337,7 +337,7 @@ contract("ENSJobPages helper", (accounts) => {
       "0x0000000000000000000000000000000000000000",
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
     await ens.setOwner(rootNode, wrapper.address, { from: owner });
@@ -349,7 +349,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
     await helper.setJobManager(hookCaller.address, { from: owner });
@@ -371,7 +371,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -394,7 +394,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -418,7 +418,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -442,7 +442,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -463,7 +463,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -490,7 +490,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -513,7 +513,7 @@ contract("ENSJobPages helper", (accounts) => {
       "0x0000000000000000000000000000000000000000",
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -534,7 +534,7 @@ contract("ENSJobPages helper", (accounts) => {
       "0x0000000000000000000000000000000000000000",
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -557,7 +557,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -599,7 +599,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -631,7 +631,7 @@ contract("ENSJobPages helper", (accounts) => {
       "0x0000000000000000000000000000000000000000",
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -656,7 +656,7 @@ contract("ENSJobPages helper", (accounts) => {
       "0x0000000000000000000000000000000000000000",
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -673,7 +673,7 @@ contract("ENSJobPages helper", (accounts) => {
     const resolver = await MockPublicResolver.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
     const manager = await MockAGIJobManagerView.new({ from: owner });
-    const helper = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, { from: owner });
+    const helper = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, owner, { from: owner });
 
     await wrapper.setENSRegistry(ens.address, { from: owner });
     await ens.setOwner(rootNode, wrapper.address, { from: owner });
@@ -701,7 +701,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -741,7 +741,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -775,7 +775,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -817,7 +817,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -856,7 +856,7 @@ contract("ENSJobPages helper", (accounts) => {
       wrapper.address,
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 
@@ -879,7 +879,7 @@ contract("ENSJobPages helper", (accounts) => {
       "0x0000000000000000000000000000000000000000",
       resolver.address,
       rootNode,
-      rootName,
+      rootName, owner,
       { from: owner }
     );
 

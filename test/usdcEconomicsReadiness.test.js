@@ -140,7 +140,7 @@ contract('USDC scenario differential against local settlement', accounts => {
     const token = await artifacts.require('MockUSDCControls').new();
     const ens = await artifacts.require('MockENSRegistry').new();
     const wrapper = await artifacts.require('MockNameWrapper').new();
-    const manager = await artifacts.require('AGIJobManager').new(...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, zero, zero, zero, zero, zero, zero, [recipient30, wallet10]));
+    const manager = await artifacts.require('AGIJobManager').new(...buildInitConfig(owner, token.address, 'ipfs://', ens.address, wrapper.address, zero, zero, zero, zero, zero, zero, [recipient30, wallet10]));
     await manager.setAgentNftRequired(false);
     await manager.addAdditionalAgent(agent);
     for (const voter of voters) await manager.addAdditionalValidator(voter);

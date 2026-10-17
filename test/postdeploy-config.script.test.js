@@ -14,7 +14,7 @@ contract('Local owner configuration CLI', accounts => {
     const ens = await artifacts.require('MockENS').new({ from: owner });
     const wrapper = await artifacts.require('MockNameWrapper').new({ from: owner });
     const zero = `0x${'00'.repeat(32)}`;
-    const manager = await deployActive(artifacts.require('AGIJobManager'), ...buildInitConfig(
+    const manager = await deployActive(artifacts.require('AGIJobManager'), ...buildInitConfig(owner,
       token.address, 'ipfs://test/', ens.address, wrapper.address, zero, zero, zero, zero, zero, zero,
     ), { from: owner });
     const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'agi-owner-cli-'));

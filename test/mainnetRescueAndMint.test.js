@@ -17,7 +17,7 @@ contract("AGIJobManager rescue hardening", (accounts) => {
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
     return deployActive(AGIJobManager,
-      ...buildInitConfig(
+      ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,

@@ -296,7 +296,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     ENS public ens;
     NameWrapper public nameWrapper;
     address public ensJobPages;
-    bool private useEnsJobTokenURI;
+    bool public useEnsJobTokenURI;
     /// @notice Freezes ENS/namewrapper/root nodes; USDC is immutable at deployment. Not a governance lock; ops remain owner-controlled.
     bool public lockIdentityConfig;
     /// @notice Starts disabled for new jobs; owner opt-in never changes an existing job's recorded requirement.
@@ -405,8 +405,12 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         address[2] memory ensConfig,
         bytes32[4] memory rootNodes,
         bytes32[2] memory merkleRoots,
-        address[2] memory settlementWallets
+        address[2] memory settlementWallets,
+        address initialGovernor
     ) ERC721("AGIJobs", "Job") {
+        if (initialGovernor == address(0)) revert InvalidParameters();
+        // Atomic initialization: the creator receives no usable runtime authority.
+        _transferOwnership(initialGovernor);
         if (usdcTokenAddress.code.length == 0) revert InvalidParameters();
         if (IERC20Metadata(usdcTokenAddress).decimals() != 6) revert InvalidParameters();
         if (block.chainid == 1) {

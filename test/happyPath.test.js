@@ -40,7 +40,7 @@ contract("AGIJobManager happy path", (accounts) => {
     clubRoot = rootNode("club-root");
     agentRoot = rootNode("agent-root");
 
-    manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,
