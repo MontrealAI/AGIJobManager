@@ -1,0 +1,192 @@
+name: Exact Ubuntu TTY Creator Qualification
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/manager-tty-qualification.yml'
+      - 'scripts/qualification/qualify-tty-inspect.mjs'
+      - 'config/tty-source-target.json'
+      - 'config/tty-source-review-binding.json'
+permissions:
+  contents: read
+concurrency:
+  group: manager-tty-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  bounded-creator-route:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Check out the separate reviewed harness
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: qualifier
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check out the exact creator source checkpoint
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: MontrealAI/AGIJobManager
+          ref: c174b0552cf50ed13e3b98d74176544d45b4d200
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22.23.2
+          cache: npm
+          cache-dependency-path: |
+            source/package-lock.json
+            source/hardhat/package-lock.json
+      - name: Verify reviewed harness bytes before execution
+        run: |
+          python3 -I - <<'PY'
+          import hashlib,pathlib
+          root=pathlib.Path('qualifier')
+          expected={
+            'scripts/qualification/qualify-tty-inspect.mjs':'8acb79bae9f6de07f8b46071d1606a2480993d2b5df7d5da5b415243bb416710',
+            'config/tty-source-target.json':'08080a32a340f49463daee49fd0c010fa3b11e153833688cf2b3db1c74ed16c0',
+            'config/tty-source-review-binding.json':'02e95580b51a61cab0b601258920091cbf9327d29f5457c78c7d9d42e6bf9f0f'
+          }
+          for name,digest in expected.items():
+              p=root/name
+              assert p.is_file() and not p.is_symlink()
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==digest,name
+          PY
+      - name: Install only existing pinned dependencies
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = v22.23.2
+          npm --prefix source ci
+          npm --prefix source/hardhat ci
+          node source/scripts/security/patch-openzeppelin-compiler.cjs
+      - name: Bind actual source to reviewed finite manifest and preserved legacy policy
+        run: |
+          python3 -I source/scripts/release/check-source-boundaries.py \
+            --profile manager-explicit-governor-v1 --mode bound \
+            --source-root "$(realpath source)" --object-store "$(realpath source)" \
+            --dependency-root "$(realpath source/node_modules)" \
+            --manifest config/explicit-governor-source-v1.json \
+            --manifest-sha256 9324e23ee3e13d256b45399dffe879c4baf36250bce9f17961a2647a8b43e8ef \
+            --verifier-sha256 0dfa6cf11c22e12637496ebf7087bddea5d1dca51d5617a72d750928d98f702c \
+            --schema-sha256 ee0c0146692155389016ddcb167d9a3fc7abc53c2c4f1e463cd433ab5567db7d \
+            --review-binding "$(realpath qualifier/config/tty-source-review-binding.json)" \
+            --review-binding-sha256 02e95580b51a61cab0b601258920091cbf9327d29f5457c78c7d9d42e6bf9f0f
+          python3 -I source/scripts/release/test-source-boundary-dispatch.py \
+            --object-store "$(realpath source)" --dependency-root "$(realpath source/node_modules)"
+      - name: Compile unchanged exact contract closure before artifact consumers
+        working-directory: source
+        run: node --max-old-space-size=2048 node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs compile
+      - name: Run shared TTY and creator regression cases
+        working-directory: source
+        run: |
+          set -euo pipefail
+          node --max-old-space-size=384 --test --test-concurrency=1 hardhat/test/ephemeral-key.test.cjs hardhat/test/deploy-core-tty.test.cjs | tee "$RUNNER_TEMP/manager-tty-unit.tap"
+          python3 -I - <<'PY'
+          import pathlib,os,re
+          text=(pathlib.Path(os.environ['RUNNER_TEMP'])/'manager-tty-unit.tap').read_text()
+          for key,n in {'tests':80,'pass':80,'fail':0,'cancelled':0,'skipped':0,'todo':0}.items():
+              values=re.findall(r'^# '+key+r' (\d+)$',text,re.M)
+              assert values and int(values[-1])==n,(key,values)
+          PY
+      - name: Run additive conventional policy regression cases
+        working-directory: source
+        run: |
+          set -euo pipefail
+          node --max-old-space-size=384 --test --test-concurrency=1 hardhat/test/conventional-creator.test.cjs | tee "$RUNNER_TEMP/manager-conventional-unit.tap"
+          python3 -I - <<'PYCODE'
+          import pathlib,os,re
+          text=(pathlib.Path(os.environ['RUNNER_TEMP'])/'manager-conventional-unit.tap').read_text()
+          for key,n in {'tests':6,'pass':6,'fail':0,'cancelled':0,'skipped':0,'todo':0}.items():
+              values=re.findall(r'^# '+key+r' (\d+)$',text,re.M)
+              assert values and int(values[-1])==n,(key,values)
+          PYCODE
+      - name: Run bounded read-only rollover regression cases
+        working-directory: source
+        run: |
+          set -euo pipefail
+          node --max-old-space-size=384 --test --test-concurrency=1 hardhat/test/core-preflight-rollover.test.cjs | tee "$RUNNER_TEMP/manager-rollover-unit.tap"
+          python3 -I - <<'PYCODE'
+          import pathlib,os,re
+          text=(pathlib.Path(os.environ['RUNNER_TEMP'])/'manager-rollover-unit.tap').read_text()
+          for key,n in {'tests':8,'pass':8,'fail':0,'cancelled':0,'skipped':0,'todo':0}.items():
+              values=re.findall(r'^# '+key+r' (\d+)$',text,re.M)
+              assert values and int(values[-1])==n,(key,values)
+          PYCODE
+      - name: Exercise the actual Hardhat offline entry and source/catalog negatives
+        run: |
+          node --max-old-space-size=384 qualifier/scripts/qualification/qualify-tty-inspect.mjs \
+            --source-root "$(realpath source)" \
+            --target "$(realpath qualifier/config/tty-source-target.json)" \
+            --output "$RUNNER_TEMP/manager-tty-inspect"
+      - name: Exercise both disposable creator campaigns and lost-response resume
+        working-directory: source
+        run: |
+          set -euo pipefail
+          MANAGER_TTY_TEST_REPORT="$RUNNER_TEMP/manager-tty-evm.jsonl" \
+          node --max-old-space-size=384 node_modules/hardhat/dist/src/cli.js \
+            --config hardhat.core-session.config.mjs test mocha --no-compile \
+            hardhat/test/deploy-core-tty.test.js | tee "$RUNNER_TEMP/manager-tty-evm.log"
+          python3 -I - <<'PY'
+          import pathlib,os,json
+          rows=[json.loads(x) for x in (pathlib.Path(os.environ['RUNNER_TEMP'])/'manager-tty-evm.jsonl').read_text().splitlines()]
+          assert len(rows)==2
+          assert {r['mode']for r in rows}=={'empty-eoa-direct-create.v1','marker-eoa-direct-create.v1'}
+          for r in rows:
+              assert r['signatures']==r['sends']==len(r['receiptProofs'])==9
+              assert r['paused'] and r['governor']=='0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99'
+              assert r['sourceContractBuildDigest']=='e0965c57b18ace72bb9081b29976098fcc8f08b58ddd1005876d7696aeeb622d'
+          PY
+      - name: Exercise additive conventional empty and marker campaigns separately
+        working-directory: source
+        run: |
+          set -euo pipefail
+          for account in empty marker; do
+            if [ "$account" = empty ]; then selected='empty account'; else selected='marker with lost-response resume'; fi
+            MANAGER_CONVENTIONAL_TEST_REPORT="$RUNNER_TEMP/manager-conventional-$account.jsonl" \
+            node --max-old-space-size=384 node_modules/hardhat/dist/src/cli.js \
+              --config hardhat.core-session.config.mjs test mocha --no-compile \
+              --grep "$selected" hardhat/test/conventional-creator.test.js | tee "$RUNNER_TEMP/manager-conventional-$account.log"
+          done
+          python3 -I - <<'PYCODE'
+          import pathlib,os,json,subprocess,hashlib
+          temp=pathlib.Path(os.environ['RUNNER_TEMP']);cases=[]
+          source={'commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'tree':subprocess.check_output(['git','rev-parse','HEAD^{tree}'],text=True).strip()}
+          assert source=={'commit':'c174b0552cf50ed13e3b98d74176544d45b4d200','tree':'f69686df0bb78ff92c35dea6e884ab69ea38cae6'}
+          for account,prompts,selected in [('empty',1,'empty account'),('marker',2,'marker with lost-response resume')]:
+              file=temp/('manager-conventional-'+account+'.jsonl');rows=[json.loads(x) for x in file.read_text().splitlines()]
+              assert len(rows)==1
+              r=rows[0]
+              assert r['mode']=='conventional-eoa-direct-create.v1' and r['prompts']==prompts
+              assert selected in (temp/('manager-conventional-'+account+'.log')).read_text()
+              assert r['scope']=='DISPOSABLE WRAPPER FUNCTIONAL PROOF; SYNTHETIC SOURCE IDENTITY AND FINALITY ADAPTER; NO REAL KEY OR PROVIDER'
+              assert r['signatures']==r['sends']==len(r['receiptProofs'])==9
+              assert [p['index'] for p in r['receiptProofs']]==list(range(9))
+              assert len({p['transactionHash'] for p in r['receiptProofs']})==9
+              assert r['paused'] and r['governor']=='0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99'
+              assert r['sourceContractBuildDigest']=='e0965c57b18ace72bb9081b29976098fcc8f08b58ddd1005876d7696aeeb622d'
+              cases.append({'accountMode':account,'selectedTest':selected,'profile':r['mode'],'reportSha256':hashlib.sha256(file.read_bytes()).hexdigest(),'report':r})
+          assert len({c['report']['planSha256'] for c in cases})==len({c['report']['manager'] for c in cases})==2
+          (temp/'manager-conventional-matrix.json').write_text(json.dumps({'schema':'manager-conventional-disposable-matrix-v1','executionSource':source,'scope':'Exact execution source; disposable synthetic account/token/finality fixtures only. Not production account qualification.','cases':cases,'localCreationReceipts':18},indent=2)+'\n')
+          PYCODE
+      - name: Retain bounded qualification evidence including failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: manager-tty-source-qualified-evidence
+          path: |
+            ${{ runner.temp }}/manager-rollover-unit.tap
+            ${{ runner.temp }}/manager-conventional-unit.tap
+            ${{ runner.temp }}/manager-conventional-empty.log
+            ${{ runner.temp }}/manager-conventional-empty.jsonl
+            ${{ runner.temp }}/manager-conventional-marker.log
+            ${{ runner.temp }}/manager-conventional-marker.jsonl
+            ${{ runner.temp }}/manager-conventional-matrix.json
+            ${{ runner.temp }}/manager-tty-unit.tap
+            ${{ runner.temp }}/manager-tty-inspect
+            ${{ runner.temp }}/manager-tty-evm.log
+            ${{ runner.temp }}/manager-tty-evm.jsonl
+          if-no-files-found: error
+          retention-days: 30
