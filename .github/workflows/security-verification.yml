@@ -60,7 +60,14 @@ jobs:
         run: forge fmt --check forge-test/**/*.sol contracts/test/MaliciousCompletionReceiver.sol
 
       - name: Forge build
-        run: FOUNDRY_PROFILE=ci forge build --deny warnings
+        run: FOUNDRY_PROFILE=ci forge build --deny warnings --build-info
+
+      - name: Verify emitted Forge optimizer profile
+        run: |
+          mkdir -p build/security
+          FOUNDRY_PROFILE=ci forge config --json > build/security/forge-config.json
+          node --test scripts/security/test-forge-optimizer.cjs
+          node scripts/security/check-forge-optimizer.cjs build/security/forge-config.json out/AGIJobManager.sol/AGIJobManager.json out/build-info
 
       - name: Forge unit + fuzz tests
         run: FOUNDRY_PROFILE=ci forge test --no-match-path "forge-test/invariant/*.t.sol"

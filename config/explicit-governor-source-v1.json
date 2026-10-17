@@ -101,10 +101,10 @@
     },
     ".github/workflows/mainnet-fork.yml": {
       "mode": "100644",
-      "sha256": "95f52a48583736cd5e422a5e58baa3f67dea86f30a36329583102da8b5f49258",
+      "sha256": "b7c931646a4d232dc4866e5c26d95b47f67916ba60c3ace7d5a4cc73bcc93f2c",
       "predecessorGitBlob": "3cb7624c24df6d7acef2086beaab8452532c080d",
       "predecessorSha256": "37c0ea32eea0705db125832ea2f65a2a941b6be883bb93219b47f6958fc18e5b",
-      "reviewReason": "Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives."
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     ".github/workflows/pages.yml": {
       "mode": "100644",
@@ -122,10 +122,10 @@
     },
     ".github/workflows/security-verification.yml": {
       "mode": "100644",
-      "sha256": "f0457162565922084f4cd96d1681808f012911d3ea6588ef90e961af4e38a474",
+      "sha256": "3420f4f1a077cd0703a6e32ba3401858eaed04e48eda35ad404f3dedf489defc",
       "predecessorGitBlob": "a9c63d67876704c9423501c750ed5e9c6d9f4217",
       "predecessorSha256": "b52bace7a33834bfb7be500b20ccb161cb2babcc49ba116f7fea93cf472ef91a",
-      "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     ".github/workflows/ui.yml": {
       "mode": "100644",
@@ -245,6 +245,13 @@
       "predecessorGitBlob": "6d74fa5a0f0778cef06d632a5b04a9b0d893b914",
       "predecessorSha256": "3fa577c81a4189cdb103d9507e0945cf57065da45a5ac1d1374025f5f56a6c8a",
       "reviewReason": null
+    },
+    "config/compiler-optimizer-transition-v1.json": {
+      "mode": "100644",
+      "sha256": "cea91bbdf10799d0045e763142a33d0f01010743564b17c187c35175cdabeab5",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "config/mainnet/agi-jobs-usdc.json": {
       "mode": "100644",
@@ -2317,6 +2324,20 @@
       "predecessorGitBlob": "7fb85401daf424a2661b10247a264105d0eb3ad5",
       "predecessorSha256": "f067406ebaac7d119fe3db743b4c4a3594bca6a646c2a4de82b18f07825c11d5",
       "reviewReason": null
+    },
+    "docs/qualification/expected-mainnet-cutover-sol-2026-7-provenance.json": {
+      "mode": "100644",
+      "sha256": "83126d5dd2d607f423567d1954eae604e80dc9df07131061f155a9c18a0f7411",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+    },
+    "docs/qualification/expected-mainnet-cutover-sol-2026-7.json": {
+      "mode": "100644",
+      "sha256": "92480b8821eb7821ef4ba487fd06b825ae61160beebf64a1260fa9ba3a4d552b",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "docs/qualification/history/expected-mainnet-cutover-v1.17.2.json": {
       "mode": "100644",
@@ -4614,6 +4635,13 @@
       "predecessorSha256": null,
       "reviewReason": "Exact PR1595 0d91599600c436d7aa0ba8e59d35cfbd903098e8 review/order/gate integration: retain source-scoped evidence and original historical acceptance; deterministic focused detector ordering preserves the complete detector set and requires 12/30/122 report entries including the known High. Finite input identity and functional gate review do not independently adjudicate security findings or authorize deployment; compiler, contract, dependency and historical bytes remain unchanged."
     },
+    "docs/security/sol-2026-7-workaround.md": {
+      "mode": "100644",
+      "sha256": "45240ea4146778588a14a3e3eea8c8db6c2fb5fccdde4d3416959e4869d88510",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+    },
     "docs/security/v0.8.0-static-analysis.md": {
       "mode": "100644",
       "sha256": "0aefd6e134bca902896bcd5dce4ebbffc98e92194f18f0da7a80639d6be241db",
@@ -5288,10 +5316,10 @@
     },
     "foundry.toml": {
       "mode": "100644",
-      "sha256": "fb098664cd6a2b8cba0b038924a4d1e3273096741d4b194c84308d670ad9098a",
+      "sha256": "283659a21215380cb53b958f807c1c50832aff92a4fb98b1efc0e44e1d580940",
       "predecessorGitBlob": "d09d09e147d6974e0dd81bde6b78c94460b836aa",
       "predecessorSha256": "fb098664cd6a2b8cba0b038924a4d1e3273096741d4b194c84308d670ad9098a",
-      "reviewReason": null
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "hardhat.config.mjs": {
       "mode": "100644",
@@ -5355,6 +5383,13 @@
       "predecessorGitBlob": "8186102f1c945c0fdfaa66f1d5f90900e3da72e2",
       "predecessorSha256": "6cf804b83e7ce6557c8ccc125b8aabefc2802f114fa3c4e58132ce8f568bc2b8",
       "reviewReason": null
+    },
+    "hardhat/compiler-optimizer.cjs": {
+      "mode": "100644",
+      "sha256": "0dd637808f45b5bfb5552e7707a256bf1b74f0d284cfc88315459aff1c27d11b",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "hardhat/contracts": {
       "mode": "120000",
@@ -5428,10 +5463,10 @@
     },
     "hardhat/hardhat.config.js": {
       "mode": "100644",
-      "sha256": "3107bcfd3239cb05ef5580a368ec7b1b929e091b2caf3f15377733d3abfe6701",
+      "sha256": "03ba246b2b3cf2940fce4c0eb7a4860cb463833f5ba2624c651f707d4368374d",
       "predecessorGitBlob": "92075410b42a254136272a051b946d931cb21923",
       "predecessorSha256": "3107bcfd3239cb05ef5580a368ec7b1b929e091b2caf3f15377733d3abfe6701",
-      "reviewReason": null
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "hardhat/mainnet-fork.config.js": {
       "mode": "100644",
@@ -5589,10 +5624,10 @@
     },
     "hardhat/scripts/deploy-job-pages.cjs": {
       "mode": "100644",
-      "sha256": "27c4d98fd27db37b076819cd85b9c9f6dc964283bea84d1f7c442e028b83d0e2",
+      "sha256": "fb18fb07b1010a161a48567873343f6b72026c135530dac5eee45ad5b252a997",
       "predecessorGitBlob": "0240023fb59f35f1347b78072558d688b194c305",
       "predecessorSha256": "27c4d98fd27db37b076819cd85b9c9f6dc964283bea84d1f7c442e028b83d0e2",
-      "reviewReason": null
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "hardhat/scripts/deploy-job-pages.js": {
       "mode": "100644",
@@ -5617,10 +5652,10 @@
     },
     "hardhat/scripts/deploy.cjs": {
       "mode": "100644",
-      "sha256": "7e67f498eae0082e977ead1e59b723252746628fb698d0435d6d69098ee203cc",
+      "sha256": "db8fc22505669eab2c30170cb3dd6936cbcca94b19e418d46243411e312590f5",
       "predecessorGitBlob": "4fbd11bd0f6fe70bcddff2a321258adabd353152",
       "predecessorSha256": "7e67f498eae0082e977ead1e59b723252746628fb698d0435d6d69098ee203cc",
-      "reviewReason": null
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "hardhat/scripts/deploy.js": {
       "mode": "100644",
@@ -5785,10 +5820,10 @@
     },
     "hardhat/test/build-catalog.test.cjs": {
       "mode": "100644",
-      "sha256": "100189a52ef6857869af28995912903ce1f99e6502d1a4c50db1abc8562d7419",
+      "sha256": "375fe8521d047f371d2789add76afc2660972b2750ff7b5b46eee5b751dfb968",
       "predecessorGitBlob": "232d69655a4198366e7a8a073d0bc0d32b7a11d3",
       "predecessorSha256": "100189a52ef6857869af28995912903ce1f99e6502d1a4c50db1abc8562d7419",
-      "reviewReason": null
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "hardhat/test/canonical-state.test.cjs": {
       "mode": "100644",
@@ -5825,6 +5860,13 @@
       "predecessorSha256": "6d26651d4e9dba341d8d780568ed84fae11d2a9b10b02e4e8acf174c46446e79",
       "reviewReason": null
     },
+    "hardhat/test/compiler-knowledge-base.test.js": {
+      "mode": "100644",
+      "sha256": "311bb85b93c37b58434b092c6d2252bb564df8bf1b2629f608d62bbe5a2f7430",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+    },
     "hardhat/test/conventional-creator.test.cjs": {
       "mode": "100644",
       "sha256": "5aad375369be3e3283730033cde7cb6303a10f48b7e26738ece408410e5b473a",
@@ -5838,6 +5880,13 @@
       "predecessorGitBlob": null,
       "predecessorSha256": null,
       "reviewReason": "Bounded conventional profile functional regression coverage. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change."
+    },
+    "hardhat/test/core-preflight-rollover.test.cjs": {
+      "mode": "100644",
+      "sha256": "536a0445ab680996528b682a65faa55db165c7b29cc39f4211c1ce54dde882d4",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Regression tests for bounded fresh-observation retries, exhaustion, provider error spoofing, nonce/expiry rejection and cumulative transport budget."
     },
     "hardhat/test/core-session-docs.test.cjs": {
       "mode": "100644",
@@ -5897,10 +5946,10 @@
     },
     "hardhat/test/deployment-preflight.test.cjs": {
       "mode": "100644",
-      "sha256": "1b7ca2748fc4a1221ce74a6c9ddb117a4cc38521a7ac5d80d2a4ea38516252ed",
+      "sha256": "9d55cc9186b2fe6946915ef9932448aa1aed235d9d8529f88bcb96fd3527d947",
       "predecessorGitBlob": "4e7fae5faaf82571d7f954e50e8732b9ccea6124",
       "predecessorSha256": "1b7ca2748fc4a1221ce74a6c9ddb117a4cc38521a7ac5d80d2a4ea38516252ed",
-      "reviewReason": null
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "hardhat/test/deployment-readiness.test.cjs": {
       "mode": "100644",
@@ -5944,6 +5993,27 @@
       "predecessorSha256": "6024737696e29a8ed5c1d55279f26bb1edf135b6549648b137e0142621e8cf46",
       "reviewReason": null
     },
+    "hardhat/test/fixtures/SOL-2026-7/reassigned_reference_memory_alias.sol": {
+      "mode": "100644",
+      "sha256": "82369d17ed208cb18b6fe0734e1c66c11fdcf98ea280984cbdee90684ff7a744",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+    },
+    "hardhat/test/fixtures/SOL-2026-7/reassigned_reference_memory_alias_from_storage_minimal.sol": {
+      "mode": "100644",
+      "sha256": "8c5a30c12efbcf7bcf25103ced1e1c41647f70e5e9f70ad1f3ea124b9e614fb4",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+    },
+    "hardhat/test/fixtures/SOL-2026-7/reassigned_reference_storage_alias.sol": {
+      "mode": "100644",
+      "sha256": "900cf3a7b0f19e5ee5b8171a011bc871c6f7dc6038cd7bfe11f74bee9553edbf",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
+    },
     "hardhat/test/fixtures/commissioning/synthetic-project.cjs": {
       "mode": "100644",
       "sha256": "cee56d1fa3eea3c9ba34490f63d291bce8fd732399fb495adb2bff21c150736d",
@@ -5981,10 +6051,10 @@
     },
     "hardhat/test/job-pages-deployment.test.cjs": {
       "mode": "100644",
-      "sha256": "9736d3e22a8a1d8343e6b26e147f39f0f05aaeab934d158f4dbb54dfc1869da9",
+      "sha256": "29c6df0330dccd495d857c2eb14416de4c14a0da6e85c208a467c3f273446aef",
       "predecessorGitBlob": "6439366238e03c0b287af7fd20ba2f86cca48d2c",
       "predecessorSha256": "9736d3e22a8a1d8343e6b26e147f39f0f05aaeab934d158f4dbb54dfc1869da9",
-      "reviewReason": null
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "hardhat/test/mainnet-cutover.test.js": {
       "mode": "100644",
@@ -6863,10 +6933,10 @@
     },
     "schemas/explicit-governor-source-v1.schema.json": {
       "mode": "100644",
-      "sha256": "ee0c0146692155389016ddcb167d9a3fc7abc53c2c4f1e463cd433ab5567db7d",
+      "sha256": "29d1db02a3382f6c7aeda24d02f1b1bd5bfad72cd09f2ee90e7876b7583b7914",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add strict source-profile field, path and claim schema. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion. Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change. Bound full read-only preflight retries to five locally identified block rollovers; every observation and guard repeats, cumulative transport budgets remain unchanged, and all other failures stop. No signing/submission retry, contract change or qualification acceptance is inferred."
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "scripts/advisor/sample_job_state.json": {
       "mode": "100644",
@@ -7472,10 +7542,10 @@
     },
     "scripts/release/check-explicit-governor-boundaries.py": {
       "mode": "100644",
-      "sha256": "0dfa6cf11c22e12637496ebf7087bddea5d1dca51d5617a72d750928d98f702c",
+      "sha256": "55a77289fd08af355c8987575c39560e6f5b83fe536d906b8cf75a68e9938dbe",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion. Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change. Bound full read-only preflight retries to five locally identified block rollovers; every observation and guard repeats, cumulative transport budgets remain unchanged, and all other failures stop. No signing/submission retry, contract change or qualification acceptance is inferred."
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "scripts/release/check-source-boundaries.py": {
       "mode": "100644",
@@ -7535,10 +7605,10 @@
     },
     "scripts/release/test-source-boundary-dispatch.py": {
       "mode": "100644",
-      "sha256": "c364728999161bc6878be5bba12c7a1de15dd921f7110bfc129b4b79e17954ff",
+      "sha256": "dadc9c0f6410c75577b6d70105dced59c6350d260f64c150a649eb88a313ce74",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion. Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives. Bound full read-only preflight retries to five locally identified block rollovers; every observation and guard repeats, cumulative transport budgets remain unchanged, and all other failures stop. No signing/submission retry, contract change or qualification acceptance is inferred."
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "scripts/release/verify-genesis-ui.mjs": {
       "mode": "100644",
@@ -7567,6 +7637,13 @@
       "predecessorGitBlob": "92d336c931de8fddac65be073db1ee1430a5c5ea",
       "predecessorSha256": "85bc9596f42bf527541cb5650867309d857b8020d8312b44c689b352c3469171",
       "reviewReason": null
+    },
+    "scripts/security/check-forge-optimizer.cjs": {
+      "mode": "100644",
+      "sha256": "3af3e0c39c59c3eb8cdd89d71f3fc6e7c546069f3b8a931954cfea8fa0648dac",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "scripts/security/openzeppelin-compiler-patches.json": {
       "mode": "100644",
@@ -7693,6 +7770,13 @@
       "predecessorGitBlob": "2fd62b5e2e08381ce9f85f54f7a79bbafc8d61b2",
       "predecessorSha256": "b97a511ba9965c64efc2019b8fee6a640803638450527548c007197b1faf577f",
       "reviewReason": null
+    },
+    "scripts/security/test-forge-optimizer.cjs": {
+      "mode": "100644",
+      "sha256": "0d4ff79992ce857136180604f13ec202d407e4147bd12db1473e13e9bf8b9f56",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Finite SOL-2026-7 optimizer transition and exact compiler regression/identity checks; no historical acceptance promoted."
     },
     "scripts/security/test-slither-deterministic.py": {
       "mode": "100644",
@@ -10157,45 +10241,49 @@
       "predecessorGitBlob": "a83cad29dacccb92ebcafc4e3870a7ddee5125f7",
       "predecessorSha256": "305c529cb69c4336ca54ce87cac3c637606563ee846f63988c5e3a8bb313304c",
       "reviewReason": null
-    },
-    "hardhat/test/core-preflight-rollover.test.cjs": {
-      "mode": "100644",
-      "sha256": "536a0445ab680996528b682a65faa55db165c7b29cc39f4211c1ce54dde882d4",
-      "predecessorGitBlob": null,
-      "predecessorSha256": null,
-      "reviewReason": "Regression tests for bounded fresh-observation retries, exhaustion, provider error spoofing, nonce/expiry rejection and cumulative transport budget."
     }
   },
   "reviewedInputChanges": [
     ".github/workflows/mainnet-fork.yml",
     ".github/workflows/security-verification.yml",
+    "config/compiler-optimizer-transition-v1.json",
     "docs/DEPLOYMENT_CONFIGURATION.md",
     "docs/REPO_MAP.md",
     "docs/deployment/core-external-signing.md",
     "docs/deployment/direct-origination-profile.md",
     "docs/deployment/ubuntu-ephemeral-creator.md",
     "docs/qualification/CORE_SESSION_NATIVE.md",
+    "docs/qualification/expected-mainnet-cutover-sol-2026-7-provenance.json",
+    "docs/qualification/expected-mainnet-cutover-sol-2026-7.json",
     "docs/qualification/history/expected-mainnet-cutover-v1.18.0.json",
     "docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json",
     "docs/qualification/history/next-deployment-contract-changes-v1.18.0.json",
     "docs/qualification/mainnet-cutover-f274c6be-provenance.json",
     "docs/security/pr1586-e1ed502-evidence.json",
     "docs/security/pr1586-e1ed502-review.md",
+    "docs/security/sol-2026-7-workaround.md",
     "forge-test/harness/AGIJobManagerHarness.sol",
     "forge-test/unit/AGIJobManagerSecurityVerification.t.sol",
     "forge-test/unit/AGIJobManagerV091Security.t.sol",
+    "foundry.toml",
     "hardhat.creator.config.mjs",
     "hardhat/.env.example",
+    "hardhat/compiler-optimizer.cjs",
+    "hardhat/hardhat.config.js",
     "hardhat/scripts/actor-policy.cjs",
     "hardhat/scripts/core-creation-plan.cjs",
     "hardhat/scripts/core-creation-verifier.cjs",
     "hardhat/scripts/core-session.cjs",
     "hardhat/scripts/deploy-core-tty.cjs",
     "hardhat/scripts/deploy-core-tty.js",
+    "hardhat/scripts/deploy-job-pages.cjs",
+    "hardhat/scripts/deploy.cjs",
     "hardhat/scripts/deployment-session.cjs",
     "hardhat/scripts/ephemeral-key.cjs",
     "hardhat/scripts/export-verification-package.cjs",
     "hardhat/scripts/operator-paths.cjs",
+    "hardhat/test/build-catalog.test.cjs",
+    "hardhat/test/compiler-knowledge-base.test.js",
     "hardhat/test/conventional-creator.test.cjs",
     "hardhat/test/conventional-creator.test.js",
     "hardhat/test/core-preflight-rollover.test.cjs",
@@ -10205,10 +10293,15 @@
     "hardhat/test/core-session.test.js",
     "hardhat/test/deploy-core-tty.test.cjs",
     "hardhat/test/deploy-core-tty.test.js",
+    "hardhat/test/deployment-preflight.test.cjs",
     "hardhat/test/direct-origin-policy.test.cjs",
     "hardhat/test/direct-origin-trace.test.js",
     "hardhat/test/ephemeral-key.test.cjs",
+    "hardhat/test/fixtures/SOL-2026-7/reassigned_reference_memory_alias.sol",
+    "hardhat/test/fixtures/SOL-2026-7/reassigned_reference_memory_alias_from_storage_minimal.sol",
+    "hardhat/test/fixtures/SOL-2026-7/reassigned_reference_storage_alias.sol",
     "hardhat/test/helpers/native-core-rpc.cjs",
+    "hardhat/test/job-pages-deployment.test.cjs",
     "hardhat/test/native-core-session.test.cjs",
     "hardhat/test/operator-private-state.regression.test.cjs",
     "hardhat/test/source-qualification.test.cjs",
@@ -10219,9 +10312,11 @@
     "scripts/release/check-explicit-governor-boundaries.py",
     "scripts/release/check-source-boundaries.py",
     "scripts/release/test-source-boundary-dispatch.py",
+    "scripts/security/check-forge-optimizer.cjs",
     "scripts/security/run-slither-deterministic.py",
     "scripts/security/run-slither-extended.sh",
     "scripts/security/slither-reviewed-findings-pr1586-e1ed502.json",
+    "scripts/security/test-forge-optimizer.cjs",
     "scripts/security/test-slither-deterministic.py",
     "scripts/security/test-slither-review.py",
     "scripts/security/verify-slither-review.py"
@@ -12466,5 +12561,9 @@
     "governorConfigurationAndActivation": "NOT_PERFORMED",
     "independentAudit": "OMITTED_OWNER_ACCEPTED",
     "sepolia": "OMITTED_OWNER_ACCEPTED"
+  },
+  "compilerTransition": {
+    "path": "config/compiler-optimizer-transition-v1.json",
+    "sha256": "cea91bbdf10799d0045e763142a33d0f01010743564b17c187c35175cdabeab5"
   }
 }

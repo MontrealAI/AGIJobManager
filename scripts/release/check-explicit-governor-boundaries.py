@@ -30,6 +30,8 @@ TESTS = 'scripts/release/test-source-boundary-dispatch.py'
 LEGACY = 'scripts/release/check-v114-boundaries.py'
 INVENTORY = 'config/next-deployment-contract-changes.json'
 REPAIRS = 'config/v114-dependency-repairs.json'
+COMPILER_TRANSITION = 'config/compiler-optimizer-transition-v1.json'
+COMPILER_TRANSITION_SHA = 'cea91bbdf10799d0045e763142a33d0f01010743564b17c187c35175cdabeab5'
 LEGACY_SHA = 'b0b5f608d08866f5b9f66a6d0381a34fc9c1851282113ddf4de2efb4ead54807'
 INVENTORY_SHA = '93f50d12f034ab8bdf6f951c48f71c3dd010fa82ab485d2d9f61c21f97d587d5'
 CONTRACT_CHANGES = {
@@ -66,6 +68,21 @@ ADDITIVE_HISTORY = {
 # A finite review slice, not a mutable baseline or blanket directory exclusion.
 REVIEW_PATHS = {
     MANIFEST, SCHEMA, VERIFIER, DISPATCHER, TESTS,
+    'hardhat/test/job-pages-deployment.test.cjs',
+    'hardhat/test/deployment-preflight.test.cjs',
+    'hardhat/test/build-catalog.test.cjs',
+    COMPILER_TRANSITION, 'hardhat/compiler-optimizer.cjs',
+    'scripts/security/check-forge-optimizer.cjs',
+    'scripts/security/test-forge-optimizer.cjs',
+    'hardhat/hardhat.config.js', 'foundry.toml',
+    'hardhat/scripts/deploy.cjs', 'hardhat/scripts/deploy-job-pages.cjs',
+    'hardhat/test/compiler-knowledge-base.test.js',
+    'hardhat/test/fixtures/SOL-2026-7/reassigned_reference_memory_alias.sol',
+    'hardhat/test/fixtures/SOL-2026-7/reassigned_reference_memory_alias_from_storage_minimal.sol',
+    'hardhat/test/fixtures/SOL-2026-7/reassigned_reference_storage_alias.sol',
+    'docs/security/sol-2026-7-workaround.md',
+    'docs/qualification/expected-mainnet-cutover-sol-2026-7.json',
+    'docs/qualification/expected-mainnet-cutover-sol-2026-7-provenance.json',
     # Exact current-source fork comparison/provenance slice; no history exclusion.
     '.github/workflows/mainnet-fork.yml',
     'docs/qualification/mainnet-cutover-f274c6be-provenance.json',
@@ -357,7 +374,41 @@ def validate_schema(value, spec, root=None, location='$'):
             require(re.search(spec['pattern'], value) is not None, 'Schema pattern mismatch: ' + location)
 
 
-def dependency_boundaries(root, objects):
+def compiler_transition(root, baseline, blobs):
+    """One exact reviewed optimizer transition; never a general compiler waiver."""
+    mode, data = raw_file(root, COMPILER_TRANSITION)
+    require(mode == '100644' and sha(data) == COMPILER_TRANSITION_SHA,
+            'Compiler transition record differs from independently reviewed bytes')
+    review = strict_json(data)
+    require(review['schema'] == 'agijobmanager/compiler-optimizer-transition/v1' and
+            review['historicalBaseline'] == BASE and
+            set(review['configs']) == {'hardhat/hardhat.config.js', 'foundry.toml'},
+            'Compiler transition scope differs')
+    for name in COMPILER_CONFIGS:
+        if name in review['configs']:
+            item = review['configs'][name]
+            require(name in baseline and item['beforeGitBlob'] == baseline[name]['gitBlob'] and
+                    item['beforeSha256'] == sha(blobs[baseline[name]['gitBlob']]) and
+                    item['mode'] == baseline[name]['mode'],
+                    'Compiler transition historical identity differs: ' + name)
+            current_mode, current = raw_file(root, name)
+            require(current_mode == item['mode'] and sha(current) == item['afterSha256'],
+                    'Compiler transition candidate identity differs: ' + name)
+        elif name in baseline:
+            require(raw_file(root, name) == (baseline[name]['mode'], blobs[baseline[name]['gitBlob']]),
+                    'Compiler configuration changed: ' + name)
+        else:
+            require(not (root / name).exists(), 'Previously absent compiler configuration appeared: ' + name)
+    require(set(review['helpers']) == {'hardhat/compiler-optimizer.cjs'},
+            'Compiler transition helper scope differs')
+    for name, item in review['helpers'].items():
+        current_mode, current = raw_file(root, name)
+        require(current_mode == item['mode'] and sha(current) == item['sha256'],
+                'Compiler optimizer helper differs: ' + name)
+    return review
+
+
+def dependency_boundaries(root, objects, *, reviewed_compiler_transition=False):
     """Repeat every inherited invariant, never rewrite inputs to run the old checker."""
     baseline = objects.tree(BASE)
     wanted = {n: baseline[n] for d in WORKSPACES
@@ -414,12 +465,15 @@ def dependency_boundaries(root, objects):
                 lock['packages'].pop(name)
         require(lock == prior, 'Dependency resolution changed: ' + directory)
     require(read('config/usdc-deployment.json')['version'] == version, 'Deployment release version differs')
-    for name in COMPILER_CONFIGS:
-        if name in baseline:
-            require(raw_file(root, name) == (baseline[name]['mode'], blobs[baseline[name]['gitBlob']]),
-                    'Compiler configuration changed: ' + name)
-        else:
-            require(not (root / name).exists(), 'Previously absent compiler configuration appeared: ' + name)
+    if reviewed_compiler_transition:
+        compiler_transition(root, baseline, blobs)
+    else:
+        for name in COMPILER_CONFIGS:
+            if name in baseline:
+                require(raw_file(root, name) == (baseline[name]['mode'], blobs[baseline[name]['gitBlob']]),
+                        'Compiler configuration changed: ' + name)
+            else:
+                require(not (root / name).exists(), 'Previously absent compiler configuration appeared: ' + name)
     historical = objects.blobs({'ens': baseline['contracts/utils/ENSOwnership.sol']})
     require(raw_file(root, 'test/fixtures/ENSOwnership.pre-revocation.sol.txt')[1] ==
             historical[baseline['contracts/utils/ENSOwnership.sol']['gitBlob']],
@@ -639,7 +693,9 @@ def verify_explicit(args):
         'commit': PREDECESSOR, 'tree': PREDECESSOR_TREE}, 'Wrong source baseline/predecessor')
     require(manifest['releaseIdentity'] == {'status': 'unselected', 'version': None}, 'Release selection is outside slice A')
     require(manifest['claims'] == CLAIMS, 'Claim scope or omission state changed')
-    dependency_boundaries(root, objects)
+    require(manifest['compilerTransition'] == {'path': COMPILER_TRANSITION, 'sha256': COMPILER_TRANSITION_SHA},
+            'Compiler transition manifest identity differs')
+    dependency_boundaries(root, objects, reviewed_compiler_transition=True)
     observed = source_inventory(root, objects, manifest, args.mode)
     contract_boundaries(root, objects, manifest)
     observed['compilerSourceUnits'] = compiler_closure(root, manifest, args.dependency_root or str((root / 'node_modules').resolve()))

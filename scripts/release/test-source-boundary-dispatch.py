@@ -176,7 +176,7 @@ class SourceBoundaryDispatch(unittest.TestCase):
         result = subprocess.run([sys.executable, str(self.current / M['LEGACY'])],
             cwd=self.current, env=M['git_env'](), capture_output=True, text=True)
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn('reviewed source inventory', result.stderr)
+        self.assertIn('Compiler configuration changed', result.stderr)
 
     def test_04_dependency_policy_mutation_parity(self):
         """Each mutation must fail both original executable and new repeated invariants."""
@@ -582,7 +582,9 @@ class SourceBoundaryDispatch(unittest.TestCase):
         expected_sha = '34d8d737fd540f83317551bdf3e190c0c8d72d7e7aaef60303d0234f4bbfb0b1'
         earlier_sha = '36bc8cfb2d3d8e15b04372ea1fbed3fe407a921c0d70b525d673be4447f63746'
         workflow_text = (self.current / workflow).read_text()
-        command = 'diff -u ' + expected + ' build/qualification/mainnet-cutover.json'
+        current_expected = 'docs/qualification/expected-mainnet-cutover-sol-2026-7.json'
+        current_provenance = 'docs/qualification/expected-mainnet-cutover-sol-2026-7-provenance.json'
+        command = 'diff -u ' + current_expected + ' build/qualification/mainnet-cutover.json'
         self.assertEqual([line.strip() for line in workflow_text.splitlines()
                           if 'run: diff ' in line], ['run: ' + command])
         self.assertEqual(workflow_text.count('run: npm run test:mainnet-fork'), 1)
@@ -592,8 +594,17 @@ class SourceBoundaryDispatch(unittest.TestCase):
         self.assertEqual(M['sha']((self.current / historical).read_bytes()), earlier_sha)
         report = M['strict_json'](raw)
         self.assertEqual(len(report['sourceSha256']), 76)
+        # The retained report is historical after this explicit compiler transition.
+        # Check its original source, and separately require the reviewed new config.
+        historical_tree = self.objects.tree('f274c6be8ff982deed8edbc1003e24fa45fc07ad')
+        historical_blobs = self.objects.blobs({name: historical_tree[name] for name in report['sourceSha256']})
+        changed = []
         for name, digest in report['sourceSha256'].items():
-            self.assertEqual(M['sha']((self.current / name).read_bytes()), digest, name)
+            self.assertEqual(M['sha'](historical_blobs[historical_tree[name]['gitBlob']]), digest, name)
+            if M['sha']((self.current / name).read_bytes()) != digest:
+                changed.append(name)
+        self.assertEqual(changed, ['hardhat/hardhat.config.js'])
+        M['dependency_boundaries'](self.current, self.objects, reviewed_compiler_transition=True)
         self.assertEqual(report['passed'], 23)
         self.assertEqual(len(report['assertions']), 23)
         self.assertEqual(report['publicTransactionsBroadcast'], 0)
@@ -618,31 +629,46 @@ class SourceBoundaryDispatch(unittest.TestCase):
         }
         for key, value in required.items():
             self.assertEqual(receipt[key], value, key)
+        # New candidate expectations are explicitly not execution receipts.
+        current_raw = (self.current / current_expected).read_bytes()
+        current_report = M['strict_json'](current_raw)
+        anticipated = copy.deepcopy(report)
+        anticipated['sourceSha256']['hardhat/hardhat.config.js'] = M['sha']((self.current / 'hardhat/hardhat.config.js').read_bytes())
+        self.assertEqual(current_report, anticipated)
+        expectation = M['strict_json']((self.current / current_provenance).read_bytes())
+        self.assertEqual(expectation['status'], 'expected-output-only')
+        self.assertIs(expectation['executed'], False)
+        self.assertEqual(expectation['expectedReport'], current_expected)
+        self.assertEqual(expectation['expectedReportSha256'], M['sha'](current_raw))
+        self.assertEqual(expectation['historicalReport'], {'path': expected, 'sha256': expected_sha})
+        self.assertEqual(expectation['changedSourceInputs'], {'hardhat/hardhat.config.js': {'before': report['sourceSha256']['hardhat/hardhat.config.js'], 'after': anticipated['sourceSha256']['hardhat/hardhat.config.js']}})
+        self.assertEqual(expectation['compilerTransition'], {'path': M['COMPILER_TRANSITION'], 'sha256': M['COMPILER_TRANSITION_SHA']})
         # Execute the same full-byte comparator as CI, without a fork/provider.
         with tempfile.TemporaryDirectory(dir=self.directory) as temp:
             executed = pathlib.Path(temp) / 'executed.json'
             def compared(data):
                 executed.write_bytes(data)
-                return subprocess.run(['diff', '-u', str(self.current / expected), str(executed)],
+                return subprocess.run(['diff', '-u', str(self.current / current_expected), str(executed)],
                     stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=False).returncode
-            self.assertEqual(compared(raw), 0)
+            self.assertEqual(compared(current_raw), 0)
+            self.assertEqual(compared(raw), 1)
             mutations = []
-            changed = copy.deepcopy(report)
+            changed = copy.deepcopy(current_report)
             changed['sourceSha256'][next(iter(changed['sourceSha256']))] = '0' * 64
             mutations.append(('source-hash', changed))
             for key, value in (('passed', 22), ('publicTransactionsBroadcast', 1),
                                ('productionActivationApproved', True), ('fixtureWallets', False)):
-                changed = copy.deepcopy(report); changed[key] = value
+                changed = copy.deepcopy(current_report); changed[key] = value
                 mutations.append((key, changed))
-            changed = copy.deepcopy(report); changed['assertions'].pop()
+            changed = copy.deepcopy(current_report); changed['assertions'].pop()
             mutations.append(('removed-assertion', changed))
-            changed = copy.deepcopy(report); changed['unreviewedField'] = 'extra'
+            changed = copy.deepcopy(current_report); changed['unreviewedField'] = 'extra'
             mutations.append(('unknown-field', changed))
             for label, changed in mutations:
                 with self.subTest(report_drift=label):
                     self.assertEqual(compared((json.dumps(changed, indent=2) + '\n').encode()), 1)
         schema = M['strict_json']((self.current / M['SCHEMA']).read_bytes())
-        for name in (workflow, provenance):
+        for name in (workflow, provenance, current_expected, current_provenance):
             self.assertIn(name, M['REVIEW_PATHS'])
             self.assertIn(name, schema['properties']['reviewedInputChanges']['items']['enum'])
             with self.subTest(source_input=name):
@@ -680,6 +706,52 @@ class SourceBoundaryDispatch(unittest.TestCase):
                 omitted = copy.deepcopy(self.manifest); omitted['inputs'].pop(name)
                 with self.assertRaises(M['BoundaryError']):
                     M['source_inventory'](self.current, self.objects, omitted, 'staged')
+
+
+    def test_compiler_transition_is_finite_and_fail_closed(self):
+        check = lambda: M['dependency_boundaries'](self.current, self.objects, reviewed_compiler_transition=True)
+        check()
+        def rejected():
+            with self.assertRaises((M['BoundaryError'], FileNotFoundError)):
+                check()
+        helper = 'hardhat/compiler-optimizer.cjs'
+        for old, new in ((b"/[LE]/g", b"/[E]/g"), (b"/[LE]/g", b"/[L]/g"),
+                         (b'fDnTOcmuO', b'fDnTOcmuOL'), (b'runs:40', b'runs:41')):
+            with self.subTest(optimizer_mutation=new):
+                original = (self.current / helper).read_bytes()
+                self.assertIn(old, original)
+                self.mutate(self.current, helper, lambda data, a=old, b=new: data.replace(a,b), rejected)
+        for name, old, new in (
+            ('hardhat/hardhat.config.js', b"viaIR: true", b"viaIR: false"),
+            ('hardhat/hardhat.config.js', b"shanghai", b"cancun"),
+            ('foundry.toml', b'optimizer_runs = 40', b'optimizer_runs = 41'),
+            ('hardhat.config.mjs', b'export', b'// export')):
+            with self.subTest(config=name, change=new):
+                self.assertIn(old, (self.current / name).read_bytes())
+                self.mutate(self.current, name, lambda data,a=old,b=new:data.replace(a,b), rejected)
+        record = M['COMPILER_TRANSITION']
+        for field in ('schema', 'historicalBaseline', 'configs', 'helpers', 'settings', 'unknownPolicy'):
+            with self.subTest(record_field=field):
+                self.mutate(self.current, record, lambda data,k=field:
+                    (json.dumps({**json.loads(data), k: 'unreviewed'})+'\n').encode(), rejected)
+        for name in (helper, record):
+            path = self.current / name; original = path.read_bytes()
+            path.unlink()
+            try:
+                rejected()
+            finally:
+                path.write_bytes(original)
+        # Retain the historical no-change compiler rule for every other file.
+        path = self.current / 'remappings.txt'
+        if path.exists():
+            self.mutate(self.current, 'remappings.txt', lambda data:data+b'\n', rejected)
+        else:
+            path.write_text('unreviewed')
+            try:
+                rejected()
+            finally:
+                path.unlink()
+        check()
 
 
 if __name__ == '__main__':

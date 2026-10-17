@@ -79,7 +79,7 @@ async function checkManager(reader, config) {
   return { owner,pendingOwner:pending,intakePaused:paused,ensJobPages:helper,useEnsJobTokenURI:enabled };
 }
 function qualifiedArtifact(artifact, buildInfo, fqn = FQN, constructorTypes = ['string','string','address']) {
-  const expected = { version:'0.8.37',optimizer:{enabled:true,runs:40},evmVersion:'shanghai',viaIR:true,metadata:{bytecodeHash:'none'},debug:{revertStrings:'strip'} };
+  const expected = { version:'0.8.37',optimizer:require('../compiler-optimizer.cjs').optimizer,evmVersion:'shanghai',viaIR:true,metadata:{bytecodeHash:'none'},debug:{revertStrings:'strip'} };
   const s = buildInfo?.input?.settings;
   if (!s || encode({version:buildInfo.solcVersion,optimizer:s.optimizer,evmVersion:s.evmVersion,viaIR:s.viaIR || false,metadata:s.metadata,debug:s.debug}) !== encode(expected)) throw Error('Router compiler profile differs from qualified source.');
   const source = fqn.split(':')[0], contractName = fqn.split(':')[1], inputSource = artifact.inputSourceName || artifact.sourceName;

@@ -19,7 +19,7 @@ function fixture(t, { legacy = false, wrappers = false, compilerPrefix = true } 
   const source = { commit: 'a'.repeat(40), tree: 'b'.repeat(40) };
   const revision = { ...source, rootLockSha256: 'c'.repeat(64), hardhatLockSha256: 'd'.repeat(64) };
   const compiler = { version: '0.8.37', longVersion: '0.8.37+commit.f401782d' };
-  const input = { language: 'Solidity', sources: {}, settings: { optimizer: { enabled: true, runs: 40 }, viaIR: true, evmVersion: 'shanghai', metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } };
+  const input = { language: 'Solidity', sources: {}, settings: { optimizer: structuredClone(require('../compiler-optimizer.cjs').optimizer), viaIR: true, evmVersion: 'shanghai', metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } };
   const output = { contracts: {} }, artifacts = {}, sources = {}, sourceMap = {}, filenames = {};
   function write(filename, value) { fs.writeFileSync(path.join(directory, filename), typeof value === 'string' ? value : JSON.stringify(value)); return { path: filename, sha256: C.sha256(fs.readFileSync(path.join(directory, filename))) }; }
   for (const name of C.CORE_NAMES) {

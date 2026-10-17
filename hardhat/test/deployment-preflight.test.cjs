@@ -139,7 +139,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
     'function additionalValidators(address) view returns(bool)','function ensJobPages() view returns(address)',
     'function useEnsJobTokenURI() view returns(bool)',
     {type:'constructor',inputs:['address','string','address[2]','bytes32[4]','bytes32[2]','address[2]','address'].map(type=>({type})),stateMutability:'nonpayable'}];
-  const input = { settings: { optimizer: { enabled: true, runs: 40 }, evmVersion: 'shanghai', viaIR: true,
+  const input = { settings: { optimizer: structuredClone(require('../compiler-optimizer.cjs').optimizer), evmVersion: 'shanghai', viaIR: true,
     metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } };
   const buildInfo = { solcVersion: '0.8.37', solcLongVersion: '0.8.37+commit.f401782d', input, output: { contracts: {} } };
   const mockArtifacts = {
@@ -387,7 +387,7 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
       return Object.fromEntries(Object.entries(managerValues).map(([key,value])=>[key,async()=>value]));
     },getContractAt:async(_abi,address)=>({getAddress:async()=>address,owner:async()=>rootOwner,resolver:async()=>rootResolver}),getContractFactory:async()=>factory};
   const artifact={sourceName:'contracts/ens/ENSJobPages.sol',contractName:'ENSJobPages',abi,bytecode:creationData,deployedBytecode:runtimeCode};
-  const buildInfo={solcVersion:compilerVersion,solcLongVersion:'fixture',input:{language:'Solidity',sources:{[artifact.sourceName]:{content:'// reviewed fixture'}},settings:{optimizer:{enabled:true,runs:40},evmVersion:'shanghai',viaIR:true,metadata:{bytecodeHash:'none'},debug:{revertStrings:'strip'}}},output:{contracts:{[artifact.sourceName]:{ENSJobPages:{abi,evm:{bytecode:{object:artifactMismatch?'6001':creationData.slice(2)},deployedBytecode:{object:runtimeCode.slice(2)}}}}}}};
+  const buildInfo={solcVersion:compilerVersion,solcLongVersion:'fixture',input:{language:'Solidity',sources:{[artifact.sourceName]:{content:'// reviewed fixture'}},settings:{optimizer: structuredClone(require('../compiler-optimizer.cjs').optimizer),evmVersion:'shanghai',viaIR:true,metadata:{bytecodeHash:'none'},debug:{revertStrings:'strip'}}},output:{contracts:{[artifact.sourceName]:{ENSJobPages:{abi,evm:{bytecode:{object:artifactMismatch?'6001':creationData.slice(2)},deployedBytecode:{object:runtimeCode.slice(2)}}}}}}};
   const hardhat={ethers:mockEthers,network:{name:networkName},artifacts:{readArtifact:async()=>artifact,getBuildInfo:async()=>missingBuildInfo?undefined:buildInfo},config:{verify:{etherscan:{enabled:verifierEnabled,apiKey:'test-key'}}},run:async()=>{actions.push('verify');if(verificationError)throw typeof verificationError==='string'?new Error(verificationError):verificationError;return verificationResult;}};
   const mockRequire=name=>name==='./runtime.cjs'?{getRuntime:async()=>hardhat}:name.startsWith('./')?require(path.join(__dirname,'../scripts',name)):name==='../../scripts/lib/usdc'?require('../../scripts/lib/usdc'):require(name);
   const module={exports:{}};

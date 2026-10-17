@@ -12,7 +12,7 @@ function fixture(change={}){
  const txCreator=change.legacy?owner:creator;
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'router-check-')),calls=[],address=E.getCreateAddress({from:txCreator,nonce:2});
  const c=config(),artifact={contractName:'AGIJobPages',sourceName:'contracts/periphery/AGIJobPages.sol',abi:fixtureAbi,bytecode:'0x6000',deployedBytecode:'0x6001',linkReferences:{}};
- const buildInfo={solcVersion:'0.8.37',solcLongVersion:'0.8.37+commit.9e61f92b',input:{sources:{[artifact.sourceName]:{content:'fixture only'}},settings:{optimizer:{enabled:true,runs:40},evmVersion:'shanghai',viaIR:true,metadata:{bytecodeHash:'none'},debug:{revertStrings:'strip'}}},output:{contracts:{[artifact.sourceName]:{AGIJobPages:{abi:fixtureAbi,evm:{bytecode:{object:'6000'},deployedBytecode:{object:'6001'}}}}}}};
+ const buildInfo={solcVersion:'0.8.37',solcLongVersion:'0.8.37+commit.9e61f92b',input:{sources:{[artifact.sourceName]:{content:'fixture only'}},settings:{optimizer: structuredClone(require('../compiler-optimizer.cjs').optimizer),evmVersion:'shanghai',viaIR:true,metadata:{bytecodeHash:'none'},debug:{revertStrings:'strip'}}},output:{contracts:{[artifact.sourceName]:{AGIJobPages:{abi:fixtureAbi,evm:{bytecode:{object:'6000'},deployedBytecode:{object:'6001'}}}}}}};
  if(change.legacy){c.schema='reviewed-job-pages-v1';delete c.creator;delete c.transactionMode;}
  const args=[c.baseMetadataURI,c.externalUrlBase,...(change.legacy?[]:[c.owner])];
  c.buildDigest=qualifiedArtifact(artifact,buildInfo,FQN,change.legacy?['string','string']:['string','string','address']);

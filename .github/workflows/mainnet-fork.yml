@@ -48,7 +48,7 @@ jobs:
           CUTOVER_REPORT: ../build/qualification/mainnet-cutover.json
       - name: Match the committed qualification to the executed source and observations
         # Require a fresh executed report; matching an archived expectation does not relabel its older run.
-        run: diff -u docs/qualification/history/mainnet-cutover-3c974ad3-compatibility.json build/qualification/mainnet-cutover.json
+        run: diff -u docs/qualification/expected-mainnet-cutover-sol-2026-7.json build/qualification/mainnet-cutover.json
       - name: Preserve source-bound cutover evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

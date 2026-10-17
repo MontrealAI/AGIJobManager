@@ -16,7 +16,7 @@ const DEFAULT_CONFIRMATIONS = 3;
 
 const COMPILER_SETTINGS = {
   version: '0.8.37',
-  optimizer: { enabled: true, runs: 40 },
+  optimizer: require('../compiler-optimizer.cjs').optimizer,
   evmVersion: 'shanghai',
   viaIR: true,
   metadata: { bytecodeHash: 'none' },

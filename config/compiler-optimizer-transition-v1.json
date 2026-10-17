@@ -1,0 +1,57 @@
+{
+  "schema": "agijobmanager/compiler-optimizer-transition/v1",
+  "historicalBaseline": "191cf3590e5cdc08df1bb0af500ee28a91c8b010",
+  "priorSource": {
+    "commit": "c174b0552cf50ed13e3b98d74176544d45b4d200",
+    "tree": "f69686df0bb78ff92c35dea6e884ab69ea38cae6"
+  },
+  "compiler": "0.8.37+commit.f401782d",
+  "issue": "SOL-2026-7",
+  "scope": "Exact optimizer-pass removal only; source identity is not native, deployment, security or release acceptance. Existing deployment artifacts and historical evidence remain unchanged.",
+  "upstreamDefaultSource": "https://github.com/argotorg/solidity/blob/v0.8.37/libsolidity/interface/OptimiserSettings.h",
+  "defaultSteps": "dfDvulfnTUtnIfxa[r]EscLMVcul[j]Trpeulxa[r]cLvifMCTUca[r]LSsTFOtfDnca[r]IulcscCTUtvifMx[scCTUt]TOntnfDIulvifMjmul[jul]VcTOculjmul",
+  "removedPasses": [
+    "L",
+    "E"
+  ],
+  "cleanupSteps": "fDnTOcmuO",
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 40,
+      "details": {
+        "yulDetails": {
+          "optimizerSteps": "dfDvulfnTUtnIfxa[r]scMVcul[j]Trpeulxa[r]cvifMCTUca[r]SsTFOtfDnca[r]IulcscCTUtvifMx[scCTUt]TOntnfDIulvifMjmul[jul]VcTOculjmul:fDnTOcmuO"
+        }
+      }
+    },
+    "viaIR": true,
+    "evmVersion": "shanghai",
+    "metadata": {
+      "bytecodeHash": "none"
+    },
+    "debug": {
+      "revertStrings": "strip"
+    }
+  },
+  "configs": {
+    "hardhat/hardhat.config.js": {
+      "mode": "100644",
+      "beforeGitBlob": "92075410b42a254136272a051b946d931cb21923",
+      "beforeSha256": "3107bcfd3239cb05ef5580a368ec7b1b929e091b2caf3f15377733d3abfe6701",
+      "afterSha256": "03ba246b2b3cf2940fce4c0eb7a4860cb463833f5ba2624c651f707d4368374d"
+    },
+    "foundry.toml": {
+      "mode": "100644",
+      "beforeGitBlob": "d09d09e147d6974e0dd81bde6b78c94460b836aa",
+      "beforeSha256": "fb098664cd6a2b8cba0b038924a4d1e3273096741d4b194c84308d670ad9098a",
+      "afterSha256": "283659a21215380cb53b958f807c1c50832aff92a4fb98b1efc0e44e1d580940"
+    }
+  },
+  "helpers": {
+    "hardhat/compiler-optimizer.cjs": {
+      "mode": "100644",
+      "sha256": "0dd637808f45b5bfb5552e7707a256bf1b74f0d284cfc88315459aff1c27d11b"
+    }
+  }
+}
