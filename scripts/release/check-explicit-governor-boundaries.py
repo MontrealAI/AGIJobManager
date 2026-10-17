@@ -100,6 +100,7 @@ REVIEW_PATHS = {
     'hardhat/test/ephemeral-key.test.cjs',
     'hardhat/test/source-qualification.test.cjs',
     'hardhat/scripts/core-creation-verifier.cjs',
+    'hardhat/test/core-preflight-rollover.test.cjs',
     'hardhat/scripts/deployment-session.cjs',
     'hardhat/scripts/core-session.cjs',
     'hardhat/test/core-session.test.js',

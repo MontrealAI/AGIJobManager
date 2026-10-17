@@ -668,6 +668,20 @@ class SourceBoundaryDispatch(unittest.TestCase):
             path.unlink()
 
 
+    def test_preflight_rollover_inputs_remain_exact_and_bounded(self):
+        schema = M['strict_json']((self.current / M['SCHEMA']).read_bytes())
+        for name in ('hardhat/scripts/core-creation-verifier.cjs',
+                     'hardhat/test/core-preflight-rollover.test.cjs'):
+            self.assertIn(name, M['REVIEW_PATHS'])
+            self.assertIn(name, schema['properties']['reviewedInputChanges']['items']['enum'])
+            with self.subTest(source_input=name):
+                self.mutate(self.current, name, lambda data: data + b'\n',
+                    lambda: self.assertRaises(M['BoundaryError'], M['verify_explicit'], self.args()))
+                omitted = copy.deepcopy(self.manifest); omitted['inputs'].pop(name)
+                with self.assertRaises(M['BoundaryError']):
+                    M['source_inventory'](self.current, self.objects, omitted, 'staged')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--object-store', action='append')
