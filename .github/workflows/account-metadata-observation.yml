@@ -1,0 +1,74 @@
+name: Bounded Public Account Metadata Observation
+
+# Publication and this opened-only trigger require root review. Updates and reopened
+# PRs cannot trigger a second observation; there is no dispatch or schedule entrypoint.
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  observe-public-metadata:
+    if: >-
+      github.repository == 'MontrealAI/AGIJobManager' &&
+      github.event.action == 'opened' &&
+      github.run_attempt == 1 &&
+      github.event.pull_request.head.repo.full_name == 'MontrealAI/AGIJobManager' &&
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.pull_request.head.ref == 'qualification/account-metadata-observation-20261016'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out the reviewed collector head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: collector
+          persist-credentials: false
+      - name: Check out immutable actual c2 dependency source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: MontrealAI/AGIJobManager
+          ref: c2f72180d2f0d6ecd5b92d8e5197c5344be2c699
+          path: actual-c2
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22.23.2
+      - name: Verify source identities and locked dependency input
+        env:
+          COLLECTOR_COMMIT: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          offline_git() { env -i PATH="$PATH" GIT_NO_LAZY_FETCH=1 GIT_ALLOW_PROTOCOL= GIT_NO_REPLACE_OBJECTS=1 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_SYSTEM=/dev/null GIT_CONFIG_GLOBAL=/dev/null git -c protocol.allow=never -c core.hooksPath=/dev/null "$@"; }
+          test "$(offline_git -C collector rev-parse HEAD)" = "$COLLECTOR_COMMIT"
+          test "$(offline_git -C actual-c2 rev-parse HEAD)" = c2f72180d2f0d6ecd5b92d8e5197c5344be2c699
+          test "$(offline_git -C actual-c2 rev-parse HEAD^{tree})" = 8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f
+          echo 'cdd3b46e8de3be61efb0a60648eb1915f8127db0ed2ea01eb69cf2b6898e18f0  actual-c2/package-lock.json' | sha256sum --check --strict
+          test "$(node --version)" = v22.23.2
+      - name: Install only the existing locked actual c2 root dependencies
+        working-directory: actual-c2
+        run: npm ci
+      - name: Exercise the whole sequence using injected offline responses
+        run: |
+          env -i PATH="$PATH" HOME="$HOME" node collector/scripts/qualification/test-observe-account-metadata.cjs --dependency-root "$GITHUB_WORKSPACE/actual-c2"
+      - name: Observe once through the fixed public endpoint
+        env:
+          COLLECTOR_COMMIT: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/metadata-evidence"
+          env -i PATH="$PATH" HOME="$HOME" node collector/scripts/qualification/observe-account-metadata.cjs \
+            --dependency-root "$GITHUB_WORKSPACE/actual-c2" \
+            --collector-commit "$COLLECTOR_COMMIT" \
+            --output "$GITHUB_WORKSPACE/metadata-evidence/account-metadata-observation.json"
+      - name: Preserve the bounded public metadata receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: account-metadata-observation
+          path: metadata-evidence/account-metadata-observation.json
+          if-no-files-found: error
+          retention-days: 14

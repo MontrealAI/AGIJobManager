@@ -1,0 +1,37 @@
+{
+  "schema": "manager-account-metadata-observation/v1",
+  "endpoint": "https://eth-mainnet.g.alchemy.com/public",
+  "chainId": "0x1",
+  "source": {
+    "repository": "MontrealAI/AGIJobManager",
+    "commit": "c2f72180d2f0d6ecd5b92d8e5197c5344be2c699",
+    "tree": "8b0d8816ce3cdaa1103d37eaa34f4d40bf72972f",
+    "lockSha256": "cdd3b46e8de3be61efb0a60648eb1915f8127db0ed2ea01eb69cf2b6898e18f0",
+    "ethersVersion": "6.17.0",
+    "nodeVersion": "22.23.2"
+  },
+  "accounts": [
+    {"role": "creator", "address": "0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E"},
+    {"role": "governor", "address": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99"},
+    {"role": "observed-marker-target", "address": "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B"}
+  ],
+  "dependencies": [
+    {"role": "native-USDC", "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "scope": "core-dependency"},
+    {"role": "AGIALPHA", "address": "0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA", "scope": "requested-related-system-not-constructor-dependency"},
+    {"role": "ENS-registry", "address": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e", "scope": "core-dependency"},
+    {"role": "NameWrapper", "address": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401", "scope": "optional-nonzero-constructor-dependency"},
+    {"role": "helper-resolver", "address": "0xF29100983E058B709F3D539b0c765937B804AC15", "scope": "optional-helper-not-paused-core-campaign"}
+  ],
+  "limits": {"requests": 64, "requestMs": 20000, "overallMs": 180000, "responseBytes": 524288, "aggregateBytes": 4194304, "reportBytes": 131072},
+  "scope": "Public code identity and nonces only. No authority, custody, signer compatibility, compromise clearance, nonce reservation, deployment permission or operational acceptance. Latest and pending observations are not atomic. No balance, call, storage, trace, signature or transaction data. Final approved constructor inputs remain separate.",
+  "sourceReferences": [
+    "contracts/AGIJobManager.sol:402-430",
+    "hardhat/deploy.config.example.cjs:12-18",
+    "hardhat/scripts/deploy.cjs:141-152,310-316",
+    "hardhat/scripts/deploy-ens-job-pages.cjs:15-18,218-220",
+    "contracts/ens/ENSJobPages.sol:124-147",
+    "docs/qualification/USDC_CUTOVER.md:23-27",
+    "scripts/successor/vendor/agijobsv0/scripts/pages/vendor/alpha-successor/model.mjs:7,123",
+    "contracts/utils/ENSOwnership.sol:150-162"
+  ]
+}
