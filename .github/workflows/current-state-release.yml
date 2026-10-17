@@ -52,10 +52,10 @@ jobs:
             --manifest-sha256 "$manifest_sha" --verifier-sha256 "$verifier_sha" \
             --schema-sha256 "$schema_sha"
           printf 'manifest=%s\nverifier=%s\nschema=%s\n' "$manifest_sha" "$verifier_sha" "$schema_sha" >> "$GITHUB_OUTPUT"
-      - name: Complete preflight and real entrypoint regressions
-        run: npm --prefix hardhat run test:preflight
       - name: Compile reviewed candidate contracts
         run: npm run build
+      - name: Complete preflight and real entrypoint regressions
+        run: npm --prefix hardhat run test:preflight
       - name: Native compiler, provider, storage and historical runtime compatibility
         run: npm --prefix hardhat run test:registry-native
       - name: Check bytecode sizes

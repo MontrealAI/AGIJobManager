@@ -87,7 +87,7 @@
     },
     ".github/workflows/current-state-release.yml": {
       "mode": "100644",
-      "sha256": "4c8e67d4608e18a2e35e3688d2accfda3ff038c74847d8be1f13548230310ff3",
+      "sha256": "b866784f4c172ee707cb281aecb6c4cb18b563de5309a378efb0265f1d91d6dc",
       "predecessorGitBlob": "dedafb63d9f01bf9f8437a31e3f51383ee8da813",
       "predecessorSha256": "78dd3bed424d7083d5fc479ad9f4fb99a3bdb94a9b03e0560d818d03c57d83ea",
       "reviewReason": "Explicit finite candidate input checks and reproducible nonpublishing source packages; clean checkout identity is not independent review or release qualification."
