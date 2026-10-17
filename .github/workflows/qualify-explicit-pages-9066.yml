@@ -1,0 +1,105 @@
+name: Exact 9066 Pages source checks (no publication)
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/qualify-explicit-pages-9066.yml'
+      - 'scripts/qualification/explicit-pages-9066-binding.json'
+      - 'scripts/qualification/explicit-pages-preservation.mjs'
+      - 'scripts/qualification/explicit-pages-preservation.test.mjs'
+permissions:
+  contents: read
+jobs:
+  source-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout separate harness
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: harness
+          persist-credentials: false
+      - name: Checkout frozen current source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 9066d1270613f2c4529d5eef8eca3c4ed9bf9e48
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout authentic historical execution context
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 6484d09afbba64d7de24cd18ae4dbd246caffd17
+          path: legacy
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22.23.2
+      - name: Verify checkout identities and binding bytes
+        run: |
+          test "$(git -C source rev-parse HEAD)" = 9066d1270613f2c4529d5eef8eca3c4ed9bf9e48
+          test "$(git -C source rev-parse HEAD^{tree})" = 40e4b87263419276f38f335f89a80731410bc781
+          test "$(git -C legacy rev-parse HEAD)" = 6484d09afbba64d7de24cd18ae4dbd246caffd17
+          test "$(git -C legacy rev-parse HEAD^{tree})" = fb8d1443f705731cfa5dfc89b065b4ca1bcf2ab0
+          echo 'a18fdc0125b55de4b231bc8e97489f46bec8d10904c2d7c3805e2cd43838d9ce  harness/scripts/qualification/explicit-pages-9066-binding.json' | sha256sum -c -
+      - name: Install exact locked source dependencies
+        working-directory: source
+        run: |
+          npm ci --ignore-scripts
+          node scripts/security/patch-openzeppelin-compiler.cjs
+          npm --prefix ui ci --ignore-scripts
+      - name: Bound current source and authentic legacy v114 guards
+        run: |
+          node --input-type=module - <<'JS'
+          import {verifyBinding} from './harness/scripts/qualification/explicit-pages-preservation.mjs';
+          console.log(JSON.stringify(verifyBinding(process.cwd() + '/source')));
+          JS
+          VERIFIER=$(python3 -c 'import json; print(json.load(open("harness/scripts/qualification/explicit-pages-9066-binding.json"))["verifierSha256"])')
+          python3 source/scripts/release/check-source-boundaries.py --profile legacy-v114 --source-root "$PWD/legacy" --source-commit 6484d09afbba64d7de24cd18ae4dbd246caffd17 --source-tree fb8d1443f705731cfa5dfc89b065b4ca1bcf2ab0 --verifier-sha256 "$VERIFIER"
+          python3 source/scripts/release/test-source-boundary-dispatch.py --object-store "$PWD/source" --dependency-root "$PWD/source/node_modules"
+          EXPLICIT_PAGES_TEST_SOURCE="$PWD/source" EXPLICIT_PAGES_TEST_DEPENDENCIES="$PWD/source/node_modules" node --test harness/scripts/qualification/explicit-pages-preservation.test.mjs
+      - name: Run historical preservation only in original context
+        working-directory: legacy
+        run: |
+          node scripts/site/build.mjs
+          node --test scripts/successor/preservation.test.mjs
+      - name: Current Pages static and local adversarial checks
+        working-directory: source
+        run: |
+          node scripts/site/build.mjs
+          node scripts/site/check.mjs
+          node --test scripts/site/workflows.test.mjs
+          node --check site/assets/app.mjs
+          node --check site/assets/employer.mjs
+          node --test scripts/site/employer-model.test.mjs
+          npm run successor:test
+          node --test scripts/successor/source-identity.test.mjs
+          node ../harness/scripts/qualification/explicit-pages-preservation.mjs --source-root "$PWD"
+      - name: Install test browser
+        working-directory: source
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Current bilingual browser and isolated worker checks
+        working-directory: source
+        run: |
+          node scripts/site/browser-test.mjs
+          node scripts/site/employer-browser-test.mjs
+          npm run successor:browser
+          node scripts/successor/alpha-project-browser-test.mjs
+          node scripts/successor/history-browser-test.mjs
+          npm run successor:rehearse
+          node ../harness/scripts/qualification/explicit-pages-preservation.mjs --source-root "$PWD"
+      - name: Retain source-check evidence only
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pages-source-only-9066-${{ github.run_id }}
+          path: |
+            harness/scripts/qualification/explicit-pages-9066-binding.json
+            source/build/successor-browser/
+            source/build/successor-alpha-browser/
+            source/build/successor-history-browser/
+            source/build/successor-rehearsal/
+          if-no-files-found: error
+# No Pages artifact, deployment, package, version selection or release qualification.
