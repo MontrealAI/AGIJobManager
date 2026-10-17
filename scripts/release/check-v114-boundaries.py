@@ -49,13 +49,19 @@ if not isinstance(compiler_changes,dict) or set(compiler_changes)!={'hardhat/har
 actual_compiler=set(git('diff','--name-only',BASE,'--',*compiler).splitlines())
 actual_compiler.update(git('ls-files','--others','--exclude-standard','--',*compiler).splitlines())
 if actual_compiler!=set(compiler_changes): raise AssertionError('Compiler changes exceed or omit the reviewed mitigation inventory')
-for name,review in compiler_changes.items():
-    if not isinstance(review,dict) or set(review)!={'beforeSha256','afterSha256','purpose'} or not review.get('purpose'):
-        raise AssertionError('Invalid compiler mitigation review entry: '+name)
-    before=subprocess.check_output(['git','show',f'{BASE}:{name}'],cwd=ROOT)
-    after=(ROOT/name).read_bytes()
-    if hashlib.sha256(before).hexdigest()!=review.get('beforeSha256') or hashlib.sha256(after).hexdigest()!=review.get('afterSha256'):
-        raise AssertionError('Reviewed compiler configuration bytes differ: '+name)
+compiler_evidence=compiler_review.get('evidenceInputs',{})
+if not isinstance(compiler_evidence,dict) or set(compiler_evidence)!={'scripts/security/run-slither-extended.sh'}:
+    raise AssertionError('Explicit single-file compiler evidence inventory required')
+actual_evidence=set(git('diff','--name-only',BASE,'--',*compiler_evidence).splitlines())
+if actual_evidence!=set(compiler_evidence): raise AssertionError('Compiler evidence changes omit the reviewed mitigation inventory')
+for kind,inventory in (('configuration',compiler_changes),('evidence input',compiler_evidence)):
+    for name,review in inventory.items():
+        if not isinstance(review,dict) or set(review)!={'beforeSha256','afterSha256','purpose'} or not review.get('purpose'):
+            raise AssertionError('Invalid compiler mitigation review entry: '+name)
+        before=subprocess.check_output(['git','show',f'{BASE}:{name}'],cwd=ROOT)
+        after=(ROOT/name).read_bytes()
+        if hashlib.sha256(before).hexdigest()!=review.get('beforeSha256') or hashlib.sha256(after).hexdigest()!=review.get('afterSha256'):
+            raise AssertionError('Reviewed compiler '+kind+' bytes differ: '+name)
 contract_review=read('config/next-deployment-contract-changes.json')
 if contract_review.get('baseline')!=BASE or not contract_review.get('scope'): raise AssertionError('Contract review baseline/scope differs')
 changes=contract_review.get('files',{})

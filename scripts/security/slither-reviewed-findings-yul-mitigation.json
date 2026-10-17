@@ -4,7 +4,7 @@
   "review_date": "2026-10-17",
   "scope": "Production Solidity and every enabled Slither 0.11.6 detector at every severity, plus separate all-medium/high and all-six-reentrancy reports. Every finding remains retained and individually reviewed. The candidate changes the compiler optimizer profile for SOL-2026-7 and makes analyzer detector execution order deterministic without changing its selected detector set. Production Solidity and package-lock dependency resolutions are unchanged from the prior review. This is an internal exact-source qualification, not an independent audit.",
   "source_sha256": {
-    "config/compiler-profile-mitigation.json": "58af49f24245f35e5d3459bfb945be1f621429443f758fe85c49f800b14db05c",
+    "config/compiler-profile-mitigation.json": "f9c619eb6faa8f1f846e98f9cbac2239606debbb17987d6a4b9051b6736b9215",
     "contracts/AGIJobManager.sol": "e9be32b61afb55818d4108f295c5b80d9e2f5649e4697b9a199f8c000d8285c4",
     "contracts/ens/ENSJobPages.sol": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
     "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
