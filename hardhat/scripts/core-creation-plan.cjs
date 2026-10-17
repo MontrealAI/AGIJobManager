@@ -59,7 +59,7 @@ function validateConfig(c){
  T.exact(c.constructorArgs,['usdcTokenAddress','baseIpfsUrl','ensConfig','rootNodes','merkleRoots','settlementWallets','initialGovernor']);
  resolveConstructor('mainnet',c.constructorArgs);T.need(c.constructorArgs.initialGovernor===c.governor,'Constructor governor differs.');
  require('../../scripts/lib/usdc').requireCanonicalUSDC(1,c.constructorArgs.usdcTokenAddress);
- A.validatePolicy(c.creatorPolicy,c.creator);if(c.creatorPolicy.mode===A.EMPTY)A.validateEvidence(c.creatorPolicy,c.creator,c.qualificationEvidence);
+ A.validatePolicy(c.creatorPolicy,c.creator);if([A.EMPTY,A.CONVENTIONAL].includes(c.creatorPolicy.mode))A.validateEvidence(c.creatorPolicy,c.creator,c.qualificationEvidence);
  T.need(Array.isArray(c.envelopes)&&c.envelopes.length===9,'Nine explicit gas/fee envelopes required.');let total=0n;
  for(const e of c.envelopes){T.exact(e,['gasLimit','maxFeePerGas','maxPriorityFeePerGas']);T.need(T.quantity(e.gasLimit)>=53000n&&T.quantity(e.gasLimit)<=T.MAX_GAS&&T.quantity(e.maxFeePerGas)>0n&&T.quantity(e.maxPriorityFeePerGas)<=T.quantity(e.maxFeePerGas),'Invalid gas or fee envelope.');total+=BigInt(e.gasLimit)*BigInt(e.maxFeePerGas);}
  T.need(total<=T.quantity(c.maximumTotalFeeWei),'Total maximum fee exceeds reviewed budget.');return c;

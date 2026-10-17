@@ -1823,17 +1823,17 @@
     },
     "docs/deployment/direct-origination-profile.md": {
       "mode": "100644",
-      "sha256": "b82a010c3b86da94859d9b65798309d90fe2e05a619c19e3fe672082375ae3fd",
+      "sha256": "8ed6da2e8733c672b21035e2936c7954fc8ffcbf9caf8248b2e71d4656a1bf24",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add bounded direct-origin policy/trace fixtures and limits; record every call destination code and reject marker-bearing callees. Synthetic disposable execution is not actual account, provider, signer or final source qualification."
+      "reviewReason": "Add bounded direct-origin policy/trace fixtures and limits; record every call destination code and reject marker-bearing callees. Synthetic disposable execution is not actual account, provider, signer or final source qualification. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change."
     },
     "docs/deployment/ubuntu-ephemeral-creator.md": {
       "mode": "100644",
-      "sha256": "3ff66141b6e8175fbdff39008c0e7b9c9b36f1b9cb07935fe9df375536689c7e",
+      "sha256": "58893fdedb9aba86e343ae3d43909facf0ad8f6706c10135e7e380df29652f6f",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change. Retain original public-input and parent descriptors to prevent path replacement passing through inode reuse; bind descriptor bytes, close on all command exits, and preserve deterministic replacement/lifecycle regressions."
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change. Retain original public-input and parent descriptors to prevent path replacement passing through inode reuse; bind descriptor bytes, close on all command exits, and preserve deterministic replacement/lifecycle regressions. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change. Lead with the recommended conventional route and concise Ledger-governor checklist, retaining explicit public settings and external-authority limits."
     },
     "docs/deployments-and-bridging.md": {
       "mode": "100644",
@@ -5484,10 +5484,10 @@
     },
     "hardhat/scripts/actor-policy.cjs": {
       "mode": "100644",
-      "sha256": "1902385b6ae35186eb3f527a02d630e445cc45eccf8fc39654f94959e6a5385a",
+      "sha256": "cd1dbf01c38a29a2d33d79982d09908107abe824ccd1e8cadfa9ca9d1bf55374",
       "predecessorGitBlob": "b43c3a9dadc52970ca145662e73ff19b324741db",
       "predecessorSha256": "9eb1e30c0423d5d330151ebe8b8dd2c79af558e64e95883d846b20f5bea1ed17",
-      "reviewReason": "Add explicit opt-in marker-eoa-direct-create.v1 observation and exact nine-operation report binding; preserve strict original profiles and offline source/async guards. External evidence truth remains separately reviewed."
+      "reviewReason": "Add explicit opt-in marker-eoa-direct-create.v1 observation and exact nine-operation report binding; preserve strict original profiles and offline source/async guards. External evidence truth remains separately reviewed. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change."
     },
     "hardhat/scripts/canonical-state.cjs": {
       "mode": "100644",
@@ -5533,10 +5533,10 @@
     },
     "hardhat/scripts/core-creation-plan.cjs": {
       "mode": "100644",
-      "sha256": "145ab25a6804a39ad344484dbe98b0f1450cbdbf6d25cc00ff09eb36c080f882",
+      "sha256": "26cbddd672d5504b4942b03cd9a1e43e6fac455def914444637d6375b1cbc41e",
       "predecessorGitBlob": "7875e74fe19e78330e886fefa2f9904dbaeca080",
       "predecessorSha256": "f94d0e660fac377453c06fe28ae20220087c44cff54b57cf865924b94467c2f9",
-      "reviewReason": "Add explicit opt-in marker-eoa-direct-create.v1 observation and exact nine-operation report binding; preserve strict original profiles and offline source/async guards. External evidence truth remains separately reviewed."
+      "reviewReason": "Add explicit opt-in marker-eoa-direct-create.v1 observation and exact nine-operation report binding; preserve strict original profiles and offline source/async guards. External evidence truth remains separately reviewed. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change."
     },
     "hardhat/scripts/core-creation-verifier.cjs": {
       "mode": "100644",
@@ -5561,10 +5561,10 @@
     },
     "hardhat/scripts/deploy-core-tty.cjs": {
       "mode": "100644",
-      "sha256": "e7af79dd656ece73471066723e96538f340b823c5bf923ead7e8ea3a52ae5521",
+      "sha256": "4d436a2c65423e9152189d8db1a56fd98383d15b2d7a60eecf4e5cbbbb841654",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change. Retain original public-input and parent descriptors to prevent path replacement passing through inode reuse; bind descriptor bytes, close on all command exits, and preserve deterministic replacement/lifecycle regressions."
+      "reviewReason": "Add explicit Ubuntu hidden-TTY creator entry, bounded synthetic regression and operator documentation; reuse qualified nine-CREATE session with no contract, dependency or legacy-path change. Retain original public-input and parent descriptors to prevent path replacement passing through inode reuse; bind descriptor bytes, close on all command exits, and preserve deterministic replacement/lifecycle regressions. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change."
     },
     "hardhat/scripts/deploy-core-tty.js": {
       "mode": "100644",
@@ -5824,6 +5824,20 @@
       "predecessorGitBlob": "7f408cf5bc035341da70233fe916a0f004141034",
       "predecessorSha256": "6d26651d4e9dba341d8d780568ed84fae11d2a9b10b02e4e8acf174c46446e79",
       "reviewReason": null
+    },
+    "hardhat/test/conventional-creator.test.cjs": {
+      "mode": "100644",
+      "sha256": "5aad375369be3e3283730033cde7cb6303a10f48b7e26738ece408410e5b473a",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Bounded conventional profile functional regression coverage. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change."
+    },
+    "hardhat/test/conventional-creator.test.js": {
+      "mode": "100644",
+      "sha256": "c7b8a5c1a548bc4999f2e886efe7963dd4c9c148c7d5a5321421aa3adc85a8e9",
+      "predecessorGitBlob": null,
+      "predecessorSha256": null,
+      "reviewReason": "Bounded conventional profile functional regression coverage. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change."
     },
     "hardhat/test/core-session-docs.test.cjs": {
       "mode": "100644",
@@ -6849,10 +6863,10 @@
     },
     "schemas/explicit-governor-source-v1.schema.json": {
       "mode": "100644",
-      "sha256": "4578c29ad0187d1e7a0593dd06fac0d62f6896507f4cfc3254f6e8ae4fffd7fe",
+      "sha256": "d98c25463a4f4c800270e252a4ad6134a88231965f82e166e473c4d0b267cd4a",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add strict source-profile field, path and claim schema. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion. Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives."
+      "reviewReason": "Add strict source-profile field, path and claim schema. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion. Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change."
     },
     "scripts/advisor/sample_job_state.json": {
       "mode": "100644",
@@ -7458,10 +7472,10 @@
     },
     "scripts/release/check-explicit-governor-boundaries.py": {
       "mode": "100644",
-      "sha256": "c11e15830388b263a52ef172769f552cc0795e1d1c0d5f03983054f7b9907270",
+      "sha256": "ce0a8051ba8827f5be7fe4bc6d4047845191b1d0371aadaa2358e3be2fb067ee",
       "predecessorGitBlob": null,
       "predecessorSha256": null,
-      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion. Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives."
+      "reviewReason": "Add offline explicit source-profile validation and adversarial tests; no release or runtime claim. Extend only the eight named Ubuntu TTY wrapper inputs, with mutated-byte and unexpected-path rejection; preserve all original v114 semantics. Add exactly the nine PR1595 paths and adversarial byte/omission/unexpected-path tests; no generic exclusion or acceptance-flag promotion. Retain the actual f274 fork run 38980884057 provenance, including its overall comparison failure, and select the byte-identical preserved explicit-governor compatibility expectation for future fresh runs. Both original report files remain unchanged; 76 source hashes and all observations/flags stay in the full-byte comparison. No earlier run is relabeled and no signing, activation or new-head acceptance is inferred. Refresh only the unchanged generator's repository-map fingerprints and add exact-path/report-drift negatives. Add a distinct conventional direct-CREATE profile without wallet-specific qualification reports; preserve existing stronger profiles, exact transaction/source/runtime and governor checks. No contract, compiler, dependency or historical change."
     },
     "scripts/release/check-source-boundaries.py": {
       "mode": "100644",
@@ -10175,6 +10189,8 @@
     "hardhat/scripts/ephemeral-key.cjs",
     "hardhat/scripts/export-verification-package.cjs",
     "hardhat/scripts/operator-paths.cjs",
+    "hardhat/test/conventional-creator.test.cjs",
+    "hardhat/test/conventional-creator.test.js",
     "hardhat/test/core-session-docs.test.cjs",
     "hardhat/test/core-session-output.test.cjs",
     "hardhat/test/core-session-revalidation.test.cjs",

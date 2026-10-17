@@ -594,6 +594,8 @@
           "hardhat/scripts/ephemeral-key.cjs",
           "hardhat/scripts/export-verification-package.cjs",
           "hardhat/scripts/operator-paths.cjs",
+          "hardhat/test/conventional-creator.test.cjs",
+          "hardhat/test/conventional-creator.test.js",
           "hardhat/test/core-session-docs.test.cjs",
           "hardhat/test/core-session-output.test.cjs",
           "hardhat/test/core-session-revalidation.test.cjs",

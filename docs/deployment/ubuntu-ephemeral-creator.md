@@ -1,5 +1,25 @@
 # Ubuntu Hardhat creator, separate Ledger governor
 
+## Recommended route
+
+1. Choose the deployer and confirm the Ledger governor address plus the deployment
+   settings below. Use `conventional-eoa-direct-create.v1` with
+   `qualificationEvidence: null`; no wallet-specific reports are needed.
+2. Prepare the public run/config files and exact source/build as documented, then
+   run the single Hardhat command below on Ubuntu. Review the transaction summary
+   and enter the deployer key only in its hidden local prompt. The script performs
+   its transaction checks and reconciles interrupted work automatically.
+3. Check the completed deployment has the intended governor and no remaining
+   creator privileges in the reported fields. On the Mac Ledger, perform only the
+   separately reviewed governor configuration/activation steps you intend.
+
+The public settings still need to be supplied; this guide does not claim an
+already automated configuration wizard. The report-bearing profiles are optional
+advanced routes. After the intended contracts are governed by the Ledger account
+and creator privileges are absent, no ongoing deployer role is required by this
+core deployment. External ENS, token/proxy and other authority remain separately
+scoped; these checks do not certify every external controller.
+
 This additive entry point implements the owner's October 16 clarification: the
 owner enters a selected **creator** private key locally into the Ubuntu terminal.
 The governor is explicitly `0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99` and must be a
@@ -115,20 +135,36 @@ inspection only: current chain state still requires new/resume preflight.
 
 ## Wallet selection and account code
 
-Any selected account supported by the existing direct-origination profiles can
-be the creator. Changing it **before any handoff/signature** requires regenerating
-the exact nonce, CREATE addresses, plan and preflight. Once a capability exists,
-reconcile it first; changing the run file is not a nonce-reuse mechanism.
+For the ordinary Ethereum route, set `creatorPolicy` to
+`{"mode":"conventional-eoa-direct-create.v1"}` and `qualificationEvidence` to
+`null` in the public config. Use any selected signing EOA, with empty code or an
+existing EIP-7702 delegation marker. There is no wallet allowlist, wallet review,
+consensus report, target-code hash, target-state check or extra eligibility
+ceremony. Ethereum validates transaction-origin eligibility automatically.
+Observed creator code is informational; the launcher does not inspect or approve
+its delegate target. No delegation change is requested.
 
-An empty-code EOA uses `empty-eoa-direct-create.v1`. A marker-bearing EOA requires
-the already-defined `marker-eoa-direct-create.v1` and its exact independently
-reviewed consensus/direct-execution evidence bound to the source, build, block,
-actor, target-code hash and all nine envelopes. This wrapper does not invent or
-waive that evidence. It performs no call into creator/target code, self-call,
-batching, factory creation, type-4 authorization or marker removal. The older
-strict delegated profile remains unchanged and is not selected by this route.
-An existing marker is account state, not permission to invoke it. Out-of-band
-nonce/balance changes, compromised keys and other account activity remain risks.
+The deployment still checks that the entered key matches the selected creator
+and that the exact source/build, chain, nonce, fees, balance, dependencies,
+receipts, runtime and intended governor are correct. These protect the requested
+transaction and resulting contracts. The creator and governor remain separate.
+Changing the creator **before any handoff/signature** requires regenerating nonce,
+CREATE addresses and the plan. Once a capability exists, reconcile it first;
+changing the run file is not a nonce-reuse mechanism.
+
+This conventional profile claims transaction correctness only, not formal
+zero-invocation, delegate safety, exclusive key custody or production-state
+qualification. Constructors can execute dependency code; no broader callback
+claim follows from direct CREATE. Out-of-band nonce/balance changes, compromised
+keys and other account activity remain risks.
+
+The existing `empty-eoa-direct-create.v1`, `marker-eoa-direct-create.v1` and strict
+delegated profile keep their original requirements and assurance boundaries.
+The marker profile still requires its exact independently reviewed reports if
+explicitly selected. The TTY route supports conventional, empty and marker
+profiles; it does not select the older strict delegated profile. Every submitted
+operation remains a direct type-2 CREATE: no type-4 authorization, self-call,
+batching, factory creation or smart-wallet fallback.
 
 ## Interruption and limits
 

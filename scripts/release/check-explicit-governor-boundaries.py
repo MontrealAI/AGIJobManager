@@ -95,6 +95,8 @@ REVIEW_PATHS = {
     'hardhat/scripts/ephemeral-key.cjs',
     'hardhat/test/deploy-core-tty.test.cjs',
     'hardhat/test/deploy-core-tty.test.js',
+    'hardhat/test/conventional-creator.test.cjs',
+    'hardhat/test/conventional-creator.test.js',
     'hardhat/test/ephemeral-key.test.cjs',
     'hardhat/test/source-qualification.test.cjs',
     'hardhat/scripts/core-creation-verifier.cjs',

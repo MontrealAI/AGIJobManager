@@ -2,10 +2,11 @@
 // Sender semantics are distinct from wallet transport. No signer or delegation change exists here.
 const E=require('ethers');
 const {need,exact,address,integer,hash,sha,bytes,digest,canonical,validateEnvelope}=require('./transaction-envelope.cjs');
+const CONVENTIONAL='conventional-eoa-direct-create.v1';
 const EMPTY='empty-eoa-direct-create.v1',DELEGATED='delegated-eoa-direct-create.v1',MARKER='marker-eoa-direct-create.v1';
 function validatePolicy(policy,creator){
  creator=address(creator);
- if(policy?.mode===EMPTY){exact(policy,['mode']);return policy;}
+ if(policy?.mode===EMPTY||policy?.mode===CONVENTIONAL){exact(policy,['mode']);return policy;}
  if(policy?.mode===MARKER){
   exact(policy,['mode','delegationCode','target','targetCodeHash','qualification']);
   need(/^0xef0100[0-9a-f]{40}$/.test(policy.delegationCode),'Exact EIP-7702 delegation indicator required.');
@@ -34,7 +35,7 @@ function qualificationScope(policy,creator,context){
   source:structuredClone(context.source),build:{id:context.buildId,digest:context.buildDigest,catalogSha256:context.catalogSha256},block:structuredClone(context.block),executionHardfork:'osaka',stateChecks:structuredClone(policy.stateChecks)};
 }
 function validateEvidence(policy,creator,evidence,context){
- validatePolicy(policy,creator);if(policy.mode===EMPTY){need(evidence===null,'Empty EOA policy takes no delegated evidence.');return;}
+ validatePolicy(policy,creator);if(policy.mode===CONVENTIONAL){need(evidence===null,'Conventional CREATE takes no wallet qualification evidence.');return;}if(policy.mode===EMPTY){need(evidence===null,'Empty EOA policy takes no delegated evidence.');return;}
  if(policy.mode===MARKER)return validateMarkerEvidence(policy,creator,evidence,context);
  const scope=qualificationScope(policy,creator,context);
  exact(evidence,['schema','scope','reports']);need(evidence.schema==='manager-delegated-qualification-evidence-v2'&&canonical(evidence.scope)===canonical(scope),'Qualification evidence scope differs.');
@@ -97,9 +98,11 @@ async function canonicalCheck(rpc,block){const b=await pin(rpc,E.toQuantity(bloc
 async function observeActor(rpc,{creator,governor,creatorPolicy},block){
  validatePolicy(creatorPolicy,creator);const at={blockHash:block.hash,requireCanonical:true};
  need(BigInt(await rpc('eth_chainId',[]))===1n,'Wrong chain.');
+ // Conventional mode records observed origin code only. Ethereum validates origin
+ // eligibility; no delegate target, state, custody or no-invocation claim is made.
  const code=await rpc('eth_getCode',[creator,at]);
  if(creatorPolicy.mode===EMPTY)need(code==='0x','Empty-code EOA mode rejects delegated/contract creator.');
- else{
+ else if(creatorPolicy.mode!==CONVENTIONAL){
   need(code===creatorPolicy.delegationCode,'Creator delegation indicator changed.');
   const targetCode=await rpc('eth_getCode',[creatorPolicy.target,at]);need(targetCode!=='0x'&&E.keccak256(targetCode)===creatorPolicy.targetCodeHash,'Delegate target runtime changed.');
   if(creatorPolicy.mode===DELEGATED)for(const check of creatorPolicy.stateChecks)need(E.keccak256(await rpc('eth_call',[{to:check.to,data:check.data,from:E.ZeroAddress},at]))===check.resultHash,'Delegate authority state changed.');
@@ -108,4 +111,4 @@ async function observeActor(rpc,{creator,governor,creatorPolicy},block){
  need(await rpc('eth_getCode',[governor,at])==='0x','Requested EOA governor has unexpected code.');
  await canonicalCheck(rpc,block);return {creatorCodeHash:E.keccak256(code),governorCodeHash:E.keccak256('0x'),policySha256:digest(creatorPolicy),block};
 }
-module.exports={EMPTY,DELEGATED,MARKER,validatePolicy,qualificationScope,markerQualificationScope,validateEvidence,pin,canonicalCheck,observeActor};
+module.exports={CONVENTIONAL,EMPTY,DELEGATED,MARKER,validatePolicy,qualificationScope,markerQualificationScope,validateEvidence,pin,canonicalCheck,observeActor};

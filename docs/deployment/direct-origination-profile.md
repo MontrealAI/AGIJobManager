@@ -1,5 +1,11 @@
 # Existing-marker accounts: direct CREATE qualification (unreleased)
 
+For ordinary deployment without account-specific qualification reports, use
+`conventional-eoa-direct-create.v1` as described in
+[the Ubuntu creator guide](ubuntu-ephemeral-creator.md#wallet-selection-and-account-code).
+It makes only conventional transaction-correctness claims. The stronger marker
+profile documented below retains all its original requirements.
+
 `marker-eoa-direct-create.v1` is an additive creator-account profile. It describes
 outgoing direct Ethereum type-2 CREATE from an account that already has an exact
 EIP-7702 designation. It neither installs that designation nor chooses delegated
