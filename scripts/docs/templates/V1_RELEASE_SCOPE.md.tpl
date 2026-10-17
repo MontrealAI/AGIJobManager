@@ -4,7 +4,7 @@
 
 ## Inherited contract hardening and second-deployment checks
 
-The ENS membership correction introduced in v1.17.0 rejects unowned-name and stale-wrapper admission paths. The [engineering finding](qualification/ENS_MEMBERSHIP_REVOCATION.md) describes the scope and verification limits. This patch preserves that Solidity source and corrected linked-library bytecode. Existing managers are immutable and keep their original code, jobs and claims. Follow the [second-deployment checklist](DEPLOYMENT/SECOND_MAINNET_RELEASE.md) and [scoped owner qualification decision](DEPLOYMENT/SECOND_MAINNET_QUALIFICATION_DECISION.md), which records the external-review and Sepolia omissions. Publication is not activation.
+The ENS membership correction introduced in v1.17.0 rejects unowned-name and stale-wrapper admission paths. The [engineering finding](qualification/ENS_MEMBERSHIP_REVOCATION.md) describes the scope and verification limits. The current integrated source retains that membership correction alongside explicit-governor construction and its selected compiler optimizer mitigation; original deployment bytecode and records remain separate. Existing managers are immutable and keep their original code, jobs and claims. Follow the [second-deployment checklist](DEPLOYMENT/SECOND_MAINNET_RELEASE.md) and [scoped owner qualification decision](DEPLOYMENT/SECOND_MAINNET_QUALIFICATION_DECISION.md), which records the external-review and Sepolia omissions. Publication is not activation.
 
 ## Included in this edition
 
@@ -18,13 +18,14 @@ The public archive contains no private Fleet/Agent/Node application, production 
 
 ## Published download versus current source
 
-**{{TAG}} adds the recoverable bilingual SUCCESSOR Builder and current-workflow reading guidance.** Original Alpha dossiers, complete history, immutable Builder source contexts and separately priced unfunded USDC drafts are retained. Router verification, settlement rules, Solidity and dependency resolutions remain inherited. Private Fleet {{FLEET}}, Agent {{AGENT}} and Node {{NODE}} remain separate unchanged companion editions; this release does not qualify their hardware or live execution.
+**{{TAG}} prepares a fresh software wrapper for explicit-governor deployment and preserved source evidence.** The [integrated candidate](qualification/INTEGRATED_CANDIDATE_20261017.md) includes creator/preflight recovery and the selected compiler optimizer mitigation. The wrapper itself changes no Solidity, compiler behavior or dependency resolutions from its selected integrated source. Final-wrapper qualification and publication remain pending. Original Alpha dossiers, complete history, immutable Builder source contexts and separately priced unfunded USDC drafts are retained. Private Fleet {{FLEET}}, Agent {{AGENT}} and Node {{NODE}} remain separate unchanged companion editions; this release does not qualify their hardware or live execution.
 
 Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md` and `RELEASE_MANIFEST.json`, plus the published external `QUALIFICATION.json`, identify the qualified source and publication evidence. Main may contain later work; never combine its scripts with an older release's instructions or attestations. Current guides apply to their checkout. Historical releases, dated qualification records and legal notices retain their original versions.
 
 | Edition | Change introduced |
 | --- | --- |
-| {{TAG}} candidate | Recoverable bilingual Alpha project Builder, exact-source handoff qualification, guarded optional-router verification/recovery and accurate Pages file inventories |
+| {{TAG}} candidate | Explicit-governor deployment, source-bound creator/preflight recovery, selected compiler optimizer mitigation and preserved historical evidence |
+| [v1.18.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.18.0) | Recoverable bilingual Alpha project Builder and current-workflow reading guidance |
 | [v1.17.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.17.1) | Read-only USDC implementation binding, second-deployment qualification decision and bilingual workflow directory |
 | [v1.13.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.13.0) | Reviewer-window reservations and separate pilot quality/economics targets |
 | [v1.12.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.12.0) | Participant project cash scenarios, cohort loss/supervision gates and private stale-observation rejection |
@@ -54,7 +55,7 @@ Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md` an
 | Existing manager | Use with the current console |
 | --- | --- |
 | Verified v0.9.6 or v0.9.7 manager | Compatible ABI/runtime; construction defaults differ. Preserve original receipts, settings and job policies |
-| Verified manager from the preserved v1.0.3 contract build or subsequent compatible release | No redeployment needed for this off-chain workforce release; verify the actual instance and all eight links |
+| Verified manager from the preserved v1.0.3 contract build or subsequent compatible release | Keep the original instance and source for existing jobs; this software release does not upgrade its bytecode. Verify the actual instance and all eight links before use |
 | v0.9.5 or older manager | Keep its compatible interface for existing jobs; it lacks the exact-bond getter used by current voting |
 | Original-asset legacy manager | Preserve original jobs, token, allowances and ENS namespace; the USDC release does not migrate them |
 

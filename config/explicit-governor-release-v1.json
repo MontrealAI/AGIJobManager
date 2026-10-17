@@ -1,0 +1,510 @@
+{
+  "schema": "agijobmanager/release-delta/v1",
+  "profile": "manager-explicit-governor-release-v1",
+  "baseCommit": "8815ed3181778664595f951befd672afbd7a9352",
+  "baseTree": "913e49d65263bc53026916f7fc3b4cbfb93549f8",
+  "version": "1.19.0",
+  "qualification": "PENDING_FINAL_SOURCE_MAIN_PUSH",
+  "changes": {
+    ".github/workflows/current-state-release.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "b866784f4c172ee707cb281aecb6c4cb18b563de5309a378efb0265f1d91d6dc"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "508d46a8b21fbf202c68f619f6b8cee6ca7fbf8a6c9e9f4774981546abb5df8b"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    ".github/workflows/mainnet-fork.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "530add3cf6174ed5d56e0544d9b101c72106c143823b68c1ee3b1cd2fc479f7b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "759179d434a932d9d93987476a19c6cc1127c87d53a849bfd3b555580f33e191"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    ".github/workflows/publish-v114.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "a8026d3d4e2f4304c1f1da09899fff3bd64dff583a4a34e39bd02273b6a62988"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "e54897f92c36a1bc5ff5253740b13fbe7acdf655c050320767c3c057ecda37cc"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "README.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "9f634171eede62b22313a56c380d19e8795afaaa3f5d0fe0f720da135d4ca32b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "d812a45c0ddba07c7fbf3637858123f7db77702aa67a23d6a50ba303ce2e4984"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "agijobmanager.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "83487b5062d5caa79a9f16395bbd04101e36be5e0b9d9402373c1629ca7d4451"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "8eb0d971780a68e2672838329757101b5dc4d67aae4470c2b5caed09a690a446"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "config/companion-releases.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "3fa577c81a4189cdb103d9507e0945cf57065da45a5ac1d1374025f5f56a6c8a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "2046b7a2532b97bc7383aaaf64b84b49f1180194638867c0af0022620d317d64"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "config/mainnet/manager-8815-2026-10-17.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "06def03f2844edeb2f93203edb028a37085c83f79aedd91857e8b1ae9af922c0"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "config/usdc-deployment.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "0f761a74b27c0e3f3d966a969bc1e54f146cba3deb9c479585e367f65bed4da8"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "9ae7575b91dea953cfee206768e6076a4d270d9974da4f17458f05e1a5eb49a0"
+      },
+      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+    },
+    "docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "06a2c2a5d9536743a180642e4a27b9d9da5946b6af33da1fc6e498c70064c31f"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "0a262370e2cc40d3b532b08ee37edf287133194aa0bc97fd407469ab1384ab47"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/MAINNET_READINESS.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "9b41d0bd6b5764d56017b60eb11c7a4c1f80b1b753fb595f7ed3f14f2252d82d"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "a0a9856800208ffa7f081d876f1865740b5bb322b4bfe5d0b9e813150ecf0e4c"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/OPERATIONS/PRIVATE_FLEET.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "927b47fc91df4ce492d46d24e140cb5c03b083e79f5624c6df696f13b54f96c1"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ff2bc405c68f1e86a9c425ae81a9c526fe310ba07d64c1948b32ec16ff5c6112"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/REFERENCE/VERSIONS.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "91bf628a89201c471ff4e97812decc0e5c4eb085911dd38ab24261bbb23055c7"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "dbf23157af334daec70972f4d696f67825116ea32b05281cf5f1bc0e78bff4af"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/RELEASE_GUIDE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "204b7ab2166144cfb0cd21ac6c44140724d5eb828e7c9265a2489cbfa35263b5"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "aa4f520dd2cb634f488011515b8dfb3af031015a7dad3504f0bdd044e79645de"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/START_HERE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "cfcce45cc92189bae62dac31f320755526fe48bf5b98954877bf6beba7f0e409"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "0905653987059e05f9a102936f6b6bf0168737301d40ae1fea3150b36906ab3c"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/V1_RELEASE_SCOPE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "76bfccc908c30f599672088111b50dbd853ca2ff2e3643b22ea87d1be3b12d85"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "a1877a4d609f926fd3ce6212c32d6e82136cbb9d79471d641ef9c3b524703391"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/deployments/MAINNET_MANAGER_2026-10-17.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "0d95f18e6b25dea3a514dd1c32ae421a1d527567daab6b90689f347cb13af14e"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/qualification/mainnet-cutover-v1.19.0-expected.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "290a658dd8b8b8e0f873f9dc6a2f70305f9ae2154f27c9fd19078aaf9b7672c3"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/qualification/release-v1.19.0-provenance.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "b87441d2513ddee5a839aac8798e3d55df8c3687bdb69a10311f258270b67824"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/releases/v1.19.0/RECOVERY_GUIDE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "4c35be305be692a0e08bf84ec33bc7c31f2fdda706288db69ec65d930f90503d"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/releases/v1.19.0/RELEASE_NOTES.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "bd499ab07e35558060b3626d121fd8472baa51f1b5881576643e99b7b854254e"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/releases/v1.19.0/START_HERE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "0604a863c939b0507138fe0c36c0a76b64a7af60cd8c8b5bc2d303d053597ee1"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/releases/v1.19.0/VALIDATION.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "16983dbbf6ef4a1ab393861fe3e81f5912bb8a067566681474c5ef4122badb42"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/ui/DEPLOYMENT_MAINNET.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "c2762cf104b5b10ab22922d9efe90a2c78d4a80e2951918ed34f7c64490b8589"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "491a8180f1ade7e56527a97e6ba2813d564e5d3f7964c9aaa8c78df3795139a3"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "58bff2dafb5f02ed300e13036db20c7931b3b33d94b48be2448da2e8af879b71"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "e2094d5b205eedff79bfda598700e6b7aa88da00f7009c1b3d0247976b689a9b"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "hardhat/package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "ebdb3e307e42e6ea0739451252f2606789cdc9f47a21044dea095f6ab4b5638a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "bea62560ecc1f34da6dc88f85fe2e22091fb07b270a730d53803d936bf5fdb2c"
+      },
+      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+    },
+    "hardhat/package.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "edca08385ddfc61a083589dea7111215c53363dffda42f3ce210044ac72460cc"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "0c513b38d5d424aa5d04383e74d0857cb281951b4f86ecb62b9b4c3b75f38353"
+      },
+      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+    },
+    "package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "cdd3b46e8de3be61efb0a60648eb1915f8127db0ed2ea01eb69cf2b6898e18f0"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "2711424bb558ce974c0d9db0bdb9a74cf44d8f877d80b1b6818ac6fdee2986c4"
+      },
+      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+    },
+    "package.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "de69b473303eef544521e348b495c2507c6402abca3b333e7a90a00aafb671e4"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "99c259eeb61cb50b35c90684cafb35e726cdb66c10dea4b94050188678952e35"
+      },
+      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+    },
+    "scripts/docs/templates/README.md.tpl": {
+      "before": {
+        "mode": "100644",
+        "sha256": "3c4611e7a225ec2a7c8ddd1fbe149f9c403d9edb1d7bab3d1b40cd447a13b765"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "a7a637e380b05c204f47dc49f5bd7f3386422356f01e43b90f1831470993a4da"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl": {
+      "before": {
+        "mode": "100644",
+        "sha256": "2bb62528248b9940215fd8ff3058272548aac1f5277a3d3d57e7b51d5c6efd57"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "af9aaa6bb9837413b8f2053b1a9d957e754a0fb5d1d67cc5d0f82d6ae417c96d"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/release/collect-qualification.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "80438e8fd2c448734c11cf850fd77217ccc414e502425c99b32be9b52b223041"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "becc323b9b45bbdc1f91ec6a99af2662b0b8b998b668f4ae68341f18230448f6"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/release/package-policy.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "c092737360cbf4794730d5d2bc3ff748d62daaa79d57719c991dff732262d8b7"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/release/package-release.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "7996e844e829b4e9bcb58c0c8d1ddaad5ad6aae697083f2402d7ef090a5b7cf0"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "8e13154d3b9bd0a84584aa32ecf5229c42008f848defcba143b65efbb69e7a42"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/release/publish-release.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "cf3a1a0cb645349510cc625cde65a6f51ca80ceec75025751e3a1f3f64eb646d"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ae2eae94fd34d03244b337e61af2c157686c83192d06df48ae04309297c2c2a9"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/release/release-profile.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "8c38fb64ce5e67a29fa1c0d2bc8162abc42492feb8837d4c18aa0f8947e4d333"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/release/release_common.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "e3e8583c39d7dcecdcc9f53f4324ddff5e49c1c4d6809c9e5b562fac0c32f6db"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b7b6b6da03bfccc5f5308d313a0d67855b9029cc915b8f8c4dc799e9d46dd2e0"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/release/run-inherited-source-tests.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "0637eac24187b48095bddd73bb8830a572eca02b0db298185aff13890bd2165a"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/release/test-release-gates.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "44ab71eb4709a9ba3a7d9bb9fc76f7e6f8517b4f70731a4f804d405fbcc8954e"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "704fe80e2fd222326d17c028e4c77d95d6fd87a5d62a1f023f8a472a10c04437"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/release/test-release-profile.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "9d0a76d9089ffaab6711bbfdcaf7f1b13dabd22b57010cde2a0c1122a7511f52"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/release/verify-package.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "1f392749e847a3185d7c196160f996c40bcae574b42291e197b7b50fe26dbf14"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "87dbf766d61eb104614d8c69debcb8cf2af13f15aa2b9f032335bb107fa5594b"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/security/slither-reviewed-findings-v1.19.0.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "dc606560d26c531f80861274f1a802ec252010de8a122daceea249440bffcffc"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "scripts/security/verify-slither-review.py": {
+      "before": {
+        "mode": "100755",
+        "sha256": "164640dc69823de629aede7b60fd1bb7a60f287dff20fdc0fe157e45245698c7"
+      },
+      "after": {
+        "mode": "100755",
+        "sha256": "a09ecb2d4fd1611ff4747ae6dbb66e6e8c7bc8733e67d7e945836bc1b14569ae"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "ui/README.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "41178847c4e8f849faa247cd6a8d87361a8f701db9beaef890312063dcdaff5f"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "6925c5189a5e71173d17d1e27748093fbaed6efefc6726563425da1d84a2b2fe"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "ui/agijobmanager-usdc.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "3d35091e5f94755bb7537370ee2a4bd90cbcbed6f975c238c351b1f3761868cd"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "2b4524c5e62781c75596311faa39a602f6367d331f8d8ce9359841c4956f4802"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "ui/dist-ipfs/agijobmanager.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "83487b5062d5caa79a9f16395bbd04101e36be5e0b9d9402373c1629ca7d4451"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "8eb0d971780a68e2672838329757101b5dc4d67aae4470c2b5caed09a690a446"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "ui/package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "3d93fe0a4dc0d8399b7b5e27115e04dd146f6148d13a6a6e6d9a4f0700fbdb0e"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "5f8f69ef2e1f872e8fb43e645ff526a07f9132d6aaa450a59b13988a5161bf68"
+      },
+      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+    },
+    "ui/package.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "51cdcc222b74aa889ed361e2e8676c7085e6b1c20d143bdc76d6d26203350576"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "1198887b1c6efa807926fc25ad87b4f34517b7d7a34f7939904a0f29f8dc20d6"
+      },
+      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+    },
+    "ui/scripts/generate-deployment-docs.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "57ce5c6c455a79a5319601ebc29bb8d22df0db39c9c96fc5961199ea3f78c9f0"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "c090772af5cd34490a14b1dbe02b05000730cdc27217db4141c598f75f1b52ff"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "ui/src/generated/deployments.ts": {
+      "before": {
+        "mode": "100644",
+        "sha256": "90cec2c73f9aa01ab22829456fe6f045eb2e10bc5d4d3bad997943e00fda12ba"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b2c1ddb999e5a8ce471b5bbbdffab466821773755b204b2c28fb905b0e967986"
+      },
+      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    }
+  }
+}

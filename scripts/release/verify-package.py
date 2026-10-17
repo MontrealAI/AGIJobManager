@@ -12,7 +12,7 @@ sys.dont_write_bytecode = True
 from release_common import TAG, TITLE, REPOSITORY, WORKFLOWS, LIMIT, require, sha, valid_sha, verify_assets, source_path, verify_builder_rebuild, verify_builder_context_outputs, strict_json
 from release_common import builder_reconstruction, retained_builder_package
 
-candidate_policy = runpy.run_path(str(pathlib.Path(__file__).with_name('candidate-profile.py')))
+candidate_policy = runpy.run_path(str(pathlib.Path(__file__).with_name('package-policy.py')))
 
 def package_inventory(assets, *, published=False, profile='legacy-v114', manifest=None,
                       manifest_sha256=None, verifier_sha256=None, schema_sha256=None):
@@ -94,7 +94,7 @@ def verify_package(assets, *, published=False, profile='legacy-v114', manifest=N
         subprocess.run(['node', 'scripts/release/verify-usdc-ui.mjs', '.'], cwd=source_dir, check=True)
         subprocess.run(['python3', 'scripts/release/test-release-gates.py'], cwd=source_dir, check=True)
     print('Verified complete inventory and clean-extraction offline smoke checks. No wallet, credentials or network required.')
-    if selection is not None:
+    if selection is not None and 'releaseProfile' not in selection:
         print('Candidate source package only: input identity is bound; release identity is unselected and release qualification is false.')
     if published:
         print('Published qualification bindings match. Live CI status, release authenticity and attestations must be verified separately.')

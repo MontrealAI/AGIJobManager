@@ -1,5 +1,6 @@
 """Collect completed final-main-source runs and their immutable candidate artifact."""
 import argparse
+import runpy
 import datetime
 import json
 import os
@@ -14,7 +15,15 @@ root = pathlib.Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--source', required=True)
 parser.add_argument('--out', type=pathlib.Path, required=True)
+policy = runpy.run_path(str(pathlib.Path(__file__).with_name('package-policy.py')))
+policy['add_selection_arguments'](parser)
 args = parser.parse_args()
+source_policy = policy['select'](args.profile, manifest=args.manifest, manifest_sha256=args.manifest_sha256, verifier_sha256=args.verifier_sha256, schema_sha256=args.schema_sha256, published=True)
+profile_args = ['--profile', args.profile]
+for option in ('manifest', 'manifest_sha256', 'verifier_sha256', 'schema_sha256'):
+    value = getattr(args, option)
+    if value is not None:
+        profile_args.extend(['--' + option.replace('_', '-'), value])
 require(valid_sha(args.source), 'Source must be a full commit SHA')
 require(os.environ.get('GITHUB_REPOSITORY') == REPOSITORY, 'Repository identity differs')
 require(os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' and os.environ.get('GITHUB_REF') == 'refs/heads/main' and os.environ.get('RELEASE_PUBLISH_CONFIRMATION') == 'PUBLISH_' + TAG, 'An authorized main publication dispatch is required')
@@ -32,6 +41,8 @@ config = {'repository': REPOSITORY, 'tag': TAG, 'name': TITLE, 'status': 'qualif
     'sourceCommit': args.source, 'sourceTree': api(f'git/commits/{args.source}')['tree']['sha'], 'checkoutCommit': args.source,
     'releaseDate': datetime.datetime.now(datetime.timezone.utc).date().isoformat(), 'requiredSourceRuns': {},
     'scope': 'Software qualification. Historical mainnet evidence is separate; no public-chain writes or intake activation.', 'artifactDigests': {}}
+if source_policy is not None:
+    config['sourcePolicy'] = source_policy
 for workflow in WORKFLOWS:
     identity = api(f'actions/workflows/{workflow}')
     runs = api(f'actions/workflows/{identity["id"]}/runs?head_sha={args.source}&event=push&per_page=100')['workflow_runs']
@@ -69,7 +80,7 @@ digests = verify_assets(args.out)
 config['artifactDigests'] = {n: d for n, d in digests.items() if n != 'SHA256SUMS.txt'}
 manifest = json.loads((args.out / 'RELEASE_MANIFEST.json').read_text())
 require(manifest['sourceCommit'] == args.source and manifest['sourceTree'] == config['sourceTree'], 'Candidate manifest source differs')
-subprocess.run(['python3', 'scripts/release/verify-package.py', str(args.out.resolve())], cwd=root, check=True)
+subprocess.run(['python3', 'scripts/release/verify-package.py', str(args.out.resolve()), *profile_args], cwd=root, check=True)
 (args.out / 'QUALIFICATION.json').write_text(json.dumps(config, indent=2, ensure_ascii=False) + '\n')
 (args.out / 'SHA256SUMS.txt').write_text(''.join(f'{sha(f.read_bytes())}  {f.name}\n' for f in sorted(args.out.iterdir()) if f.name != 'SHA256SUMS.txt'))
 verify_assets(args.out, config)

@@ -17,7 +17,7 @@ from release_common import TAG, TITLE, LIMIT, BUILDER_ASSETS, BUILDER_ARCHIVE_ON
 from release_common import builder_reconstruction
 
 root = pathlib.Path(__file__).resolve().parents[2]
-candidate_policy = runpy.run_path(str(pathlib.Path(__file__).with_name('candidate-profile.py')))
+candidate_policy = runpy.run_path(str(pathlib.Path(__file__).with_name('package-policy.py')))
 
 def git(*args):
     env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}

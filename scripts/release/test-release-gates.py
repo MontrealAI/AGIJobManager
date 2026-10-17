@@ -157,6 +157,9 @@ class PublicationIntegrationTests(ReleaseGateTests):
         super().setUp()
         directory=tempfile.TemporaryDirectory();self.addCleanup(directory.cleanup);self.root=Path(directory.name)
         self.script=self.root/'scripts/release/publish-release.py';self.script.parent.mkdir(parents=True);self.script.write_text(PUBLISHER.read_text())
+        # Preserve the original mocked publication cases with the explicit policy dispatcher.
+        for name in ('package-policy.py', 'release-profile.py', 'candidate-profile.py'):
+            self.script.with_name(name).write_bytes(PUBLISHER.with_name(name).read_bytes())
         meta=self.root/'docs/releases'/TAG;meta.mkdir(parents=True);(meta/'RELEASE_NOTES.md').write_text('Reviewed release notes')
         self.out=self.root/'assets';self.out.mkdir()
         (self.out/f'AGIJobManager-{TAG}-COMPLETE.zip').write_bytes(b'mocked qualified package')
