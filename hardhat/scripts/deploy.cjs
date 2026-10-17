@@ -14,7 +14,9 @@ const DEFAULT_CONFIRMATIONS = 3;
 
 const COMPILER_SETTINGS = {
   version: '0.8.37',
-  optimizer: { enabled: true, runs: 40 },
+  optimizer: { enabled: true, runs: 40, details: { yulDetails: {
+    optimizerSteps: 'dfDvulfnTUtnIfxa[r]scMVcul[j]Trpeulxa[r]cvifMCTUca[r]SsTFOtfDnca[r]IulcscCTUtvifMx[scCTUt]TOntnfDIulvifMjmul[jul]VcTOculjmul:fDnTOcmuO',
+  } } },
   evmVersion: 'shanghai',
   viaIR: true,
   metadata: { bytecodeHash: 'none' },

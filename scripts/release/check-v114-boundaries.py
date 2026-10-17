@@ -40,7 +40,22 @@ for directory in ('','hardhat/','ui/'):
     if not (lock==prior): raise AssertionError(f'Dependency resolution changed: {directory}')
 if not (read('config/usdc-deployment.json')['version']==read('package.json')['version']): raise AssertionError('Release invariant failed')
 compiler=['hardhat.config.mjs','hardhat/hardhat.config.js','foundry.toml','remappings.txt']
-if git('diff','--name-only',BASE,'--',*compiler).strip(): raise AssertionError('Compiler configuration changed')
+compiler_review=read('config/compiler-profile-mitigation.json')
+if compiler_review.get('baseline')!=BASE or compiler_review.get('advisory')!='SOL-2026-7' or not compiler_review.get('scope'):
+    raise AssertionError('Compiler mitigation baseline/advisory/scope differs')
+compiler_changes=compiler_review.get('files',{})
+if not isinstance(compiler_changes,dict) or set(compiler_changes)!={'hardhat/hardhat.config.js','foundry.toml'}:
+    raise AssertionError('Explicit two-file compiler mitigation inventory required')
+actual_compiler=set(git('diff','--name-only',BASE,'--',*compiler).splitlines())
+actual_compiler.update(git('ls-files','--others','--exclude-standard','--',*compiler).splitlines())
+if actual_compiler!=set(compiler_changes): raise AssertionError('Compiler changes exceed or omit the reviewed mitigation inventory')
+for name,review in compiler_changes.items():
+    if not isinstance(review,dict) or set(review)!={'beforeSha256','afterSha256','purpose'} or not review.get('purpose'):
+        raise AssertionError('Invalid compiler mitigation review entry: '+name)
+    before=subprocess.check_output(['git','show',f'{BASE}:{name}'],cwd=ROOT)
+    after=(ROOT/name).read_bytes()
+    if hashlib.sha256(before).hexdigest()!=review.get('beforeSha256') or hashlib.sha256(after).hexdigest()!=review.get('afterSha256'):
+        raise AssertionError('Reviewed compiler configuration bytes differ: '+name)
 contract_review=read('config/next-deployment-contract-changes.json')
 if contract_review.get('baseline')!=BASE or not contract_review.get('scope'): raise AssertionError('Contract review baseline/scope differs')
 changes=contract_review.get('files',{})
@@ -63,4 +78,4 @@ for name in ('reverify:mainnet','reverify:sepolia','check:readiness','check:read
 text=(ROOT/'hardhat/scripts/check-readiness.cjs').read_text()
 if not ('readRegistrySnapshot' in text and 'await checkNftPolicy(' not in text): raise AssertionError('Release invariant failed')
 if not (not list(ROOT.glob('.v114-bootstrap*'))): raise AssertionError('Bootstrap material must not ship')
-print('SOURCE BOUNDARIES PASSED: compiler unchanged; exact inventoried ENS/mock source changes and dependency repairs only. Changed library bytecode requires new full qualification and deployment.')
+print('SOURCE BOUNDARIES PASSED: exact inventoried compiler mitigation, ENS/mock source changes and dependency repairs only. Changed bytecode requires new full qualification and deployment.')

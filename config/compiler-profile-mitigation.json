@@ -1,0 +1,17 @@
+{
+  "baseline": "191cf3590e5cdc08df1bb0af500ee28a91c8b010",
+  "advisory": "SOL-2026-7",
+  "scope": "Targeted workaround for YulOptimizerKnowledgeBaseStaleBookkeeping in new compilations: Solidity 0.8.37 default Yul optimizer sequence minus E and L only. This is a bytecode-changing compiler profile and requires fresh exact-source qualification and a new deployment; it does not alter or repair existing deployed bytecode.",
+  "files": {
+    "hardhat/hardhat.config.js": {
+      "beforeSha256": "3107bcfd3239cb05ef5580a368ec7b1b929e091b2caf3f15377733d3abfe6701",
+      "afterSha256": "a57b78cccf01cdc6f1ae1addcb6e5e5550e3f8486ab3b68db755508956201cb4",
+      "purpose": "Retain Solidity 0.8.37 and the existing via-IR, runs and EVM settings; explicitly use its default Yul sequence with E (EqualStoreEliminator) and L (LoadResolver) removed to mitigate SOL-2026-7 for new compilation."
+    },
+    "foundry.toml": {
+      "beforeSha256": "fb098664cd6a2b8cba0b038924a4d1e3273096741d4b194c84308d670ad9098a",
+      "afterSha256": "4e3244d29aef44fe92741adf3834c93da6a25ed2bb680becef6dd22dbc80c083",
+      "purpose": "Apply the same targeted SOL-2026-7 Yul optimizer mitigation as Hardhat, retaining the existing compiler version and all other profile settings."
+    }
+  }
+}

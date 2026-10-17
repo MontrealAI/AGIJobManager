@@ -1,5 +1,7 @@
 # Deployment and Release Operations
 
+Current compiler profile: Solidity 0.8.37 with the two affected Yul optimizer passes explicitly excluded. See [SOL-2026-7 mitigation, new-build qualification and existing-deployment handling](security/SOL-2026-7.md). Etherscan may retain its compiler-version warning.
+
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 Use [Hardhat](../hardhat/README.md) for Ethereum mainnet and Sepolia deployments. Truffle migrations are retired. Supported read-only operational commands use ethers; the legacy owner-configuration helper permits writes only on a disposable local chain. Publishing software does not deploy or upgrade any live contract.

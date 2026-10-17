@@ -1,5 +1,7 @@
 # Deployment guide
 
+Current compiler profile: Solidity 0.8.37 with the two affected Yul optimizer passes explicitly excluded. See [SOL-2026-7 mitigation, new-build qualification and existing-deployment handling](security/SOL-2026-7.md). Etherscan may retain its compiler-version warning.
+
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 The supported Ethereum mainnet and Sepolia workflow uses **Hardhat 3 and ethers 6**. Truffle and Ganache are removed; their historical migration and signing commands are retired.
