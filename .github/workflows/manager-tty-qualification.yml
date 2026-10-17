@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGIJobManager
-          ref: cae39d198017595382949ad6efc69f36fa8c028b
+          ref: 8815ed3181778664595f951befd672afbd7a9352
           path: source
           fetch-depth: 0
           persist-credentials: false
@@ -47,8 +47,8 @@ jobs:
           root=pathlib.Path('qualifier')
           expected={
             'scripts/qualification/qualify-tty-inspect.mjs':'8acb79bae9f6de07f8b46071d1606a2480993d2b5df7d5da5b415243bb416710',
-            'config/tty-source-target.json':'893f971cd76148bbd546ee5bd4a4e2a9f25bb2ab871d09ad856c7450240e2c41',
-            'config/tty-source-review-binding.json':'72da4af5eb4af4def3b1b40af57204da1a74c06dbf59674ac89a2ed558d6a90f'
+            'config/tty-source-target.json':'8df78bef37faf9454fca25ee9a790728a5baf2eff23e5bf21327eb1ba55e57f4',
+            'config/tty-source-review-binding.json':'e43dd56e9424ae5a02a798b1775587a442a64c0bee9bd553985c819409d79b93'
           }
           for name,digest in expected.items():
               p=root/name
@@ -69,17 +69,17 @@ jobs:
             --source-root "$(realpath source)" --object-store "$(realpath source)" \
             --dependency-root "$(realpath source/node_modules)" \
             --manifest config/explicit-governor-source-v1.json \
-            --manifest-sha256 0e258187f97b8d6da452fae2bd692b3baef36d73dd2c221b0cf81103b6d297af \
-            --verifier-sha256 55a77289fd08af355c8987575c39560e6f5b83fe536d906b8cf75a68e9938dbe \
-            --schema-sha256 29d1db02a3382f6c7aeda24d02f1b1bd5bfad72cd09f2ee90e7876b7583b7914 \
+            --manifest-sha256 83cd0976000a74d8c8ac3b5fd21c90ba48068c5ef87582dd6ba926e2b62c01e2 \
+            --verifier-sha256 3a2fbd68190e3b0bad07b1e7d20fdb3fbb3d73eff1f23c353bf842568391a9f6 \
+            --schema-sha256 a98cba0333903f93f314f0b8ec94a76b900e03896aa1115c32c42ca90d7dca86 \
             --review-binding "$(realpath qualifier/config/tty-source-review-binding.json)" \
-            --review-binding-sha256 72da4af5eb4af4def3b1b40af57204da1a74c06dbf59674ac89a2ed558d6a90f
+            --review-binding-sha256 e43dd56e9424ae5a02a798b1775587a442a64c0bee9bd553985c819409d79b93
           python3 -I source/scripts/release/test-source-boundary-dispatch.py \
             --object-store "$(realpath source)" --dependency-root "$(realpath source/node_modules)"
       - name: Compile the exact reviewed optimizer profile before artifact consumers
         working-directory: source
         run: node --max-old-space-size=2048 node_modules/hardhat/dist/src/cli.js --config hardhat.config.mjs compile
-      - name: Exercise all four compiler semantic regressions on a disposable EVM
+      - name: Exercise all six compiler semantic regressions on a disposable EVM
         working-directory: source
         run: |
           set -euo pipefail
@@ -90,8 +90,15 @@ jobs:
           import pathlib,os,json,re
           text=(pathlib.Path(os.environ['RUNNER_TEMP'])/'manager-compiler-semantics.log').read_text()
           text=re.sub(r'\x1b\[[0-9;]*m','',text)
-          assert re.search(r'^\s*4 passing(?:\s|$)',text,re.M), 'All four compiler cases must pass'
+          assert re.search(r'^\s*6 passing(?:\s|$)',text,re.M), 'All six compiler cases must pass'
           assert not re.search(r'^\s*\d+ (?:failing|pending)(?:\s|$)',text,re.M)
+          labels=['pins exact compiler and removes only L/E including cleanup',
+                  'reassigned_reference_memory_alias.sol matches upstream semantic expectations with workaround',
+                  'reassigned_reference_memory_alias_from_storage_minimal.sol matches upstream semantic expectations with workaround',
+                  'reassigned_reference_storage_alias.sol matches upstream semantic expectations with workaround',
+                  'production optimizer preserves hashes over reassigned memory aliases',
+                  'corrects a raw Yul storage-alias stale read with a failing original-profile control at 40 runs']
+          assert all(text.count(label)==1 for label in labels), 'Every exact compiler semantic case must be present once'
           rows=[json.loads(line) for line in text.splitlines() if line.startswith('{"fixture":')]
           expected={'reassigned_reference_memory_alias.sol':['67','7'],'reassigned_reference_memory_alias_from_storage_minimal.sol':['67','7'],'reassigned_reference_storage_alias.sol':['48059','43690','501']}
           assert len(rows)==3 and {r['fixture'] for r in rows}==set(expected)
@@ -174,7 +181,7 @@ jobs:
           import pathlib,os,json,subprocess,hashlib
           temp=pathlib.Path(os.environ['RUNNER_TEMP']);cases=[]
           source={'commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'tree':subprocess.check_output(['git','rev-parse','HEAD^{tree}'],text=True).strip()}
-          assert source=={'commit':'cae39d198017595382949ad6efc69f36fa8c028b','tree':'4beda66094ffadca6f6b02a8217ff69c3524458b'}
+          assert source=={'commit':'8815ed3181778664595f951befd672afbd7a9352','tree':'913e49d65263bc53026916f7fc3b4cbfb93549f8'}
           for account,prompts,selected in [('empty',1,'empty account'),('marker',2,'marker with lost-response resume')]:
               file=temp/('manager-conventional-'+account+'.jsonl');rows=[json.loads(x) for x in file.read_text().splitlines()]
               assert len(rows)==1
