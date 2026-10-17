@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGIJobManager
-          ref: f274c6be8ff982deed8edbc1003e24fa45fc07ad
+          ref: 9066d1270613f2c4529d5eef8eca3c4ed9bf9e48
           path: source
           fetch-depth: 0
           persist-credentials: false
@@ -47,8 +47,8 @@ jobs:
           root=pathlib.Path('qualifier')
           expected={
             'scripts/qualification/qualify-tty-inspect.mjs':'b71a4791370301763d3d36d81c42553ecaeb206d1aa0360bd4f1f5c0f64ddf54',
-            'config/tty-source-target.json':'774fa9f6ed20dfb6e60f8db21d60f0909d5cb04050d9750efc2eaa1327f140fd',
-            'config/tty-source-review-binding.json':'6bacfd9664b3a71feae4dffcbf27aadd3adb3f1be88c0fa460f885c43e00c4ab'
+            'config/tty-source-target.json':'4128a0e75289297640e8024b90beacdd8f20d571dfc4d88419b8e9efbbf823e5',
+            'config/tty-source-review-binding.json':'a18fdc0125b55de4b231bc8e97489f46bec8d10904c2d7c3805e2cd43838d9ce'
           }
           for name,digest in expected.items():
               p=root/name
@@ -69,11 +69,11 @@ jobs:
             --source-root "$(realpath source)" --object-store "$(realpath source)" \
             --dependency-root "$(realpath source/node_modules)" \
             --manifest config/explicit-governor-source-v1.json \
-            --manifest-sha256 28414f0b97f3fed3fdee0143878465ad6e61346229b906ee48c667e8b1627b94 \
-            --verifier-sha256 f3bddfa00e79bb6adc5977c90f1e08aeb0b9bf1b37cd8ede342c620ca1e1605a \
-            --schema-sha256 549626e22df7dc88dc2b9fb3e47f815023aba6ced852228f249aa05945be9cfb \
+            --manifest-sha256 a933ad32fab5c2231ef90bcf526d005187d7bfe78119d8cd88f322483b707dba \
+            --verifier-sha256 c11e15830388b263a52ef172769f552cc0795e1d1c0d5f03983054f7b9907270 \
+            --schema-sha256 4578c29ad0187d1e7a0593dd06fac0d62f6896507f4cfc3254f6e8ae4fffd7fe \
             --review-binding "$(realpath qualifier/config/tty-source-review-binding.json)" \
-            --review-binding-sha256 6bacfd9664b3a71feae4dffcbf27aadd3adb3f1be88c0fa460f885c43e00c4ab
+            --review-binding-sha256 a18fdc0125b55de4b231bc8e97489f46bec8d10904c2d7c3805e2cd43838d9ce
           python3 -I source/scripts/release/test-source-boundary-dispatch.py \
             --object-store "$(realpath source)" --dependency-root "$(realpath source/node_modules)"
       - name: Compile unchanged exact contract closure before artifact consumers
