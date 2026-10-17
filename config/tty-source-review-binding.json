@@ -1,13 +1,13 @@
 {
   "schema": "agijobmanager/source-review-binding/v1",
   "profile": "manager-explicit-governor-v1",
-  "sourceCommit": "9066d1270613f2c4529d5eef8eca3c4ed9bf9e48",
-  "sourceTree": "40e4b87263419276f38f335f89a80731410bc781",
+  "sourceCommit": "49c01eb3b3fae4d99fd90940f0f28b8cfb71795e",
+  "sourceTree": "91d6fc376f4bd52edfc3b5d8f9564628df082a40",
   "manifestPath": "config/explicit-governor-source-v1.json",
-  "manifestSha256": "a933ad32fab5c2231ef90bcf526d005187d7bfe78119d8cd88f322483b707dba",
+  "manifestSha256": "c401684707c44e04f1f659c7ec4e3f183c34b7158b2978f85d7c6a2bece58e67",
   "dispatcherSha256": "ad709686244d87320276285e69594d3f8c17ff93f73bd8695fc872b6e250c016",
-  "verifierSha256": "c11e15830388b263a52ef172769f552cc0795e1d1c0d5f03983054f7b9907270",
-  "schemaSha256": "4578c29ad0187d1e7a0593dd06fac0d62f6896507f4cfc3254f6e8ae4fffd7fe",
+  "verifierSha256": "ce0a8051ba8827f5be7fe4bc6d4047845191b1d0371aadaa2358e3be2fb067ee",
+  "schemaSha256": "d98c25463a4f4c800270e252a4ad6134a88231965f82e166e473c4d0b267cd4a",
   "lockSha256": {
     "package-lock.json": "cdd3b46e8de3be61efb0a60648eb1915f8127db0ed2ea01eb69cf2b6898e18f0",
     "hardhat/package-lock.json": "ebdb3e307e42e6ea0739451252f2606789cdc9f47a21044dea095f6ab4b5638a",

@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGIJobManager
-          ref: 9066d1270613f2c4529d5eef8eca3c4ed9bf9e48
+          ref: 49c01eb3b3fae4d99fd90940f0f28b8cfb71795e
           path: source
           fetch-depth: 0
           persist-credentials: false
@@ -46,9 +46,9 @@ jobs:
           import hashlib,pathlib
           root=pathlib.Path('qualifier')
           expected={
-            'scripts/qualification/qualify-tty-inspect.mjs':'b71a4791370301763d3d36d81c42553ecaeb206d1aa0360bd4f1f5c0f64ddf54',
-            'config/tty-source-target.json':'4128a0e75289297640e8024b90beacdd8f20d571dfc4d88419b8e9efbbf823e5',
-            'config/tty-source-review-binding.json':'a18fdc0125b55de4b231bc8e97489f46bec8d10904c2d7c3805e2cd43838d9ce'
+            'scripts/qualification/qualify-tty-inspect.mjs':'8acb79bae9f6de07f8b46071d1606a2480993d2b5df7d5da5b415243bb416710',
+            'config/tty-source-target.json':'a22ea41f3ac8d4dc1d5b8df67014e2324544d1f59d8abca592c1f85e33275968',
+            'config/tty-source-review-binding.json':'4847f32e8f8d872f410f87a37b8af1d08ffe56535faed79e81ff871e5ae491ab'
           }
           for name,digest in expected.items():
               p=root/name
@@ -69,11 +69,11 @@ jobs:
             --source-root "$(realpath source)" --object-store "$(realpath source)" \
             --dependency-root "$(realpath source/node_modules)" \
             --manifest config/explicit-governor-source-v1.json \
-            --manifest-sha256 a933ad32fab5c2231ef90bcf526d005187d7bfe78119d8cd88f322483b707dba \
-            --verifier-sha256 c11e15830388b263a52ef172769f552cc0795e1d1c0d5f03983054f7b9907270 \
-            --schema-sha256 4578c29ad0187d1e7a0593dd06fac0d62f6896507f4cfc3254f6e8ae4fffd7fe \
+            --manifest-sha256 c401684707c44e04f1f659c7ec4e3f183c34b7158b2978f85d7c6a2bece58e67 \
+            --verifier-sha256 ce0a8051ba8827f5be7fe4bc6d4047845191b1d0371aadaa2358e3be2fb067ee \
+            --schema-sha256 d98c25463a4f4c800270e252a4ad6134a88231965f82e166e473c4d0b267cd4a \
             --review-binding "$(realpath qualifier/config/tty-source-review-binding.json)" \
-            --review-binding-sha256 a18fdc0125b55de4b231bc8e97489f46bec8d10904c2d7c3805e2cd43838d9ce
+            --review-binding-sha256 4847f32e8f8d872f410f87a37b8af1d08ffe56535faed79e81ff871e5ae491ab
           python3 -I source/scripts/release/test-source-boundary-dispatch.py \
             --object-store "$(realpath source)" --dependency-root "$(realpath source/node_modules)"
       - name: Compile unchanged exact contract closure before artifact consumers
@@ -91,6 +91,18 @@ jobs:
               values=re.findall(r'^# '+key+r' (\d+)$',text,re.M)
               assert values and int(values[-1])==n,(key,values)
           PY
+      - name: Run additive conventional policy regression cases
+        working-directory: source
+        run: |
+          set -euo pipefail
+          node --max-old-space-size=384 --test --test-concurrency=1 hardhat/test/conventional-creator.test.cjs | tee "$RUNNER_TEMP/manager-conventional-unit.tap"
+          python3 -I - <<'PYCODE'
+          import pathlib,os,re
+          text=(pathlib.Path(os.environ['RUNNER_TEMP'])/'manager-conventional-unit.tap').read_text()
+          for key,n in {'tests':6,'pass':6,'fail':0,'cancelled':0,'skipped':0,'todo':0}.items():
+              values=re.findall(r'^# '+key+r' (\d+)$',text,re.M)
+              assert values and int(values[-1])==n,(key,values)
+          PYCODE
       - name: Exercise the actual Hardhat offline entry and source/catalog negatives
         run: |
           node --max-old-space-size=384 qualifier/scripts/qualification/qualify-tty-inspect.mjs \
@@ -115,12 +127,50 @@ jobs:
               assert r['paused'] and r['governor']=='0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99'
               assert r['sourceContractBuildDigest']=='e0965c57b18ace72bb9081b29976098fcc8f08b58ddd1005876d7696aeeb622d'
           PY
+      - name: Exercise additive conventional empty and marker campaigns separately
+        working-directory: source
+        run: |
+          set -euo pipefail
+          for account in empty marker; do
+            if [ "$account" = empty ]; then selected='empty account'; else selected='marker with lost-response resume'; fi
+            MANAGER_CONVENTIONAL_TEST_REPORT="$RUNNER_TEMP/manager-conventional-$account.jsonl" \
+            node --max-old-space-size=384 node_modules/hardhat/dist/src/cli.js \
+              --config hardhat.core-session.config.mjs test mocha --no-compile \
+              --grep "$selected" hardhat/test/conventional-creator.test.js | tee "$RUNNER_TEMP/manager-conventional-$account.log"
+          done
+          python3 -I - <<'PYCODE'
+          import pathlib,os,json,subprocess,hashlib
+          temp=pathlib.Path(os.environ['RUNNER_TEMP']);cases=[]
+          source={'commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'tree':subprocess.check_output(['git','rev-parse','HEAD^{tree}'],text=True).strip()}
+          assert source=={'commit':'49c01eb3b3fae4d99fd90940f0f28b8cfb71795e','tree':'91d6fc376f4bd52edfc3b5d8f9564628df082a40'}
+          for account,prompts,selected in [('empty',1,'empty account'),('marker',2,'marker with lost-response resume')]:
+              file=temp/('manager-conventional-'+account+'.jsonl');rows=[json.loads(x) for x in file.read_text().splitlines()]
+              assert len(rows)==1
+              r=rows[0]
+              assert r['mode']=='conventional-eoa-direct-create.v1' and r['prompts']==prompts
+              assert selected in (temp/('manager-conventional-'+account+'.log')).read_text()
+              assert r['scope']=='DISPOSABLE WRAPPER FUNCTIONAL PROOF; SYNTHETIC SOURCE IDENTITY AND FINALITY ADAPTER; NO REAL KEY OR PROVIDER'
+              assert r['signatures']==r['sends']==len(r['receiptProofs'])==9
+              assert [p['index'] for p in r['receiptProofs']]==list(range(9))
+              assert len({p['transactionHash'] for p in r['receiptProofs']})==9
+              assert r['paused'] and r['governor']=='0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99'
+              assert r['sourceContractBuildDigest']=='e0965c57b18ace72bb9081b29976098fcc8f08b58ddd1005876d7696aeeb622d'
+              cases.append({'accountMode':account,'selectedTest':selected,'profile':r['mode'],'reportSha256':hashlib.sha256(file.read_bytes()).hexdigest(),'report':r})
+          assert len({c['report']['planSha256'] for c in cases})==len({c['report']['manager'] for c in cases})==2
+          (temp/'manager-conventional-matrix.json').write_text(json.dumps({'schema':'manager-conventional-disposable-matrix-v1','executionSource':source,'scope':'Exact execution source; disposable synthetic account/token/finality fixtures only. Not production account qualification.','cases':cases,'localCreationReceipts':18},indent=2)+'\n')
+          PYCODE
       - name: Retain bounded qualification evidence including failures
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: manager-tty-source-qualified-evidence
           path: |
+            ${{ runner.temp }}/manager-conventional-unit.tap
+            ${{ runner.temp }}/manager-conventional-empty.log
+            ${{ runner.temp }}/manager-conventional-empty.jsonl
+            ${{ runner.temp }}/manager-conventional-marker.log
+            ${{ runner.temp }}/manager-conventional-marker.jsonl
+            ${{ runner.temp }}/manager-conventional-matrix.json
             ${{ runner.temp }}/manager-tty-unit.tap
             ${{ runner.temp }}/manager-tty-inspect
             ${{ runner.temp }}/manager-tty-evm.log
