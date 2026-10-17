@@ -47,6 +47,7 @@ jobs:
         run: |
           npm ci
           npm audit --audit-level=low
+          node --test ../scripts/security/test-yul-stale-bookkeeping.cjs
           npm run compile
           npm run test:preflight
           npm run test:deployment
@@ -80,6 +81,7 @@ jobs:
 
       - name: Run and review extended Slither findings
         run: |
+          python3 scripts/security/test-slither-deterministic.py
           python3 scripts/security/test-slither-review.py
           npm run slither:extended
 

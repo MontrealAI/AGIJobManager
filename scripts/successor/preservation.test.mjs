@@ -6,7 +6,8 @@ import { normalizeConsole } from './preservation-normalize.mjs';
 const digest = data => createHash('sha256').update(data).digest('hex');
 const baseline = JSON.parse(fs.readFileSync(new URL('../../docs/successor/PRESERVATION_BASELINE.json', import.meta.url)));
 const changes = JSON.parse(fs.readFileSync(new URL('../../config/next-deployment-contract-changes.json', import.meta.url)));
-const reviewedChanges = { ...changes.files, ...changes.evidenceInputs };
+const compilerChanges = JSON.parse(fs.readFileSync(new URL('../../config/compiler-profile-mitigation.json', import.meta.url)));
+const reviewedChanges = { ...changes.files, ...changes.evidenceInputs, ...compilerChanges.files, ...compilerChanges.evidenceInputs };
 function currentExpected(file, historicalHash) {
   const change = reviewedChanges[file];
   if (!change) return historicalHash;
@@ -48,7 +49,9 @@ test('historical reviews stay unchanged and new fork evidence binds the candidat
   }
   const oldFork = read('docs/qualification/mainnet-cutover.json'), newFork = read('docs/qualification/mainnet-cutover-v1.16.1.json');
   const { sourceSha256: oldHashes, ...oldOutcomes } = oldFork, { sourceSha256: newHashes, ...newOutcomes } = newFork;
-  const currentFork = read('docs/qualification/mainnet-cutover-next-deployment.json');
+  // Preserve the exact pre-mitigation fork record from main at 6484d09a.
+  assert.equal(digest(fs.readFileSync('docs/qualification/mainnet-cutover-next-deployment.json')), '36bc8cfb2d3d8e15b04372ea1fbed3fe407a921c0d70b525d673be4447f63746', 'Historical next-deployment fork evidence must remain unchanged');
+  const currentFork = read('docs/qualification/mainnet-cutover-yul-mitigation.json');
   const { sourceSha256: currentHashes, ...currentOutcomes } = currentFork;
   assert.deepEqual(currentOutcomes, oldOutcomes);
   assert.deepEqual(Object.keys(currentHashes), Object.keys(oldHashes));

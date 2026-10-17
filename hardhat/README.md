@@ -1,5 +1,7 @@
 # Hardhat deployment guide
 
+Current compiler profile: Solidity 0.8.37 with the two affected Yul optimizer passes explicitly excluded. See [SOL-2026-7 mitigation, new-build qualification and existing-deployment handling](../docs/security/SOL-2026-7.md). Etherscan may retain its compiler-version warning.
+
 For the already commissioned instance, start with the [supported inspection and recovery workflow](../docs/OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
 
 Current automated work uses [schema 6/7 operator-budget admission without retainers](../docs/OPERATIONS/NO_RETAINERS.md). Existing escrow credits and refunds remain recoverable. Fresh review-escrow deployment is disabled; use [existing-escrow recovery](../docs/OPERATIONS/REVIEW_PROTECTION.md) for verification and legacy obligations.

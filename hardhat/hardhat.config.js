@@ -9,7 +9,10 @@ const directory = path.dirname(fileURLToPath(import.meta.url));
 require('./scripts/load-env.cjs').loadDeploymentEnv(directory);
 const compilerPath = require.resolve('solc/soljson.js', { paths: [path.resolve(directory, '..')] });
 const compiler = { version: '0.8.37', path: compilerPath, preferWasm: true,
-  settings: { optimizer: { enabled: true, runs: 40 }, evmVersion: 'shanghai', viaIR: true,
+  settings: { optimizer: { enabled: true, runs: 40, details: { yulDetails: {
+    // Solidity 0.8.37 default minus E/L: SOL-2026-7; see the compiler mitigation note.
+    optimizerSteps: 'dfDvulfnTUtnIfxa[r]scMVcul[j]Trpeulxa[r]cvifMCTUca[r]SsTFOtfDnca[r]IulcscCTUtvifMx[scCTUt]TOntnfDIulvifMjmul[jul]VcTOculjmul:fDnTOcmuO',
+  } } }, evmVersion: 'shanghai', viaIR: true,
     metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } };
 const networks = {
   hardhat: { type: 'edr-simulated', chainType: 'l1', chainId: 31337, hardfork: 'osaka',

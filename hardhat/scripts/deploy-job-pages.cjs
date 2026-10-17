@@ -72,7 +72,7 @@ async function checkManager(reader, config) {
   return { owner,pendingOwner:pending,intakePaused:paused,ensJobPages:helper,useEnsJobTokenURI:enabled };
 }
 function qualifiedArtifact(artifact, buildInfo) {
-  const expected = { version:'0.8.37',optimizer:{enabled:true,runs:40},evmVersion:'shanghai',viaIR:true,metadata:{bytecodeHash:'none'},debug:{revertStrings:'strip'} };
+  const expected = { version:'0.8.37',optimizer:{enabled:true,runs:40,details:{yulDetails:{optimizerSteps:'dfDvulfnTUtnIfxa[r]scMVcul[j]Trpeulxa[r]cvifMCTUca[r]SsTFOtfDnca[r]IulcscCTUtvifMx[scCTUt]TOntnfDIulvifMjmul[jul]VcTOculjmul:fDnTOcmuO'}}},evmVersion:'shanghai',viaIR:true,metadata:{bytecodeHash:'none'},debug:{revertStrings:'strip'} };
   const s = buildInfo?.input?.settings;
   if (!s || encode({version:buildInfo.solcVersion,optimizer:s.optimizer,evmVersion:s.evmVersion,viaIR:s.viaIR || false,metadata:s.metadata,debug:s.debug}) !== encode(expected)) throw Error('Router compiler profile differs from qualified source.');
   const source = FQN.split(':')[0], inputSource = artifact.inputSourceName || artifact.sourceName;
