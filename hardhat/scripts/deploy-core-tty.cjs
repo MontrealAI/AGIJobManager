@@ -1,0 +1,85 @@
+'use strict';
+// User-run Ubuntu creator transport. No governor CALL or activation is modeled.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),readline=require('node:readline'),tty=require('node:tty');
+const E=require('ethers'),T=require('./transaction-envelope.cjs'),P=require('./core-creation-plan.cjs'),S=require('./deployment-session.cjs'),V=require('./core-creation-verifier.cjs'),A=require('./actor-policy.cjs');
+const X=require('./operator-paths.cjs'),R=require('./deployment-rpc.cjs');
+const {loadQualifiedBuild}=require('./qualified-build-catalog.cjs');
+const ERROR='MANAGER_CREATOR_STOPPED: Preserve the session. Reconcile existing signatures or submissions before another run; no automatic replacement or resend is allowed.';
+function requireCleanEnvironment(env=process.env,argv=process.argv,root=path.resolve(__dirname,'../..')){
+ for(const [key,value] of Object.entries(env))if(value)T.need(!/(?:PRIVATE_?KEY|MNEMONIC|SEED_?PHRASE)/i.test(key)&&!['NODE_OPTIONS','NODE_PATH','NODE_EXTRA_CA_CERTS','NODE_TLS_REJECT_UNAUTHORIZED','HARDHAT_CONFIG','DOTENV_CONFIG_PATH','DOTENV_KEY','DEBUG','HARDHAT_VERBOSE'].includes(key),'Unsupported secret-bearing or injected environment.');
+ T.need(!process.execArgv.some(x=>/^--(?:inspect|inspect-brk|require|import|loader|experimental-loader)(?:=|$)/.test(x)),'Injected/debug runtime is unsupported.');
+ T.need(!argv.some(x=>['--show-stack-traces','--verbose','--inspect','--inspect-brk'].includes(x)||/(?:private[-_]?key|mnemonic|seed[-_]?phrase)/i.test(x)||/^(?:0x)?[0-9a-f]{64}$/i.test(x)),'Secret arguments are unsupported.');
+ for(const dir of new Set([root,path.join(root,'hardhat'),process.cwd()]))T.need(!fs.readdirSync(dir).some(n=>n==='.env'||n.startsWith('.env.')&&!['.env.example','.env.sample'].includes(n)),'Deployment dotenv files are unsupported by this entry point.');
+ return true;
+}
+function readEndpoint(value){let u;try{u=new URL(value);}catch{throw Error('Explicit HTTPS endpoint required.');}T.need(u.protocol==='https:'&&!u.username&&!u.password&&!u.hash,'Explicit HTTPS endpoint required.');return u.href;}
+function readPinned(file){
+ X.requireExternalPath(file,{label:'Public run/config file'});const absolute=path.resolve(file),descriptors=[];let closed=false;
+ const same=(a,b)=>a.dev===b.dev&&a.ino===b.ino;
+ const close=()=>{if(closed)return;closed=true;for(const fd of descriptors.reverse())try{fs.closeSync(fd);}catch{}};
+ try{
+  const parents=[];for(let p=path.dirname(absolute);;p=path.dirname(p)){
+   const fd=fs.openSync(p,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW|fs.constants.O_DIRECTORY);descriptors.push(fd);
+   const stat=fs.fstatSync(fd),named=fs.lstatSync(p);T.need(stat.isDirectory()&&named.isDirectory()&&!named.isSymbolicLink()&&same(stat,named)&&fs.realpathSync(p)===p,'Real public-input parent required.');parents.push({path:p,fd,stat});if(path.dirname(p)===p)break;
+  }
+  const fd=fs.openSync(absolute,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW|fs.constants.O_NONBLOCK);descriptors.push(fd);const stat=fs.fstatSync(fd);
+  const requireIdentity=()=>{
+   T.need(!closed,'Public input binding is closed.');
+   for(const p of parents){const original=fs.fstatSync(p.fd),named=fs.lstatSync(p.path);T.need(original.isDirectory()&&named.isDirectory()&&!named.isSymbolicLink()&&same(original,p.stat)&&same(named,p.stat)&&fs.realpathSync(p.path)===p.path,'Public input parent changed.');}
+   const original=fs.fstatSync(fd),named=fs.lstatSync(absolute);T.need(original.isFile()&&named.isFile()&&!named.isSymbolicLink()&&same(original,stat)&&same(named,stat)&&original.nlink===1&&named.nlink===1&&original.size<=4*1024*1024,'Bounded independent public input file changed.');return original;
+  };
+  // Retaining the original descriptor prevents inode recycling from impersonating
+  // an unlinked input. Read only that descriptor, never replacement path bytes.
+  const readBytes=()=>{const before=requireIdentity(),bytes=Buffer.alloc(before.size);let offset=0;while(offset<bytes.length){const n=fs.readSync(fd,bytes,offset,bytes.length-offset,offset);T.need(n>0,'Public input read changed.');offset+=n;}T.need(requireIdentity().size===before.size,'Public input size changed.');return bytes;};
+  const bytes=readBytes(),hash=crypto.createHash('sha256').update(bytes).digest('hex');let value;try{value=JSON.parse(bytes);}catch{throw Error('Public input JSON is invalid.');}
+  return {value,assertUnchanged(){T.need(crypto.createHash('sha256').update(readBytes()).digest('hex')===hash,'Public input changed.');return true;},close};
+ }catch(error){close();throw error;}
+}
+function validateRun(run){T.exact(run,['schema','mode','catalog','catalogSha256','buildId','config','session','lockDirectory','finalityTimeoutSeconds','pollIntervalSeconds']);T.need(run.schema==='manager-tty-creator-run-v1'&&['new','resume','inspect'].includes(run.mode),'Explicit new/resume/inspect mode required.');for(const k of ['catalog','config','session','lockDirectory']){T.need(typeof run[k]==='string'&&path.isAbsolute(run[k]),'Absolute public paths required.');X.requireExternalPath(run[k],{label:k});}T.sha(run.catalogSha256);T.need(typeof run.buildId==='string'&&run.buildId,'Explicit build required.');T.integer(run.finalityTimeoutSeconds,1);T.integer(run.pollIntervalSeconds,1);T.need(run.finalityTimeoutSeconds<=3600&&run.pollIntervalSeconds>=5&&run.pollIntervalSeconds<=60&&run.pollIntervalSeconds<=run.finalityTimeoutSeconds,'Bounded finality timing required.');return run;}
+function publicReview(plan){return {schema:'manager-tty-creator-review-v1',source:plan.source,buildId:plan.buildId,buildDigest:plan.buildDigest,catalogSha256:plan.catalogSha256,planSha256:plan.payloadSha256,chainId:plan.chainId,creator:plan.creator,governor:plan.governor,creatorPolicy:plan.config.creatorPolicy,...(plan.config.creatorPolicy.mode===A.CONVENTIONAL?{assurance:'Conventional transaction correctness only. No wallet qualification, delegate target safety, no-invocation or custody assurance.'}:{}),nonce:plan.startNonce,expiresAfterBlock:plan.config.expiresAfterBlock,constructorArgs:plan.config.constructorArgs,maximumTotalFeeWei:plan.config.maximumTotalFeeWei,operations:plan.operations.map(x=>({index:x.id,name:x.name,address:x.predictedAddress,envelope:x.envelope,initcodeKeccak256:E.keccak256(x.envelope.data)})),scope:'Nine direct type-2 CREATEs only; owner is the explicit governor from construction. Remains paused. Governor configuration and activation are separate.'};}
+async function confirmPlan(plan,{input=process.stdin,output=process.stderr}={}){
+ T.need(tty.isatty(input.fd)&&tty.isatty(output.fd)&&input.isRaw===false&&input.readableEncoding==null&&input.readableFlowing!==true&&input.listenerCount('data')===0&&input.listenerCount('readable')===0,'Unused canonical interactive terminal required.');
+ const expected=`DEPLOY ${plan.payloadSha256}`;output.write(JSON.stringify(publicReview(plan),null,2)+'\n');
+ // terminal:false leaves echo of this public line to the canonical terminal and
+ // releases readline's listeners on close. terminal:true leaves a data consumer.
+ const rl=readline.createInterface({input,output,terminal:false,historySize:0});let cancel,budget,bytes=0;
+ try{const answer=await new Promise((resolve,reject)=>{cancel=()=>reject(Error('Public confirmation cancelled.'));budget=chunk=>{bytes+=Buffer.byteLength(chunk);if(bytes>128)cancel();};for(const signal of ['SIGINT','SIGTERM','SIGHUP'])process.once(signal,cancel);input.on('data',budget);rl.once('close',cancel);rl.question(`Review source, creator, governor and maximum fees. Type ${expected}: `,resolve);});T.need(answer===expected,'Public plan was not confirmed.');return true;}
+ finally{for(const signal of ['SIGINT','SIGTERM','SIGHUP'])if(cancel)process.removeListener(signal,cancel);if(budget)input.removeListener('data',budget);rl.close();}
+}
+async function ephemeralSigner(expectedAddress,prompt=require('./ephemeral-key.cjs').promptPrivateKey){let raw, wallet;try{raw=await prompt();wallet=new E.Wallet(raw);raw=null;T.need(wallet.address===expectedAddress,'Creator key does not match the public plan.');let closed=false;return Object.freeze({address:wallet.address,async signExact(envelope){T.need(!closed&&wallet&&envelope.from===expectedAddress,'Signer unavailable or sender differs.');T.validateEnvelope(envelope);return wallet.signTransaction(T.unsignedTransaction(envelope));},close(){closed=true;wallet=null;}});}catch{wallet=null;throw Error('Creator key input was cancelled or invalid.');}finally{raw=null;}}
+function requireCreatorPlan(plan){T.need(plan.creator!==plan.governor,'Creator and governor must be different accounts.');T.need(plan.governor===P.GOVERNOR&&plan.chainId===1&&plan.operations.length===9,'Explicit mainnet governor/nine-CREATE graph required.');T.need([A.EMPTY,A.MARKER,A.CONVENTIONAL].includes(plan.config.creatorPolicy.mode),'TTY route supports only conventional, empty or marker direct-CREATE profiles.');for(const op of plan.operations){T.validateEnvelope(op.envelope);T.need(op.envelope.from===plan.creator&&op.envelope.to===null&&op.envelope.value==='0','Direct zero-value CREATE only.');}return true;}
+const finalizedHashes=s=>s.state.filter(x=>x.status==='finalized').map(x=>x.transactionHash);
+async function waitFinalized(context,hash,{freshRpc,timeoutSeconds,pollSeconds,sleep=ms=>new Promise(r=>setTimeout(r,ms)),now=Date.now}){T.hash(hash);const deadline=now()+timeoutSeconds*1000;for(let count=0;count<=Math.ceil(timeoutSeconds/pollSeconds);count++){context.rpc=freshRpc();const receipt=await context.rpc('eth_getTransactionReceipt',[hash]);if(receipt){T.need(receipt.transactionHash===hash&&receipt.status==='0x1','Creation receipt failed or differs.');const final=await context.rpc('eth_getBlockByNumber',['finalized',false]);T.need(final&&typeof final.number==='string','Finalized block missing.');if(BigInt(final.number)>=BigInt(receipt.blockNumber))return;}T.need(now()+pollSeconds*1000<=deadline,'Finality wait expired; recover read-only without resending.');await sleep(pollSeconds*1000);}throw Error('Finality wait exhausted.');}
+// Injectable transport/confirmation in disposable tests only. main supplies the fixed production implementations.
+async function runCampaign({run,plan,context,freshRpc,confirm=confirmPlan,openSigner=ephemeralSigner,relay,emit=()=>{},sleep,now}){
+ T.need(['new','resume'].includes(run.mode),'Creator execution requires explicit new/resume mode.');requireCreatorPlan(plan);let signer;const refresh=()=>{context.rpc=freshRpc();context.revalidateSource();context.qualified.assertUnchanged();};
+ try{
+  if(run.mode==='new'){T.need(!X.entryExists(context.directory),'New campaign session already exists.');refresh();await V.preflight(plan,context.qualified,context.source,context.rpc,[]);}
+  else {const saved=S.readSession(context.directory);T.need(T.canonical(saved.plan)===T.canonical(plan),'Resume plan differs.');if(saved.released){refresh();return S.complete(context);}const index=saved.state.findIndex(x=>x.status!=='finalized');if(index>=0&&saved.state[index].status!=='planned'){const state=saved.state[index];if(state.transactionHash)await waitFinalized(context,state.transactionHash,{freshRpc,timeoutSeconds:run.finalityTimeoutSeconds,pollSeconds:run.pollIntervalSeconds,sleep,now});refresh();await S.reconcile(context);}}
+  refresh();const previous=run.mode==='resume'?finalizedHashes(S.readSession(context.directory)):[];await V.preflight(plan,context.qualified,context.source,context.rpc,previous);context.revalidateSource();
+  T.need(await confirm(plan)===true,'Public plan was not confirmed.');refresh();
+  if(run.mode==='new')await S.initialize({...context,lockDirectory:run.lockDirectory,plan});
+  let state=S.readSession(context.directory);if(state.state.every(x=>x.status==='finalized')){refresh();return S.complete(context);}
+  signer=await openSigner(plan.creator);T.need(signer&&signer.address===plan.creator&&typeof signer.signExact==='function'&&typeof signer.close==='function','Ephemeral signer differs.');context.revalidateSource();context.qualified.assertUnchanged();
+  for(let index=state.state.findIndex(x=>x.status!=='finalized');index<9;index++){
+   state=S.readSession(context.directory);T.need(state.state[index].status==='planned','Existing capability requires read-only reconciliation.');refresh();const handoff=await S.handoff(context);T.need(handoff.index===index,'Creation index differs.');const raw=await signer.signExact(handoff.envelope);context.revalidateSource();context.qualified.assertUnchanged();const imported=await S.importSigned(context,raw);refresh();await relay(context,imported.relayAcknowledgement);emit({stage:'submitted',index,transactionHash:imported.transactionHash});
+   await waitFinalized(context,imported.transactionHash,{freshRpc,timeoutSeconds:run.finalityTimeoutSeconds,pollSeconds:run.pollIntervalSeconds,sleep,now});refresh();const result=await S.reconcile(context);emit({stage:'finalized',index,transactionHash:result.transactionHash,address:plan.operations[index].predictedAddress});
+  }
+  refresh();return await S.complete(context);
+ }finally{if(signer)signer.close();}
+}
+function inspectPlan(plan,guard,qualified){requireCreatorPlan(plan);T.need(guard.assertUnchanged()===true,'Source guard failed.');qualified.assertUnchanged();return {...publicReview(plan),status:'OFFLINE_INSPECTION_ONLY',readyToBroadcast:false,transactionsSigned:0,transactionsBroadcast:0,operatorStateModified:false,configurationAuthorized:false,activationAuthorized:false};}
+async function main({hardhat}={}){
+ requireCleanEnvironment();T.need(process.version==='v22.23.2','Pinned Node22.23.2 required.');T.need(hardhat?.globalOptions?.network==='mainnet'&&hardhat.globalOptions.config&&fs.realpathSync(hardhat.globalOptions.config)===fs.realpathSync(path.resolve(__dirname,'../../hardhat.creator.config.mjs')),'Run using the isolated Hardhat creator config and mainnet selection.');
+ let runFile,configFile;try{
+ runFile=readPinned(process.env.MANAGER_CREATOR_RUN);const run=validateRun(runFile.value);configFile=readPinned(run.config);const sourceGuard=P.createSourceGuard(),source=sourceGuard.source;
+ const qualified=loadQualifiedBuild(run.catalog,{expectedCatalogSha256:run.catalogSha256,buildId:run.buildId,expectedRevision:source}),plan=P.makePlan(configFile.value,qualified,source);requireCreatorPlan(plan);
+ if(run.mode==='inspect'){runFile.assertUnchanged();configFile.assertUnchanged();const review=inspectPlan(plan,sourceGuard,qualified);console.log(JSON.stringify(review));return review;}
+ // Validate both URLs before any confirmation/key input; endpoint text is never reported.
+ const readUrl=readEndpoint(process.env.MANAGER_READ_RPC_URL),relayUrl=readEndpoint(process.env.MANAGER_RELAY_RPC_URL);
+ const freshRpc=()=>R.createReadRpc(readUrl,{scope:R.scopeFor(plan)}),context={directory:run.session,qualified,source,revalidateSource(){runFile.assertUnchanged();configFile.assertUnchanged();sourceGuard.assertUnchanged();qualified.assertUnchanged();return true;}};
+ const result=await runCampaign({run,plan,context,freshRpc,relay:(ctx,acknowledgement)=>require('./raw-transaction-relay.cjs').relayOperation(ctx,{endpoint:relayUrl,acknowledgement}),emit:record=>console.log(JSON.stringify(record))});
+ console.log(JSON.stringify({status:result.status,planSha256:plan.payloadSha256,manager:plan.operations[8].predictedAddress,governor:plan.governor,paused:true,configurationAuthorized:false,activationAuthorized:false,verification:'Run the existing source-bound verification-package exporter from this completed session; explorer acceptance remains a separate readback.'}));return result;
+ }finally{if(configFile)configFile.close();if(runFile)runFile.close();}
+}
+module.exports={ERROR,requireCleanEnvironment,readEndpoint,readPinned,validateRun,publicReview,confirmPlan,ephemeralSigner,requireCreatorPlan,waitFinalized,runCampaign,inspectPlan,main};

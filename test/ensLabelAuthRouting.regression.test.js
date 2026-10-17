@@ -66,7 +66,7 @@ contract("ENS label and auth routing deterministic regressions", (accounts) => {
       token = await MockERC20.new({ from: owner });
 
       manager = await deployActive(AGIJobManager,
-        ...buildInitConfig(
+        ...buildInitConfig(owner,
           token.address,
           "ipfs://base",
           "0x0000000000000000000000000000000000000000",

@@ -22,7 +22,7 @@ contract('operational durability', (accounts) => {
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
     const manager = await deployActive(AGIJobManager,
-      ...buildInitConfig(token.address, 'ipfs://base', ens.address, wrapper.address, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32),
+      ...buildInitConfig(owner, token.address, 'ipfs://base', ens.address, wrapper.address, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32),
       { from: owner }
     );
     await manager.addAdditionalAgent(agent, { from: owner });

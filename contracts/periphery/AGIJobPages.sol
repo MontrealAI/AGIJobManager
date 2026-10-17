@@ -23,7 +23,9 @@ contract AGIJobPages is Ownable {
     bool public useJobIdJsonSuffix;
     address public jobManager;
 
-    constructor(string memory baseMetadataURI_, string memory externalUrlBase_) {
+    constructor(string memory baseMetadataURI_, string memory externalUrlBase_, address initialGovernor) {
+        if (initialGovernor == address(0)) revert InvalidParameters();
+        _transferOwnership(initialGovernor);
         baseMetadataURI = baseMetadataURI_;
         externalUrlBase = externalUrlBase_;
         defaultImageURI = "ipfs://Qmc13BByj8xKnpgQtwBereGJpEXtosLMLq6BCUjK3TtAd1";

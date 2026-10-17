@@ -22,7 +22,7 @@ contract('pausing.accessControl', (accounts) => {
   it('gates create/apply with pause and gates settlement with settlementPaused', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
     const agentTree = mkTree([agent]);
-    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), agentTree.root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(owner, token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), agentTree.root), { from: owner });
     await manager.addAGIType(nft.address, 90, { from: owner }); await nft.mint(agent);
     const payout = new BN(parseUSDCAmount('1000'));
     await token.mint(employer, payout);
@@ -71,7 +71,7 @@ contract('pausing.accessControl', (accounts) => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
     const agentTree = mkTree([agent]);
     const validatorTree = mkTree([validator]);
-    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(owner, token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
     await manager.addAGIType(nft.address, 90, { from: owner });
     await nft.mint(agent);
 
@@ -110,7 +110,7 @@ contract('pausing.accessControl', (accounts) => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
     const agentTree = mkTree([agent]);
     const validatorTree = mkTree([validator]);
-    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(owner, token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
     await manager.addAGIType(nft.address, 90, { from: owner });
     await nft.mint(agent);
 
@@ -152,7 +152,7 @@ contract('pausing.accessControl', (accounts) => {
 
   it('allows treasury withdrawals only while paused and when settlement is active', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new();
-    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), '0x' + '00'.repeat(32)), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(owner, token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), '0x' + '00'.repeat(32)), { from: owner });
     const treasury = new BN(parseUSDCAmount('5'));
 
     await token.mint(manager.address, treasury, { from: owner });

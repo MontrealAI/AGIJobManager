@@ -112,6 +112,7 @@ function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock =
       artifacts: { readArtifact: async fqn => ({ sourceName: 'source', contractName: fqn.split(':')[1], deployedBytecode: CODE, abi:managerAbi }) },
     };
     if (name === './deploy.cjs') return { FQNS, LIBRARIES, qualifiedBuild: async () => ({ buildInfo }) };
+    if (name === './governance-deployment.cjs') return require('../scripts/governance-deployment.cjs');
     if (name === './deployment-safety.cjs') return safety;
     if (name === './canonical-state.cjs') return require('../scripts/canonical-state.cjs');
     if (name === './nft-policy.cjs') return require('../scripts/nft-policy.cjs');

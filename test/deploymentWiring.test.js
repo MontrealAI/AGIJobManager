@@ -26,7 +26,7 @@ contract("AGIJobManager deployment wiring", (accounts) => {
     const agentMerkleRoot = web3.utils.soliditySha3("agent-root");
 
     const manager = await deployActive(AGIJobManager,
-      ...buildInitConfig(
+      ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,
@@ -59,7 +59,7 @@ contract("AGIJobManager deployment wiring", (accounts) => {
     const token = await MockERC20.new();
     const zeroAddress = '0x' + '00'.repeat(20);
     const zeroRoot = '0x' + '00'.repeat(32);
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, '', zeroAddress, zeroAddress,
+    const manager = await AGIJobManager.new(...buildInitConfig(owner, token.address, '', zeroAddress, zeroAddress,
       zeroRoot, zeroRoot, zeroRoot, zeroRoot, zeroRoot, zeroRoot));
     const deployedBytecode = await web3.eth.getCode(manager.address);
     assert.ok(deployedBytecode && deployedBytecode.length > 2, "expected deployed bytecode");

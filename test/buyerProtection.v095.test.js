@@ -27,7 +27,7 @@ contract('v0.9.5 buyer protection and payment isolation', accounts => {
     token = await artifacts.require(tokenName).new();
     ens = await artifacts.require('MockENSRegistry').new();
     wrapper = await artifacts.require('MockNameWrapper').new();
-    manager = await Manager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, club, agents, zero, zero, zero, zero, [wallet30, wallet10]));
+    manager = await Manager.new(...buildInitConfig(owner, token.address, 'ipfs://', ens.address, wrapper.address, club, agents, zero, zero, zero, zero, [wallet30, wallet10]));
     const nft = await artifacts.require('MockERC721').new();
     await nft.mint(agent); await manager.addAGIType(nft.address, 1);
     await setNameWrapperOwnership(wrapper, agents, 'worker', agent, ens);

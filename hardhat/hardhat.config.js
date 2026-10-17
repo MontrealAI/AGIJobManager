@@ -8,8 +8,9 @@ const require = createRequire(import.meta.url);
 const directory = path.dirname(fileURLToPath(import.meta.url));
 require('./scripts/load-env.cjs').loadDeploymentEnv(directory);
 const compilerPath = require.resolve('solc/soljson.js', { paths: [path.resolve(directory, '..')] });
+const {optimizer}=require('./compiler-optimizer.cjs');
 const compiler = { version: '0.8.37', path: compilerPath, preferWasm: true,
-  settings: { optimizer: { enabled: true, runs: 40 }, evmVersion: 'shanghai', viaIR: true,
+  settings: { optimizer, evmVersion: 'shanghai', viaIR: true,
     metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } };
 const networks = {
   hardhat: { type: 'edr-simulated', chainType: 'l1', chainId: 31337, hardfork: 'osaka',
