@@ -1,7 +1,7 @@
 # AGIJobManager Interface Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `e9be32b61afb`.
-- Source snapshot fingerprint: `e9be32b61afb`.
+- Generated at (deterministic source fingerprint): `3c0cfc462cc8`.
+- Source snapshot fingerprint: `3c0cfc462cc8`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Operator-facing interface
@@ -36,6 +36,7 @@
 | `requiredValidatorApprovals` | `uint256` |
 | `requiredValidatorDisapprovals` | `uint256` |
 | `settlementPaused` | `bool` |
+| `useEnsJobTokenURI` | `bool` |
 | `validationRewardPercentage` | `uint256` |
 | `validatorBondBps` | `uint256` |
 | `validatorBondMax` | `uint256` |

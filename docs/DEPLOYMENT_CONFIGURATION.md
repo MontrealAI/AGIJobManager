@@ -1,5 +1,6 @@
 # Deployment configuration
 
+> Unreleased candidate: new Manager/helper/router creation assigns an explicit nonzero governor atomically and leaves configuration/activation separate. See the [candidate authority matrix](DEPLOYMENT/EXPLICIT_GOVERNOR_CANDIDATE.md). Deployer-handover instructions below describe historical ownership semantics, not the new creation flow. Previous deployments, funds and permissions must remain untouched; historical liabilities are not a prerequisite for an independent new deployment.
 For the already commissioned instance, start with the [supported inspection and recovery workflow](OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
 
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
@@ -90,9 +91,9 @@ Run these from `hardhat/`; from the repository root, insert `--prefix hardhat` a
 | Validate local profile | `npm run check:config:mainnet` or `check:config:sepolia` | Offline; no provider or signer |
 | Compile | `npm run compile` | Uses the pinned installed compiler; no blockchain transactions |
 | Review live deployment plan | `DRY_RUN=1 npm run deploy:mainnet` or `deploy:sepolia` | Chain reads; zero broadcasts |
-| Deploy after review | `DRY_RUN=0 npm run deploy:mainnet` or `deploy:sepolia` | Deployments and ownership proposal; mainnet phrase also required |
+| Deploy after review | `DRY_RUN=0 npm run deploy:mainnet` or `deploy:sepolia` | CREATE transactions with atomic explicit-governor assignment; mainnet phrase also required |
 | Plan optional helper | `DRY_RUN=1 npm run deploy:ens-job-pages:mainnet` or `deploy:ens-job-pages:sepolia` | Chain reads and constructor estimation; zero broadcasts |
-| Deploy optional helper after review | `DRY_RUN=0 npm run deploy:ens-job-pages:mainnet` or `deploy:ens-job-pages:sepolia` | Helper deployment/configuration/one-step ownership transfer; mainnet phrase also required |
+| Deploy optional helper after review | `DRY_RUN=0 npm run deploy:ens-job-pages:mainnet` or `deploy:ens-job-pages:sepolia` | Helper CREATE only; governor configuration remains separate; mainnet phrase also required |
 | Recover manager verification | `npm run reverify:mainnet` or `reverify:sepolia` | Chain reads and explorer verification requests; zero blockchain transactions |
 | Verify pre-activation state | `npm run check:readiness` or `check:readiness:sepolia` | Chain reads and a local report; zero broadcasts |
 
@@ -107,8 +108,8 @@ The offline check and live deployment share profile validation. Offline success 
 | Missing profile, owner or recipients | Run setup, review the selected profile, then rerun its offline check |
 | Deployer account required for dry run | Leave the key empty and supply the intended public `DEPLOYER_ADDRESS` |
 | Required NFT policy has no enabled collections | Register reviewed collections or explicitly choose optional policy, then match the complete policy file |
-| Manager has a pending owner | Intended owner calls `acceptOwnership()`; verify owner and zero pending owner before helper/readiness steps |
-| Fresh ENS root occupied or manager has existing jobs/helper | Reconcile the prior journal and inventory; use replacement only for the same manager with an active helper |
+| New-schema manager has a pending owner | Stop and reconcile: constructor governance requires the explicit governor and zero pending owner; no automatic handover or acceptance |
+| Fresh ENS root occupied or manager has existing jobs/helper | Stop and reconcile the prior journal/inventory. The independent-new-deployment scope does not authorize changing old helpers, roots or permissions |
 | Command failed after a broadcast | Preserve its journal and reconcile receipts before any retry; never blindly redeploy |
 | All nine deployments exist but verification failed | Use manager verification recovery; preserve the original journal and use the new recovery receipt for readiness |
 | ENS helper verification failed | Follow [helper recovery](DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md); manager recovery cannot process this journal |
@@ -136,3 +137,35 @@ Both entries are deliberately empty in `hardhat/.env.example`. They document pro
 The read-only [implementation companion](DEPLOYMENT_USDC_IMPLEMENTATION_CHECK.md) uses `MAINNET_RPC_URL`, an explicitly owner/operator-reviewed JSON binding in `READINESS_USDC_CONFIG`, and a new exclusive output path in `USDC_IMPLEMENTATION_REPORT`. It does not load `.env`, create a signer, edit receipts or grant deployment/activation approval. Export only the needed values privately.
 
 To match a separate financial/readiness report's canonical snapshot, export both `USDC_SNAPSHOT_BLOCK_NUMBER` (decimal) and `USDC_SNAPSHOT_BLOCK_HASH`. Omit or unset both to select latest; empty exported snapshot settings are invalid. The companion rejects a different canonical hash and unsupported proxy/chain/type. Observed candidate values are not approved bindings. Its result covers only the implementation-identity portion of A2.
+
+## Unreleased explicit-governor creation and closeout settings
+
+The creator is explicitly selected in the core reviewed profile as `creator.address` and `creator.transactionMode`. It need not equal `finalOwner`. Initial governance is assigned atomically; no creator transfer or governor acceptance is part of new creation. Subsequent ownership changes retain their existing semantics. No old deployment action is authorized by this candidate.
+
+| Setting | Candidate behavior |
+| --- | --- |
+| `CREATOR_TRANSACTION_MODE` | Optional-helper transaction mode; only qualified `eoa-create` with empty creator code is supported by this increment. Other transports fail closed. |
+| `DEPLOYMENT_LOCK_DIRECTORY` | Existing operator-selected shared directory for exclusive chain/creator nonce locks. Unresolved failures retain the lock; never auto-break it. |
+| `ENS_BUILD_DIGEST` | Reviewed digest of exact helper compiler input and compiler long version, required before live creation. |
+| `ENS_MANAGER_CODE_HASH` | Explicit reviewed runtime hash of the new paused, governor-owned manager. |
+| `ENS_JOURNAL` | Unique new helper journal for creation, or original journal for keyless source re-verification. |
+| `ENS_REVERIFY` | Explicit source-verification recovery mode; never redeploys or sends governor configuration. |
+| `ENS_REPORT` | New exclusive recovery report path, preserving the original journal. |
+| `ENS_LEGACY_ARTIFACT` | Explicit original five-argument helper artifact for historical read-only recovery. |
+| `ENS_LEGACY_BUILD_INFO` | Exact original helper compiler build for historical recovery; never current source substituted for old evidence. |
+| `ENS_LEGACY_BUILD_DIGEST` | Reviewed original helper compiler-input identity, checked against the original saved input. |
+| `AUTHORITY_REVIEW` | Source-bound reviewed direct-role/metadata expectations; complete creator and governor subjects required. |
+| `AUTHORITY_REPORT` | New read-only direct authority report. Passing direct checks remains `finalized:false`, `activationAuthorized:false`, exit 3 while comprehensive setup, ENS/controller/operator, signing and approval gates remain. |
+
+Optional router configuration uses `ROUTER_CONFIG`, `ROUTER_JOURNAL`, `ROUTER_REVERIFY` and `ROUTER_REPORT`; archived two-argument router recovery additionally names `ROUTER_LEGACY_ARTIFACT` and `ROUTER_LEGACY_BUILD_INFO`. New router schemas bind creator separately from owner and append the explicit governor to constructor arguments. No metadata pointer, root custody, approval, fee wallet or intake state is changed by optional CREATE/verification.
+
+## Core external-signing endpoint inputs
+
+The unreleased [core external-signing CLI](deployment/core-external-signing.md) starts directly with Node and does not load `.env`. Export the needed endpoint explicitly in the command's launch environment. The empty example entries document these names; copying the example to `.env` does not configure this CLI. Keep endpoint credentials private and out of plans, reports and source control.
+
+| Setting | Exact scope |
+| --- | --- |
+| `MANAGER_READ_RPC_URL` | Explicit HTTPS endpoint for the bounded read-only transport used by preflight, start, handoff, recover, reconcile, complete and relay's pre-send checks. Production requires canonical EIP-1898 block tags; no numbered-block fallback is allowed. |
+| `MANAGER_RELAY_RPC_URL` | Separate explicit HTTPS endpoint used only by the user-run `relay` command, after its exact acknowledgement and durable attempt record. It submits the already checked raw transaction once; it does not sign, retry or bump fees. |
+
+The offline `plan`, `import`, `retrieve-handoff`, `inspect-journal`, `repair-journal` and verification-export commands do not need either endpoint. Retrieval and journal repair operate only on the saved local evidence. Both transports reject embedded username/password credentials, URL fragments and non-HTTPS URLs. Supplying an endpoint grants no signing, configuration or activation approval; all source, actor, envelope and receipt checks remain required.

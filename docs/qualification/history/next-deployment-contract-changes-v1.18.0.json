@@ -1,0 +1,43 @@
+{
+  "baseline": "191cf3590e5cdc08df1bb0af500ee28a91c8b010",
+  "scope": "Inherited v1.17.0 ENS membership correction with v1.18.0 release identity; source review is not runtime qualification, independent audit or activation approval.",
+  "files": {
+    "contracts/utils/ENSOwnership.sol": {
+      "beforeSha256": "5178a64b4618bf861a300b57fa4c4ca183313c46005509e14dc0c87ca8254209",
+      "afterSha256": "244bcedf9ef9da775b3a663b2dcc4a221ea70810e1543ac0f255e3f0d3acaca0",
+      "purpose": "Require live registry ownership and wrapper binding for ENS membership; new deployment required."
+    },
+    "contracts/test/MockENS.sol": {
+      "beforeSha256": "6458d3fbdaafd623aa44bde80c54e58823cca47530e238649fcd19f8accf58ff",
+      "afterSha256": "57057dacfc94f4b1b4c9547b78c269ea1a936046931b2a12bad0c29da06f5d6b",
+      "purpose": "Model explicit registry ownership in local fixtures; not a production deployment target."
+    }
+  },
+  "evidenceInputs": {
+    "hardhat/scripts/deployment-safety.cjs": {
+      "beforeSha256": "0bfe3cfacbc97aafa1120d8d6d7c6aca501f9cd5c2777518bb41d5ef7079e446",
+      "afterSha256": "fa739a2460544328553236a5e7223c74d1e3ac28af6d5f3620e8ae173f4cca27",
+      "purpose": "Require complete, exact five-reserve readiness state; fork evidence input changes without changing settlement economics."
+    },
+    "package.json": {
+      "beforeSha256": "cb4c469111c491557d769ae80baef09f99c094a64f02574c610749def000f517",
+      "afterSha256": "de69b473303eef544521e348b495c2507c6402abca3b333e7a90a00aafb671e4",
+      "purpose": "Fresh v1.18.0 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
+    },
+    "package-lock.json": {
+      "beforeSha256": "d526341337e5bf94e6fee8aca003fcf3bac865fc43ec8fa8c3507d9db1743980",
+      "afterSha256": "cdd3b46e8de3be61efb0a60648eb1915f8127db0ed2ea01eb69cf2b6898e18f0",
+      "purpose": "Fresh v1.18.0 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
+    },
+    "hardhat/package.json": {
+      "beforeSha256": "bdb8956d86342623b763a654799886f36e3abb5bec59559c27bbdbfca7c718ff",
+      "afterSha256": "edca08385ddfc61a083589dea7111215c53363dffda42f3ce210044ac72460cc",
+      "purpose": "Fresh v1.18.0 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
+    },
+    "hardhat/package-lock.json": {
+      "beforeSha256": "65a889b2611afe2327602c9899b6bb2eacd7a6f1259ba0924f31bdc052fe757d",
+      "afterSha256": "ebdb3e307e42e6ea0739451252f2606789cdc9f47a21044dea095f6ab4b5638a",
+      "purpose": "Fresh v1.18.0 release identity only; dependency and compiler pins unchanged, with new exact-source qualification required."
+    }
+  }
+}

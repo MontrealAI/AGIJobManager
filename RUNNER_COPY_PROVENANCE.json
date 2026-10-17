@@ -1,0 +1,77 @@
+{
+  "scope": "Separate external runners; preserve portable dependency-root correction and four original named roots for actual d371 qualification. Copy tracked source-probe entries independently so the unchanged reviewed-source nlink==1 guard remains satisfied.",
+  "files": {
+    "runners/full/scripts/qualification/core-session-native.mjs": {
+      "sha256": "e38b45b8bd907cdcbddac3c52913fe1a84df6a34ab78bc663ce06453c0963fec",
+      "original": "/tmp/manager-full-native-guard-oracle-20261016/scripts/qualification/core-session-native.mjs",
+      "beforeNamedRootsSha256": "0814f181302b387c705d75528b4c76e8061fe75701396966915e807071eafe52",
+      "change": "Replace four zero roots with the original distinct namehash tuple; no command/case omission. Replace retained source-probe hardlinks with exclusive independent file copies; preserve symlinks and file modes, all cases/commands and nlink==1 validation.",
+      "beforeIndependentCopySha256": "d8606c7a2f3400718f4d9848e04d9990ba51033613572fe0844f8c9c48d786b7"
+    },
+    "runners/full/scripts/qualification/prepare-core-catalog.mjs": {
+      "sha256": "33047e22970a517d9c4b5cce6f0985271f10b0542dc052e9ee98f798701f0dcd",
+      "original": "/tmp/manager-full-native-guard-oracle-20261016/scripts/qualification/prepare-core-catalog.mjs"
+    },
+    "runners/full/hardhat/test/helpers/native-core-rpc.cjs": {
+      "sha256": "13e4ef06147246dc43690d3466b2c10b51975cf550f195316630a1a35442731b",
+      "original": "/tmp/manager-full-native-guard-oracle-20261016/hardhat/test/helpers/native-core-rpc.cjs"
+    },
+    "runners/full/hardhat/test/native-core-session.test.cjs": {
+      "sha256": "c45ef33883fe36eba86de07de59c68ec3665bf4a76c9417fd4d6a1a6ae44a722",
+      "original": "/tmp/manager-full-native-guard-oracle-20261016/hardhat/test/native-core-session.test.cjs"
+    },
+    "runners/full/scripts/qualification/cleanup-race-oracle.mjs": {
+      "sha256": "c51f3ac4084aa33d8e377e54ef926e44b6fdd7a10c52ebf4c7638308da286742",
+      "original": "/tmp/manager-full-native-guard-oracle-20261016/scripts/qualification/cleanup-race-oracle.mjs"
+    },
+    "runners/full/hardhat/test/cleanup-race-oracle.test.cjs": {
+      "sha256": "b9776c71d6190deb0de5d8d2c67bed61e791a77c6a019318ab938297375c16cf",
+      "original": "/tmp/manager-full-native-guard-oracle-20261016/hardhat/test/cleanup-race-oracle.test.cjs"
+    },
+    "runners/full/GUARD_ORACLE.md": {
+      "sha256": "5464c9a2a5a908521b0eea78f1a41a393478006630f6a5f4e5623a8cf270341f",
+      "original": "/tmp/manager-full-native-guard-oracle-20261016/GUARD_ORACLE.md"
+    },
+    "runners/full/docs/qualification/CORE_SESSION_NATIVE.md": {
+      "sha256": "137e5fcffdd470b1ef33d7056d4fa622d2628b24c11baff4608428afc273cddb",
+      "original": "/tmp/manager-full-native-guard-oracle-20261016/docs/qualification/CORE_SESSION_NATIVE.md"
+    },
+    "runners/marker/scripts/qualification/core-session-native.mjs": {
+      "sha256": "437e187bd5124920d56f4997d31fafd8210790073f396dc25a760323f6f60f95",
+      "original": "/tmp/manager-marker-native-harness-r2-20261016/scripts/qualification/core-session-native.mjs",
+      "beforeNamedRootsSha256": "bdce95313b1d264f22ba890513b29d0ec871632e58cc60b64617b31f68e50bce",
+      "change": "Replace four zero roots with the original distinct namehash tuple; no command/case omission. Replace retained source-probe hardlinks with exclusive independent file copies; preserve symlinks and file modes, all cases/commands and nlink==1 validation.",
+      "beforeIndependentCopySha256": "29b693cb0c58d5a7d892b76d5623991c7288c8479b8d0ac51359047911f3c9b2"
+    },
+    "runners/marker/scripts/qualification/prepare-core-catalog.mjs": {
+      "sha256": "33047e22970a517d9c4b5cce6f0985271f10b0542dc052e9ee98f798701f0dcd",
+      "original": "/tmp/manager-marker-native-harness-r2-20261016/scripts/qualification/prepare-core-catalog.mjs"
+    },
+    "runners/marker/hardhat/test/helpers/native-core-rpc.cjs": {
+      "sha256": "13e4ef06147246dc43690d3466b2c10b51975cf550f195316630a1a35442731b",
+      "original": "/tmp/manager-marker-native-harness-r2-20261016/hardhat/test/helpers/native-core-rpc.cjs"
+    },
+    "runners/marker/hardhat/test/native-core-session.test.cjs": {
+      "sha256": "c45ef33883fe36eba86de07de59c68ec3665bf4a76c9417fd4d6a1a6ae44a722",
+      "original": "/tmp/manager-marker-native-harness-r2-20261016/hardhat/test/native-core-session.test.cjs"
+    },
+    "runners/marker/scripts/qualification/marker-native-evidence.mjs": {
+      "sha256": "19cd3c41bb64a733ee2cc060a139ef485b2ecca88564e4f21f341f182c67fe5b",
+      "original": "/tmp/manager-marker-native-harness-r2-20261016/scripts/qualification/marker-native-evidence.mjs"
+    },
+    "runners/marker/hardhat/test/marker-native-evidence.test.cjs": {
+      "sha256": "0b320d45ec0e34d639331a4f5675c050212eb6178de7dfa98c34bb6775589c4a",
+      "original": "/tmp/manager-marker-native-harness-r2-20261016/hardhat/test/marker-native-evidence.test.cjs",
+      "originalCopySha256": "4d2aaec2f1b3519457554c1d319db0582021a457d477c1c2cae772df78cbe30b",
+      "correction": "Require explicit canonical selected-checkout package root and pinned ethers6.17.0; remove scratch-path dependency lookup. Root-approved CI-only portability correction after failed41f118 native job117117447783."
+    },
+    "runners/marker/MARKER_NATIVE.md": {
+      "sha256": "176febc615237f1ececd3ee9c9e178ae01dcc5724bff38e78bf16df87bd64814",
+      "original": "/tmp/manager-marker-native-harness-r2-20261016/MARKER_NATIVE.md"
+    },
+    "runners/marker/docs/qualification/CORE_SESSION_NATIVE.md": {
+      "sha256": "137e5fcffdd470b1ef33d7056d4fa622d2628b24c11baff4608428afc273cddb",
+      "original": "/tmp/manager-marker-native-harness-r2-20261016/docs/qualification/CORE_SESSION_NATIVE.md"
+    }
+  }
+}

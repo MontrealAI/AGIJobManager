@@ -42,7 +42,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
 
     manager = await deployActive(AGIJobManager,
-      ...buildInitConfig(
+      ...buildInitConfig(owner,
         token.address,
         "ipfs://base",
         ens.address,

@@ -87,7 +87,7 @@ async function deployLocalFixture() {
   const token = await runtime.artifacts.require('MockERC20').new();
   const zeroAddress = '0x' + '00'.repeat(20);
   const zeroRoot = '0x' + '00'.repeat(32);
-  const manager = await runtime.artifacts.require('AGIJobManager').new(...buildInitConfig(
+  const manager = await runtime.artifacts.require('AGIJobManager').new(...buildInitConfig(runtime.accounts[0],
     token.address, 'ipfs://', zeroAddress, zeroAddress, zeroRoot, zeroRoot, zeroRoot, zeroRoot, zeroRoot, zeroRoot,
   ));
   await token.mint(runtime.accounts[0], '1000000000');

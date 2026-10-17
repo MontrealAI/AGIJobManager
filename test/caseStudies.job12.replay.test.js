@@ -91,7 +91,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     alphaClubRootNode = clubRootNode;
     alphaAgentRootNode = agentRootNode;
 
-    manager = await deployActive(AGIJobManager, ...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(owner,
         token.address,
         baseIpfsUrl,
         ens.address,
