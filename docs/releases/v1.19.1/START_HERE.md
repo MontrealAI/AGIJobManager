@@ -1,0 +1,13 @@
+# Start here — AGIJobManager v1.19.1
+
+This patch clarifies release guidance and advances the software labels to v1.19.1. It preserves the contracts, compiler behavior, dependency resolutions and executable runtime from the published [v1.19.0 release](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.0). Use the [matching release page](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.1), external `QUALIFICATION.json` and publication workflow for its final source and publication evidence. v1.19.0's qualification does not qualify this patch. See [validation](VALIDATION.md).
+
+- Review the [release notes](RELEASE_NOTES.md) for the guide correction and preserved source boundaries.
+- Use the [release identity and deployment commands](../../RELEASE_GUIDE.md) to check this checkout's software version and matching release/download availability. The previous published release retains its own link and evidence; current source is not proof that its matching release is available.
+- Use the [Hardhat guide](../../../hardhat/README.md) and [owner operations guide](../../DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) with the actual instance's original journal. Publishing or downloading this version does not deploy or activate a manager.
+- Continue local public-data work with the [SUCCESSOR Builder](../../successor/README.md) and [Alpha transfer guide](../../successor/ALPHA_PROJECT_HANDOFF.md). Preserve the original dossier and verify an exported copy before closing.
+- Verify all nine published assets with the [checksum and attestation procedure](VALIDATION.md#verify-a-published-package). For uncertain outcomes or a regression, follow [recovery](RECOVERY_GUIDE.md).
+
+The [dated deployment and authority record](../../deployments/MAINNET_MANAGER_2026-10-17.md) preserves the evidence scope and reconciliation inventory. The reported 17 October 2026 mainnet snapshot identifies Manager `0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8`, governor `0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99` and moderator `0xA204b14eD9bc09501e3A47CDde379279FcD5D743`. All nine deployed contracts were reported explorer-verified: six Exact Matches and three Similar Matches. Intake remained paused, identity configuration unlocked and NFT collection count `0` with the agent NFT requirement off. This dated report is not a fresh chain read, an exact-match claim for every contract or live paid-operation qualification. Keep its original deployment source and evidence separate from this release wrapper.
+
+Default transaction targets remain blank. A release label does not select that manager, authorize owner configuration, lock identity or open intake.

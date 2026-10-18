@@ -1,10 +1,10 @@
 # USDC deployment registry
 
-## Software candidate
+## Software version
 
-AGIJobManager v1.19.0. Status: **deployment-required**.
+AGIJobManager v1.19.1. Status: **deployment-required**.
 
-Candidate software; no transaction target is selected by default. The separately recorded mainnet instance was deployed and ENS-connected at block 26165026. Activation remains held pending separate review. Use the recorded-instance inspection workflow for fresh state. Public-input work, no new review retainers, existing credits/claims and deployed contract behavior remain unchanged.
+Software package; no transaction target is selected by default. The separately recorded mainnet instance was deployed and ENS-connected at block 26165026. Activation remains held pending separate review. Use the recorded-instance inspection workflow for fresh state. Public-input work, no new review retainers, existing credits/claims and deployed contract behavior remain unchanged.
 
 - Chain ID: 1
 - Manager: Not recorded
@@ -18,9 +18,9 @@ Candidate software; no transaction target is selected by default. The separately
 
 ## Constructor arguments
 
-Follow the [Hardhat deployment guide](../../hardhat/README.md), [readiness guide](../MAINNET_READINESS.md) and [deployment runbook](../DEPLOY_RUNBOOK.md). Supply the two settlement wallets and explicit final governor through the reviewed constructor profile. All monetary arguments use six-decimal base units. Preserve original-asset jobs on their existing manager; legacy deployment snapshots are not USDC configurations. v1.19.0 includes explicit-governor constructor profiles and eight fixed library links. Use the exact selected source, constructor schema and compiler settings; do not substitute current constructor inputs into a historical deployment. The ENS membership correction introduced in v1.17.0 remains included, and NFT admission remains disabled by default. A verified v0.9.6 manager remains compatible with this console. v0.9.5 and older managers lack the getJobBonds getter and must keep their original interfaces for existing jobs. First deployments and moves from incompatible older versions require a fresh manager.
+Follow the [Hardhat deployment guide](../../hardhat/README.md), [readiness guide](../MAINNET_READINESS.md) and [deployment runbook](../DEPLOY_RUNBOOK.md). Supply the two settlement wallets and explicit final governor through the reviewed constructor profile. All monetary arguments use six-decimal base units. Preserve original-asset jobs on their existing manager; legacy deployment snapshots are not USDC configurations. v1.19.1 includes explicit-governor constructor profiles and eight fixed library links. Use the exact selected source, constructor schema and compiler settings; do not substitute current constructor inputs into a historical deployment. The ENS membership correction introduced in v1.17.0 remains included, and NFT admission remains disabled by default. A verified v0.9.6 manager remains compatible with this console. v0.9.5 and older managers lack the getJobBonds getter and must keep their original interfaces for existing jobs. First deployments and moves from incompatible older versions require a fresh manager.
 
-AGI Agents use agent.agi.eth or alpha.agent.agi.eth subnames; AGI Club validators use club.agi.eth or alpha.club.agi.eth. The contract preserves owner-managed allowlist and Merkle exceptions, and agents need a configured NFT eligibility credential only when their job requires it. Fresh v1.19.0 managers start with NFT admission disabled and an empty registry; owner changes affect future jobs only. Existing deployed settings remain unchanged. To opt in, register reviewed collections and enable the requirement before posting the affected jobs. Readiness requires READINESS_NFT_CONFIG with the chosen mode and complete collection registry. Optional job-page ENS wiring is separate from member identity. Review the four membership root nodes and any exceptions in the deployment plan.
+AGI Agents use agent.agi.eth or alpha.agent.agi.eth subnames; AGI Club validators use club.agi.eth or alpha.club.agi.eth. The contract preserves owner-managed allowlist and Merkle exceptions, and agents need a configured NFT eligibility credential only when their job requires it. Fresh v1.19.1 managers start with NFT admission disabled and an empty registry; owner changes affect future jobs only. Existing deployed settings remain unchanged. To opt in, register reviewed collections and enable the requirement before posting the affected jobs. Readiness requires READINESS_NFT_CONFIG with the chosen mode and complete collection registry. Optional job-page ENS wiring is separate from member identity. Review the four membership root nodes and any exceptions in the deployment plan.
 
 ## Verification
 

@@ -2,11 +2,11 @@ import fs from 'node:fs';
 const c = JSON.parse(fs.readFileSync('../config/usdc-deployment.json', 'utf8'));
 fs.writeFileSync('../docs/ui/DEPLOYMENT_MAINNET.md', `# USDC deployment registry
 
-## Software candidate
+## Software version
 
 AGIJobManager v${c.version}. Status: **${c.status}**.
 
-${c.note}
+${c.note.replace(/^Candidate software;/, 'Software package;')}
 
 - Chain ID: ${c.chainId}
 - Manager: ${c.managerAddress || 'Not recorded'}

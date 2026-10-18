@@ -17,13 +17,13 @@ BASE = '8815ed3181778664595f951befd672afbd7a9352'
 TREE = '913e49d65263bc53026916f7fc3b4cbfb93549f8'
 BASE_MANIFEST = 'config/explicit-governor-source-v1.json'
 BASE_MANIFEST_SHA = '83cd0976000a74d8c8ac3b5fd21c90ba48068c5ef87582dd6ba926e2b62c01e2'
-VERSION = '1.19.0'
+VERSION = '1.19.1'
 VERSION_ONLY = {p + n for p in ('', 'hardhat/', 'ui/') for n in ('package.json', 'package-lock.json')} | {'config/usdc-deployment.json'}
 # Finite release delta. No contract, compiler, dependency or deployment script is mutable.
 ALLOWED = VERSION_ONLY | {
     'config/mainnet/manager-8815-2026-10-17.json', 'docs/deployments/MAINNET_MANAGER_2026-10-17.md', 'docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md', 'config/companion-releases.json', 'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html', 'ui/README.md', 'docs/START_HERE.md', 'docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md', 'ui/src/generated/deployments.ts',
     'README.md', 'docs/OPERATIONS/PRIVATE_FLEET.md', 'docs/V1_RELEASE_SCOPE.md',
-    'docs/RELEASE_GUIDE.md', 'docs/REFERENCE/VERSIONS.md', 'docs/ui/DEPLOYMENT_MAINNET.md',
+    'docs/RELEASE_GUIDE.md', 'docs/REFERENCE/VERSIONS.md', 'docs/ui/DEPLOYMENT_MAINNET.md', 'scripts/docs/release-alignment.mjs',
     'docs/MAINNET_READINESS.md', 'scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl', 'docs/REPO_MAP.md', 'scripts/docs/templates/README.md.tpl', 'ui/agijobmanager-usdc.html',
     '.github/workflows/current-state-release.yml', '.github/workflows/publish-v114.yml',
     '.github/workflows/pages.yml', 'scripts/release/run-release-preservation.py', '.github/workflows/mainnet-fork.yml', '.github/workflows/security-verification.yml',
@@ -31,11 +31,11 @@ ALLOWED = VERSION_ONLY | {
     'scripts/release/verify-package.py', 'scripts/release/collect-qualification.py',
     'scripts/release/publish-release.py', VERIFIER, 'scripts/release/package-policy.py',
     'scripts/release/test-release-profile.py', 'scripts/release/test-release-gates.py', 'ui/scripts/generate-deployment-docs.mjs', 'scripts/release/run-inherited-source-tests.py',
-    'docs/qualification/mainnet-cutover-v1.19.0-expected.json',
-    'docs/qualification/release-v1.19.0-provenance.json',
-    'scripts/security/slither-reviewed-findings-v1.19.0.json',
+    'docs/qualification/mainnet-cutover-v1.19.0-expected.json', 'docs/qualification/mainnet-cutover-v1.19.1-expected.json',
+    'docs/qualification/release-v1.19.0-provenance.json', 'docs/qualification/release-v1.19.1-provenance.json',
+    'scripts/security/slither-reviewed-findings-v1.19.0.json', 'scripts/security/slither-reviewed-findings-v1.19.1.json',
     'scripts/security/verify-slither-review.py',
-} | {'docs/releases/v1.19.0/' + n + '.md' for n in ('START_HERE', 'RELEASE_NOTES', 'RECOVERY_GUIDE', 'VALIDATION')}
+} | {'docs/releases/' + tag + '/' + n + '.md' for tag in ('v1.19.0', 'v1.19.1') for n in ('START_HERE', 'RELEASE_NOTES', 'RECOVERY_GUIDE', 'VALIDATION')}
 
 
 def read(root, name):
@@ -120,10 +120,10 @@ def validate_ui_metadata(root, baseline):
     require(read(root, 'agijobmanager.html')[1] == read(root, 'ui/dist-ipfs/agijobmanager.html')[1], 'Standalone UI copies differ')
     name = 'ui/agijobmanager-usdc.html'
     data = read(root, name)[1]
-    require(data.count(b'v1.19.0') == 6 and sha(data.replace(b'v1.19.0', b'v1.18.0')) == baseline[name]['sha256'], 'USDC console changed beyond six release display labels')
+    require(data.count(b'v1.19.1') == 6 and sha(data.replace(b'v1.19.1', b'v1.18.0')) == baseline[name]['sha256'], 'USDC console changed beyond six release display labels')
     name = 'ui/src/generated/deployments.ts'
     data = read(root, name)[1]
-    require(sha(data.replace(b'"version": "1.19.0"', b'"version": "1.18.0"', 1)) == baseline[name]['sha256'], 'Generated deployment configuration changed beyond software version')
+    require(sha(data.replace(b'"version": "1.19.1"', b'"version": "1.18.0"', 1)) == baseline[name]['sha256'], 'Generated deployment configuration changed beyond software version')
 
 
 def validate_source(root, selection, paths=None):
