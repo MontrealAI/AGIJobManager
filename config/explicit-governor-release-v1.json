@@ -79,7 +79,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "6a6daa7dba8738d3b98f04c8dd92d70771856d39dafcb6b0c2fafefbe77b7a37"
+        "sha256": "3acd9a5d3ff2d581beda32ea5e7749e443d5058df1b5744c56b68068cd57c055"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -530,7 +530,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "191e89b69f7704b8fc8d6cb9ca24dec3f1373d16a16f52cc937052ec45c577f4"
+        "sha256": "e07b375dab80fcf7f629b8304600840a4439f6b6214cd8b6cbb426d6f277541a"
       },
       "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
     },
@@ -726,7 +726,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "f267520f1a0c25a21157cf50a16e6bb5937224f960b150f1683ff365758e7cd4"
+        "sha256": "5378b6f530a7969343acd647e6049a8bf7a74218de70b3b79102078e5e75d52f"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -737,7 +737,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "6a6daa7dba8738d3b98f04c8dd92d70771856d39dafcb6b0c2fafefbe77b7a37"
+        "sha256": "3acd9a5d3ff2d581beda32ea5e7749e443d5058df1b5744c56b68068cd57c055"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -792,7 +792,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "dc85c7017e02bc03d90d55222d2d9cb75c5edd234a627788ffcb315ef96e9bd8"
+        "sha256": "f2b09b1f19a290636c7b83bd2ab6f6c2cbd497c6e51df0c984875f0640b98151"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -803,7 +803,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "851606fa1bae863912163caa9a896efde783d87c1e52cf29bf26bb2b2468090c"
+        "sha256": "4925bba95f0150d23162c8abe6c27451a833bdf04b9f6cbd9e6b982492d6300c"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -814,7 +814,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "b59277a4234f163d6adb3611ed022fe08fb0e62157a92ee1fed57c884f4d6d11"
+        "sha256": "d4c820138a34d0183bf5fdf799feebc3dbf351470d73ba94f20d6a7e41a53bec"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -836,7 +836,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "6bdd486bae89d8427f176c46f57683bd3b694261253729eb1be36d7a2ad4b065"
+        "sha256": "5c5affeb4d86109be91ec1e3ff1a9ab8c7c5fe151e5d741387b090f5aa237f2e"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -847,7 +847,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "6d0b1caa7d804bcf008026b5ab464155ea92edab7d3a9c80b865d043df019fe7"
+        "sha256": "25a254d9255213f432c98dad360abf01ea54ea5d742f2ed282042d2655ad8a80"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     }

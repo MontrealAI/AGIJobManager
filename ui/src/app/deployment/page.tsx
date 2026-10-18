@@ -13,7 +13,7 @@ export default function DeploymentPage() {
         <dt>Reported owner</dt><dd>{l.owner}</dd>
         <dt>Authority snapshot block hash</dt><dd>{l.blockHash}</dd>
       </dl>
-      <p><a href={`https://github.com/MontrealAI/AGIJobManager/blob/main/${l.guidePath}`} target='_blank' rel='noopener noreferrer'>Review the latest deployment and all nine contracts</a> · <a href={`https://github.com/MontrealAI/AGIJobManager/blob/main/${l.recordPath}`} target='_blank' rel='noopener noreferrer'>Machine-readable record</a></p>
+      <p><a href={`https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/${l.guidePath}`} target='_blank' rel='noopener noreferrer'>Review the latest deployment and all nine contracts</a> · <a href={`https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/${l.recordPath}`} target='_blank' rel='noopener noreferrer'>Machine-readable record</a></p>
     </section>
     <section aria-labelledby='recorded-instance' className='space-y-3 rounded-xl border p-6'>
       <h2 id='recorded-instance' className='text-2xl font-semibold'>Historical instance · October 10, 2026</h2>
@@ -26,7 +26,7 @@ export default function DeploymentPage() {
         <dt>Job namespace</dt><dd>{r.namespace}</dd>
         <dt>Observation block hash</dt><dd>{r.blockHash}</dd>
       </dl>
-      <a href='https://github.com/MontrealAI/AGIJobManager/blob/main/docs/deployments/MAINNET_USDC_2026-10-10.md' target='_blank' rel='noopener noreferrer'>Review the October 10 historical record</a>
+      <a href='https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/docs/deployments/MAINNET_USDC_2026-10-10.md' target='_blank' rel='noopener noreferrer'>Review the October 10 historical record</a>
     </section>
     <h2 className='text-2xl font-semibold'>Generic transaction configuration</h2>
     <p>AGIJobManager v{d.version}: {d.status}.</p><p>{d.note}</p>

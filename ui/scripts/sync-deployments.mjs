@@ -18,7 +18,7 @@ export const RECORDED_MAINNET_INSTANCE = ${JSON.stringify(recorded, null, 2)} as
 export const LATEST_REPORTED_MAINNET_INSTANCE = ${JSON.stringify(reported, null, 2)} as const;
 `;
 const escapeHtml = (value) => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
-const github = 'https://github.com/MontrealAI/AGIJobManager/blob/main/';
+const github = 'https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/';
 const display = `      <!-- recorded-deployment-display:start -->
       <h2>USDC deployment · v${escapeHtml(config.version)} software</h2>
       <div class="helper" style="margin:14px 0;overflow-wrap:anywhere" aria-labelledby="latestReportedDeployment" data-testid="latest-reported-deployment">

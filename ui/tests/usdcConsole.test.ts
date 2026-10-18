@@ -19,6 +19,10 @@ describe('USDC standalone console boot', () => {
       expect(panel?.textContent).toContain('not live state');
       expect(panel?.querySelector(`a[href="${latest.managerCodeUrl}"]`)).not.toBeNull();
       expect(panel?.querySelector(`a[href$="${latest.recordPath}"]`)).not.toBeNull();
+      const evidenceBase = 'https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/';
+      expect(panel?.querySelector(`a[href="${evidenceBase}${latest.recordPath}"]`)).not.toBeNull();
+      expect(panel?.querySelector(`a[href="${evidenceBase}${latest.guidePath}"]`)).not.toBeNull();
+      expect(panel?.nextElementSibling?.querySelector(`a[href="${evidenceBase}docs/deployments/MAINNET_USDC_2026-10-10.md"]`)).not.toBeNull();
       expect(panel?.querySelector('input, button, script, [onclick]')).toBeNull();
       expect(panel?.nextElementSibling?.querySelector('summary')?.textContent).toContain('Historical instance · October 10, 2026');
       expect(panel?.nextElementSibling?.textContent).toContain('historical helper is not attached to the latest Manager');
@@ -32,6 +36,10 @@ describe('USDC standalone console boot', () => {
       expect(panel?.textContent).toContain(latest.recordDate);
       expect(panel?.textContent).toContain('Recorded evidence, not live state');
       expect(panel?.querySelector(`a[href="${latest.managerCodeUrl}"]`)).not.toBeNull();
+      const evidenceBase = 'https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/';
+      expect(panel?.querySelector(`a[href="${evidenceBase}${latest.recordPath}"]`)).not.toBeNull();
+      expect(panel?.querySelector(`a[href="${evidenceBase}${latest.guidePath}"]`)).not.toBeNull();
+      expect(dom.window.document.querySelector(`a[href="${evidenceBase}docs/deployments/MAINNET_USDC_2026-10-10.md"]`)).not.toBeNull();
       expect(dom.window.document.body.textContent).toContain('Historical instance · October 10, 2026');
       expect(dom.window.document.body.textContent).toContain('No manager selected');
       expect(dom.window.document.body.textContent).toContain('No helper selected');

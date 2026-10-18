@@ -121,7 +121,7 @@ PAGE_LATEST_DISPLAY = """    <section aria-labelledby='latest-reported-instance'
         <dt>Reported owner</dt><dd>{l.owner}</dd>
         <dt>Authority snapshot block hash</dt><dd>{l.blockHash}</dd>
       </dl>
-      <p><a href={`https://github.com/MontrealAI/AGIJobManager/blob/main/${l.guidePath}`} target='_blank' rel='noopener noreferrer'>Review the latest deployment and all nine contracts</a> · <a href={`https://github.com/MontrealAI/AGIJobManager/blob/main/${l.recordPath}`} target='_blank' rel='noopener noreferrer'>Machine-readable record</a></p>
+      <p><a href={`https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/${l.guidePath}`} target='_blank' rel='noopener noreferrer'>Review the latest deployment and all nine contracts</a> · <a href={`https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/${l.recordPath}`} target='_blank' rel='noopener noreferrer'>Machine-readable record</a></p>
     </section>
 """
 PAGE_DISPLAY_CHANGES = (
@@ -130,7 +130,7 @@ PAGE_DISPLAY_CHANGES = (
     (PAGE_LATEST_DISPLAY, ''),
     ("<h2 id='recorded-instance' className='text-2xl font-semibold'>Historical instance · October 10, 2026</h2>", "<h2 id='recorded-instance' className='text-2xl font-semibold'>Deployed and ENS-connected</h2>"),
     ("<p>Historical deployment and ENS connection recorded on {r.recordDate} at Ethereum block {r.block.toLocaleString('en-US')}. This older instance and its helper are separate from the latest reported Manager above.</p>", "<p>Recorded on {r.recordDate} at Ethereum block {r.block.toLocaleString('en-US')}. Activation is held pending separate review.</p>"),
-    ("<a href='https://github.com/MontrealAI/AGIJobManager/blob/main/docs/deployments/MAINNET_USDC_2026-10-10.md' target='_blank' rel='noopener noreferrer'>Review the October 10 historical record</a>", "<a href='https://github.com/MontrealAI/AGIJobManager/blob/main/docs/OPERATIONS/COMMISSIONING.md' target='_blank' rel='noopener noreferrer'>Inspect this existing instance and review the five activation groups</a>"),
+    ("<a href='https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/docs/deployments/MAINNET_USDC_2026-10-10.md' target='_blank' rel='noopener noreferrer'>Review the October 10 historical record</a>", "<a href='https://github.com/MontrealAI/AGIJobManager/blob/main/docs/OPERATIONS/COMMISSIONING.md' target='_blank' rel='noopener noreferrer'>Inspect this existing instance and review the five activation groups</a>"),
 )
 
 
@@ -176,7 +176,7 @@ def generated_deployment_exports(config, recorded, reported=None):
 def console_deployment_display(config, recorded, reported):
     from html import escape
     e = lambda value: escape(str(value), quote=True)
-    github = 'https://github.com/MontrealAI/AGIJobManager/blob/main/'
+    github = 'https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/'
     return f'''      <!-- recorded-deployment-display:start -->
       <h2>USDC deployment · v{e(config['version'])} software</h2>
       <div class="helper" style="margin:14px 0;overflow-wrap:anywhere" aria-labelledby="latestReportedDeployment" data-testid="latest-reported-deployment">

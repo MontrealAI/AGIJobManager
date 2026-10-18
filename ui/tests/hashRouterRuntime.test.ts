@@ -82,6 +82,10 @@ describe('single-file hash router runtime behavior', () => {
       expect(latest?.textContent).toContain('does not establish an ENS helper attachment or select a transaction target');
       expect(latest?.querySelector('a[href="https://etherscan.io/address/0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8#code"]')).not.toBeNull();
       expect(latest?.querySelector('a[href$="config/mainnet/manager-8815-2026-10-17.json"]')).not.toBeNull();
+      const evidenceBase = 'https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/';
+      expect(latest?.querySelector(`a[href="${evidenceBase}config/mainnet/manager-8815-2026-10-17.json"]`)).not.toBeNull();
+      expect(latest?.querySelector(`a[href="${evidenceBase}docs/deployments/MAINNET_MANAGER_2026-10-17.md"]`)).not.toBeNull();
+      expect(historical?.querySelector(`a[href="${evidenceBase}docs/deployments/MAINNET_USDC_2026-10-10.md"]`)).not.toBeNull();
       expect(latest?.nextElementSibling).toBe(historical);
       expect(historical?.querySelector('summary')?.textContent).toContain('Historical instance · October 10, 2026');
       expect(historical?.textContent).toContain('0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7');
