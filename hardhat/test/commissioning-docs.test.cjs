@@ -17,9 +17,11 @@ function temporary(t) {
 }
 function registryFixture(t) {
   const dir = temporary(t);
-  for (const name of ['config/mainnet', 'ui/src/generated', 'docs/ui'])
+  for (const name of ['config/mainnet', 'ui/src/generated', 'ui/scripts', 'docs/ui', 'docs/deployments'])
     fs.mkdirSync(path.join(dir, name), {recursive: true});
-  for (const name of ['config/usdc-deployment.json', 'config/mainnet/agi-jobs-usdc.json', 'ui/src/generated/deployments.ts'])
+  for (const name of ['config/usdc-deployment.json', 'config/mainnet/agi-jobs-usdc.json',
+    'config/mainnet/manager-8815-2026-10-17.json', 'docs/deployments/MAINNET_MANAGER_2026-10-17.md',
+    'ui/src/generated/deployments.ts', 'ui/agijobmanager-usdc.html', 'ui/scripts/singlefile-template.html'])
     fs.copyFileSync(path.join(root, name), path.join(dir, name));
   return dir;
 }

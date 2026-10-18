@@ -1,4 +1,12 @@
-# Operate the recorded mainnet instance
+# Mainnet records and instance-specific operations
+
+## Latest reported Manager — 17 October 2026
+
+The [latest Manager and authority record](../deployments/MAINNET_MANAGER_2026-10-17.md) identifies Manager `0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8`, governor `0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99` and nine reported finalized creations. At the recorded block **26,214,525**, intake was paused and identity configuration was unlocked. The record distinguishes six Exact Matches from three retained Similar Matches and establishes no ENS-helper attachment for this Manager. It is owner-reported dated evidence, not a live state query. Use this instance's original source, plan and journals, then the [readiness and operations section](../DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md#6-readiness-and-activation). The creation sections are for a separately authorized new deployment; do not repeat them for this already deployed Manager.
+
+## Historical Manager and ENS helper — 10 October 2026
+
+**The commands and authority table below apply only to `recorded-2026-10-10`: Manager `0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7` and its recorded helper.** They do not inspect the October 17 Manager. Keep each instance's source, authority, namespace and evidence separate.
 
 The manager and ENS helper were deployed and connected at block **26,165,026**.
 **Activation is held pending separate review.** Start with inspection; successful

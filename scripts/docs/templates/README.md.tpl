@@ -36,7 +36,7 @@ Two bounded local engines produce real editable artifacts: a public-data report 
 
 **En français :** créez un rapport de données publiques ou un site simple, vérifiez le résultat, choisissez une amélioration et téléchargez votre système. Le parcours local fonctionne sans compte, portefeuille ni clé de fournisseur. [Guide français](docs/successor/GUIDE_FR.md).
 
-## Recorded mainnet instance — ENS connected, activation on HOLD
+## Historical October 10 instance — ENS connected, activation on HOLD
 
 The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_USDC_2026-10-10.md) reports the verified helper at `0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC` connected to manager `0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7`, using **`job-<jobId>.usdc.jobs.agi.eth`**. At the recorded block **26,165,026**, intake was paused and no job had been posted. This is dated operator evidence, not a live status indicator or permission to fund jobs.
 
@@ -52,8 +52,8 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Current software version: {{TAG}} — Release guide clarity and preserved source evidence.**
-[Operate the already deployed instance](docs/OPERATIONS/COMMISSIONING.md) ·
+**Current software version: {{TAG}} — Current deployment records and consistent interfaces.**
+[Latest deployment and instance-specific operations](docs/OPERATIONS/COMMISSIONING.md) ·
 [Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Release notes](docs/releases/{{TAG}}/RELEASE_NOTES.md).
 
 **[previously published {{PREVIOUS_TAG}} COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/{{PREVIOUS_TAG}}/AGIJobManager-{{PREVIOUS_TAG}}-COMPLETE.zip)** · [previously published {{PREVIOUS_TAG}} qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/{{PREVIOUS_TAG}}/QUALIFICATION.json).
@@ -117,7 +117,7 @@ The generic fresh-deployment script uses `job-<jobId>.usdc-<chainId>-<manager40>
 
 ## Install and verify the public source
 
-**Existing production checkout:** preserve its saved artifacts, original receipts and working patches. Use the [read-only connection command](docs/deployments/MAINNET_USDC_2026-10-10.md#read-only-commands); do not pull, reinstall, compile or redeploy there merely to consume this documentation update. The installation commands below are for a separate development checkout.
+**Existing production checkout:** preserve its saved artifacts, original receipts and working patches. For the historical October 10 instance, use its [read-only connection command](docs/deployments/MAINNET_USDC_2026-10-10.md#read-only-commands). For the October 17 Manager, use the [latest record and original instance evidence](docs/deployments/MAINNET_MANAGER_2026-10-17.md); do not pull, reinstall, compile or redeploy there merely to consume this documentation update. The installation commands below are for a separate development checkout.
 
 Use Node.js {{PUBLIC_NODE}} and the committed lockfiles. From the repository root:
 
@@ -130,7 +130,7 @@ npm test
 npm run docs:check
 ```
 
-For deployment, first run `npm --prefix hardhat run setup`, review the private configuration, then use the [Hardhat procedure](hardhat/README.md). New managers start with intake paused. The [default configuration](config/usdc-deployment.json) still auto-selects **no live manager**. The separate [recorded instance](config/mainnet/agi-jobs-usdc.json) is historical evidence, not a replacement default or an activation grant. Publishing this software does not deploy contracts or open intake.
+For deployment, first run `npm --prefix hardhat run setup`, review the private configuration, then use the [Hardhat procedure](hardhat/README.md). New managers start with intake paused. The [default configuration](config/usdc-deployment.json) still auto-selects **no live manager**. The [October 17 Manager record](config/mainnet/manager-8815-2026-10-17.json) and [historical October 10 instance](config/mainnet/agi-jobs-usdc.json) identify separate deployments; neither is a replacement default or an activation grant. Publishing this software does not deploy contracts or open intake.
 
 The current manager uses eight fixed linked libraries. The [integrated source](docs/qualification/INTEGRATED_CANDIDATE_20261017.md) includes explicit-governor constructors, bounded creator preflight recovery and a source-pinned compiler optimizer mitigation. The {{TAG}} wrapper requires fresh exact-final-source qualification. Earlier [ENS membership hardening](docs/qualification/ENS_MEMBERSHIP_REVOCATION.md), payout rules and historical deployment records remain preserved. Existing immutable managers are not upgraded by this software release; preserve their original source, jobs and recovery paths. Use the [second-deployment checklist](docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md) and [compatibility guide](docs/V1_RELEASE_SCOPE.md#compatibility).
 

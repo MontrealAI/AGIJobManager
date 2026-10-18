@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { actualRepositoryCommit } from "../successor/source-identity.mjs";
+import { loadLatestReportedDeployment } from "../../site/deployments.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -15,6 +16,17 @@ const root = path.resolve(
   ),
   out = path.join(root, "build/pages");
 const inventory = JSON.parse(fs.readFileSync(path.join(out, "build-info.json"), "utf8"));
+const selectedDeployment = loadLatestReportedDeployment(root);
+const latest = selectedDeployment.record;
+const historical = JSON.parse(fs.readFileSync(path.join(root, "config/mainnet/agi-jobs-usdc.json"), "utf8"));
+assert.equal(inventory.latestDeploymentPath, selectedDeployment.recordPath);
+assert.equal(inventory.historicalEvidence, "config/mainnet/agi-jobs-usdc.json");
+assert.deepEqual(inventory.latestDeployment, {
+  recordDate: latest.recordDate, recordType: latest.recordType, notLiveState: true,
+  manager: latest.manager, deployedSourceCommit: latest.source.commit,
+  reportedAuthorityBlock: latest.reportedAuthoritySnapshot.blockNumber,
+  exactMatches: 6, retainedSimilarMatches: 3,
+});
 const builderSelector = JSON.parse(fs.readFileSync(path.join(root, 'config/successor-builder-source.json'), 'utf8'));
 assert.equal(inventory.sourceCommit, actualRepositoryCommit(root), 'Outer website qualification must identify the actual checkout');
 assert.equal(inventory.successorSource.commit, builderSelector.commit);
@@ -100,6 +112,36 @@ for (const file of ["index.html", "fr/index.html", "employers/index.html", "fr/e
   }
   assert.ok(html.includes("connect-src 'none'"));
   if (!file.includes("employers/")) {
+    const primary = html.match(/<article\b[^>]*\bid="latest-deployment"[^>]*>([\s\S]*?)<\/article>/)?.[1];
+    const history = html.match(/<article\b[^>]*\bid="historical-deployment"[^>]*>([\s\S]*?)<\/article>/)?.[1];
+    assert.ok(primary && history, `${file}: latest and historical deployments have distinct semantic cards`);
+    assert.equal(primary.match(/<code id="manager-address">([^<]+)<\/code>/)?.[1], latest.manager, `${file}: primary copy source is the latest reported Manager`);
+    assert.ok(primary.includes(`data-deployment-date>${latest.recordDate}</dd>`), `${file}: primary date matches the selected report`);
+    assert.ok(primary.includes(`data-deployment-block>${latest.reportedAuthoritySnapshot.blockNumber}</dd>`), `${file}: primary block matches the reported authority snapshot`);
+    assert.ok(primary.includes(`data-deployment-governor>${latest.reportedAuthoritySnapshot.owner}</code>`), `${file}: governor belongs to the selected report`);
+    assert.ok(primary.includes(`data-deployment-source>${latest.source.commit}</code>`), `${file}: deployed source is distinct from website source`);
+    assert.ok(primary.includes(`href="${latest.verificationLinks.managerCode}"`), `${file}: primary explorer targets the latest Manager`);
+    for (const recordPath of [selectedDeployment.recordPath, selectedDeployment.guidePath])
+      assert.ok(primary.includes(`href="https://github.com/MontrealAI/AGIJobManager/blob/${inventory.sourceCommit}/${recordPath}"`), `${file}: primary evidence link ${recordPath}`);
+    assert.ok(!primary.includes(historical.manager) && !primary.includes(historical.helper), `${file}: earlier manager and helper cannot appear as current evidence`);
+    assert.equal((primary.match(/data-deployment-contract=/g) || []).length, 9, `${file}: all nine reported creations remain inspectable`);
+    assert.equal((primary.match(/data-explorer-match="EXACT_MATCH"/g) || []).length, 6, `${file}: six Exact Matches`);
+    assert.equal((primary.match(/data-explorer-match="SIMILAR_MATCH_SKIPPED"/g) || []).length, 3, `${file}: three retained Similar Matches`);
+    for (const contract of latest.contracts) {
+      assert.ok(primary.includes(`data-deployment-contract="${contract.name}" data-explorer-match="${contract.explorerMatchStatus}"`), `${file}: ${contract.name} retains its actual explorer attribution`);
+      assert.ok(primary.includes(`<code>${contract.address}</code>`), `${file}: ${contract.name} address`);
+      assert.ok(primary.includes(`href="${contract.explorerCodeUrl}"`) && primary.includes(`href="${contract.deploymentTransactionUrl}"`), `${file}: ${contract.name} code and creation links`);
+    }
+    assert.ok(history.includes(`data-historical-manager>${historical.manager}</code>`) && history.includes(`data-historical-helper>${historical.helper}</code>`), `${file}: historical manager/helper remain paired`);
+    assert.ok(history.includes(historical.recordDate) && history.includes(String(historical.connection.snapshot.number)), `${file}: history retains its own date and block`);
+    assert.ok(!history.includes(latest.manager), `${file}: the historical helper cannot be attached to the latest Manager by presentation`);
+    assert.ok(html.indexOf('id="latest-deployment"') < html.indexOf('id="historical-deployment"'), `${file}: latest reported deployment is primary`);
+    const languageCopy = JSON.parse(fs.readFileSync(path.join(root, `site/content/${file.startsWith('fr/') ? 'fr' : 'en'}.json`), 'utf8'));
+    for (const key of ['evidenceState', 'explorerBoundary', 'historicalBoundary', 'noTransactionTarget'])
+      assert.ok(html.includes(languageCopy[key].replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')), `${file}: visible deployment boundary ${key}`);
+    assert.match(languageCopy.evidenceState, file.startsWith('fr/') ? /rapport du propriétaire.*ni une lecture en direct/ : /owner-reported evidence, not a live chain query/);
+    assert.match(languageCopy.historicalTitle, file.startsWith('fr/') ? /historiques/ : /Historical/);
+    assert.match(languageCopy.ensText, file.startsWith('fr/') ? /ne démontre aucun rattachement/ : /establishes no ENS helper attachment/);
     assert.equal((html.match(/class="resource"/g) || []).length, 12);
     for (const placement of ['header', 'hero', 'welcome', 'footer']) {
       const entries = [...html.matchAll(new RegExp(`<a\\b[^>]*\\bdata-employer-entry="${placement}"[^>]*>`, 'g'))];
@@ -153,5 +195,5 @@ assert.ok(
     !fs.existsSync(path.join(out, ".git")),
 );
 console.log(
-  "Pages checks passed: bilingual pages, four-project ecosystem routes and protocol boundaries, prominent locale-preserving employer routes, newcomer navigation, guide paths, exact USDC allocations, invalid inputs and byte-identical console aliases.",
+  "Pages checks passed: bilingual latest owner-reported Manager/address/date/block/source/governor and nine explorer inventories, explicit historical manager/helper separation, four-project ecosystem routes and protocol boundaries, employer routes, guide paths, exact USDC allocations and byte-identical console aliases.",
 );

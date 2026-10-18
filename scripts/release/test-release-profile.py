@@ -3,6 +3,7 @@ import copy
 import hashlib
 import json
 import pathlib
+import re
 import runpy
 import shutil
 import subprocess
@@ -73,18 +74,75 @@ class ReleaseProfile(unittest.TestCase):
         name='package.json';data=json.loads((self.root/name).read_bytes());data['dependencies']['@openzeppelin/contracts']='4.9.5';raw=(json.dumps(data,indent=2)+'\n').encode()
         self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
     def test_repinning_ui_runtime_change_is_rejected(self):
-        for name in ('ui/agijobmanager-usdc.html', 'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html', 'ui/src/generated/deployments.ts'):
+        for name in ('ui/agijobmanager-usdc.html', 'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html', 'ui/src/generated/deployments.ts', 'ui/src/app/deployment/page.tsx', 'ui/scripts/singlefile-template.html'):
             raw=(self.root/name).read_bytes()+b'\n// unexpected executable change\n'
             with self.subTest(name=name):
                 self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
+    def test_repinning_actual_hash_route_injections_is_rejected(self):
+        for name in ('ui/scripts/singlefile-template.html', 'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html'):
+            original=(self.root/name).read_bytes()
+            for token in (b'/* recorded-deployment-route:start */', b'/* recorded-deployment-route:end */'):
+                raw=original.replace(token,token+b'window.ethereum.request({method:"eth_requestAccounts"});',1)
+                self.assertNotEqual(raw,original)
+                with self.subTest(name=name,token=token):
+                    self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
+    def test_repinning_display_injections_and_transaction_target_changes_is_rejected(self):
+        name='ui/agijobmanager-usdc.html';original=(self.root/name).read_text()
+        config,recorded,reported=P['deployment_display_inputs'](self.root)
+        panel=P['console_deployment_display'](config,recorded,reported)
+        mutations=(
+            original.replace('id="latestReportedDeployment"','id="latestReportedDeployment" onclick="window.ethereum.request({method: \"eth_requestAccounts\"})"',1),
+            original.replace('<!-- recorded-deployment-display:end -->','<script>window.ethereum.request({method:"eth_requestAccounts"})</script><!-- recorded-deployment-display:end -->',1),
+            original.replace(panel,panel+'\n'+panel,1),
+            original.replace("let AGI_JOB_MANAGER = '';", "let AGI_JOB_MANAGER = '"+reported['manager']+"';",1),
+            original.replace('Read the protocol notices','Changed protocol notices',1) if 'Read the protocol notices' in original else original+'\n<p>unreviewed unrelated markup</p>\n',
+        )
+        for index,text in enumerate(mutations):
+            raw=text.encode();self.assertNotEqual(raw,original.encode())
+            with self.subTest(mutation=index):
+                self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
+        name='ui/src/generated/deployments.ts';original=(self.root/name).read_text()
+        for text in (original.replace('"intakePaused": true','"intakePaused": false',1), original.replace(reported['manager'],'0x1111111111111111111111111111111111111111',1), original+'\nexport const SIGN = () => window.ethereum.request({method:"eth_requestAccounts"});\n'):
+            raw=text.encode();self.assertNotEqual(raw,original.encode())
+            self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
+    def test_repinning_configuration_defaults_or_note_is_rejected(self):
+        name='config/usdc-deployment.json';original=json.loads((self.root/name).read_bytes())
+        for field in ('managerAddress','ensJobPagesAddress','finalOwner','note'):
+            value=copy.deepcopy(original);value[field]='0x1111111111111111111111111111111111111111' if field!='note' else 'Unreviewed claim'
+            raw=(json.dumps(value,indent=2)+'\n').encode()
+            with self.subTest(field=field):
+                self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
+        for field in ('wallet30','wallet10'):
+            value=copy.deepcopy(original);value['settlementWallets'][field]='0x1111111111111111111111111111111111111111';raw=(json.dumps(value,indent=2)+'\n').encode()
+            self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
+    def test_repinning_dated_deployment_evidence_is_rejected(self):
+        name='config/mainnet/manager-8815-2026-10-17.json';value=json.loads((self.root/name).read_bytes())
+        value['reportedAuthoritySnapshot']['intakePaused']=False;raw=(json.dumps(value,indent=2)+'\n').encode()
+        self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
+    def test_repinning_embedded_document_script_breakout_is_rejected(self):
+        names=('README.md','agijobmanager.html','ui/dist-ipfs/agijobmanager.html')
+        originals={name:(self.root/name).read_bytes() for name in names}
+        injected=originals['README.md'].decode()+'\n</script><script>window.__INJECTED__=1</script>\n'
+        changes={'README.md':injected.encode()}
+        pattern=r'(<script id="agijobmanager-runtime-bundle">window.__AGI_RUNTIME_BUNDLE__=)(.*?)(;window.__AGI_CONTRACT_ABI_REGISTRY__=)'
+        for name in names[1:]:
+            text=originals[name].decode();match=re.search(pattern,text,re.S);self.assertIsNotNone(match)
+            bundle=json.loads(match.group(2));bundle['sources']['README.md']=injected
+            bundle['sourcesSha256']=sha(json.dumps(bundle['sources'],ensure_ascii=False,separators=(',',':')).encode())
+            changes[name]=(text[:match.start(2)]+json.dumps(bundle,ensure_ascii=False,separators=(',',':'))+text[match.end(2):]).encode()
+        try:
+            for name,raw in changes.items():(self.root/name).write_bytes(raw)
+            self.repin_delta(lambda m:[m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)}) for name,raw in changes.items()])
+        finally:
+            for name,raw in originals.items():(self.root/name).write_bytes(raw)
     def test_comparison_inputs_preserve_all_historical_observations(self):
         before=json.loads((ROOT/'docs/qualification/mainnet-cutover-integrated-20261017.json').read_bytes())
-        after=json.loads((ROOT/'docs/qualification/mainnet-cutover-v1.19.1-expected.json').read_bytes())
+        after=json.loads((ROOT/'docs/qualification/mainnet-cutover-v1.19.2-expected.json').read_bytes())
         b=before.pop('sourceSha256');a=after.pop('sourceSha256')
         self.assertEqual(before,after)
         self.assertEqual({n for n in a if a[n]!=b[n]}, {'package.json','package-lock.json','hardhat/package.json','hardhat/package-lock.json'})
         before=json.loads((ROOT/'scripts/security/slither-reviewed-findings-c174-integrated-yul.json').read_bytes())
-        after=json.loads((ROOT/'scripts/security/slither-reviewed-findings-v1.19.1.json').read_bytes())
+        after=json.loads((ROOT/'scripts/security/slither-reviewed-findings-v1.19.2.json').read_bytes())
         b=before.pop('source_sha256');a=after.pop('source_sha256')
         before.pop('scope');after.pop('scope')
         self.assertEqual(before,after)
@@ -105,7 +163,7 @@ class ReleaseProfile(unittest.TestCase):
         finally:p.chmod(0o644)
     def test_manifest_never_accepts_embedded_approval_or_candidate_flags(self):
         m={k:None for k in ('schemaVersion','repository','tag','name','sourceCommit','sourceTree','builderSource','stage','qualification','archiveLimitBytes','toolchain','exclusions','files')}
-        m.update(P['metadata'](self.selection),tag='v1.19.1',stage='source-package',schemaVersion=2,repository=REPOSITORY,name=TITLE,sourceCommit='a'*40,sourceTree='b'*40)
+        m.update(P['metadata'](self.selection),tag='v1.19.2',stage='source-package',schemaVersion=2,repository=REPOSITORY,name=TITLE,sourceCommit='a'*40,sourceTree='b'*40)
         P['validate_metadata'](m,self.selection)
         for k,v in [('schemaVersion', None), ('repository', 'wrong/repo'), ('name', None), ('sourceCommit', 'not-a-sha')]:
             with self.subTest(k=k),self.assertRaises(ValueError):P['validate_metadata']({**m,k:v},self.selection)
@@ -142,7 +200,7 @@ class ReleaseProfile(unittest.TestCase):
         self.assertIn('run-inherited-source-tests.py --dependency-root',w)
         self.assertIn('test-release-profile.py',w)
         pub=(ROOT/'.github/workflows/publish-v114.yml').read_text()
-        self.assertIn('PUBLISH_v1.19.1',pub)
+        self.assertIn('PUBLISH_v1.19.2',pub)
         self.assertEqual(pub.count('--profile manager-explicit-governor-release-v1'),3)
         from release_common import WORKFLOWS
         self.assertEqual(len(WORKFLOWS),8)
@@ -186,7 +244,7 @@ class ReleaseProfile(unittest.TestCase):
             path=pages/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b'fixture')
             files[name]={'bytes':7,'sha256':sha(b'fixture')}
         (pages/'.nojekyll').write_bytes(b'')
-        info={'sourceCommit':'a'*40,'sourceVersion':'1.19.1','files':files,'buildOnlyFiles':{'.nojekyll':{'bytes':0,'sha256':sha(b'')}}}
+        info={'sourceCommit':'a'*40,'sourceVersion':P['VERSION'],'files':files,'buildOnlyFiles':{'.nojekyll':{'bytes':0,'sha256':sha(b'')}}}
         (pages/'build-info.json').write_text(json.dumps(info))
         try:
             runner['validate_pages'](ROOT,pages,'a'*40)
