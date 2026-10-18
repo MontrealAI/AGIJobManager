@@ -30,7 +30,7 @@ ALLOWED = VERSION_ONLY | {
     'scripts/release/release_common.py', 'scripts/release/package-release.py',
     'scripts/release/verify-package.py', 'scripts/release/collect-qualification.py',
     'scripts/release/publish-release.py', VERIFIER, 'scripts/release/package-policy.py',
-    'scripts/release/test-release-profile.py', 'scripts/release/test-release-gates.py', 'ui/scripts/generate-deployment-docs.mjs', 'scripts/release/run-inherited-source-tests.py',
+    'scripts/release/test-release-profile.py', 'scripts/release/test-release-gates.py', 'ui/scripts/generate-deployment-docs.mjs', 'ui/scripts/docs-check.mjs', 'scripts/release/run-inherited-source-tests.py',
     'docs/qualification/mainnet-cutover-v1.19.0-expected.json', 'docs/qualification/mainnet-cutover-v1.19.1-expected.json',
     'docs/qualification/release-v1.19.0-provenance.json', 'docs/qualification/release-v1.19.1-provenance.json',
     'scripts/security/slither-reviewed-findings-v1.19.0.json', 'scripts/security/slither-reviewed-findings-v1.19.1.json',

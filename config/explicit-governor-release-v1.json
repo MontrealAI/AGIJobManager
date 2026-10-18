@@ -427,9 +427,9 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "b42827d4fa329cb2ff4f6f5f97abbf33ef466f5f58e170d4f565109bf579b844"
+        "sha256": "09c7d7ec135ab2ad0f4b26552a1675e700c00307cb5b48782f38e66ec1775e25"
       },
-      "reason": "Admit only the exact release-guide generator path in the finite release-only delta; preserve runtime, compiler and dependency boundaries."
+      "reason": "Admit only the exact release-guide generator and UI documentation-checker paths in the finite release-only delta; preserve runtime, compiler and dependency boundaries."
     },
     "scripts/release/release_common.py": {
       "before": {
@@ -569,6 +569,17 @@
         "sha256": "9932a3e0fcf325eb29b8ed03e11182728f0f26a1c022000fa0e95cb2c979d26c"
       },
       "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+    },
+    "ui/scripts/docs-check.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "7f6e97d8e8bdffcf1093c9e3d5dc46ca22881932d01300206c4413e9da376453"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "2bbf0bf4ad942bd2acf2e549aa0f24961ca5c2ef570fb363fd43b4542e8d540d"
+      },
+      "reason": "Align the required generated deployment-document heading with Software version; preserve freshness checks and every other required section."
     },
     "ui/scripts/generate-deployment-docs.mjs": {
       "before": {
