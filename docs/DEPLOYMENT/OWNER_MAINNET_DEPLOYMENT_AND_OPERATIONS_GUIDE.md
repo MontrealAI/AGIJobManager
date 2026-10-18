@@ -1,7 +1,9 @@
 # Owner Mainnet Deployment & Operations Guide — current USDC deployment
 
-> Unreleased candidate: new Manager/helper/router creation assigns an explicit nonzero governor atomically and leaves configuration/activation separate. See the [candidate authority matrix](EXPLICIT_GOVERNOR_CANDIDATE.md). Deployer-handover instructions below describe historical ownership semantics, not the new creation flow. Previous deployments, funds and permissions must remain untouched; historical liabilities are not a prerequisite for an independent new deployment.
+> Source-specific creation: the explicit-governor Manager/helper/router profiles assign a nonzero governor atomically and leave configuration/activation separate. See the [authority matrix](EXPLICIT_GOVERNOR_CANDIDATE.md). Deployer-handover instructions below describe historical ownership semantics, not the new creation flow. Previous deployments, funds and permissions must remain untouched; historical liabilities are not a prerequisite for an independent new deployment.
 Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
+
+For the already deployed [October 17 Manager](../deployments/MAINNET_MANAGER_2026-10-17.md), preserve its original plan and journal and start at [readiness and activation](#6-readiness-and-activation). The creation sections below apply to separately authorized new deployments.
 
 ## 1) Start here
 

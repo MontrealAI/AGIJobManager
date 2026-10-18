@@ -1,0 +1,14 @@
+# Start here — AGIJobManager v1.19.2
+
+This patch makes the latest reported deployment the primary read-only record across the bilingual website, the standalone USDC console and deployment guidance. The 17 October Manager and its nine reported creations are shown before the separate 10 October ENS-connected instance. Use the [matching release page](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.2), external `QUALIFICATION.json` and publication workflow to establish final release source and publication evidence. See the explicitly dated [preparation snapshot](VALIDATION.md).
+
+- Review the [release notes](RELEASE_NOTES.md) for the presentation correction and source boundaries.
+- Use the [software identity and deployment commands](../../RELEASE_GUIDE.md) to check the current checkout and its matching release/download availability. A software label does not establish that matching downloads are published.
+- Read the [17 October deployment and authority record](../../deployments/MAINNET_MANAGER_2026-10-17.md) and its [machine-readable inventory](../../../config/mainnet/manager-8815-2026-10-17.json). All nine contract/code and creation-transaction links retain their original evidence scope.
+- For deployment recovery or owner work, use the [Hardhat guide](../../../hardhat/README.md) and [owner operations guide](../../DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) with the actual instance's original journal.
+- Continue local public-data work with the [SUCCESSOR Builder](../../successor/README.md) and [Alpha transfer guide](../../successor/ALPHA_PROJECT_HANDOFF.md). Preserve the original dossier and verify an exported copy before closing.
+- Verify all nine assets with the [checksum and attestation procedure](VALIDATION.md#verify-a-published-package). For uncertain outcomes or a regression, follow [recovery](RECOVERY_GUIDE.md).
+
+The owner-reported 17 October 2026 snapshot identifies Manager `0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8`, governor `0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99` and moderator `0xA204b14eD9bc09501e3A47CDde379279FcD5D743`. Explorer results were reported as six Exact Matches and three retained Similar Matches. At the recorded authority block 26,214,525, intake was paused, identity configuration unlocked, NFT collection count `0` and the agent NFT requirement off. This dated report is not a fresh chain read, an all-Exact claim or live paid-work qualification. It establishes no new ENS helper attachment.
+
+The [10 October instance](../../deployments/MAINNET_USDC_2026-10-10.md) and its ENS helper remain accessible as historical records. Existing jobs, credits and claims stay on their original manager. Transaction targets remain blank until explicitly selected; publication does not select a manager, migrate obligations, lock identity or open intake.

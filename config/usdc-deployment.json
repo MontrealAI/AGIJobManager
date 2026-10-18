@@ -1,5 +1,5 @@
 {
-  "version": "1.19.1",
+  "version": "1.19.2",
   "status": "deployment-required",
   "chainId": 1,
   "explorerBaseUrl": "https://etherscan.io",
@@ -13,7 +13,7 @@
     "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
   },
   "addressSource": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
-  "note": "Candidate software; no transaction target is selected by default. The separately recorded mainnet instance was deployed and ENS-connected at block 26165026. Activation remains held pending separate review. Use the recorded-instance inspection workflow for fresh state. Public-input work, no new review retainers, existing credits/claims and deployed contract behavior remain unchanged.",
+  "note": "Software package; no transaction target is selected by default. The latest reported Manager deployment is recorded on 2026-10-17 in config/mainnet/manager-8815-2026-10-17.json; its authority snapshot reports paused intake. This owner-reported record is not live state or paid-intake qualification and does not establish an ENS helper attachment. The October 10 ENS-connected instance is historical and separate. Public-input work, no new review retainers, existing credits/claims and deployed contract behavior remain unchanged.",
   "settlementWallets": {
     "wallet30": "",
     "wallet10": ""

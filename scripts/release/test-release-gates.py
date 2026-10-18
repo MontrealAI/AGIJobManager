@@ -852,7 +852,7 @@ class PackagedGuideTests(unittest.TestCase):
     def test_current_release_root_guide_links_resolve(self):
         root = Path(__file__).resolve().parents[2]
         guides = {f'docs/releases/{TAG}/{name}': name for name in ['START_HERE.md', 'RELEASE_NOTES.md', 'RECOVERY_GUIDE.md', 'VALIDATION.md']}
-        available = {'source/' + str(p.relative_to(root)) for p in (root / 'docs').rglob('*') if p.is_file()}
+        available = {'source/' + str(p.relative_to(root)) for directory in ('docs', 'config') for p in (root / directory).rglob('*') if p.is_file()}
         available.add('source/hardhat/README.md')
         for source_name in guides:
             original = (root / source_name).read_bytes()

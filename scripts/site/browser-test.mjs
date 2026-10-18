@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
+import { loadLatestReportedDeployment } from "../../site/deployments.mjs";
 const { default: AxeBuilder } = await import('../../ui/node_modules/@axe-core/playwright/dist/index.mjs');
 const ecosystemProjects = {
   alpha: 'https://montrealai.github.io/AGI-Alpha-Agent-v0/',
@@ -15,6 +16,9 @@ const output = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../../build/pages",
 );
+const repositoryRoot = path.resolve(output, "../..");
+const latestDeployment = loadLatestReportedDeployment(repositoryRoot).record;
+const historicalDeployment = JSON.parse(fs.readFileSync(path.join(repositoryRoot, "config/mainnet/agi-jobs-usdc.json"), "utf8"));
 const server = createServer((req, res) => {
   const url = new URL(req.url, "http://localhost"),
     relative = decodeURIComponent(url.pathname).replace(
@@ -93,6 +97,42 @@ async function checkReflow(page, label) {
   assert.ok(layout.width <= layout.viewport + 1, `No horizontal page overflow: ${label}: ${JSON.stringify(layout)}`);
 }
 
+async function checkDeploymentRecords(page, language, label, copy = true) {
+  const primary = page.locator('#latest-deployment'), historical = page.locator('#historical-deployment');
+  assert.equal(await primary.count(), 1, `${label}: one primary deployment record`);
+  assert.equal(await primary.locator('#manager-address').textContent(), latestDeployment.manager, `${label}: primary address is the latest reported Manager`);
+  assert.equal(await primary.locator('[data-deployment-date]').textContent(), latestDeployment.recordDate, `${label}: latest report date`);
+  assert.equal(await primary.locator('[data-deployment-block]').textContent(), String(latestDeployment.reportedAuthoritySnapshot.blockNumber), `${label}: latest reported authority block`);
+  assert.equal(await primary.locator('[data-deployment-governor]').textContent(), latestDeployment.reportedAuthoritySnapshot.owner, `${label}: governor belongs to the latest Manager`);
+  assert.equal(await primary.locator('[data-deployment-source]').textContent(), latestDeployment.source.commit, `${label}: deployed source is retained`);
+  assert.equal(await primary.locator(`a[href="${latestDeployment.verificationLinks.managerCode}"]`).count(), 2, `${label}: primary and inventory code links point to the latest Manager`);
+  assert.equal(await primary.locator('[data-deployment-contract]').count(), 9, `${label}: all nine contracts are represented`);
+  assert.equal(await primary.locator('[data-explorer-match="EXACT_MATCH"]').count(), 6, `${label}: six Exact Matches`);
+  assert.equal(await primary.locator('[data-explorer-match="SIMILAR_MATCH_SKIPPED"]').count(), 3, `${label}: three retained Similar Matches`);
+  for (const contract of latestDeployment.contracts) {
+    const row = primary.locator(`[data-deployment-contract="${contract.name}"]`);
+    assert.equal(await row.locator('code').textContent(), contract.address, `${label}: ${contract.name} address`);
+    assert.equal(await row.locator(`a[href="${contract.explorerCodeUrl}"]`).count(), 1, `${label}: ${contract.name} code link`);
+    assert.equal(await row.locator(`a[href="${contract.deploymentTransactionUrl}"]`).count(), 1, `${label}: ${contract.name} creation link`);
+  }
+  assert.equal(await historical.locator('[data-historical-manager]').textContent(), historicalDeployment.manager, `${label}: historical Manager remains separate`);
+  assert.equal(await historical.locator('[data-historical-helper]').textContent(), historicalDeployment.helper, `${label}: helper belongs only to the historical Manager`);
+  assert.ok(!(await primary.textContent()).includes(historicalDeployment.manager) && !(await primary.textContent()).includes(historicalDeployment.helper), `${label}: no previous address is primary`);
+  assert.ok(!(await historical.textContent()).includes(latestDeployment.manager), `${label}: no implied helper attachment to the latest Manager`);
+  assert.match(await primary.locator('[data-deployment-state]').textContent(), language ? /rapport du propriétaire.*ni une lecture en direct/ : /owner-reported evidence, not a live chain query/);
+  assert.match(await page.locator('#latest-ens-boundary').textContent(), language ? /ne démontre aucun rattachement/ : /establishes no ENS helper attachment/);
+  if (copy) {
+    await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async value => { window.__copiedManagerForTest = value; } } }));
+    await primary.locator('#copy-address').click();
+    await page.waitForFunction(expected => window.__copiedManagerForTest === expected, latestDeployment.manager);
+    assert.equal(await page.evaluate(() => window.__copiedManagerForTest), latestDeployment.manager, `${label}: actual copy action uses the latest address`);
+  } else assert.equal(await primary.locator('#copy-address').isDisabled(), true, `${label}: no-JS copy is disabled without changing readable evidence`);
+  await primary.locator('#deployment-contracts summary').click();
+  assert.equal(await primary.locator('[data-deployment-contract]:visible').count(), 9, `${label}: all contract details are readable`);
+  await checkReflow(page, `${label}: expanded deployment inventory`);
+  await primary.locator('#deployment-contracts summary').click();
+}
+
 try {
   for (const language of ["", "fr/"]) {
     for (const width of [320, 390, 768, 1440]) {
@@ -100,6 +140,7 @@ try {
         errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
       await page.goto(base + language);
+      await checkDeploymentRecords(page, language, `${language || 'en'} ${width}px`);
       await checkEmployerEntries(page, language, `${language || 'en'} ${width}px`);
       await checkReflow(page, `${language || 'en'} ${width}px`);
       const textSize = await page.locator('.hero-intro').evaluate((element) => parseFloat(getComputedStyle(element).fontSize));
@@ -151,6 +192,7 @@ try {
     }
     const page = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 320, height: 1000 } });
     await page.goto(base + language);
+    await checkDeploymentRecords(page, language, `${language || 'en'} without JavaScript`, false);
     await checkEmployerEntries(page, language, `${language || 'en'} without JavaScript`);
     await checkReflow(page, `${language || 'en'} without JavaScript`);
     assert.equal(await page.locator(".role-panel:visible").count(), 4);
@@ -219,8 +261,8 @@ try {
     }
     for (const width of [390, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
-      const audit = await new AxeBuilder({ page }).include('#ecosystem').include('.home-hero-shell').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
-      assert.deepEqual(audit.violations, [], `${language || 'en'} ${width}px: hero and ecosystem accessibility`);
+      const audit = await new AxeBuilder({ page }).include('#ecosystem').include('.home-hero-shell').include('#deployment').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+      assert.deepEqual(audit.violations, [], `${language || 'en'} ${width}px: hero, ecosystem and deployment accessibility`);
     }
     await context.close();
   }
@@ -252,7 +294,7 @@ try {
     await noJS.close();
   }
   console.log(
-    "Pages browser checks passed: English/French, four-project ecosystem links and keyboard/Back navigation, hero/ecosystem WCAG checks, 320/390/768/1440 widths, larger text and 200% text reflow, prominent locale-preserving employer routes, 48px primary links, keyboard entry, four role routes, calculator, search, FAQ, no-JS onboarding and advanced console navigation.",
+    "Pages browser checks passed: English/French latest Manager copy action and nine-contract explorer inventory, explicit historical helper separation, deployment/hero/ecosystem WCAG checks, 320/390/768/1440 widths, larger and 200% text reflow, ecosystem and employer navigation, calculator, search, FAQ, no-JS evidence and advanced console navigation.",
   );
 } finally {
   await browser.close();

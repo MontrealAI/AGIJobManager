@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { actualRepositoryCommit } from "../successor/source-identity.mjs";
 import { createHash } from "node:crypto";
 import { render } from "../../site/template.mjs";
+import { loadLatestReportedDeployment } from "../../site/deployments.mjs";
 import { renderWorkflows } from "../../site/workflows.mjs";
 import { renderEmployer } from "../../site/employers.mjs";
 import { buildSuccessor } from "../successor/build.mjs";
@@ -20,21 +21,25 @@ if (!/^[a-f0-9]{40}$/.test(commit))
   throw Error("Cannot identify source commit");
 const pkg = json("package.json"),
   registry = json("config/usdc-deployment.json");
-const evidencePath = "docs/releases/v1.14.0/MAINNET_EVIDENCE.json";
-const evidence = json(evidencePath);
-if (
-  evidence.chainId !== 1 ||
-  evidence.intakePaused !== true ||
-  !/^0x[a-fA-F0-9]{40}$/.test(evidence.manager)
-)
-  throw Error(
-    "Review historical evidence wording before publishing changed evidence",
-  );
-if (
-  !Number.isSafeInteger(evidence.blockNumber) ||
-  !/^\d{4}-\d{2}-\d{2}$/.test(evidence.observedDate)
-)
-  throw Error("Invalid historical evidence provenance");
+const { record: latestDeployment, recordPath: latestDeploymentPath, guidePath: latestDeploymentGuide } = loadLatestReportedDeployment(root);
+const historicalEvidencePath = "config/mainnet/agi-jobs-usdc.json";
+const historicalEvidence = json(historicalEvidencePath);
+const snapshot = latestDeployment.reportedAuthoritySnapshot;
+const address = /^0x[a-fA-F0-9]{40}$/;
+if (snapshot.intakePaused !== true || snapshot.identityLocked !== false || snapshot.exactNftCount !== 0 ||
+  snapshot.agentNftRequired !== false || snapshot.moderator.enabled !== true ||
+  latestDeployment.explorerVerification.exactMatches !== 6 || latestDeployment.explorerVerification.retainedSimilarMatches !== 3 ||
+  Object.values(latestDeployment.boundaries).some(value => value !== false))
+  throw Error("Review homepage narrative against the changed reported deployment state");
+if (historicalEvidence.chainId !== 1 || historicalEvidence.notLiveState !== true ||
+  historicalEvidence.notDefaultConfiguration !== true || !address.test(historicalEvidence.manager) ||
+  !address.test(historicalEvidence.helper) || historicalEvidence.manager === latestDeployment.manager ||
+  historicalEvidence.connection.observed.helper.jobManager !== historicalEvidence.manager ||
+  historicalEvidence.connection.observed.manager.ensJobPages !== historicalEvidence.helper ||
+  !Number.isSafeInteger(historicalEvidence.connection.snapshot.number) ||
+  !/^\d{4}-\d{2}-\d{2}$/.test(historicalEvidence.recordDate) ||
+  historicalEvidence.recordDate >= latestDeployment.recordDate)
+  throw Error("Historical manager/helper evidence must remain a separate dated instance");
 if (
   registry.usdc.decimals !== 6 ||
   registry.settlement.wallet30Percentage !== 30 ||
@@ -59,8 +64,11 @@ for (const lang of ["en", "fr"]) {
     commit,
     version: pkg.version,
     registry,
-    evidence,
-    evidencePath,
+    latestDeployment,
+    latestDeploymentPath,
+    latestDeploymentGuide,
+    historicalEvidence,
+    historicalEvidencePath,
   });
   const directory = lang === "en" ? output : path.join(output, lang);
   fs.mkdirSync(directory, { recursive: true });
@@ -125,7 +133,18 @@ fs.writeFileSync(
     {
       sourceCommit: commit,
       sourceVersion: pkg.version,
-      historicalEvidence: evidencePath,
+      historicalEvidence: historicalEvidencePath,
+      latestDeploymentPath,
+      latestDeployment: {
+        recordDate: latestDeployment.recordDate,
+        recordType: latestDeployment.recordType,
+        notLiveState: latestDeployment.notLiveState,
+        manager: latestDeployment.manager,
+        deployedSourceCommit: latestDeployment.source.commit,
+        reportedAuthorityBlock: snapshot.blockNumber,
+        exactMatches: latestDeployment.explorerVerification.exactMatches,
+        retainedSimilarMatches: latestDeployment.explorerVerification.retainedSimilarMatches,
+      },
       consoleSource: "ui/agijobmanager-usdc.html",
       successorSource: successor.sourceManifest,
       successorSourceVerification: successor.identityVerification,

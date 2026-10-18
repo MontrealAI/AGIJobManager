@@ -1,0 +1,56 @@
+# v1.19.2 validation and source identities
+
+## Release-preparation snapshot — 18 October 2026
+
+This section is a preparation snapshot retained with the source. It is not a qualification receipt or an evergreen statement of current publication status. The matching release metadata, external `QUALIFICATION.json` and publication workflow establish final source, completed qualification and publication. No final commit/tree or completed result is claimed by this preparation snapshot.
+
+- Previous immutable stable release: [v1.19.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.1).
+- Previous source: `d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2`, tree `215c3d39eaf87424dbbe8097a8b0b1f0723bd555`.
+- Immutable integrated baseline: `8815ed3181778664595f951befd672afbd7a9352`, tree `913e49d65263bc53026916f7fc3b4cbfb93549f8`.
+- Final v1.19.2 wrapper commit/tree, exact-source qualification, publication and uploaded-byte verification: pending at preparation.
+
+Required workflows are CI, UI CI, Docs Integrity, Security Verification, Mainnet USDC Fork Qualification, Release Candidate Preparation, GitHub Pages and Alpha project handoff. All eight must pass on the exact final main source. Every required job, step, checkout marker and retained candidate artifact must bind that source. Missing, stale, skipped, failed or incomplete evidence blocks publication. Previous release results and historical executed reports cannot qualify this patch.
+
+Build candidate assets twice and compare their bytes, then verify complete inventories, clean extraction and offline rebuilding. Final `QUALIFICATION.json` must bind all completed exact-source runs and the immutable candidate artifact. Package construction or a software label alone does not supply that evidence.
+
+## Identity boundaries
+
+Root, Hardhat, UI and deployment-registry software labels advance together to 1.19.2. Website and console presentation identify the latest reported 17 October deployment as the primary read-only record and retain the separate 10 October ENS-connected instance as history. Default manager, owner and settlement addresses remain blank. Solidity, compiler behavior, dependency resolutions, deployment tools and transaction behavior remain unchanged. Historical releases, deployment journals, scanner dispositions and fork observations retain their original bytes and scope.
+
+New comparison inputs update only applicable software-version hashes and preserve previous observations and dispositions. Their provenance explicitly records `executed: false`; fresh exact-final-source execution remains mandatory. These expectations must not be relabeled as executed reports.
+
+Builder identity remains commit `ab516fbd32fd7cf1a9620fd630947fee1455fca2`, tree `b011643b56115c5baa39ca796cbf0a944c152eda`, version 1.17.2. The selector, retained selected package and complete source closure must match the standalone English/French HTML, editable ZIP and retained context. The release manifest separately identifies the final wrapper.
+
+The owner-reported 17 October snapshot is summarized in [Start here](START_HERE.md). Its six Exact/three Similar distinction and authority snapshot are separate from release qualification and are not live state. This preparation performed no on-chain verification, configuration, deployment or activation and establishes no live paid-work qualification.
+
+## Verify a published package
+
+After publication, download all nine assets from the immutable v1.19.2 release:
+
+1. `AGIJobManager-v1.19.2-COMPLETE.zip`
+2. `agijobmanager-usdc.html`
+3. `My-SUCCESSOR-Omega-en.html`
+4. `My-SUCCESSOR-Omega-fr.html`
+5. `SUCCESSOR-Omega-editable-source.zip`
+6. `SOURCE_MANIFEST.json`
+7. `RELEASE_MANIFEST.json`
+8. `QUALIFICATION.json`
+9. `SHA256SUMS.txt`
+
+Use a trusted checkout of the reviewed release source. Replace `EXACT_RELEASE_COMMIT` with its verified full commit, never the previous release or integrated source merely because it passed checks:
+
+```bash
+gh attestation verify My-SUCCESSOR-Omega-en.html --repo MontrealAI/AGIJobManager --signer-workflow MontrealAI/AGIJobManager/.github/workflows/publish-v114.yml --signer-digest EXACT_RELEASE_COMMIT --source-digest EXACT_RELEASE_COMMIT --source-ref refs/heads/main --deny-self-hosted-runners
+sha256sum -c SHA256SUMS.txt
+python3 scripts/release/verify-package.py PATH_TO_DOWNLOADED_ASSETS --published \
+  --profile manager-explicit-governor-release-v1 \
+  --manifest config/explicit-governor-release-v1.json \
+  --manifest-sha256 "$(sha256sum config/explicit-governor-release-v1.json | cut -d' ' -f1)" \
+  --verifier-sha256 "$(sha256sum scripts/release/release-profile.py | cut -d' ' -f1)"
+```
+
+The policy hashes identify bytes from that independently verified release checkout; they are not qualification by themselves. Preserve the reviewed commit/tree and policy hashes together. The inherited nonpublishing candidate profile remains blocked from published mode.
+
+Repeat attestation verification for every asset. Run the checksum command inside the downloaded-assets directory and the package verifier from the trusted source checkout with the asset path. Attestation lookup requires network access; archive verification is offline. Candidate mode accepts eight files; published mode additionally requires `QUALIFICATION.json`. Do not remove it or edit checksums to make verification pass.
+
+Confirm the release metadata reports `immutable: true`, and that release source, manifest, qualification, workflow attestations and uploaded bytes agree. After any separately authorized Pages publication, verify `build-info.json` and the actual public-file inventory against the same wrapper source. The local `.nojekyll` build marker is not a public uploaded file. Publication, Pages deployment and intake activation remain separate decisions.

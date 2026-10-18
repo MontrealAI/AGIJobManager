@@ -1,8 +1,6 @@
 # Finite operator closeout
 
-Completed historical milestone: manager/helper deployment, ownership and ENS
-connection. **Do not repeat those transactions.** Software release, Pages publication
-and intake authority remain separate. Use [the maintained workflow](docs/OPERATIONS/COMMISSIONING.md).
+Latest reported deployment: the [17 October Manager and authority record](docs/deployments/MAINNET_MANAGER_2026-10-17.md) identifies the new Manager and its nine creations. The earlier [October 10 Manager/helper record](docs/deployments/MAINNET_USDC_2026-10-10.md) records that instance's separate ENS connection. Preserve both campaigns and their original journals. Software release, Pages publication and intake authority remain separate. The [instance-specific workflow](docs/OPERATIONS/COMMISSIONING.md) clearly identifies which commands support the historical October 10 instance.
 
 | Group | Necessary remaining evidence or decision | Owner | Closure |
 | --- | --- | --- | --- |
@@ -21,7 +19,7 @@ transactions may enter first. Settlement containment is a distinct decision.
 
 Missing original compiler inputs/build cache, or unavailable historical RPC coverage,
 block only their respective evidence gates. Do not reconstruct originals and call them original.
-The inspection exporter explains the exact four files needed; no seed words or
+For the historical October 10 inspection workflow, its exporter explains the exact four files needed; no seed words or
 private keys are needed for inspection or rehearsal.
 
 After software qualification, maintainer decisions still identify the exact PR/head

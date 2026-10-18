@@ -3,7 +3,7 @@
   "profile": "manager-explicit-governor-release-v1",
   "baseCommit": "8815ed3181778664595f951befd672afbd7a9352",
   "baseTree": "913e49d65263bc53026916f7fc3b4cbfb93549f8",
-  "version": "1.19.1",
+  "version": "1.19.2",
   "qualification": "PENDING_FINAL_SOURCE_MAIN_PUSH",
   "changes": {
     ".github/workflows/current-state-release.yml": {
@@ -24,9 +24,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "0c77349d4bc3525e12c7d0f0ba7e8024343bea1722361b149ba9c907dc631802"
+        "sha256": "d66bf2053de8d64904ef644458cf402654ede60468bd8da6fbf45085110e15f7"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     ".github/workflows/pages.yml": {
       "before": {
@@ -35,9 +35,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "81b770b4cf6df10f5cb1eb2fa8ce9f26ba5e1aed6e50145d1d40bd0ffd3b2896"
+        "sha256": "3bb470612b33c3297b6bea4b2d9c8b31093318ec405c6f9a6a0d1463e63e0c28"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     ".github/workflows/publish-v114.yml": {
       "before": {
@@ -46,9 +46,20 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "c21947cea28c754f49d5af33a7197828e18b819e877b2ab6a34b4550c2cf13c6"
+        "sha256": "39ffafa1866689e04907fb245c305b6a31daf79848ec850ca83b5fcc2f548f86"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
+    "OPERATOR_ACTIONS_REQUIRED.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "1c7322b20a69c10dfd8d4e4045e36b41bf224ca7d5eff5c9ebc3842f6b6171fd"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "79a7a397f86fa98bec165a92f30fda5a5f6aca94442590976e13e1f86b1dade9"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "README.md": {
       "before": {
@@ -57,9 +68,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "bacd471c1c2ee80a0985a1cb5254f70a6484283073e596f950b56395c7e5e2da"
+        "sha256": "3bbf49dc27608553b329491c0cffbaccaac732fb0ef72c8b2780534dca55e065"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "agijobmanager.html": {
       "before": {
@@ -68,9 +79,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "c848968575200df8caa2f9c33de8837f0341ecb63e1a22783bc8cb0faed5978c"
+        "sha256": "cc5dab7e1d6f64ddb01f608cb6aebc8ddf8fc2ea68facc549fb1a085628aeb57"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
     "config/companion-releases.json": {
       "before": {
@@ -79,9 +90,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "4609019f780bed52fee561336af695fd66c7d58e1a0c8adb153b1f42194e0c75"
+        "sha256": "81c7a70939314687bc67aa1eade77f35d7e331e4e4a56bf09e88a7d15873d2aa"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "config/mainnet/manager-8815-2026-10-17.json": {
       "before": null,
@@ -98,9 +109,20 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "f2e59e94839e9f5b6ed7ddfefeeb6fe7b03491ed0451707685f4a6cb6993d93e"
+        "sha256": "16be55e9cbb2de0249da567d05493d87ac6dfae28bc8e45582f8179526cf7782"
       },
-      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
+    },
+    "docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "cafdbfe4072ae60e23ccf10618387545f995b03d048ebc3bf4efa76abe7ddd0f"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b1e955b6ee36f673402fd9e931b02040cdee236707e2c9ca4d746aa2093283fb"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md": {
       "before": {
@@ -120,9 +142,20 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "91399e8ebf662c5d0999a6b2eda9344bd5de3127f92bf59297891f23f10663b8"
+        "sha256": "77bbf929d8fe6dcf4711571fd023b872fb52bc64d27bbe3e9bf2a59af53f2f19"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
+    "docs/OPERATIONS/COMMISSIONING.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "65ee312757d55e85be4c21667b735784ef38fe1e8422bf0ef48c45b50c985532"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "4dc9bd61619f31ac33a84179c14dd47b9905c4519ef139501b5d50a959416484"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "docs/OPERATIONS/PRIVATE_FLEET.md": {
       "before": {
@@ -131,9 +164,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "dd788dd7a72ecf7f5759a435ee72e54d98e76bddc5479228d637ca02f3655052"
+        "sha256": "5045ee9f3497bfd04b3e4129a5eee90469ba4da27ea5b05fdef883bfbe39bb5b"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "docs/REFERENCE/VERSIONS.md": {
       "before": {
@@ -142,9 +175,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "a6ec4d76e3c9ad3da2b60a892e213d90c5371eded1e6902ddbeb7be41559d08e"
+        "sha256": "4ebebe291f5ba393a953ffaaac269f3e7cd2d7ef858486bf43bd3f8d762cfad7"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "docs/RELEASE_GUIDE.md": {
       "before": {
@@ -153,9 +186,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "75f4b4078251f4874b94e7f382749ac490a8b75d7d064289c6306de2b69fc588"
+        "sha256": "ac1d130c2f93a6ef0da2b7d3f876a5f193b6dc33e9bc349a51a765921474b712"
       },
-      "reason": "Regenerate the active release guide with current-version release availability and preserve the historical release link without claiming publication state."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "docs/START_HERE.md": {
       "before": {
@@ -164,9 +197,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "5c0fa0e8f7d916778deca7b009f9ccc984c3c3a6675674cc0045346ee9133689"
+        "sha256": "3f0ff75f1bfb0f328dfdb1e6b687bd2ed3f14c18674e0509b3f6b48420cc7e35"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "docs/V1_RELEASE_SCOPE.md": {
       "before": {
@@ -175,9 +208,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "630585217cc356aee488168ea95b5c7c21b2dc71ecec74cd46eae386c673b737"
+        "sha256": "cb950fb760591ae3f77f1aa34be19892738c11828c0ce6d33bb2e76dab930ad0"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "docs/deployments/MAINNET_MANAGER_2026-10-17.md": {
       "before": null,
@@ -186,6 +219,17 @@
         "sha256": "0d95f18e6b25dea3a514dd1c32ae421a1d527567daab6b90689f347cb13af14e"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/deployments/README.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "c439cf50fd0d1bea7f0c1df3bb223097c3cde124509adec8408502ebe48a5769"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "c840b1115f946e2ecd4c16a7de8aae3c1a80292cba5daf7c0c4cfb4e26d3c194"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "docs/qualification/mainnet-cutover-v1.19.0-expected.json": {
       "before": null,
@@ -203,6 +247,14 @@
       },
       "reason": "Finite v1.19.1 release-only documentation, metadata, comparison input or gate alignment; preserve all runtime, compiler, dependency and historical evidence boundaries."
     },
+    "docs/qualification/mainnet-cutover-v1.19.2-expected.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "6d9835e20127e38e1c12b88eff78f713899752a7e698f0d03865ccfcccd30d0f"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
     "docs/qualification/release-v1.19.0-provenance.json": {
       "before": null,
       "after": {
@@ -218,6 +270,14 @@
         "sha256": "4bba43e44c021f8622181fca421f3ea87a2234d43413eaa0f9343fb66cad00d4"
       },
       "reason": "Finite v1.19.1 release-only documentation, metadata, comparison input or gate alignment; preserve all runtime, compiler, dependency and historical evidence boundaries."
+    },
+    "docs/qualification/release-v1.19.2-provenance.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "846c3425107462cf31b5fe0b440e11457644f38329bf4f7a4302739d3ca9bc25"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "docs/releases/v1.19.0/RECOVERY_GUIDE.md": {
       "before": null,
@@ -283,6 +343,38 @@
       },
       "reason": "Finite v1.19.1 release-only documentation, metadata, comparison input or gate alignment; preserve all runtime, compiler, dependency and historical evidence boundaries."
     },
+    "docs/releases/v1.19.2/RECOVERY_GUIDE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "7e9799578e6d5f9eaa2e98123289bc9997e367391623a43a10dabcfb53283c39"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
+    "docs/releases/v1.19.2/RELEASE_NOTES.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "7768935cfd9003640c0927fcd0a846c8893d1be96d519ac230e1c8e067b1b444"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
+    "docs/releases/v1.19.2/START_HERE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "e0ddeda89c835ccbe90a99e5f61d360cc0d9474977fc95272fbaee839ce0fd56"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
+    "docs/releases/v1.19.2/VALIDATION.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "452157b4a2d2edeca7805fa2c88abc4e3e7ec8731acff14d8539f4d7b2e78e6b"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
     "docs/ui/DEPLOYMENT_MAINNET.md": {
       "before": {
         "mode": "100644",
@@ -290,9 +382,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "d3de04b755ec422b0c834d9c89ac3ab23ce58ab6db11864b2022308cb3458458"
+        "sha256": "27631899630dd9a4bf431d7f45f74496afc3bfb97a6fcfa2848cc7295b0cd28f"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md": {
       "before": {
@@ -301,9 +393,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "726a6a5b559e4c4b995615ee7c08d521d53d2aa635ddd6a13e9acf64cdf636c4"
+        "sha256": "9aa89dfe3720b28f0ec98f7528d157f1a157d8925bd2b712070f26ba44bea070"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "hardhat/package-lock.json": {
       "before": {
@@ -312,9 +404,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "8c9209e67911a27948c14f7c80667b02078f376eccf770b2024c35778d8aa7f2"
+        "sha256": "6313bfdb011363ebfddd0f3adb2ba32f9a6311df750e144501b4badbf32aabb2"
       },
-      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
     },
     "hardhat/package.json": {
       "before": {
@@ -323,9 +415,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "15daae9201d061897ddacfa05c7daf77e29cf5a629dbc4c06e97afdb21ec8e2b"
+        "sha256": "49a0ea30f3162dac96f7cf74215017892ed6ab4f288679dfc6149d1b82f17a5e"
       },
-      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
     },
     "package-lock.json": {
       "before": {
@@ -334,9 +426,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "e3e7a5e5636e8c0e3448ff1d1c92977de5d4759c20a12dc001c89357d7e951c5"
+        "sha256": "23645de75c587cb3f640fcf6f68e695234941a59ccbbfc7e87b488362d9252cd"
       },
-      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
     },
     "package.json": {
       "before": {
@@ -345,9 +437,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "b916e28ee5bf3f8c1ec5c0d9e3f100624799c3ded640c1a629d76b9252c224c2"
+        "sha256": "8c606ec46ef437f025c46371640ce869445be6e1d59110ed1febb751197d3c85"
       },
-      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
     },
     "scripts/docs/release-alignment.mjs": {
       "before": {
@@ -367,9 +459,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "441b6289453607d1d5e6b6df560a83857d8c87d9331637e9f0c6e1f60c376ed8"
+        "sha256": "5b1c1ed5bfcbcb631035975e02ed82b930f985751dddfe41be172826fff8c62a"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl": {
       "before": {
@@ -378,9 +470,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "09bd85f8d0e8eee20b0e72b17e91d59ad19e9bbe90d10d8520f4033cba4fc45f"
+        "sha256": "9666ffdf8b4cc18940cf4788f6c2c2e3b09dde0fea8b2a821de106c4b861321d"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
     "scripts/release/collect-qualification.py": {
       "before": {
@@ -427,9 +519,9 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "09c7d7ec135ab2ad0f4b26552a1675e700c00307cb5b48782f38e66ec1775e25"
+        "sha256": "e77a790388a93957e8ca94b752ad63221403d75db49c674b29639789f89c3359"
       },
-      "reason": "Admit only the exact release-guide generator and UI documentation-checker paths in the finite release-only delta; preserve runtime, compiler and dependency boundaries."
+      "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
     },
     "scripts/release/release_common.py": {
       "before": {
@@ -438,9 +530,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "cc8fee01ea42d84d2a3ee28105b632038a805ed1a7061a8847f92bd3eb623174"
+        "sha256": "b0c28111eb070a6cdc3df143b044cc5609cb42a97363b1ae52899b5ca6acf6f4"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
     },
     "scripts/release/run-inherited-source-tests.py": {
       "before": null,
@@ -454,9 +546,9 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "b5053065c1f3e775a5aab9b628f3f1c24cb4b3eebf1461c7a4f0df3612e26644"
+        "sha256": "2f154982e06ec8975c3f803d0a591ec59105ed4b97ffeead355f0fcc596b0350"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
     },
     "scripts/release/test-release-gates.py": {
       "before": {
@@ -465,17 +557,17 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "704fe80e2fd222326d17c028e4c77d95d6fd87a5d62a1f023f8a472a10c04437"
+        "sha256": "84fd10ae30d892cae79fb0b880bfa1fe5a7b86ebde208f31cf99d6422cf45867"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
     },
     "scripts/release/test-release-profile.py": {
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "1df1c019ae389ba5d46528af5d31e9134c6701b479cfb0d6e9b6d6ec22976c92"
+        "sha256": "347393390a9a12a5f67e47132bbe60c60e304e71e16c00a213e6747542f1fa18"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
     },
     "scripts/release/verify-package.py": {
       "before": {
@@ -504,6 +596,14 @@
       },
       "reason": "Finite v1.19.1 release-only documentation, metadata, comparison input or gate alignment; preserve all runtime, compiler, dependency and historical evidence boundaries."
     },
+    "scripts/security/slither-reviewed-findings-v1.19.2.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "27e952c0cca63d1a1720137e309b4654dceeb6094f14d2e24f863063eaa0c3df"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
     "scripts/security/verify-slither-review.py": {
       "before": {
         "mode": "100755",
@@ -511,9 +611,91 @@
       },
       "after": {
         "mode": "100755",
-        "sha256": "87d05396994cec47e5a730861f11000e383b95a7c130293fd0ddf95255014c95"
+        "sha256": "834ff99b043f708c7ca28bf75ccde9ee54284fe01225578ca5e86ced053ab9b4"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
+    "scripts/site/browser-test.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "dfd6333accadf81f64ef553eb2bfce0e3c92a6cf9a44b7679995d16236392fd5"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "8e958f8c14a7a0331f439e9f22bc3de40cdbfcc5ff838a6d2e23d14bf26ec601"
+      },
+      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+    },
+    "scripts/site/build.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "4e48a9a23fa6fcb4fee3ef79a9feb29568fff99e3bdfa165e8761df093d0ef1b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "75e42b1a41466f2c93cad09ea88efc59334c715a62bf9735f8f2f99e778a6456"
+      },
+      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+    },
+    "scripts/site/check.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "18ea1a571f5cd511ce1a6f78945587ca5778e65dbde4c9b4875934c98b0f70a6"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "5c5f7c2d1979327c13493d3be79cd5f473cbae79753cea4a5db05f5f16df6338"
+      },
+      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+    },
+    "scripts/site/deployments.test.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "dda5f48adea79bcf7f344f1d7a39401dad4519ccaa9d600d258a039cf2fb12c0"
+      },
+      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+    },
+    "site/content/en.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "9609b0dc17123e7b008e91ad2ba6916dcefc231bb0ed9d949e10f114b0b96369"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "83d3062d0b5e2aceea1d860f7cfc20f34e1187652ec3885e110f9a03627bd434"
+      },
+      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+    },
+    "site/content/fr.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "65ad78e17876ce43a533e60f24f2e8cf6ca0aa33a013626625bd89929bdabce9"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "2d2c0445240377f399a3a3f848324b7fb033d90ef74d06f396872c18ef437f05"
+      },
+      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+    },
+    "site/deployments.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "26853da1968fb05c36d432ef07f287f07069ddcd670aed55266bbfe5847edf81"
+      },
+      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+    },
+    "site/template.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "b84908d51399981b5fe806e2864b20fbbd02aad1dcaea6ecfdc91fb153762ab6"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "04fc2680f14a78ee18bd3234621a3f4baa9ac006e861061fe749d86d00969a78"
+      },
+      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
     },
     "ui/README.md": {
       "before": {
@@ -522,9 +704,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "617e6f589f0e05545435c18f05d0fe13f68893c30d1da9858567d16a08c8f11e"
+        "sha256": "67e04998c9adb9bd0f717584f184a36cf40137f7b621f48a6b1a4578326021e7"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
     "ui/agijobmanager-usdc.html": {
       "before": {
@@ -533,9 +715,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "273a913990af896a479307dea56196ef4045b443e873f58395baaa9ebfcc6624"
+        "sha256": "19991565bb94f7a074555575ce50169c623b243d0a5849c9c37a2c7c23cd2d11"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
     "ui/dist-ipfs/agijobmanager.html": {
       "before": {
@@ -544,9 +726,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "c848968575200df8caa2f9c33de8837f0341ecb63e1a22783bc8cb0faed5978c"
+        "sha256": "cc5dab7e1d6f64ddb01f608cb6aebc8ddf8fc2ea68facc549fb1a085628aeb57"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
     "ui/package-lock.json": {
       "before": {
@@ -555,9 +737,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "7bb71e4ced919028571a226396905bdf6507079879358fe56a37b79e0e28db34"
+        "sha256": "4f938a2cf2d2ba1ad2d90eb6dec12d0971a55897d9877b49ca45149ded367224"
       },
-      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
     },
     "ui/package.json": {
       "before": {
@@ -566,9 +748,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "9932a3e0fcf325eb29b8ed03e11182728f0f26a1c022000fa0e95cb2c979d26c"
+        "sha256": "c1ecba2df1df2d8ba016bab5a786cfa75500ccf1da9b36e9901d2890a4268ee1"
       },
-      "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
     },
     "ui/scripts/docs-check.mjs": {
       "before": {
@@ -588,9 +770,31 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "1130f9f36c08f47fb71dee69f8ebe62f4d730e34c04d7b901f76dcbed32d94f6"
+        "sha256": "3bf519ff1fcfe07472fe40a5fc0814e0a53725d83f34dc6546f3e0fff88fe465"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
+    },
+    "ui/scripts/sync-deployments.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "7784353d21a9177ab85ebf1d7257b8847d5e4cb23e447e26a7c9d1212b7b49b5"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "01f2eebeeea7087b8c217503e160b2696e3479d1fc1bbd8763dda8727b0290d6"
+      },
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
+    },
+    "ui/src/app/deployment/page.tsx": {
+      "before": {
+        "mode": "100644",
+        "sha256": "9da2ca54569edce683f61684714f712cf40be7ae08121d001cc0697314ceb41f"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b59277a4234f163d6adb3611ed022fe08fb0e62157a92ee1fed57c884f4d6d11"
+      },
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
     "ui/src/generated/deployments.ts": {
       "before": {
@@ -599,9 +803,20 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "1e48bac48a27c9320932b53135c08c153563dbf50b3384cbf169580a8a37450a"
+        "sha256": "8f8b303746a25430379000c677e36ffc5ab19cec793d5a4b98695b0d6ade2c18"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
+    },
+    "ui/tests/usdcConsole.test.ts": {
+      "before": {
+        "mode": "100644",
+        "sha256": "6d8a25292af38279ec1fd3199301d9e54ecdf795041608f90ff54eedac2df054"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "6d0b1caa7d804bcf008026b5ab464155ea92edab7d3a9c80b865d043df019fe7"
+      },
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     }
   }
 }

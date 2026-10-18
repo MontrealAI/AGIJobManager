@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v1.19.1</title>
+  <title>AGIJobManager · USDC v1.19.2</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -962,7 +962,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v1.19.1 · Compatible with verified v0.9.6/v0.9.7 and v1.0.x/v1.1.0/v1.2.x managers. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">v1.19.2 · Compatible with verified v0.9.6/v0.9.7 and v1.0.x/v1.1.0/v1.2.x managers. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1131,7 +1131,7 @@
             <div class="legendRow"><span>Wallet two · 10%</span><b id="legendWallet10Pct">10%</b></div>
           </div>
         </div>
-        <div class="tiny" style="margin-top:10px">NFT requirement for new jobs: <b id="agentNftRequiredState">Unknown — connect to read</b>. Fresh v1.19.1 deployments start disabled. Existing jobs keep their own setting.</div>
+        <div class="tiny" style="margin-top:10px">NFT requirement for new jobs: <b id="agentNftRequiredState">Unknown — connect to read</b>. Fresh v1.19.2 deployments start disabled. Existing jobs keep their own setting.</div>
         <div class="tiny" style="margin-top:10px">The validator rate is fixed when the job is posted. The two wallets receive 30% and 10% of the original job cost; the agent receives the remainder. NFTs affect eligibility only. Each job keeps the NFT requirement recorded when it was posted.</div>
       </div>
 
@@ -1182,13 +1182,21 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v1.19.1 candidate</h2>
+      <!-- recorded-deployment-display:start -->
+      <h2>USDC deployment · v1.19.2 software</h2>
+      <div class="helper" style="margin:14px 0;overflow-wrap:anywhere" aria-labelledby="latestReportedDeployment">
+        <h3 id="latestReportedDeployment">Latest reported Manager deployment · 2026-10-17</h3>
+        <p>Ethereum mainnet · Chain 1<br>Manager: <a href="https://etherscan.io/address/0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8#code" target="_blank" rel="noopener noreferrer"><code>0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8</code></a></p>
+        <p>9 creations reported finalized. Explorer report: 6 Exact Match and 3 retained Similar Match. Authority snapshot: block 26,214,525; intake paused.</p>
+        <p>Owner-reported evidence, not live state. Paid intake remains held; this record does not establish an ENS helper attachment or select a transaction target. <a href="https://github.com/MontrealAI/AGIJobManager/blob/main/docs/deployments/MAINNET_MANAGER_2026-10-17.md" target="_blank" rel="noopener noreferrer">Review the latest deployment and all nine contracts</a> · <a href="https://github.com/MontrealAI/AGIJobManager/blob/main/config/mainnet/manager-8815-2026-10-17.json" target="_blank" rel="noopener noreferrer">Machine-readable record</a>.</p>
+      </div>
       <details class="helper" style="margin:14px 0;overflow-wrap:anywhere">
-        <summary>View the recorded mainnet instance — no wallet needed</summary>
-        <p><b>Deployed and ENS-connected at block 26,165,026 on October 10, 2026.</b> Activation is held pending separate review. Current state is unavailable in this historical panel.</p>
-        <p>Ethereum mainnet · Chain 1<br>Manager: <code>0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7</code><br>Helper: <code>0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC</code><br>Namespace: <code>usdc.jobs.agi.eth</code></p>
-        <p>This panel does not select a transaction target. <a href="https://github.com/MontrealAI/AGIJobManager/blob/main/docs/OPERATIONS/COMMISSIONING.md" target="_blank" rel="noopener noreferrer">Inspect the existing instance and review A1–A5</a>.</p>
+        <summary>Historical instance · October 10, 2026 — no wallet needed</summary>
+        <p><b>Historical deployment and ENS connection at block 26,165,026.</b> This older instance is separate from the latest reported Manager above. Current state is unavailable in this historical panel.</p>
+        <p>Ethereum mainnet · Chain 1<br>Historical manager: <code>0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7</code><br>Historical helper: <code>0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC</code><br>Historical namespace: <code>usdc.jobs.agi.eth</code></p>
+        <p>The historical helper is not attached to the latest Manager by this record. This panel does not select a transaction target. <a href="https://github.com/MontrealAI/AGIJobManager/blob/main/docs/deployments/MAINNET_USDC_2026-10-10.md" target="_blank" rel="noopener noreferrer">Review the October 10 historical record</a>.</p>
       </details>
+      <!-- recorded-deployment-display:end -->
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
       <p class="helper">Enter the verified Ethereum mainnet address of a compatible v0.9.6, v0.9.7, v1.0.x, v1.1.0 or v1.2.x USDC manager. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
@@ -2266,9 +2274,9 @@ accrued rights. Invalid provisions do not expand a disclaimer beyond lawful limi
 The MIT License and separate valid agreements remain distinct; this source notice is
 not a universal entire-agreement clause or additional restriction on software use.</div></details></div>
       <div class="hintBox" style="margin-top:12px">
-        <b>How job escrow refunds work in v1.19.1</b>
+        <b>How job escrow refunds work in v1.19.2</b>
         <p>The source terms above are reproduced verbatim. The current contract provides escrow refunds when its cancellation, non-delivery expiry, buyer-win or neutral arbitration-timeout conditions are met. A refund requires a successful transaction; elapsed time alone does not send money. Final settlement has no built-in chargeback. Gas and outside losses are not reimbursed.</p>
-        <p>The v1.0.5 protocol notice is retained unchanged in this v1.19.1 edition. Here, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
+        <p>The v1.0.5 protocol notice is retained unchanged in this v1.19.2 edition. Here, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
       </div>
     </div>
 

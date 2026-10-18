@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-BASELINE = ROOT / "scripts/security/slither-reviewed-findings-v1.19.1.json"
+BASELINE = ROOT / "scripts/security/slither-reviewed-findings-v1.19.2.json"
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 
 
