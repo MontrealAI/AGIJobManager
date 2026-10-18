@@ -3,7 +3,7 @@
   "profile": "manager-explicit-governor-release-v1",
   "baseCommit": "8815ed3181778664595f951befd672afbd7a9352",
   "baseTree": "913e49d65263bc53026916f7fc3b4cbfb93549f8",
-  "version": "1.19.0",
+  "version": "1.19.1",
   "qualification": "PENDING_FINAL_SOURCE_MAIN_PUSH",
   "changes": {
     ".github/workflows/current-state-release.yml": {
@@ -24,7 +24,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "759179d434a932d9d93987476a19c6cc1127c87d53a849bfd3b555580f33e191"
+        "sha256": "0c77349d4bc3525e12c7d0f0ba7e8024343bea1722361b149ba9c907dc631802"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -46,7 +46,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "e54897f92c36a1bc5ff5253740b13fbe7acdf655c050320767c3c057ecda37cc"
+        "sha256": "c21947cea28c754f49d5af33a7197828e18b819e877b2ab6a34b4550c2cf13c6"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -57,7 +57,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "d812a45c0ddba07c7fbf3637858123f7db77702aa67a23d6a50ba303ce2e4984"
+        "sha256": "bacd471c1c2ee80a0985a1cb5254f70a6484283073e596f950b56395c7e5e2da"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -68,7 +68,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "8eb0d971780a68e2672838329757101b5dc4d67aae4470c2b5caed09a690a446"
+        "sha256": "c848968575200df8caa2f9c33de8837f0341ecb63e1a22783bc8cb0faed5978c"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -79,7 +79,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "2046b7a2532b97bc7383aaaf64b84b49f1180194638867c0af0022620d317d64"
+        "sha256": "4609019f780bed52fee561336af695fd66c7d58e1a0c8adb153b1f42194e0c75"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -98,7 +98,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "9ae7575b91dea953cfee206768e6076a4d270d9974da4f17458f05e1a5eb49a0"
+        "sha256": "f2e59e94839e9f5b6ed7ddfefeeb6fe7b03491ed0451707685f4a6cb6993d93e"
       },
       "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
     },
@@ -120,7 +120,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "a0a9856800208ffa7f081d876f1865740b5bb322b4bfe5d0b9e813150ecf0e4c"
+        "sha256": "91399e8ebf662c5d0999a6b2eda9344bd5de3127f92bf59297891f23f10663b8"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -131,7 +131,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "ff2bc405c68f1e86a9c425ae81a9c526fe310ba07d64c1948b32ec16ff5c6112"
+        "sha256": "dd788dd7a72ecf7f5759a435ee72e54d98e76bddc5479228d637ca02f3655052"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -142,7 +142,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "dbf23157af334daec70972f4d696f67825116ea32b05281cf5f1bc0e78bff4af"
+        "sha256": "a6ec4d76e3c9ad3da2b60a892e213d90c5371eded1e6902ddbeb7be41559d08e"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -153,9 +153,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "aa4f520dd2cb634f488011515b8dfb3af031015a7dad3504f0bdd044e79645de"
+        "sha256": "75f4b4078251f4874b94e7f382749ac490a8b75d7d064289c6306de2b69fc588"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Regenerate the active release guide with current-version release availability and preserve the historical release link without claiming publication state."
     },
     "docs/START_HERE.md": {
       "before": {
@@ -164,7 +164,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "0905653987059e05f9a102936f6b6bf0168737301d40ae1fea3150b36906ab3c"
+        "sha256": "5c0fa0e8f7d916778deca7b009f9ccc984c3c3a6675674cc0045346ee9133689"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -175,7 +175,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "a1877a4d609f926fd3ce6212c32d6e82136cbb9d79471d641ef9c3b524703391"
+        "sha256": "630585217cc356aee488168ea95b5c7c21b2dc71ecec74cd46eae386c673b737"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -195,6 +195,14 @@
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
+    "docs/qualification/mainnet-cutover-v1.19.1-expected.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "1b426c4e88c97388deba2e44f1df3de8ed1ab645752bd7d4f0beec770d646ffa"
+      },
+      "reason": "Finite v1.19.1 release-only documentation, metadata, comparison input or gate alignment; preserve all runtime, compiler, dependency and historical evidence boundaries."
+    },
     "docs/qualification/release-v1.19.0-provenance.json": {
       "before": null,
       "after": {
@@ -202,6 +210,14 @@
         "sha256": "b87441d2513ddee5a839aac8798e3d55df8c3687bdb69a10311f258270b67824"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+    },
+    "docs/qualification/release-v1.19.1-provenance.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "4bba43e44c021f8622181fca421f3ea87a2234d43413eaa0f9343fb66cad00d4"
+      },
+      "reason": "Finite v1.19.1 release-only documentation, metadata, comparison input or gate alignment; preserve all runtime, compiler, dependency and historical evidence boundaries."
     },
     "docs/releases/v1.19.0/RECOVERY_GUIDE.md": {
       "before": null,
@@ -235,6 +251,38 @@
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
+    "docs/releases/v1.19.1/RECOVERY_GUIDE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "b74e0d616289da08a0cca2cd107e3ba9892f740fc258ad7be4fd179e9c9de229"
+      },
+      "reason": "Finite v1.19.1 release-only documentation, metadata, comparison input or gate alignment; preserve all runtime, compiler, dependency and historical evidence boundaries."
+    },
+    "docs/releases/v1.19.1/RELEASE_NOTES.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "5a71b71aa89eeb41e9cdd3e40699eea9b1cae55f5cb00eb3d88c9d79d426ba63"
+      },
+      "reason": "Finite v1.19.1 release-only documentation, metadata, comparison input or gate alignment; preserve all runtime, compiler, dependency and historical evidence boundaries."
+    },
+    "docs/releases/v1.19.1/START_HERE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "85d9af30c4cc298ba0e5c87a643a55095b0ce7b52fab9fcc0f7b387934e73199"
+      },
+      "reason": "Finite v1.19.1 release-only documentation, metadata, comparison input or gate alignment; preserve all runtime, compiler, dependency and historical evidence boundaries."
+    },
+    "docs/releases/v1.19.1/VALIDATION.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "e6d236c483058445791a453bb605caa10df6886dc6ebd667d7d5081b1dfdf3f1"
+      },
+      "reason": "Finite v1.19.1 release-only documentation, metadata, comparison input or gate alignment; preserve all runtime, compiler, dependency and historical evidence boundaries."
+    },
     "docs/ui/DEPLOYMENT_MAINNET.md": {
       "before": {
         "mode": "100644",
@@ -242,7 +290,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "491a8180f1ade7e56527a97e6ba2813d564e5d3f7964c9aaa8c78df3795139a3"
+        "sha256": "d3de04b755ec422b0c834d9c89ac3ab23ce58ab6db11864b2022308cb3458458"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -253,7 +301,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "e2094d5b205eedff79bfda598700e6b7aa88da00f7009c1b3d0247976b689a9b"
+        "sha256": "726a6a5b559e4c4b995615ee7c08d521d53d2aa635ddd6a13e9acf64cdf636c4"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -264,7 +312,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "bea62560ecc1f34da6dc88f85fe2e22091fb07b270a730d53803d936bf5fdb2c"
+        "sha256": "8c9209e67911a27948c14f7c80667b02078f376eccf770b2024c35778d8aa7f2"
       },
       "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
     },
@@ -275,7 +323,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "0c513b38d5d424aa5d04383e74d0857cb281951b4f86ecb62b9b4c3b75f38353"
+        "sha256": "15daae9201d061897ddacfa05c7daf77e29cf5a629dbc4c06e97afdb21ec8e2b"
       },
       "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
     },
@@ -286,7 +334,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "2711424bb558ce974c0d9db0bdb9a74cf44d8f877d80b1b6818ac6fdee2986c4"
+        "sha256": "e3e7a5e5636e8c0e3448ff1d1c92977de5d4759c20a12dc001c89357d7e951c5"
       },
       "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
     },
@@ -297,9 +345,20 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "99c259eeb61cb50b35c90684cafb35e726cdb66c10dea4b94050188678952e35"
+        "sha256": "b916e28ee5bf3f8c1ec5c0d9e3f100624799c3ded640c1a629d76b9252c224c2"
       },
       "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+    },
+    "scripts/docs/release-alignment.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "e77719193eacda88ce3e2e190ba0b04e9f45876a54338886b320465a9a97e8ae"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "90d684252d3fe120d1865f22506a8c1e34ed5cfd5a4242ce8ef12e660b03f0e4"
+      },
+      "reason": "Generate release availability links from the current software version without inferring publication state from a source checkout; preserve command and version checks."
     },
     "scripts/docs/templates/README.md.tpl": {
       "before": {
@@ -308,7 +367,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "a7a637e380b05c204f47dc49f5bd7f3386422356f01e43b90f1831470993a4da"
+        "sha256": "441b6289453607d1d5e6b6df560a83857d8c87d9331637e9f0c6e1f60c376ed8"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -319,7 +378,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "af9aaa6bb9837413b8f2053b1a9d957e754a0fb5d1d67cc5d0f82d6ae417c96d"
+        "sha256": "09bd85f8d0e8eee20b0e72b17e91d59ad19e9bbe90d10d8520f4033cba4fc45f"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -368,9 +427,9 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "b5a8552238ab029b12d8f4cff189f3afef57cfd8d2704b5e745255417d21f65a"
+        "sha256": "09c7d7ec135ab2ad0f4b26552a1675e700c00307cb5b48782f38e66ec1775e25"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Admit only the exact release-guide generator and UI documentation-checker paths in the finite release-only delta; preserve runtime, compiler and dependency boundaries."
     },
     "scripts/release/release_common.py": {
       "before": {
@@ -379,7 +438,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "b7b6b6da03bfccc5f5308d313a0d67855b9029cc915b8f8c4dc799e9d46dd2e0"
+        "sha256": "cc8fee01ea42d84d2a3ee28105b632038a805ed1a7061a8847f92bd3eb623174"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -395,7 +454,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "319e37196104e66465edff78d01fae59ba757446d480b1e8cde227f304317588"
+        "sha256": "b5053065c1f3e775a5aab9b628f3f1c24cb4b3eebf1461c7a4f0df3612e26644"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -414,7 +473,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "83349c6794b0fcf50babf6ac643ad02c831f4ed4442532048b1d261affbb5add"
+        "sha256": "1df1c019ae389ba5d46528af5d31e9134c6701b479cfb0d6e9b6d6ec22976c92"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -437,6 +496,14 @@
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
+    "scripts/security/slither-reviewed-findings-v1.19.1.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "1dcce0bdf815889c330b2fd4365757b9ce4b7bd68d471fcba71433927c90a211"
+      },
+      "reason": "Finite v1.19.1 release-only documentation, metadata, comparison input or gate alignment; preserve all runtime, compiler, dependency and historical evidence boundaries."
+    },
     "scripts/security/verify-slither-review.py": {
       "before": {
         "mode": "100755",
@@ -444,7 +511,7 @@
       },
       "after": {
         "mode": "100755",
-        "sha256": "a09ecb2d4fd1611ff4747ae6dbb66e6e8c7bc8733e67d7e945836bc1b14569ae"
+        "sha256": "87d05396994cec47e5a730861f11000e383b95a7c130293fd0ddf95255014c95"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -455,7 +522,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "6925c5189a5e71173d17d1e27748093fbaed6efefc6726563425da1d84a2b2fe"
+        "sha256": "617e6f589f0e05545435c18f05d0fe13f68893c30d1da9858567d16a08c8f11e"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -466,7 +533,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "2b4524c5e62781c75596311faa39a602f6367d331f8d8ce9359841c4956f4802"
+        "sha256": "273a913990af896a479307dea56196ef4045b443e873f58395baaa9ebfcc6624"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -477,7 +544,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "8eb0d971780a68e2672838329757101b5dc4d67aae4470c2b5caed09a690a446"
+        "sha256": "c848968575200df8caa2f9c33de8837f0341ecb63e1a22783bc8cb0faed5978c"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -488,7 +555,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "5f8f69ef2e1f872e8fb43e645ff526a07f9132d6aaa450a59b13988a5161bf68"
+        "sha256": "7bb71e4ced919028571a226396905bdf6507079879358fe56a37b79e0e28db34"
       },
       "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
     },
@@ -499,9 +566,20 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "1198887b1c6efa807926fc25ad87b4f34517b7d7a34f7939904a0f29f8dc20d6"
+        "sha256": "9932a3e0fcf325eb29b8ed03e11182728f0f26a1c022000fa0e95cb2c979d26c"
       },
       "reason": "Synchronize software version only; preserve all dependency resolutions and deployment addresses."
+    },
+    "ui/scripts/docs-check.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "7f6e97d8e8bdffcf1093c9e3d5dc46ca22881932d01300206c4413e9da376453"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "2bbf0bf4ad942bd2acf2e549aa0f24961ca5c2ef570fb363fd43b4542e8d540d"
+      },
+      "reason": "Align the required generated deployment-document heading with Software version; preserve freshness checks and every other required section."
     },
     "ui/scripts/generate-deployment-docs.mjs": {
       "before": {
@@ -510,7 +588,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "c090772af5cd34490a14b1dbe02b05000730cdc27217db4141c598f75f1b52ff"
+        "sha256": "1130f9f36c08f47fb71dee69f8ebe62f4d730e34c04d7b901f76dcbed32d94f6"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     },
@@ -521,7 +599,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "b2c1ddb999e5a8ce471b5bbbdffab466821773755b204b2c28fb905b0e967986"
+        "sha256": "1e48bac48a27c9320932b53135c08c153563dbf50b3384cbf169580a8a37450a"
       },
       "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
     }

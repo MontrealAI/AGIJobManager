@@ -52,12 +52,12 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Source candidate: v1.19.0 — Explicit-governor deployment and preserved source evidence.**
+**Current software version: v1.19.1 — Release guide clarity and preserved source evidence.**
 [Operate the already deployed instance](docs/OPERATIONS/COMMISSIONING.md) ·
-[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Candidate notes](docs/releases/v1.19.0/RELEASE_NOTES.md).
+[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Release notes](docs/releases/v1.19.1/RELEASE_NOTES.md).
 
-**[previously published v1.18.0 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.18.0/AGIJobManager-v1.18.0-COMPLETE.zip)** · [previously published v1.18.0 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.18.0/QUALIFICATION.json).
-The source candidate is not yet published and does not inherit the prior release's qualification.
+**[previously published v1.19.0 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.0/AGIJobManager-v1.19.0-COMPLETE.zip)** · [previously published v1.19.0 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.0/QUALIFICATION.json).
+Check [release and download availability for v1.19.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.1). Published assets identify their exact source; later main-branch work requires separate qualification.
 Software publication and intake activation are separate decisions.
 
 AGI Jobs covers work a person or team can do using a keyboard, mouse and screen. Employers define the result and acceptance criteria; AGI Agents perform the work; AGI Nodes independently validate the delivered result. AGIJobManager provides the on-chain job lifecycle, USDC escrow, bonded voting, dispute outcomes and payment recovery. Computer execution and judging the work happen outside the contract.
@@ -132,7 +132,7 @@ npm run docs:check
 
 For deployment, first run `npm --prefix hardhat run setup`, review the private configuration, then use the [Hardhat procedure](hardhat/README.md). New managers start with intake paused. The [default configuration](config/usdc-deployment.json) still auto-selects **no live manager**. The separate [recorded instance](config/mainnet/agi-jobs-usdc.json) is historical evidence, not a replacement default or an activation grant. Publishing this software does not deploy contracts or open intake.
 
-The current manager uses eight fixed linked libraries. The [integrated source](docs/qualification/INTEGRATED_CANDIDATE_20261017.md) includes explicit-governor constructors, bounded creator preflight recovery and a source-pinned compiler optimizer mitigation. The v1.19.0 wrapper requires fresh exact-final-source qualification. Earlier [ENS membership hardening](docs/qualification/ENS_MEMBERSHIP_REVOCATION.md), payout rules and historical deployment records remain preserved. Existing immutable managers are not upgraded by this software release; preserve their original source, jobs and recovery paths. Use the [second-deployment checklist](docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md) and [compatibility guide](docs/V1_RELEASE_SCOPE.md#compatibility).
+The current manager uses eight fixed linked libraries. The [integrated source](docs/qualification/INTEGRATED_CANDIDATE_20261017.md) includes explicit-governor constructors, bounded creator preflight recovery and a source-pinned compiler optimizer mitigation. The v1.19.1 wrapper requires fresh exact-final-source qualification. Earlier [ENS membership hardening](docs/qualification/ENS_MEMBERSHIP_REVOCATION.md), payout rules and historical deployment records remain preserved. Existing immutable managers are not upgraded by this software release; preserve their original source, jobs and recovery paths. Use the [second-deployment checklist](docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md) and [compatibility guide](docs/V1_RELEASE_SCOPE.md#compatibility).
 
 ## Release evidence and production use
 

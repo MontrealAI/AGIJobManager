@@ -79,12 +79,12 @@ class ReleaseProfile(unittest.TestCase):
                 self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
     def test_comparison_inputs_preserve_all_historical_observations(self):
         before=json.loads((ROOT/'docs/qualification/mainnet-cutover-integrated-20261017.json').read_bytes())
-        after=json.loads((ROOT/'docs/qualification/mainnet-cutover-v1.19.0-expected.json').read_bytes())
+        after=json.loads((ROOT/'docs/qualification/mainnet-cutover-v1.19.1-expected.json').read_bytes())
         b=before.pop('sourceSha256');a=after.pop('sourceSha256')
         self.assertEqual(before,after)
         self.assertEqual({n for n in a if a[n]!=b[n]}, {'package.json','package-lock.json','hardhat/package.json','hardhat/package-lock.json'})
         before=json.loads((ROOT/'scripts/security/slither-reviewed-findings-c174-integrated-yul.json').read_bytes())
-        after=json.loads((ROOT/'scripts/security/slither-reviewed-findings-v1.19.0.json').read_bytes())
+        after=json.loads((ROOT/'scripts/security/slither-reviewed-findings-v1.19.1.json').read_bytes())
         b=before.pop('source_sha256');a=after.pop('source_sha256')
         before.pop('scope');after.pop('scope')
         self.assertEqual(before,after)
@@ -105,7 +105,7 @@ class ReleaseProfile(unittest.TestCase):
         finally:p.chmod(0o644)
     def test_manifest_never_accepts_embedded_approval_or_candidate_flags(self):
         m={k:None for k in ('schemaVersion','repository','tag','name','sourceCommit','sourceTree','builderSource','stage','qualification','archiveLimitBytes','toolchain','exclusions','files')}
-        m.update(P['metadata'](self.selection),tag='v1.19.0',stage='source-package',schemaVersion=2,repository=REPOSITORY,name=TITLE,sourceCommit='a'*40,sourceTree='b'*40)
+        m.update(P['metadata'](self.selection),tag='v1.19.1',stage='source-package',schemaVersion=2,repository=REPOSITORY,name=TITLE,sourceCommit='a'*40,sourceTree='b'*40)
         P['validate_metadata'](m,self.selection)
         for k,v in [('schemaVersion', None), ('repository', 'wrong/repo'), ('name', None), ('sourceCommit', 'not-a-sha')]:
             with self.subTest(k=k),self.assertRaises(ValueError):P['validate_metadata']({**m,k:v},self.selection)
@@ -142,7 +142,7 @@ class ReleaseProfile(unittest.TestCase):
         self.assertIn('run-inherited-source-tests.py --dependency-root',w)
         self.assertIn('test-release-profile.py',w)
         pub=(ROOT/'.github/workflows/publish-v114.yml').read_text()
-        self.assertIn('PUBLISH_v1.19.0',pub)
+        self.assertIn('PUBLISH_v1.19.1',pub)
         self.assertEqual(pub.count('--profile manager-explicit-governor-release-v1'),3)
         from release_common import WORKFLOWS
         self.assertEqual(len(WORKFLOWS),8)
@@ -186,7 +186,7 @@ class ReleaseProfile(unittest.TestCase):
             path=pages/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b'fixture')
             files[name]={'bytes':7,'sha256':sha(b'fixture')}
         (pages/'.nojekyll').write_bytes(b'')
-        info={'sourceCommit':'a'*40,'sourceVersion':'1.19.0','files':files,'buildOnlyFiles':{'.nojekyll':{'bytes':0,'sha256':sha(b'')}}}
+        info={'sourceCommit':'a'*40,'sourceVersion':'1.19.1','files':files,'buildOnlyFiles':{'.nojekyll':{'bytes':0,'sha256':sha(b'')}}}
         (pages/'build-info.json').write_text(json.dumps(info))
         try:
             runner['validate_pages'](ROOT,pages,'a'*40)
