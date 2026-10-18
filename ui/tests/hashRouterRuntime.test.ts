@@ -67,6 +67,30 @@ describe('single-file hash router runtime behavior', () => {
     expect(deploymentText).not.toBe(jobsText);
   });
 
+  it('renders the latest deployment and separate history in the actual hash route without selecting a target', () => {
+    const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/deployment');
+    try {
+      const route = dom.window.document.querySelector('[data-testid="route-deployment"]');
+      const latest = route?.querySelector('[data-testid="latest-reported-deployment"]');
+      const historical = route?.querySelector('[data-testid="historical-deployment"]');
+      expect(latest?.textContent).toContain('Latest reported Manager deployment · 2026-10-17');
+      expect(latest?.textContent).toContain('0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8');
+      expect(latest?.textContent).toContain('9 creations reported finalized');
+      expect(latest?.textContent).toContain('6 Exact Match and 3 retained Similar Match');
+      expect(latest?.textContent).toContain('26,214,525; intake paused');
+      expect(latest?.textContent).toContain('not live state');
+      expect(latest?.textContent).toContain('does not establish an ENS helper attachment or select a transaction target');
+      expect(latest?.querySelector('a[href="https://etherscan.io/address/0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8#code"]')).not.toBeNull();
+      expect(latest?.querySelector('a[href$="config/mainnet/manager-8815-2026-10-17.json"]')).not.toBeNull();
+      expect(latest?.nextElementSibling).toBe(historical);
+      expect(historical?.querySelector('summary')?.textContent).toContain('Historical instance · October 10, 2026');
+      expect(historical?.textContent).toContain('0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7');
+      expect(historical?.textContent).toContain('historical helper is not attached to the latest Manager');
+      expect(route?.querySelector('input, button, script, [onclick]')).toBeNull();
+      expect(dom.window.localStorage.length).toBe(0);
+    } finally { dom.window.close(); }
+  });
+
   it('is filename-agnostic when the exact artifact is served as /index.html', () => {
     const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/index.html#/');
 

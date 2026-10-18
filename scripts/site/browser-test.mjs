@@ -266,6 +266,30 @@ try {
     }
     await context.close();
   }
+  for (const width of [320, 390, 768, 1440]) {
+    const context = await browser.newContext({ viewport: { width, height: 1000 } });
+    const page = await context.newPage(), externalRequests = [], errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.route('https://**/*', route => { externalRequests.push(route.request().url()); return route.abort(); });
+    await page.goto(base + 'agijobmanager.html#/deployment');
+    const route = page.getByTestId('route-deployment'), latest = route.getByTestId('latest-reported-deployment'), history = route.getByTestId('historical-deployment');
+    assert.equal(await latest.isVisible(), true, `${width}px: advanced route renders its latest panel, not merely embedded source`);
+    assert.equal(await latest.locator(`a[href="${latestDeployment.verificationLinks.managerCode}"]`).count(), 1, `${width}px: advanced route explorer targets the latest Manager`);
+    const latestText = await latest.textContent();
+    assert.ok(latestText.includes(latestDeployment.manager) && latestText.includes(latestDeployment.recordDate), `${width}px: advanced route presents latest identity and date`);
+    assert.match(latestText, /6 Exact Match and 3 retained Similar Match/);
+    assert.ok(latestText.includes('26,214,525') && latestText.includes('Owner-reported evidence, not live state'), `${width}px: advanced route retains dated authority provenance`);
+    assert.ok(latestText.includes('does not establish an ENS helper attachment or select a transaction target'), `${width}px: advanced record is display-only`);
+    assert.ok(!latestText.includes(historicalDeployment.manager) && !latestText.includes(historicalDeployment.helper), `${width}px: old addresses cannot be primary`);
+    assert.match(await history.textContent(), /Historical instance/);
+    assert.ok((await history.textContent()).includes(historicalDeployment.manager) && (await history.textContent()).includes(historicalDeployment.helper), `${width}px: advanced route retains the historical pair`);
+    await history.locator('summary').click();
+    await checkReflow(page, `${width}px: rendered advanced deployment route`);
+    assert.equal(await route.locator('input, button').count(), 0, `${width}px: recorded deployment panels expose no target-selection action`);
+    assert.deepEqual(externalRequests, [], `${width}px: viewing the advanced deployment record makes no RPC requests`);
+    assert.deepEqual(errors, [], `${width}px: advanced deployment route has no script errors`);
+    await context.close();
+  }
   for (const language of ['', 'fr/']) {
     const context = await browser.newContext();
     const page = await context.newPage();

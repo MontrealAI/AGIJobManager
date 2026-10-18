@@ -36,7 +36,7 @@ ALLOWED = VERSION_ONLY | {
     'scripts/release/release_common.py', 'scripts/release/package-release.py',
     'scripts/release/verify-package.py', 'scripts/release/collect-qualification.py',
     'scripts/release/publish-release.py', VERIFIER, 'scripts/release/package-policy.py',
-    'scripts/release/test-release-profile.py', 'scripts/release/test-release-gates.py', 'ui/scripts/generate-deployment-docs.mjs', 'ui/scripts/docs-check.mjs', 'scripts/release/run-inherited-source-tests.py',
+    'scripts/release/test-release-profile.py', 'scripts/release/test-release-gates.py', 'ui/scripts/generate-deployment-docs.mjs', 'ui/scripts/docs-check.mjs', 'scripts/release/run-inherited-source-tests.py', 'ui/scripts/singlefile-template.html', 'ui/tests/hashRouterRuntime.test.ts', 'hardhat/test/commissioning-docs.test.cjs',
     'docs/qualification/mainnet-cutover-v1.19.0-expected.json', 'docs/qualification/mainnet-cutover-v1.19.1-expected.json', 'docs/qualification/mainnet-cutover-v1.19.2-expected.json',
     'docs/qualification/release-v1.19.0-provenance.json', 'docs/qualification/release-v1.19.1-provenance.json', 'docs/qualification/release-v1.19.2-provenance.json',
     'scripts/security/slither-reviewed-findings-v1.19.0.json', 'scripts/security/slither-reviewed-findings-v1.19.1.json', 'scripts/security/slither-reviewed-findings-v1.19.2.json',
@@ -179,13 +179,13 @@ def console_deployment_display(config, recorded, reported):
     github = 'https://github.com/MontrealAI/AGIJobManager/blob/main/'
     return f'''      <!-- recorded-deployment-display:start -->
       <h2>USDC deployment · v{e(config['version'])} software</h2>
-      <div class="helper" style="margin:14px 0;overflow-wrap:anywhere" aria-labelledby="latestReportedDeployment">
+      <div class="helper" style="margin:14px 0;overflow-wrap:anywhere" aria-labelledby="latestReportedDeployment" data-testid="latest-reported-deployment">
         <h3 id="latestReportedDeployment">Latest reported Manager deployment · {e(reported['recordDate'])}</h3>
         <p>Ethereum mainnet · Chain {reported['chainId']}<br>Manager: <a href="{e(reported['managerCodeUrl'])}" target="_blank" rel="noopener noreferrer"><code>{e(reported['manager'])}</code></a></p>
         <p>{reported['contractCount']} creations reported finalized. Explorer report: {reported['exactMatches']} Exact Match and {reported['retainedSimilarMatches']} retained Similar Match. Authority snapshot: block {reported['block']:,}; intake {'paused' if reported['intakePaused'] else 'not paused'}.</p>
         <p>Owner-reported evidence, not live state. Paid intake remains held; this record does not establish an ENS helper attachment or select a transaction target. <a href="{github}{e(reported['guidePath'])}" target="_blank" rel="noopener noreferrer">Review the latest deployment and all nine contracts</a> · <a href="{github}{e(reported['recordPath'])}" target="_blank" rel="noopener noreferrer">Machine-readable record</a>.</p>
       </div>
-      <details class="helper" style="margin:14px 0;overflow-wrap:anywhere">
+      <details class="helper" style="margin:14px 0;overflow-wrap:anywhere" data-testid="historical-deployment">
         <summary>Historical instance · October 10, 2026 — no wallet needed</summary>
         <p><b>Historical deployment and ENS connection at block {recorded['block']:,}.</b> This older instance is separate from the latest reported Manager above. Current state is unavailable in this historical panel.</p>
         <p>Ethereum mainnet · Chain {recorded['chainId']}<br>Historical manager: <code>{e(recorded['manager'])}</code><br>Historical helper: <code>{e(recorded['helper'])}</code><br>Historical namespace: <code>{e(recorded['namespace'])}</code></p>
@@ -194,10 +194,24 @@ def console_deployment_display(config, recorded, reported):
       <!-- recorded-deployment-display:end -->'''
 
 
+def advanced_deployment_display(config, recorded, reported):
+    html = '<section data-testid="route-deployment"><h2>Deployment Registry</h2>\n' + console_deployment_display(config, recorded, reported) + '\n</section>'
+    literal = "'" + html.replace('\\', '\\\\').replace("'", "\\'").replace('\n', '\\n').replace('\r', '\\r').replace('\u2028', '\\u2028').replace('\u2029', '\\u2029') + "'"
+    return '/* recorded-deployment-route:start */' + literal + '/* recorded-deployment-route:end */'
+
+
+def normalize_advanced_deployment(text, config, recorded, reported):
+    previous = "'<section data-testid=\"route-deployment\"><h2>Deployment Registry</h2></section>'"
+    return revert_exact(text, advanced_deployment_display(config, recorded, reported), previous, 'standalone deployment route')
+
+
 def validate_ui_metadata(root, baseline):
     """Reverse only exact reviewed display changes; retain the immutable UI runtime hash."""
     config, recorded, reported = deployment_display_inputs(root)
     require(config['note'] == DEPLOYMENT_NOTE, 'Unreviewed deployment note')
+    template_name = 'ui/scripts/singlefile-template.html'
+    template = normalize_advanced_deployment(read(root, template_name)[1].decode(), config, recorded, reported)
+    require(sha(template.encode()) == baseline[template_name]['sha256'], 'Standalone template changed beyond reviewed read-only deployment display')
     page_name = 'ui/src/app/deployment/page.tsx'
     page = read(root, page_name)[1].decode()
     historical_page = normalize_deployment_page(page)
@@ -209,6 +223,7 @@ def validate_ui_metadata(root, baseline):
     bundle_pattern = '(<script id="agijobmanager-runtime-bundle">window.__AGI_RUNTIME_BUNDLE__=)(.*?)(;window.__AGI_CONTRACT_ABI_REGISTRY__=)'
     allowed = {'README.md': 'README.md', 'config/usdc-deployment.json': 'config/usdc-deployment.json', 'docs/ui/DEPLOYMENT_MAINNET.md': 'docs/ui/DEPLOYMENT_MAINNET.md', 'src/generated/deployments.ts': 'ui/src/generated/deployments.ts'}
     def mask(text):
+        text = normalize_advanced_deployment(text, config, recorded, reported)
         text = re.sub(bundle_pattern, lambda m: m.group(1) + 'METADATA' + m.group(3), text, flags=re.S)
         def normalize_official(match):
             value = strict_json(match.group(1))

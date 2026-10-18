@@ -79,7 +79,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "cc5dab7e1d6f64ddb01f608cb6aebc8ddf8fc2ea68facc549fb1a085628aeb57"
+        "sha256": "6a6daa7dba8738d3b98f04c8dd92d70771856d39dafcb6b0c2fafefbe77b7a37"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -419,6 +419,17 @@
       },
       "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
     },
+    "hardhat/test/commissioning-docs.test.cjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "110d984aa835219aaa83984a8f70688e7686e7a246d6a5fa4c71898137f2c156"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "14845d1837eb73b33ba2f5f020e7df89f71546c401bd61f1c8fda98b2cce9668"
+      },
+      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
     "package-lock.json": {
       "before": {
         "mode": "100644",
@@ -519,7 +530,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "e77a790388a93957e8ca94b752ad63221403d75db49c674b29639789f89c3359"
+        "sha256": "191e89b69f7704b8fc8d6cb9ca24dec3f1373d16a16f52cc937052ec45c577f4"
       },
       "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
     },
@@ -565,7 +576,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "347393390a9a12a5f67e47132bbe60c60e304e71e16c00a213e6747542f1fa18"
+        "sha256": "a279cf88f605286e1533f8d1ac875daf6317226bfe200757fd92da47720425d3"
       },
       "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
     },
@@ -622,7 +633,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "8e958f8c14a7a0331f439e9f22bc3de40cdbfcc5ff838a6d2e23d14bf26ec601"
+        "sha256": "bfc988b2c194f395962437e9fb9cec25ce4ab65bfd7ffac6bf578f070fb151db"
       },
       "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
     },
@@ -715,7 +726,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "19991565bb94f7a074555575ce50169c623b243d0a5849c9c37a2c7c23cd2d11"
+        "sha256": "f267520f1a0c25a21157cf50a16e6bb5937224f960b150f1683ff365758e7cd4"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -726,7 +737,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "cc5dab7e1d6f64ddb01f608cb6aebc8ddf8fc2ea68facc549fb1a085628aeb57"
+        "sha256": "6a6daa7dba8738d3b98f04c8dd92d70771856d39dafcb6b0c2fafefbe77b7a37"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -774,6 +785,17 @@
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
+    "ui/scripts/singlefile-template.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "994772152d1b3c93162aaef02b9171a4ce157f1fea17b78ebe0145fd73d15a79"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "dc85c7017e02bc03d90d55222d2d9cb75c5edd234a627788ffcb315ef96e9bd8"
+      },
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
+    },
     "ui/scripts/sync-deployments.mjs": {
       "before": {
         "mode": "100644",
@@ -781,7 +803,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "01f2eebeeea7087b8c217503e160b2696e3479d1fc1bbd8763dda8727b0290d6"
+        "sha256": "851606fa1bae863912163caa9a896efde783d87c1e52cf29bf26bb2b2468090c"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -804,6 +826,17 @@
       "after": {
         "mode": "100644",
         "sha256": "8f8b303746a25430379000c677e36ffc5ab19cec793d5a4b98695b0d6ade2c18"
+      },
+      "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
+    },
+    "ui/tests/hashRouterRuntime.test.ts": {
+      "before": {
+        "mode": "100644",
+        "sha256": "59af71fcb154f326e46111dbc20df7748e212e1cf99530f8bed98000e73fdc40"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "6bdd486bae89d8427f176c46f57683bd3b694261253729eb1be36d7a2ad4b065"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },

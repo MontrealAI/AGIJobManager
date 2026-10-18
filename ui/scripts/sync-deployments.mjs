@@ -21,13 +21,13 @@ const escapeHtml = (value) => String(value).replaceAll('&', '&amp;').replaceAll(
 const github = 'https://github.com/MontrealAI/AGIJobManager/blob/main/';
 const display = `      <!-- recorded-deployment-display:start -->
       <h2>USDC deployment · v${escapeHtml(config.version)} software</h2>
-      <div class="helper" style="margin:14px 0;overflow-wrap:anywhere" aria-labelledby="latestReportedDeployment">
+      <div class="helper" style="margin:14px 0;overflow-wrap:anywhere" aria-labelledby="latestReportedDeployment" data-testid="latest-reported-deployment">
         <h3 id="latestReportedDeployment">Latest reported Manager deployment · ${escapeHtml(reported.recordDate)}</h3>
         <p>Ethereum mainnet · Chain ${reported.chainId}<br>Manager: <a href="${escapeHtml(reported.managerCodeUrl)}" target="_blank" rel="noopener noreferrer"><code>${escapeHtml(reported.manager)}</code></a></p>
         <p>${reported.contractCount} creations reported finalized. Explorer report: ${reported.exactMatches} Exact Match and ${reported.retainedSimilarMatches} retained Similar Match. Authority snapshot: block ${reported.block.toLocaleString('en-US')}; intake ${reported.intakePaused ? 'paused' : 'not paused'}.</p>
         <p>Owner-reported evidence, not live state. Paid intake remains held; this record does not establish an ENS helper attachment or select a transaction target. <a href="${github}${escapeHtml(guidePath)}" target="_blank" rel="noopener noreferrer">Review the latest deployment and all nine contracts</a> · <a href="${github}${escapeHtml(recordPath)}" target="_blank" rel="noopener noreferrer">Machine-readable record</a>.</p>
       </div>
-      <details class="helper" style="margin:14px 0;overflow-wrap:anywhere">
+      <details class="helper" style="margin:14px 0;overflow-wrap:anywhere" data-testid="historical-deployment">
         <summary>Historical instance · October 10, 2026 — no wallet needed</summary>
         <p><b>Historical deployment and ENS connection at block ${recorded.block.toLocaleString('en-US')}.</b> This older instance is separate from the latest reported Manager above. Current state is unavailable in this historical panel.</p>
         <p>Ethereum mainnet · Chain ${recorded.chainId}<br>Historical manager: <code>${escapeHtml(recorded.manager)}</code><br>Historical helper: <code>${escapeHtml(recorded.helper)}</code><br>Historical namespace: <code>${escapeHtml(recorded.namespace)}</code></p>
@@ -47,10 +47,22 @@ const legacyDisplay = `      <h2>USDC deployment · v1.19.1 candidate</h2>
 const matches = [...consoleBefore.matchAll(marker)];
 if (matches.length > 1 || (!matches.length && consoleBefore.split(legacyDisplay).length !== 2)) throw new Error('Console deployment display is missing or ambiguous.');
 const consoleAfter = matches.length ? consoleBefore.replace(marker, () => display) : consoleBefore.replace(legacyDisplay, () => display);
+const templatePath = path.join(process.cwd(), 'scripts/singlefile-template.html');
+const templateBefore = fs.readFileSync(templatePath, 'utf8');
+const routeHtml = `<section data-testid="route-deployment"><h2>Deployment Registry</h2>\n${display}\n</section>`;
+const routeLiteral = `'${routeHtml.replaceAll('\\', '\\\\').replaceAll("'", "\\'").replaceAll('\n', '\\n').replaceAll('\r', '\\r').replaceAll('\u2028', '\\u2028').replaceAll('\u2029', '\\u2029')}'`;
+const routeDisplay = `/* recorded-deployment-route:start */${routeLiteral}/* recorded-deployment-route:end */`;
+const routeMarker = /\/\* recorded-deployment-route:start \*\/[\s\S]*?\/\* recorded-deployment-route:end \*\//g;
+const previousRoute = `'<section data-testid="route-deployment"><h2>Deployment Registry</h2></section>'`;
+const routeMatches = [...templateBefore.matchAll(routeMarker)];
+if (routeMatches.length > 1 || (!routeMatches.length && templateBefore.split(previousRoute).length !== 2)) throw new Error('Standalone deployment route is missing or ambiguous.');
+const templateAfter = routeMatches.length ? templateBefore.replace(routeMarker, () => routeDisplay) : templateBefore.replace(previousRoute, () => routeDisplay);
 if (process.argv.includes('--check')) {
   if (fs.readFileSync(output, 'utf8') !== content) throw new Error('Run npm run sync:deployments and commit the result.');
   if (consoleBefore !== consoleAfter) throw new Error('Console deployment display is stale. Run npm run sync:deployments and commit the result.');
+  if (templateBefore !== templateAfter) throw new Error('Standalone deployment route is stale. Run npm run sync:deployments and commit the result.');
 } else {
   fs.writeFileSync(output, content);
   fs.writeFileSync(consolePath, consoleAfter);
+  fs.writeFileSync(templatePath, templateAfter);
 }

@@ -74,10 +74,18 @@ class ReleaseProfile(unittest.TestCase):
         name='package.json';data=json.loads((self.root/name).read_bytes());data['dependencies']['@openzeppelin/contracts']='4.9.5';raw=(json.dumps(data,indent=2)+'\n').encode()
         self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
     def test_repinning_ui_runtime_change_is_rejected(self):
-        for name in ('ui/agijobmanager-usdc.html', 'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html', 'ui/src/generated/deployments.ts', 'ui/src/app/deployment/page.tsx'):
+        for name in ('ui/agijobmanager-usdc.html', 'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html', 'ui/src/generated/deployments.ts', 'ui/src/app/deployment/page.tsx', 'ui/scripts/singlefile-template.html'):
             raw=(self.root/name).read_bytes()+b'\n// unexpected executable change\n'
             with self.subTest(name=name):
                 self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
+    def test_repinning_actual_hash_route_injections_is_rejected(self):
+        for name in ('ui/scripts/singlefile-template.html', 'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html'):
+            original=(self.root/name).read_bytes()
+            for token in (b'/* recorded-deployment-route:start */', b'/* recorded-deployment-route:end */'):
+                raw=original.replace(token,token+b'window.ethereum.request({method:"eth_requestAccounts"});',1)
+                self.assertNotEqual(raw,original)
+                with self.subTest(name=name,token=token):
+                    self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
     def test_repinning_display_injections_and_transaction_target_changes_is_rejected(self):
         name='ui/agijobmanager-usdc.html';original=(self.root/name).read_text()
         config,recorded,reported=P['deployment_display_inputs'](self.root)
