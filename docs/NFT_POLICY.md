@@ -57,9 +57,9 @@ The NFT registry remains owner-maintainable after the ENS identity lock, subject
 
 ## Hardhat deployment and readiness
 
-The supported deployment script deploys and verifies eight linked libraries, including `NftEligibility`, and the manager. It starts intake paused with NFT admission disabled and an empty registry, checks the disabled state at the deployment block, and proposes the configured ownership handover. It does not choose production collections or enable NFT admission.
+The environment-backed deployment script deploys and verifies eight linked libraries, including `NftEligibility`, and the manager. Current creation starts intake paused with NFT admission disabled, an empty registry and the explicit governor assigned atomically. It checks the disabled state at the deployment block and creates no ownership proposal or acceptance stage. It does not choose production collections or enable NFT admission.
 
-Run `npm --prefix hardhat run setup` to create a private policy example without overwriting existing files. After ownership acceptance and on-chain configuration, review `hardhat/reviewed-nft-policy.json` describing the **complete expected registry**, including disabled entries. For a required policy:
+For the environment-backed route, run `npm --prefix hardhat run setup` to create a private policy example without overwriting existing files. The [hidden-prompt creator](deployment/ubuntu-ephemeral-creator.md) instead requires a separate checkout without deployment dotenv files. After verifying constructor governance and any separately reviewed on-chain configuration, review `hardhat/reviewed-nft-policy.json` describing the **complete expected registry**, including disabled entries. For a required policy:
 
 ```json
 {

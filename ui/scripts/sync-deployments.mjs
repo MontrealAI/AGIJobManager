@@ -4,9 +4,9 @@ import { loadLatestReportedDeployment } from '../../site/deployments.mjs';
 const repoRoot = path.resolve(process.cwd(), '..');
 const config = JSON.parse(fs.readFileSync(path.join(repoRoot, 'config/usdc-deployment.json'), 'utf8'));
 const record = JSON.parse(fs.readFileSync(path.join(repoRoot, 'config/mainnet/agi-jobs-usdc.json'), 'utf8'));
-const { record: latest, recordPath, guidePath } = loadLatestReportedDeployment(repoRoot);
+const { record: latest, recordPath, guidePath, evidenceRevision } = loadLatestReportedDeployment(repoRoot);
 const recorded = { chainId: record.chainId, manager: record.manager, helper: record.helper, namespace: record.jobsRootName, block: record.connection.snapshot.number, blockHash: record.connection.snapshot.hash, recordDate: record.recordDate, activation: record.activation.decision };
-const reported = { chainId: latest.chainId, manager: latest.manager, recordDate: latest.recordDate, sourceCommit: latest.source.commit, block: latest.reportedAuthoritySnapshot.blockNumber, blockHash: latest.reportedAuthoritySnapshot.blockHash, owner: latest.reportedAuthoritySnapshot.owner, intakePaused: latest.reportedAuthoritySnapshot.intakePaused, contractCount: latest.deployment.finalizedCount, exactMatches: latest.explorerVerification.exactMatches, retainedSimilarMatches: latest.explorerVerification.retainedSimilarMatches, recordPath, guidePath, managerCodeUrl: latest.verificationLinks.managerCode };
+const reported = { chainId: latest.chainId, manager: latest.manager, recordDate: latest.recordDate, sourceCommit: latest.source.commit, block: latest.reportedAuthoritySnapshot.blockNumber, blockHash: latest.reportedAuthoritySnapshot.blockHash, owner: latest.reportedAuthoritySnapshot.owner, intakePaused: latest.reportedAuthoritySnapshot.intakePaused, contractCount: latest.deployment.finalizedCount, exactMatches: latest.explorerVerification.exactMatches, retainedSimilarMatches: latest.explorerVerification.retainedSimilarMatches, recordPath, guidePath, evidenceRevision, managerCodeUrl: latest.verificationLinks.managerCode };
 const output = path.join(process.cwd(), 'src/generated/deployments.ts');
 const content = `// Generated from config/usdc-deployment.json and the dated deployment records. Never infer transaction defaults from these records.
 export const OFFICIAL_DEPLOYMENTS = ${JSON.stringify(config, null, 2)} as const;
@@ -18,7 +18,7 @@ export const RECORDED_MAINNET_INSTANCE = ${JSON.stringify(recorded, null, 2)} as
 export const LATEST_REPORTED_MAINNET_INSTANCE = ${JSON.stringify(reported, null, 2)} as const;
 `;
 const escapeHtml = (value) => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
-const github = 'https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/';
+const github = `https://github.com/MontrealAI/AGIJobManager/blob/${evidenceRevision}/`;
 const display = `      <!-- recorded-deployment-display:start -->
       <h2>USDC deployment · v${escapeHtml(config.version)} software</h2>
       <div class="helper" style="margin:14px 0;overflow-wrap:anywhere" aria-labelledby="latestReportedDeployment" data-testid="latest-reported-deployment">

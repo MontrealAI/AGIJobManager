@@ -1,5 +1,17 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
+
+const evidenceRevision = "d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2";
+const reviewedEvidence = {
+  recordPath: "config/mainnet/manager-8815-2026-10-17.json",
+  guidePath: "docs/deployments/MAINNET_MANAGER_2026-10-17.md",
+  files: {
+    "config/mainnet/manager-8815-2026-10-17.json": "06def03f2844edeb2f93203edb028a37085c83f79aedd91857e8b1ae9af922c0",
+    "docs/deployments/MAINNET_MANAGER_2026-10-17.md": "0d95f18e6b25dea3a514dd1c32ae421a1d527567daab6b90689f347cb13af14e",
+    "docs/deployments/MAINNET_USDC_2026-10-10.md": "b67f530d31b35b54e18621ea195f9a36663166e926a9bdad8767afb201cce411",
+  },
+};
 
 const address = /^0x[a-fA-F0-9]{40}$/;
 const hash = /^0x[a-fA-F0-9]{64}$/;
@@ -18,6 +30,7 @@ function validate(record, recordPath) {
   const snapshot = record.reportedAuthoritySnapshot;
   check(snapshot && Number.isSafeInteger(snapshot.blockNumber) && snapshot.blockNumber > 0 && hash.test(snapshot.blockHash) && snapshot.blockReportedFinalized === true, "Invalid reported authority block");
   check(address.test(snapshot.owner) && address.test(snapshot.pendingOwner) && address.test(snapshot.moderator?.address), "Invalid reported authority address");
+  check(snapshot.owner === "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99" && snapshot.pendingOwner === "0x0000000000000000000000000000000000000000", "Reported authority requires review of governor wording");
   check([snapshot.intakePaused, snapshot.identityLocked, snapshot.agentNftRequired, snapshot.moderator.enabled].every(value => typeof value === "boolean") && Number.isSafeInteger(snapshot.exactNftCount) && snapshot.exactNftCount >= 0, "Invalid reported configuration");
   check(record.provenance?.evidenceType === "owner-supplied-terminal-reports" && record.provenance.independentlyReobservedForThisRecord === false, "Owner reports must retain their observation limits");
   const boundaries = ["intakeActivationAuthorized", "livePaidWorkQualified", "latestSourceReleaseQualified", "ensHelperAttachmentEstablishedByThisRecord", "fullFinancialAndPolicyReadinessEstablished", "previousDeploymentsChanged"];
@@ -50,6 +63,7 @@ export function loadLatestReportedDeployment(root) {
     const recordPath = "config/mainnet/" + name, filename = path.join(root, recordPath);
     if (!fs.statSync(filename).isFile() || fs.lstatSync(filename).isSymbolicLink()) throw Error(`${recordPath}: Deployment records must be regular files`);
     const record = JSON.parse(fs.readFileSync(filename, "utf8"));
+    requireRecord(record.recordType !== "owner-reported-execution-and-readback-projection" || record.schema === "agijobmanager-recorded-deployment-v2", recordPath, "Unsupported owner-reported deployment schema requires review");
     if (record.schema !== "agijobmanager-recorded-deployment-v2") continue;
     validate(record, recordPath);
     const guidePath = `docs/deployments/MAINNET_MANAGER_${record.recordDate}.md`, guide = path.join(root, guidePath);
@@ -60,5 +74,12 @@ export function loadLatestReportedDeployment(root) {
   const latestDate = candidates.map(candidate => candidate.record.recordDate).sort().at(-1);
   const latest = candidates.filter(candidate => candidate.record.recordDate === latestDate);
   if (latest.length !== 1) throw Error(`Ambiguous latest Manager deployment reports for ${latestDate}`);
-  return latest[0];
+  const selected = latest[0];
+  requireRecord(selected.recordPath === reviewedEvidence.recordPath && selected.guidePath === reviewedEvidence.guidePath, selected.recordPath, "Selected report requires an explicitly reviewed immutable evidence pin");
+  for (const [name, digest] of Object.entries(reviewedEvidence.files)) {
+    const filename = path.join(root, name);
+    requireRecord(fs.existsSync(filename) && fs.lstatSync(filename).isFile() && !fs.lstatSync(filename).isSymbolicLink(), selected.recordPath, "Pinned evidence is missing or indirect: " + name);
+    requireRecord(createHash("sha256").update(fs.readFileSync(filename)).digest("hex") === digest, selected.recordPath, "Pinned evidence bytes differ: " + name);
+  }
+  return { ...selected, evidenceRevision };
 }

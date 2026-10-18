@@ -31,7 +31,7 @@ def validate_current(root, policy):
 def validate_pages(root, pages, commit):
     require(pages.is_dir() and not pages.is_symlink(), 'Current Pages build is missing or indirect')
     info = strict_json((pages / 'build-info.json').read_bytes())
-    require(info['sourceCommit'] == commit and info['sourceVersion'] == '1.19.2', 'Current Pages source identity differs')
+    require(info['sourceCommit'] == commit and info['sourceVersion'] == '1.19.3', 'Current Pages source identity differs')
     require(all(not p.is_symlink() for p in pages.rglob('*')), 'Current Pages contains indirect files')
     actual = {p.relative_to(pages).as_posix() for p in pages.rglob('*') if p.is_file()}
     build_only = info.get('buildOnlyFiles', {})

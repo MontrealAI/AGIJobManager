@@ -1,6 +1,6 @@
 # Deployment and Release Operations
 
-> Unreleased candidate: new Manager/helper/router creation assigns an explicit nonzero governor atomically and leaves configuration/activation separate. See the [candidate authority matrix](DEPLOYMENT/EXPLICIT_GOVERNOR_CANDIDATE.md). Deployer-handover instructions below describe historical ownership semantics, not the new creation flow. Previous deployments, funds and permissions must remain untouched; historical liabilities are not a prerequisite for an independent new deployment.
+> Current-schema Manager/helper/router creation assigns an explicit nonzero governor atomically and leaves configuration/activation separate. The [original candidate authority matrix](DEPLOYMENT/EXPLICIT_GOVERNOR_CANDIDATE.md) retains its preparation scope. Historical handovers and later voluntary Manager transfers retain two-step acceptance; current creation does not require it. Previous deployments, funds and permissions must remain untouched; historical liabilities are not a prerequisite for an independent new deployment.
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 Use [Hardhat](../hardhat/README.md) for Ethereum mainnet and Sepolia deployments. Truffle migrations are retired. Supported read-only operational commands use ethers; the legacy owner-configuration helper permits writes only on a disposable local chain. Publishing software does not deploy or upgrade any live contract.
@@ -78,7 +78,7 @@ DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mai
 
 It reconciles successful canonical receipts, recorded deployer, exact creation input and runtime, then retries explorer source verification. It writes a separate `.reverified.<block>.json` receipt on success and preserves the original journal. It sends no blockchain transactions; explorer verification still requires its configured API access. It cannot complete a partial library-only deployment or recover the separate ENSJobPages workflow. Use the recovered receipt for readiness; do not manually mark failed verification entries successful.
 
-For a new-schema deployment, require `owner() == finalOwner` and zero `pendingOwner()` immediately. A pending proposal or wrong owner is a reconciliation failure, not a reason for the creator to send a handover transaction. Historical six-argument receipts retain their original two-step semantics for read-only interpretation; this candidate does not authorize changing those deployments.
+For current-schema creation, require `owner() == finalOwner` and zero `pendingOwner()` immediately. A pending proposal or wrong owner is a reconciliation failure, not a reason for the creator to send a handover transaction. Historical six-argument receipts retain their original two-step semantics for read-only interpretation; this creation procedure does not authorize changing those deployments.
 
 While intake remains paused, configure moderators, enabled NFT types, participant authorization, limits, bonds and review policy through the explicit governor. Check every setting against the [owner controls](OWNER_CONTROLS.md). Record successful transaction receipts and actual getter values; some role setters have no role-specific event.
 
@@ -102,7 +102,7 @@ READINESS_NFT_CONFIG=./reviewed-nft-policy.json \
 DEPLOYMENT_RECEIPT=deployments/sepolia/<saved-receipt>.json npm run check:readiness:sepolia
 ```
 
-The checker validates the deployment receipt and expected configuration, matches linked runtime code, and reads owner acceptance, recipient wallets, identity settings, explicit NFT policy and complete registry, USDC issuer state, pause flags and reserve accounting at a recorded block. It rechecks the block hash before writing a successful report. Preserve the report with the original journal, exact build input, explorer verification evidence and approved configuration.
+The checker validates the deployment receipt and expected configuration, matches linked runtime code, and reads the explicit governor, zero pending owner, recipient wallets, identity settings, explicit NFT policy and complete registry, USDC issuer state, pause flags and reserve accounting at a recorded block. It rechecks the block hash before writing a successful report. Preserve the report with the original journal, exact build input, explorer verification evidence and approved configuration.
 
 The report is a technical, point-in-time result. Participant readiness, signer security, operational policy, monitoring and independent review remain separate gates. Recheck state changed after the report. After the launch gates pass, the accepted owner may call `unpauseIntake()` and run a deliberately limited first job before increasing exposure.
 
@@ -113,7 +113,7 @@ The report is a technical, point-in-time result. Participant readiness, signer s
 | Source and build | Immutable release, required CI evidence, exact compiler profile and bytecode within Ethereum limits | Stop and resolve the source/build mismatch; do not disable checks |
 | Configuration | Reviewed native USDC, both recipients, final owner, identity settings and policy; dry run passes | Correct the reviewed plan and rerun the check |
 | Deployment evidence | All broadcast transactions reconciled; runtime bytes match; source verification completed | Keep intake paused and resolve each saved deployment/verification target |
-| Ownership | Intended owner accepted; no pending transfer; signing and recovery rehearsed | Keep intake paused until authority is confirmed |
+| Ownership | Explicit constructor governor matches; no pending transfer; signing and recovery evidence retained | Keep intake paused until authority is confirmed |
 | Participant readiness | Agents satisfy authorization and their job’s NFT policy; validators/moderators and bond funding are ready | Correct eligibility/funding and rehearse the complete journey |
 | Read-only readiness | Checker succeeds against the original receipt and reviewed expected configuration | Investigate the reported mismatch; never edit evidence merely to obtain a pass |
 | Recovery and monitoring | Tested pause/incident procedures and alerts for fund/accounting anomalies, disputes and stalled jobs | Delay activation until response and monitoring work |

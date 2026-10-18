@@ -2,7 +2,7 @@
 
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
-The maintained operational procedure is the [owner runbook](OWNER_RUNBOOK.md). For a new deployment, follow [Hardhat](../hardhat/README.md), complete ownership acceptance, and run the read-only readiness check before opening intake.
+The maintained operational procedure is the [owner runbook](OWNER_RUNBOOK.md). For a separately authorized new deployment, follow [Hardhat](../hardhat/README.md), verify the constructor-assigned governor and zero pending owner, and run read-only readiness before opening intake. Current creation has no handover or acceptance stage; historical records and later voluntary Manager transfers retain two-step acceptance.
 
 | Task | Current procedure |
 | --- | --- |

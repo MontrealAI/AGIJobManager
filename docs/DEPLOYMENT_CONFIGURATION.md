@@ -1,6 +1,6 @@
 # Deployment configuration
 
-> Unreleased candidate: new Manager/helper/router creation assigns an explicit nonzero governor atomically and leaves configuration/activation separate. See the [candidate authority matrix](DEPLOYMENT/EXPLICIT_GOVERNOR_CANDIDATE.md). Deployer-handover instructions below describe historical ownership semantics, not the new creation flow. Previous deployments, funds and permissions must remain untouched; historical liabilities are not a prerequisite for an independent new deployment.
+> Current-schema Manager/helper/router creation assigns an explicit nonzero governor atomically and leaves configuration/activation separate. The [original candidate authority matrix](DEPLOYMENT/EXPLICIT_GOVERNOR_CANDIDATE.md) retains its preparation scope. Historical handovers and later voluntary Manager transfers retain two-step acceptance; current creation does not require it. Previous deployments, funds and permissions must remain untouched; historical liabilities are not a prerequisite for an independent new deployment.
 For the already commissioned instance, start with the [supported inspection and recovery workflow](OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
 
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
@@ -58,7 +58,7 @@ Boolean inputs accept `1/0`, `true/false`, `yes/no` and `on/off`; unknown values
 
 | Setting | Requirement and meaning |
 | --- | --- |
-| `JOB_MANAGER` | Explicit verified USDC manager; ownership accepted, no pending owner, intake paused |
+| `JOB_MANAGER` | Explicit verified USDC manager; intended governor matches `owner()`, zero pending owner, intake paused. Current creation assigns governance atomically |
 | `NEW_OWNER` | Explicit helper owner; falls back only to the `FINAL_OWNER` environment variable, not the manager profile; helper ownership is one-step |
 | `ENS_DEPLOYMENT_MODE` | Default `fresh`: derives a new root from chain and full manager address; `replacement`: preserves the active helper's namespace for the same manager |
 | `JOBS_ROOT_NAME` | Optional assertion against the derived/preserved root; not an arbitrary rename |
@@ -68,7 +68,7 @@ Boolean inputs accept `1/0`, `true/false`, `yes/no` and `on/off`; unknown values
 | `NAME_WRAPPER` | Mainnet default is built in; Sepolia requires an explicit value; only this dependency permits zero for an unwrapped route |
 | `PUBLIC_RESOLVER` | Mainnet default is built in; Sepolia requires an explicit reviewed resolver with code |
 | `VERIFY` | Defaults enabled; disabling it blocks helper broadcasts; read-only plans still work |
-| `LOCK_CONFIG` | Defaults disabled; keep `0` through wiring and lifecycle checks; locking is irreversible |
+| `LOCK_CONFIG` | Defaults disabled; includes a proposed lock in the separate governor plan only. Creation does not execute it; review actual wiring and lifecycle evidence before any irreversible lock |
 
 Fresh naming is `job-<jobId>.usdc-<chainId>-<manager40>.alpha.jobs.agi.eth`. Read [namespace requirements and replacement limits](ENS_DEPLOYMENT_NAMESPACES.md) before deployment. The helper script does not create the dedicated root or call the manager's `setEnsJobPages`. Those actions need the respective authorized owners. A release does not register an ENS name.
 
@@ -138,7 +138,7 @@ The read-only [implementation companion](DEPLOYMENT_USDC_IMPLEMENTATION_CHECK.md
 
 To match a separate financial/readiness report's canonical snapshot, export both `USDC_SNAPSHOT_BLOCK_NUMBER` (decimal) and `USDC_SNAPSHOT_BLOCK_HASH`. Omit or unset both to select latest; empty exported snapshot settings are invalid. The companion rejects a different canonical hash and unsupported proxy/chain/type. Observed candidate values are not approved bindings. Its result covers only the implementation-identity portion of A2.
 
-## Unreleased explicit-governor creation and closeout settings
+## Current explicit-governor creation and closeout settings
 
 The creator is explicitly selected in the core reviewed profile as `creator.address` and `creator.transactionMode`. It need not equal `finalOwner`. Initial governance is assigned atomically; no creator transfer or governor acceptance is part of new creation. Subsequent ownership changes retain their existing semantics. No old deployment action is authorized by this candidate.
 

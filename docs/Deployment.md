@@ -4,7 +4,7 @@
 
 The supported Ethereum mainnet and Sepolia workflow uses **Hardhat 3 and ethers 6**. Truffle and Ganache are removed; their historical migration and signing commands are retired.
 
-Start with the [Hardhat deployment guide](../hardhat/README.md). It covers executable configuration, keyless dry runs, exact compiler inputs, library linking, source verification, transaction journals, recovery, ownership acceptance and read-only instance checks.
+Start with the [Hardhat deployment guide](../hardhat/README.md). It covers executable configuration, keyless dry runs, exact compiler inputs, library linking, source verification, transaction journals, recovery, constructor-assigned governance and read-only instance checks. Historical handovers and later voluntary Manager transfers retain two-step acceptance.
 
 ## Install and qualify
 
@@ -36,6 +36,6 @@ The manager, eight linked libraries and optional metadata contracts must satisfy
 
 The [local USDC walkthrough](QUINTESSENTIAL_USE_CASE.md) uses only disposable in-memory accounts. A [mainnet fork](MAINNET_READINESS.md) reads pinned historical USDC state and executes locally. Neither substitutes for a Sepolia rehearsal with the intended owner and signing arrangement.
 
-For public networks, copy `hardhat/deploy.config.example.cjs` to `hardhat/deploy.config.cjs`, supply both real settlement recipients and the intended owner, and follow the Hardhat guide's explicit dry-run and broadcast gates. The manager starts paused. Preserve its deployment receipt, complete source verification and two-step ownership acceptance, and pass read-only readiness before opening intake.
+For public networks, copy `hardhat/deploy.config.example.cjs` to `hardhat/deploy.config.cjs`, supply both real settlement recipients and the intended owner, and follow the Hardhat guide's explicit dry-run and broadcast gates. Current creation starts paused with the explicit governor already assigned. Preserve its receipt, complete source verification, confirm `owner()` equals the reviewed governor and `pendingOwner()` is zero, and pass read-only readiness before opening intake. No creation-time acceptance is required; historical handovers and later voluntary Manager transfers retain two-step acceptance.
 
 Code is non-upgradeable. This release does not deploy, activate or modify an existing contract. This documentation patch preserves contract code; compatible existing instances do not need redeployment for these changes. Incompatible older instances require a deliberate migration, with original obligations preserved.

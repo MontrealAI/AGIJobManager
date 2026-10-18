@@ -1,6 +1,6 @@
 # Hardhat deployment guide
 
-For the already commissioned instance, start with the [supported inspection and recovery workflow](../docs/OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
+For the already deployed [17 October Manager](../docs/deployments/MAINNET_MANAGER_2026-10-17.md), preserve its original source, plan and journal and start with the [instance-specific readiness guidance](../docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md#6-readiness-and-activation). The [historical 10 October inspection commands](../docs/OPERATIONS/COMMISSIONING.md#historical-manager-and-ens-helper--10-october-2026) select only that older Manager/helper. Do not repeat creation to refresh either record.
 
 Current automated work uses [schema 6/7 operator-budget admission without retainers](../docs/OPERATIONS/NO_RETAINERS.md). Existing escrow credits and refunds remain recoverable. Fresh review-escrow deployment is disabled; use [existing-escrow recovery](../docs/OPERATIONS/REVIEW_PROTECTION.md) for verification and legacy obligations.
 
@@ -8,9 +8,11 @@ Current automated work uses [schema 6/7 operator-budget admission without retain
 
 **Deployment entrypoint:** [release identity and checked commands](../docs/RELEASE_GUIDE.md).
 
-**v1.14.0 deployment tooling:** these instructions match this checkout. Manager and helper commands default to read-only when `DRY_RUN` is missing or empty. Published v1.0.5 downloads are unchanged; always use explicit `DRY_RUN=1` for plans on older tags. Record the reviewed commit with `git rev-parse HEAD` and use its matching scripts, documentation and CI results. See [release scope](../docs/V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+**Current-source deployment tooling:** use this checkout with its matching release and exact-source evidence. Manager and helper commands default to read-only when `DRY_RUN` is missing or empty. Published v1.0.5 downloads are unchanged; always use explicit `DRY_RUN=1` for plans on older tags. Record the reviewed commit with `git rev-parse HEAD` and use its matching scripts, documentation and CI results. See [release scope](../docs/V1_RELEASE_SCOPE.md#published-download-versus-current-source).
 
-For a second mainnet instance, use the [release-review checklist](../docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md) before preparing a broadcast. It separates source qualification, first-instance preservation, operator policy and activation.
+For a separately authorized new deployment, use the [release-review checklist](../docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md). Its dated second-deployment decisions remain historical; record applicable qualification, preservation, policy and activation evidence for the actual campaign.
+
+**Recommended Ubuntu mainnet creation:** use the [hidden-prompt creator route](../docs/deployment/ubuntu-ephemeral-creator.md). The deployer key is entered only into its hidden local prompt; the Ledger governor is a different account. That route rejects deployment dotenv files and secret-bearing environment values or arguments. Use a separate reviewed checkout without running the environment-backed setup below. Governor configuration and activation remain separate.
 
 ## Deployment at a glance
 
@@ -18,11 +20,11 @@ For a second mainnet instance, use the [release-review checklist](../docs/DEPLOY
 | --- | --- | --- |
 | 1. Prepare | Install both lockfiles, run `setup`, fill the owner and both recipient wallets | Private configuration; no transactions |
 | 2. Check | Run the offline profile check, compile, then an explicit dry run | Configuration and live-state plan; no transactions |
-| 3. Rehearse | Complete the Sepolia journey with the intended signing setup | Testnet evidence |
+| 3. Record qualification | Retain the applicable rehearsal evidence and any explicitly scoped owner-accepted omission | Performed and omitted checks remain distinct |
 | 4. Deploy | Explicitly select broadcast mode after reviewing the mainnet plan | Eight libraries and manager deployed, verified, intake paused |
-| 5. Take control | Accept ownership, configure while paused, run readiness | Recorded technical checks; owner reviews launch gates before opening intake |
+| 5. Verify governance | Confirm the constructor-assigned governor and zero pending owner, configure while paused, run readiness | Recorded technical checks; owner reviews launch gates before opening intake |
 
-v1.13.0 preserves v1.0.3 construction, ABI, bytecode, eight library links and payout rules. Fresh managers start with NFT admission disabled and an empty collection registry. Existing settings and job policies stay unchanged. Start with the [launch checklist](../docs/LAUNCH_CHECKLIST.md), then use this guide in order. The [configuration reference](../docs/DEPLOYMENT_CONFIGURATION.md) lists every supported deployment setting and recovery command.
+Current-schema creation appends an explicit governor to the historical six Manager arguments; creation ABI and bytecode differ from earlier versions. It retains eight fixed library links and the existing payout rules. Fresh managers start with NFT admission disabled and an empty collection registry. Existing settings and job policies stay unchanged. Start with the [launch checklist](../docs/LAUNCH_CHECKLIST.md), then use this guide in order. The [configuration reference](../docs/DEPLOYMENT_CONFIGURATION.md) lists every supported deployment setting and recovery command.
 
 Before paid intake, prepare the [operator notice](../docs/LEGAL/OPERATOR_NOTICE_TEMPLATE.md), identify the actual operator and both fee beneficiaries, and review requirements for the planned activities and territories. The [legal center](../docs/LEGAL/README.md) distinguishes MIT software publication from operating a deployment. Setup, deployment and readiness checks do not verify legal compliance, consent, licensing or regulatory exemption; no central identity collection or new transaction is required by these notices.
 
@@ -32,7 +34,9 @@ This is the supported public-network deployment path. The root contract regressi
 
 The manager starts with intake paused in its constructor. Successful jobs pay validators in USDC first, then 30% and 10% of the original job cost to the two wallets, then the agent remainder. The default validator budget is 8%. See [payout rules](../docs/USDC_PAYOUT_SPLIT.md), [owner controls](../docs/OWNER_CONTROLS.md) and [mainnet qualification](../docs/MAINNET_READINESS.md).
 
-## Prepare
+## Prepare the environment-backed route
+
+This section applies to the maintained `deploy:mainnet` / `deploy:sepolia` commands, not the recommended hidden-prompt route above. Do not create deployment `.env` files in a hidden-prompt creator checkout.
 
 Use Node 22.23.2 and a reviewed, pinned source commit or release tag with its matching guide. Install from committed lockfiles:
 
@@ -51,7 +55,7 @@ The deployment script loads private `deploy.config.cjs` by default and fails if 
 
 Review `deploy.config.cjs` as executable JavaScript from a trusted source. Set each network's independent `creator: { address, transactionMode: "eoa-create" }`, `settlementWallets: [wallet30, wallet10]` and intended `finalOwner`; independently confirm control of these addresses. Review ENS registry, wrapper, four root nodes, two Merkle roots and metadata gateway. `FINAL_OWNER` or the selected profile’s `finalOwner` must explicitly identify the intended final owner, including for a dry run; omission does not select the deployer. The mainnet example contains the four established ENS member roots and zero Merkle roots, with no recipient or owner supplied. Sepolia ENS addresses must be filled from the selected deployment; examples do not prove current signing access or namespace control. Prefer a tested multisignature owner for substantial funds.
 
-In the local environment, configure the selected RPC, `DEPLOY_CONFIG=./deploy.config.cjs`, and `ETHERSCAN_API_KEY`. Actual deployment additionally requires a funded, disposable deployer `PRIVATE_KEY`. Never commit keys, paste them into issue reports, or provide them to untrusted tools. Mainnet and Sepolia profiles are bound to chain IDs 1 and 11155111.
+For this environment-backed route, configure the selected RPC, `DEPLOY_CONFIG=./deploy.config.cjs`, and `ETHERSCAN_API_KEY` locally. Its broadcasts additionally use the funded disposable deployer `PRIVATE_KEY`. The [hidden-prompt route](../docs/deployment/ubuntu-ephemeral-creator.md) instead rejects a private key in the environment and reads it only from the local terminal. Never commit keys, paste them into issue reports, or provide them to untrusted tools. Mainnet and Sepolia profiles are bound to chain IDs 1 and 11155111.
 
 ## Check the configuration before connecting
 
@@ -134,7 +138,7 @@ Manager deployment preflight, recovery and readiness require RPC support for EIP
 
 ## Verify explicit governance and the live instance
 
-For this unreleased explicit-governor candidate, confirm `owner()` equals the reviewed `finalOwner` immediately after creation and `pendingOwner()` is zero. Do not send a creator-signed ownership proposal or perform an unnecessary acceptance. Later voluntary transfers preserve Ownable2Step. Historical deployments remain untouched; their original records and read-only recovery retain the original ownership semantics. Read the [candidate authority matrix and remaining gates](../docs/DEPLOYMENT/EXPLICIT_GOVERNOR_CANDIDATE.md).
+For current-schema creation, confirm `owner()` equals the reviewed `finalOwner` immediately after creation and `pendingOwner()` is zero. Do not send a creator-signed ownership proposal or perform an unnecessary acceptance. Later voluntary transfers preserve Ownable2Step. Historical deployments remain untouched; their original records and read-only recovery retain the original ownership semantics. The [original candidate authority matrix](../docs/DEPLOYMENT/EXPLICIT_GOVERNOR_CANDIDATE.md) retains its dated preparation scope; the matching release qualification establishes the current software evidence.
 
 Configure and verify canonical/alpha participant membership, any explicitly approved additional/Merkle exceptions, eligible NFT credentials, moderators, job limits, review windows and bonds while intake stays paused. Job duration limits are 1–31,536,000 seconds. Validator budget changes affect newly posted jobs only; several other policy changes require live job escrow and bonds to be zero; existing payment claims keep their beneficiaries. Confirm the exact scope in the [owner guide](../docs/OWNER_CONTROLS.md).
 
@@ -166,7 +170,7 @@ Only after the reviewed checks pass should the accepted owner call `unpauseIntak
 
 ## Optional ENS job pages
 
-ENS job pages are optional metadata, separate from agent/validator membership. This candidate is limited to independent new deployments and must not change old Manager/helper configuration, namespaces or approvals. A fresh USDC launch uses a new helper and dedicated jobs root; it must preserve the original manager, original-asset jobs, helper, namespace and approvals. Follow the [cutover plan](../docs/qualification/USDC_CUTOVER.md). The [replacement guide](../docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) also explains the separate same-manager replacement case. From `hardhat/`, after filling the intended Sepolia configuration, rehearse:
+ENS job pages are optional metadata, separate from agent/validator membership. Current helper creation is limited to a separately authorized deployment and does not change old Manager/helper configuration, namespaces or approvals. A fresh USDC launch uses a new helper and dedicated jobs root; it must preserve the original manager, original-asset jobs, helper, namespace and approvals. Follow the [cutover plan](../docs/qualification/USDC_CUTOVER.md). The [replacement guide](../docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) also explains the separate same-manager replacement case. From `hardhat/`, after filling the intended Sepolia configuration, rehearse:
 
 ```bash
 DRY_RUN=1 npm run deploy:ens-job-pages:sepolia

@@ -3,8 +3,8 @@
 **17 October update:** the owner reported completion of the integrated 8815 Manager deployment. Use the [dated deployment and authority record](../deployments/MAINNET_MANAGER_2026-10-17.md) for its identity and evidence limits. The preparation checklist below is retained for context; it is not an instruction to repeat completed creation or configuration transactions.
 
 This is a checklist for a **new** manager, not an instruction to redeploy or alter
-an existing instance. Deployment, ownership acceptance and opening paid intake
-are separate decisions. A successful test run does not establish a flawless
+an existing instance. Current-schema creation assigns the explicit governor atomically; owner configuration and opening paid intake
+remain separate decisions. Historical handovers and later voluntary Manager transfers retain two-step acceptance. A successful test run does not establish a flawless
 contract, an independent audit or authority to sign transactions.
 
 For the planned second deployment, the owner made a scoped qualification decision on 15 October 2026: no external independent review and no Sepolia rehearsal. Record both as **NOT PERFORMED — OWNER-ACCEPTED OMISSION**, as detailed in the [second-deployment decision](SECOND_MAINNET_QUALIFICATION_DECISION.md). This does not waive exact-source tests, bytecode/configuration checks, local-fork rehearsal, recovery records or separate transaction/activation authorization.
@@ -98,7 +98,7 @@ It does not establish address control or source qualification.
 
 The owner has selected no Sepolia rehearsal for this second deployment. Learn
 from the actual previous mainnet deployment and execute the candidate lifecycle
-and recovery paths on an isolated mainnet fork, including ownership acceptance,
+and recovery paths on an isolated mainnet fork, including constructor governance and separately exercised later voluntary ownership transfers,
 payout, refund, dispute and failed-payment recovery. Preserve the exact source,
 fork block/hash and executed paths. Record Sepolia as not performed; a fork or
 read-only plan does not establish present control of the intended production
@@ -130,7 +130,7 @@ the journal and canonical receipts before taking further action; running deploy
 again does not resume it. Follow the keyless verification recovery instructions
 in the Hardhat guide. Never edit success fields to bypass an incomplete check.
 
-After the intended owner accepts ownership and reviews configuration, use the
+After confirming the constructor-assigned governor, zero pending owner and reviewed configuration, use the
 saved receipt and reviewed complete NFT policy with the read-only readiness command.
 It checks all five reserves, including deferred claims, against the USDC balance.
 No missing reserve or malformed pause flag should qualify as an empty manager.

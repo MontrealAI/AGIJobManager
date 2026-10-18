@@ -121,7 +121,7 @@ DRY_RUN=1 npm run deploy:mainnet
 
 Read-only planning can use `DEPLOYER_ADDRESS` without a private key. Boolean flags are validated; use the documented value `DRY_RUN=1`. Follow the guide's separate mainnet confirmation and signing steps only for an authorized deployment.
 
-A public manager starts intake paused. Keep it paused while verifying linked code, accepting ownership, configuring participants and running the read-only readiness check against the deployment receipt. The accepted owner opens intake only after reviewing those results and the operational gates. A qualifying agent always needs authorization and needs an enabled NFT holding when the job requires it. ETH is required for gas; jobs, bonds, rewards and refunds use USDC.
+A public manager starts intake paused. Keep it paused while verifying linked code, the constructor-assigned governor and zero pending owner, configuring participants and running read-only readiness against the deployment receipt. Current creation has no acceptance stage; historical handovers and later voluntary Manager transfers remain two-step. The accepted owner opens intake only after reviewing those results and the operational gates. A qualifying agent always needs authorization and needs an enabled NFT holding when the job requires it. ETH is required for gas; jobs, bonds, rewards and refunds use USDC.
 
 ## Command catalog
 
@@ -135,5 +135,5 @@ A public manager starts intake paused. Keep it paused while verifying linked cod
 | `FOUNDRY_PROFILE=ci forge build --deny warnings` | Strict compiler and Forge lint gate | Release/PR validation | New diagnostic or mismatched compiler profile | Resolve the finding or document a justified line-specific exception; retain the strict gate |
 | `npm audit --audit-level=low` in root, `hardhat/` and `ui/` | Full dependency security checks | After locked installs and before qualification | Advisory or audit service failure | Resolve the dependency or retry a failed evidence read; keep the low threshold |
 | `DRY_RUN=1 npm run deploy:mainnet` from `hardhat/` | Read-only deployment plan | Before a separately authorized broadcast | Incomplete profile, chain mismatch or issuer restriction | Correct the plan and repeat the dry run |
-| `npm run check:readiness` from `hardhat/` with `DEPLOYMENT_RECEIPT` and `READINESS_NFT_CONFIG` set | Read-only pre-activation report | After verification/configuration/ownership acceptance | Receipt, code, owner, identity, pause or balance mismatch | Resolve the discrepancy against the reviewed deployment evidence |
+| `npm run check:readiness` from `hardhat/` with `DEPLOYMENT_RECEIPT` and `READINESS_NFT_CONFIG` set | Read-only pre-activation report | After verification/configuration and explicit-governor readback | Receipt, code, owner, identity, pause or balance mismatch | Resolve the discrepancy against the reviewed deployment evidence |
 | `npm run docs:check` | Documentation freshness and structure checks | Release/PR validation | Stale generated references or bad links | Regenerate references and review the resulting diff |

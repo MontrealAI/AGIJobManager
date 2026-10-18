@@ -63,7 +63,7 @@ Actuators: fee splits · burn fraction · tier multipliers · quorum/slashing pa
 
 ## Current deployment path
 
-The earlier Green Path and one-click commands in this concept narrative are retired and are not release qualification. Use the [Hardhat guide](../hardhat/README.md), [owner runbook](OWNER_RUNBOOK.md) and [cutover qualification](qualification/USDC_CUTOVER.md). Review explicit recipients, owner and membership roots; run the read-only plan, obtain the actual operational rehearsal, deploy with intake paused, verify source/runtime, accept ownership and complete live readiness before activation. Passing a dashboard or publishing a release does not deploy a contract or certify production operations.
+The earlier Green Path and one-click commands in this concept narrative are retired and are not release qualification. Use the [Hardhat guide](../hardhat/README.md), [owner runbook](OWNER_RUNBOOK.md) and [cutover qualification](qualification/USDC_CUTOVER.md). Review explicit recipients, owner and membership roots; run the read-only plan, obtain the actual operational rehearsal, deploy with intake paused, verify source/runtime and the constructor-assigned governor with zero pending owner, then complete live readiness before activation. Passing a dashboard or publishing a release does not deploy a contract or certify production operations.
 
 ## Adoption playbook
 

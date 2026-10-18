@@ -49,7 +49,11 @@ Checksums bind content; they do not establish GitHub-enforced immutability. Main
 
 Merging runs website validation but does not publish Pages. After reviewing the applicable checks on the exact main revision, a maintainer must separately dispatch the GitHub Pages workflow with \`publish: true\` and \`source_commit\` equal to that revision's full SHA. A mismatched SHA stops the workflow. Release publication and intake activation remain separate decisions.
 
-## Prepare once
+## Choose the creation route
+
+For the owner-entered Ubuntu mainnet route, use the [hidden-prompt creator guide](deployment/ubuntu-ephemeral-creator.md). It takes the deployer key only through its local hidden prompt and rejects deployment dotenv files, secret environment values and secret arguments. Use a separate reviewed checkout without running the environment-backed setup below. The creator and Ledger governor are separate; governor configuration and activation remain separate actions.
+
+## Prepare the environment-backed route
 
 Use Node 22.23.2 for the public qualification/deployment workflow and the committed lockfiles. From the source root:
 
@@ -73,9 +77,9 @@ Manager verification recovery requires DEPLOYMENT_RECEIPT; existing review-escro
 
 ## Authorize deployment and then intake separately
 
-Actual deployment requires explicit DRY_RUN=0, the selected funded signer and explorer verification. Mainnet additionally requires DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT. Follow the [Hardhat guide](../hardhat/README.md) after reviewing the read-only plan; do not infer broadcast authority from this command inventory.
+The environment-backed commands in this inventory require explicit DRY_RUN=0, the selected funded signer and explorer verification for actual deployment. Mainnet additionally requires DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT. The recommended [Ubuntu hidden-prompt route](deployment/ubuntu-ephemeral-creator.md) has its own public-plan confirmation and recovery procedure; it does not use those secret-bearing environment settings. Follow the selected route after reviewing its exact source and plan; this command inventory does not authorize a broadcast.
 
-The manager starts paused. Preserve its transaction journal and exact compiler input, finish verification, accept ownership and pass the actual instance's [launch checklist](LAUNCH_CHECKLIST.md). A failed command may already have broadcast; inspect receipts before retrying. Optional ENS helper deployment has its own journal and ownership procedure.
+Current-schema creation assigns the explicit governor atomically and starts the manager paused. Verify owner() equals the reviewed governor and pendingOwner() is zero; no creator handover or ownership acceptance is required. Preserve the journal and exact compiler input, finish verification and pass the actual instance's [launch checklist](LAUNCH_CHECKLIST.md). Historical six-argument deployment records retain their original two-step handover; later voluntary Manager ownership changes also remain two-step. A failed command may already have broadcast; inspect receipts before retrying. Optional ENS helper creation has its own journal and leaves governor configuration in a separate action plan.
 
 ## Qualification boundaries
 

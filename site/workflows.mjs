@@ -201,18 +201,20 @@ export function renderWorkflows(lang, { commit, version, sources }) {
     e = escape,
     base = fr ? "../../" : "../",
     home = "../",
+    publicRoot = "https://montrealai.github.io/AGIJobManager/",
+    canonical = `${publicRoot}${fr ? "fr/" : ""}workflows/`,
     repo = `https://github.com/MontrealAI/AGIJobManager/blob/${commit}/`,
     doc = (p) => repo + p.split("/").map(encodeURIComponent).join("/");
   const text = (en, frText) => (fr ? frText : en);
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'"><title>${text(
     "Demos & workflows",
     "Démos et parcours"
-  )} · AGI Jobs</title><link rel="stylesheet" href="${base}assets/workflows.css"></head><body><a class="skip" href="#main">${text(
+  )} · AGI Jobs</title><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="en" href="${publicRoot}workflows/"><link rel="alternate" hreflang="fr" href="${publicRoot}fr/workflows/"><link rel="alternate" hreflang="x-default" href="${publicRoot}workflows/"><link rel="stylesheet" href="${base}assets/workflows.css"></head><body><a class="skip" href="#main">${text(
     "Skip to workflows",
     "Aller aux parcours"
   )}</a><nav><a href="${home}">AGI JOBS</a><a href="${
     fr ? "../../workflows/" : "../fr/workflows/"
-  }" lang="${fr ? "en" : "fr"}">${
+  }" lang="${fr ? "en" : "fr"}" hreflang="${fr ? "en" : "fr"}">${
     fr ? "English" : "Français"
   }</a></nav><header><p class="eyebrow">${text(
     "EXPLORE / UNDERSTAND / VERIFY",

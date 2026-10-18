@@ -19,6 +19,17 @@ const inventory = JSON.parse(fs.readFileSync(path.join(out, "build-info.json"), 
 const selectedDeployment = loadLatestReportedDeployment(root);
 const latest = selectedDeployment.record;
 const historical = JSON.parse(fs.readFileSync(path.join(root, "config/mainnet/agi-jobs-usdc.json"), "utf8"));
+const publicRoot = "https://montrealai.github.io/AGIJobManager/";
+function checkLocaleMetadata(html, file, route) {
+  const language = file.startsWith("fr/") ? "fr" : "en";
+  const canonical = publicRoot + (language === "fr" ? "fr/" : "") + route;
+  assert.equal(html.match(/<html\b[^>]*\blang="([^"]+)"/)?.[1], language, `${file}: document language matches its route`);
+  const canonicals = [...html.matchAll(/<link\b[^>]*\brel="canonical"[^>]*>/g)];
+  assert.equal(canonicals.length, 1, `${file}: one canonical URL`);
+  assert.equal(canonicals[0][0].match(/\bhref="([^"]+)"/)?.[1], canonical, `${file}: canonical preserves the route and language`);
+  const alternates = [...html.matchAll(/<link\b[^>]*\brel="alternate"[^>]*>/g)].map(([tag]) => [tag.match(/\bhreflang="([^"]+)"/)?.[1], tag.match(/\bhref="([^"]+)"/)?.[1]]);
+  assert.deepEqual(alternates, [["en", publicRoot + route], ["fr", publicRoot + "fr/" + route], ["x-default", publicRoot + route]], `${file}: reciprocal language alternatives retain the same destination`);
+}
 assert.equal(inventory.latestDeploymentPath, selectedDeployment.recordPath);
 assert.equal(inventory.historicalEvidence, "config/mainnet/agi-jobs-usdc.json");
 assert.deepEqual(inventory.latestDeployment, {
@@ -78,6 +89,7 @@ assert.equal(
 for (const file of ["index.html", "fr/index.html", "employers/index.html", "fr/employers/index.html"]) {
   const full = path.join(out, file),
     html = fs.readFileSync(full, "utf8");
+  checkLocaleMetadata(html, file, file.includes("employers/") ? "employers/" : "");
   assert.equal((html.match(/<h1\b/g) || []).length, 1, `${file}: one h1`);
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]);
   assert.equal(new Set(ids).size, ids.length, `${file}: duplicate ids`);
@@ -112,6 +124,10 @@ for (const file of ["index.html", "fr/index.html", "employers/index.html", "fr/e
   }
   assert.ok(html.includes("connect-src 'none'"));
   if (!file.includes("employers/")) {
+    const footerBrand = html.match(/<footer\b[^>]*class="footer container"[^>]*>[\s\S]*?<a\b[^>]*class="brand"[^>]*>/)?.[0].match(/\bhref="([^"]+)"/)?.[1];
+    assert.ok(footerBrand, `${file}: footer brand provides a homepage link`);
+    const homeUrl = publicRoot + (file.startsWith("fr/") ? "fr/" : "");
+    assert.equal(new URL(footerBrand, homeUrl).href, homeUrl, `${file}: footer brand preserves the selected language`);
     const primary = html.match(/<article\b[^>]*\bid="latest-deployment"[^>]*>([\s\S]*?)<\/article>/)?.[1];
     const history = html.match(/<article\b[^>]*\bid="historical-deployment"[^>]*>([\s\S]*?)<\/article>/)?.[1];
     assert.ok(primary && history, `${file}: latest and historical deployments have distinct semantic cards`);
@@ -180,6 +196,16 @@ for (const file of ["index.html", "fr/index.html", "employers/index.html", "fr/e
     assert.ok(html.includes('data-employer-language="'));
   }
 }
+for (const file of ["workflows/index.html", "fr/workflows/index.html"]) {
+  const html = fs.readFileSync(path.join(out, file), "utf8");
+  checkLocaleMetadata(html, file, "workflows/");
+  const language = file.startsWith("fr/") ? "fr" : "en", other = language === "fr" ? "en" : "fr";
+  const switchLink = html.match(new RegExp(`<a\\b[^>]*\\blang="${other}"[^>]*>`))?.[0];
+  assert.ok(switchLink, `${file}: language switch identifies its destination language`);
+  assert.ok(switchLink.includes(`hreflang="${other}"`), `${file}: language switch identifies its linked content language`);
+  const current = publicRoot + (language === "fr" ? "fr/" : "") + "workflows/";
+  assert.equal(new URL(switchLink.match(/\bhref="([^"]+)"/)?.[1], current).href, publicRoot + (other === "fr" ? "fr/" : "") + "workflows/", `${file}: language switch retains the workflows destination`);
+}
 for (const alias of ["agijobmanager-usdc.html", "agijobmanagerv0.html"])
   assert.equal(
     fs.readFileSync(path.join(out, alias), "utf8"),
@@ -195,5 +221,5 @@ assert.ok(
     !fs.existsSync(path.join(out, ".git")),
 );
 console.log(
-  "Pages checks passed: bilingual latest owner-reported Manager/address/date/block/source/governor and nine explorer inventories, explicit historical manager/helper separation, four-project ecosystem routes and protocol boundaries, employer routes, guide paths, exact USDC allocations and byte-identical console aliases.",
+  "Pages checks passed: bilingual latest owner-reported Manager/address/date/block/source/governor and nine explorer inventories, explicit historical manager/helper separation, locale-preserving footer and workflow navigation, reciprocal current-page language metadata, four-project ecosystem routes and protocol boundaries, employer routes, guide paths, exact USDC allocations and byte-identical console aliases.",
 );

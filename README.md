@@ -52,12 +52,12 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Current software version: v1.19.2 — Current deployment records and consistent interfaces.**
+**Current software version: v1.19.3 — Operator guidance and deployment evidence.**
 [Latest deployment and instance-specific operations](docs/OPERATIONS/COMMISSIONING.md) ·
-[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Release notes](docs/releases/v1.19.2/RELEASE_NOTES.md).
+[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Release notes](docs/releases/v1.19.3/RELEASE_NOTES.md).
 
-**[previously published v1.19.1 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.1/AGIJobManager-v1.19.1-COMPLETE.zip)** · [previously published v1.19.1 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.1/QUALIFICATION.json).
-Check [release and download availability for v1.19.2](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.2). Published assets identify their exact source; later main-branch work requires separate qualification.
+**[previously published v1.19.2 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.2/AGIJobManager-v1.19.2-COMPLETE.zip)** · [previously published v1.19.2 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.2/QUALIFICATION.json).
+Check [release and download availability for v1.19.3](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.3). Published assets identify their exact source; later main-branch work requires separate qualification.
 Software publication and intake activation are separate decisions.
 
 AGI Jobs covers work a person or team can do using a keyboard, mouse and screen. Employers define the result and acceptance criteria; AGI Agents perform the work; AGI Nodes independently validate the delivered result. AGIJobManager provides the on-chain job lifecycle, USDC escrow, bonded voting, dispute outcomes and payment recovery. Computer execution and judging the work happen outside the contract.
@@ -132,7 +132,7 @@ npm run docs:check
 
 For deployment, first run `npm --prefix hardhat run setup`, review the private configuration, then use the [Hardhat procedure](hardhat/README.md). New managers start with intake paused. The [default configuration](config/usdc-deployment.json) still auto-selects **no live manager**. The [October 17 Manager record](config/mainnet/manager-8815-2026-10-17.json) and [historical October 10 instance](config/mainnet/agi-jobs-usdc.json) identify separate deployments; neither is a replacement default or an activation grant. Publishing this software does not deploy contracts or open intake.
 
-The current manager uses eight fixed linked libraries. The [integrated source](docs/qualification/INTEGRATED_CANDIDATE_20261017.md) includes explicit-governor constructors, bounded creator preflight recovery and a source-pinned compiler optimizer mitigation. The v1.19.2 wrapper requires fresh exact-final-source qualification. Earlier [ENS membership hardening](docs/qualification/ENS_MEMBERSHIP_REVOCATION.md), payout rules and historical deployment records remain preserved. Existing immutable managers are not upgraded by this software release; preserve their original source, jobs and recovery paths. Use the [second-deployment checklist](docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md) and [compatibility guide](docs/V1_RELEASE_SCOPE.md#compatibility).
+The current manager uses eight fixed linked libraries. The [integrated source](docs/qualification/INTEGRATED_CANDIDATE_20261017.md) includes explicit-governor constructors, bounded creator preflight recovery and a source-pinned compiler optimizer mitigation. The v1.19.3 wrapper requires fresh exact-final-source qualification. Earlier [ENS membership hardening](docs/qualification/ENS_MEMBERSHIP_REVOCATION.md), payout rules and historical deployment records remain preserved. Existing immutable managers are not upgraded by this software release; preserve their original source, jobs and recovery paths. Use the [second-deployment checklist](docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md) and [compatibility guide](docs/V1_RELEASE_SCOPE.md#compatibility).
 
 ## Release evidence and production use
 

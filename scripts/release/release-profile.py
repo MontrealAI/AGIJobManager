@@ -18,15 +18,27 @@ TREE = '913e49d65263bc53026916f7fc3b4cbfb93549f8'
 BASE_MANIFEST = 'config/explicit-governor-source-v1.json'
 BASE_MANIFEST_SHA = '83cd0976000a74d8c8ac3b5fd21c90ba48068c5ef87582dd6ba926e2b62c01e2'
 LATEST_DISPLAY_RECORD_SHA = '06def03f2844edeb2f93203edb028a37085c83f79aedd91857e8b1ae9af922c0'
-VERSION = '1.19.2'
+DISPLAY_EVIDENCE_GUIDES = {
+    'docs/deployments/MAINNET_MANAGER_2026-10-17.md': '0d95f18e6b25dea3a514dd1c32ae421a1d527567daab6b90689f347cb13af14e',
+    'docs/deployments/MAINNET_USDC_2026-10-10.md': 'b67f530d31b35b54e18621ea195f9a36663166e926a9bdad8767afb201cce411',
+}
+VERSION = '1.19.3'
 VERSION_ONLY = {p + n for p in ('', 'hardhat/', 'ui/') for n in ('package.json', 'package-lock.json')} | {'config/usdc-deployment.json'}
 # Finite release delta. No contract, compiler, dependency or deployment script is mutable.
 ALLOWED = VERSION_ONLY | {
-    'site/deployments.mjs', 'scripts/site/deployments.test.mjs', 'scripts/site/build.mjs',
+    'docs/README.md', 'docs/ENS/ENS_JOB_PAGES_OVERVIEW.md', 'docs/ens-job-pages.md',
+    'docs/DEPLOYMENT/OPTIONAL_METADATA_ROUTER.md',
+    'site/deployments.mjs', 'site/workflows.mjs', 'hardhat/README.md', 'docs/DEPLOY_DAY_RUNBOOK.md', 'docs/OWNER_RUNBOOK.md', 'scripts/site/deployments.test.mjs', 'scripts/site/build.mjs',
     'scripts/site/check.mjs', 'scripts/site/browser-test.mjs', 'site/template.mjs',
     'site/content/en.json', 'site/content/fr.json', 'docs/OPERATIONS/COMMISSIONING.md',
     'docs/deployments/README.md', 'OPERATOR_ACTIONS_REQUIRED.md',
     'docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md',
+    'docs/OWNER_CONTROLS.md', 'docs/Deployment.md', 'docs/NFT_POLICY.md', 'docs/QUINTESSENTIAL_USE_CASE.md',
+    'docs/LAUNCH_CHECKLIST.md', 'docs/QUICKSTART.md', 'docs/MAINNET_MIGRATION_FROM_LEGACY.md',
+    'docs/AGI_JOBS_ONE_PAGER.md', 'docs/operator-runbook.md', 'docs/ENS_DEPLOYMENT_NAMESPACES.md',
+    'docs/DEPLOYMENT/TRUFFLE_MAINNET_DEPLOY.md', 'docs/DEPLOYMENT/TRUFFLE_PRODUCTION_DEPLOY.md',
+    'docs/DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md', 'docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md',
+    'docs/DEPLOYMENT_OPERATIONS.md', 'docs/minimal-governance.md', 'docs/DEPLOYMENT_CONFIGURATION.md', 'docs/USDC_MIGRATION.md',
     'config/mainnet/manager-8815-2026-10-17.json', 'docs/deployments/MAINNET_MANAGER_2026-10-17.md', 'docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md', 'config/companion-releases.json', 'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html', 'ui/README.md', 'docs/START_HERE.md', 'docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md', 'ui/src/generated/deployments.ts', 'ui/src/app/deployment/page.tsx', 'ui/scripts/sync-deployments.mjs', 'ui/tests/usdcConsole.test.ts',
     'README.md', 'docs/OPERATIONS/PRIVATE_FLEET.md', 'docs/V1_RELEASE_SCOPE.md',
     'docs/RELEASE_GUIDE.md', 'docs/REFERENCE/VERSIONS.md', 'docs/ui/DEPLOYMENT_MAINNET.md', 'scripts/docs/release-alignment.mjs',
@@ -37,11 +49,11 @@ ALLOWED = VERSION_ONLY | {
     'scripts/release/verify-package.py', 'scripts/release/collect-qualification.py',
     'scripts/release/publish-release.py', VERIFIER, 'scripts/release/package-policy.py',
     'scripts/release/test-release-profile.py', 'scripts/release/test-release-gates.py', 'ui/scripts/generate-deployment-docs.mjs', 'ui/scripts/docs-check.mjs', 'scripts/release/run-inherited-source-tests.py', 'ui/scripts/singlefile-template.html', 'ui/tests/hashRouterRuntime.test.ts', 'hardhat/test/commissioning-docs.test.cjs',
-    'docs/qualification/mainnet-cutover-v1.19.0-expected.json', 'docs/qualification/mainnet-cutover-v1.19.1-expected.json', 'docs/qualification/mainnet-cutover-v1.19.2-expected.json',
-    'docs/qualification/release-v1.19.0-provenance.json', 'docs/qualification/release-v1.19.1-provenance.json', 'docs/qualification/release-v1.19.2-provenance.json',
-    'scripts/security/slither-reviewed-findings-v1.19.0.json', 'scripts/security/slither-reviewed-findings-v1.19.1.json', 'scripts/security/slither-reviewed-findings-v1.19.2.json',
+    'docs/qualification/mainnet-cutover-v1.19.0-expected.json', 'docs/qualification/mainnet-cutover-v1.19.1-expected.json', 'docs/qualification/mainnet-cutover-v1.19.2-expected.json', 'docs/qualification/mainnet-cutover-v1.19.3-expected.json',
+    'docs/qualification/release-v1.19.0-provenance.json', 'docs/qualification/release-v1.19.1-provenance.json', 'docs/qualification/release-v1.19.2-provenance.json', 'docs/qualification/release-v1.19.3-provenance.json',
+    'scripts/security/slither-reviewed-findings-v1.19.0.json', 'scripts/security/slither-reviewed-findings-v1.19.1.json', 'scripts/security/slither-reviewed-findings-v1.19.2.json', 'scripts/security/slither-reviewed-findings-v1.19.3.json',
     'scripts/security/verify-slither-review.py',
-} | {'docs/releases/' + tag + '/' + n + '.md' for tag in ('v1.19.0', 'v1.19.1', 'v1.19.2') for n in ('START_HERE', 'RELEASE_NOTES', 'RECOVERY_GUIDE', 'VALIDATION')}
+} | {'docs/releases/' + tag + '/' + n + '.md' for tag in ('v1.19.0', 'v1.19.1', 'v1.19.2', 'v1.19.3') for n in ('START_HERE', 'RELEASE_NOTES', 'RECOVERY_GUIDE', 'VALIDATION')}
 
 
 def read(root, name):
@@ -110,6 +122,7 @@ CONSOLE_DISPLAY_PREVIOUS = """      <h2>USDC deployment · v1.18.0 candidate</h2
         <p>Ethereum mainnet · Chain 1<br>Manager: <code>0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7</code><br>Helper: <code>0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC</code><br>Namespace: <code>usdc.jobs.agi.eth</code></p>
         <p>This panel does not select a transaction target. <a href="https://github.com/MontrealAI/AGIJobManager/blob/main/docs/OPERATIONS/COMMISSIONING.md" target="_blank" rel="noopener noreferrer">Inspect the existing instance and review A1–A5</a>.</p>
       </details>"""
+MIGRATION_DOCUMENT_CHANGE = ('5. Confirm the current-schema receipt shows paused intake, the reviewed constructor-assigned governor and zero pending owner. No creation-time acceptance is required. An authentic historical six-argument receipt may instead record `acceptanceRequired`; preserve its original two-step semantics, as also used for separately authorized later voluntary Manager transfers. Configure operations before unpausing intake. See [owner controls](OWNER_CONTROLS.md).', '5. Confirm the deployment receipt shows paused intake. If `acceptanceRequired` is true, the proposed owner must call `acceptOwnership()` and verify the actual owner. Configure operations before unpausing intake. See [owner controls](OWNER_CONTROLS.md).')
 PAGE_LATEST_DISPLAY = """    <section aria-labelledby='latest-reported-instance' className='space-y-3 rounded-xl border p-6'>
       <h2 id='latest-reported-instance' className='text-2xl font-semibold'>Latest reported Manager deployment · {l.recordDate}</h2>
       <p>{l.contractCount} creations reported finalized on Ethereum mainnet. Explorer report: {l.exactMatches} Exact Match and {l.retainedSimilarMatches} retained Similar Match.</p>
@@ -121,7 +134,7 @@ PAGE_LATEST_DISPLAY = """    <section aria-labelledby='latest-reported-instance'
         <dt>Reported owner</dt><dd>{l.owner}</dd>
         <dt>Authority snapshot block hash</dt><dd>{l.blockHash}</dd>
       </dl>
-      <p><a href={`https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/${l.guidePath}`} target='_blank' rel='noopener noreferrer'>Review the latest deployment and all nine contracts</a> · <a href={`https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/${l.recordPath}`} target='_blank' rel='noopener noreferrer'>Machine-readable record</a></p>
+      <p><a href={`https://github.com/MontrealAI/AGIJobManager/blob/${l.evidenceRevision}/${l.guidePath}`} target='_blank' rel='noopener noreferrer'>Review the latest deployment and all nine contracts</a> · <a href={`https://github.com/MontrealAI/AGIJobManager/blob/${l.evidenceRevision}/${l.recordPath}`} target='_blank' rel='noopener noreferrer'>Machine-readable record</a></p>
     </section>
 """
 PAGE_DISPLAY_CHANGES = (
@@ -130,7 +143,7 @@ PAGE_DISPLAY_CHANGES = (
     (PAGE_LATEST_DISPLAY, ''),
     ("<h2 id='recorded-instance' className='text-2xl font-semibold'>Historical instance · October 10, 2026</h2>", "<h2 id='recorded-instance' className='text-2xl font-semibold'>Deployed and ENS-connected</h2>"),
     ("<p>Historical deployment and ENS connection recorded on {r.recordDate} at Ethereum block {r.block.toLocaleString('en-US')}. This older instance and its helper are separate from the latest reported Manager above.</p>", "<p>Recorded on {r.recordDate} at Ethereum block {r.block.toLocaleString('en-US')}. Activation is held pending separate review.</p>"),
-    ("<a href='https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/docs/deployments/MAINNET_USDC_2026-10-10.md' target='_blank' rel='noopener noreferrer'>Review the October 10 historical record</a>", "<a href='https://github.com/MontrealAI/AGIJobManager/blob/main/docs/OPERATIONS/COMMISSIONING.md' target='_blank' rel='noopener noreferrer'>Inspect this existing instance and review the five activation groups</a>"),
+    ("<a href={`https://github.com/MontrealAI/AGIJobManager/blob/${l.evidenceRevision}/docs/deployments/MAINNET_USDC_2026-10-10.md`} target='_blank' rel='noopener noreferrer'>Review the October 10 historical record</a>", "<a href='https://github.com/MontrealAI/AGIJobManager/blob/main/docs/OPERATIONS/COMMISSIONING.md' target='_blank' rel='noopener noreferrer'>Inspect this existing instance and review the five activation groups</a>"),
 )
 
 
@@ -150,11 +163,13 @@ def deployment_display_inputs(root):
     historical = strict_json(read(root, 'config/mainnet/agi-jobs-usdc.json')[1])
     latest_bytes = read(root, 'config/mainnet/manager-8815-2026-10-17.json')[1]
     require(sha(latest_bytes) == LATEST_DISPLAY_RECORD_SHA, 'Dated deployment evidence changed beyond its reviewed published record')
+    for name, digest in DISPLAY_EVIDENCE_GUIDES.items():
+        require(sha(read(root, name)[1]) == digest, 'Dated deployment guide changed beyond its reviewed published evidence: ' + name)
     latest = strict_json(latest_bytes)
     require(latest['schema'] == 'agijobmanager-recorded-deployment-v2' and latest['chainId'] == 1 and latest['recordDate'] == '2026-10-17', 'Reviewed latest display record identity differs')
     require(latest['notLiveState'] is True and latest['notDefaultConfiguration'] is True and latest['source']['commit'] == BASE and latest['source']['tree'] == TREE, 'Latest display record exceeds reviewed evidence scope')
     recorded = dict(chainId=historical['chainId'], manager=historical['manager'], helper=historical['helper'], namespace=historical['jobsRootName'], block=historical['connection']['snapshot']['number'], blockHash=historical['connection']['snapshot']['hash'], recordDate=historical['recordDate'], activation=historical['activation']['decision'])
-    reported = dict(chainId=latest['chainId'], manager=latest['manager'], recordDate=latest['recordDate'], sourceCommit=latest['source']['commit'], block=latest['reportedAuthoritySnapshot']['blockNumber'], blockHash=latest['reportedAuthoritySnapshot']['blockHash'], owner=latest['reportedAuthoritySnapshot']['owner'], intakePaused=latest['reportedAuthoritySnapshot']['intakePaused'], contractCount=latest['deployment']['finalizedCount'], exactMatches=latest['explorerVerification']['exactMatches'], retainedSimilarMatches=latest['explorerVerification']['retainedSimilarMatches'], recordPath='config/mainnet/manager-8815-2026-10-17.json', guidePath='docs/deployments/MAINNET_MANAGER_2026-10-17.md', managerCodeUrl=latest['verificationLinks']['managerCode'])
+    reported = dict(chainId=latest['chainId'], manager=latest['manager'], recordDate=latest['recordDate'], sourceCommit=latest['source']['commit'], block=latest['reportedAuthoritySnapshot']['blockNumber'], blockHash=latest['reportedAuthoritySnapshot']['blockHash'], owner=latest['reportedAuthoritySnapshot']['owner'], intakePaused=latest['reportedAuthoritySnapshot']['intakePaused'], contractCount=latest['deployment']['finalizedCount'], exactMatches=latest['explorerVerification']['exactMatches'], retainedSimilarMatches=latest['explorerVerification']['retainedSimilarMatches'], recordPath='config/mainnet/manager-8815-2026-10-17.json', guidePath='docs/deployments/MAINNET_MANAGER_2026-10-17.md', evidenceRevision='d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2', managerCodeUrl=latest['verificationLinks']['managerCode'])
     require(all(isinstance(reported[key], str) and re.fullmatch('0x[0-9a-fA-F]{40}', reported[key]) for key in ('manager', 'owner')), 'Unsafe latest display address')
     require(re.fullmatch('0x[0-9a-f]{64}', reported['blockHash']) and type(reported['block']) is int and reported['block'] > 0 and type(reported['intakePaused']) is bool, 'Unsafe latest display snapshot')
     require(all(type(reported[key]) is int for key in ('contractCount', 'exactMatches', 'retainedSimilarMatches')) and (reported['contractCount'], reported['exactMatches'], reported['retainedSimilarMatches']) == (9, 6, 3), 'Reviewed latest display explorer inventory differs')
@@ -209,6 +224,10 @@ def validate_ui_metadata(root, baseline):
     """Reverse only exact reviewed display changes; retain the immutable UI runtime hash."""
     config, recorded, reported = deployment_display_inputs(root)
     require(config['note'] == DEPLOYMENT_NOTE, 'Unreviewed deployment note')
+    migration_name = 'docs/USDC_MIGRATION.md'
+    migration = read(root, migration_name)[1].decode()
+    historical_migration = revert_exact(migration, *MIGRATION_DOCUMENT_CHANGE, 'USDC migration ownership guidance')
+    require(sha(historical_migration.encode()) == baseline[migration_name]['sha256'], 'USDC migration guide changed beyond reviewed ownership paragraph')
     template_name = 'ui/scripts/singlefile-template.html'
     template = normalize_advanced_deployment(read(root, template_name)[1].decode(), config, recorded, reported)
     require(sha(template.encode()) == baseline[template_name]['sha256'], 'Standalone template changed beyond reviewed read-only deployment display')
@@ -235,11 +254,14 @@ def validate_ui_metadata(root, baseline):
         matches = list(re.finditer(bundle_pattern, text, re.S))
         require(len(matches) == 1, 'UI embedded source bundle is ambiguous')
         require(not re.search(r'</script', matches[0].group(2), re.I), 'UI embedded source bundle contains an unescaped closing script tag')
+        require(not re.search(r'<script', matches[0].group(2), re.I), 'UI embedded source bundle contains an unescaped opening script tag')
         bundle = strict_json(matches[0].group(2))
         sources = bundle['sources']
         require(bundle['sourcesSha256'] == sha(json.dumps(sources, ensure_ascii=False, separators=(',', ':')).encode()), 'UI source digest differs')
         for key, path in allowed.items():
             require(sources[key] == read(root, path)[1].decode(), 'UI embedded release document differs: ' + key)
+        require(sources[migration_name] == migration, 'UI embedded USDC migration document differs')
+        sources[migration_name] = historical_migration
         require(sources['src/app/deployment/page.tsx'] == page, 'UI embedded deployment page differs')
         sources['src/app/deployment/page.tsx'] = historical_page
         bundle['sources'] = {k:v for k,v in sources.items() if k not in allowed}
