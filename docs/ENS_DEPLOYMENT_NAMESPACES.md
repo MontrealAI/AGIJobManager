@@ -31,10 +31,10 @@ Its root stays in the shared wallet. The new helper has wallet-wide NameWrapper 
 
 ## Fresh manager: automatic naming
 
-1. Deploy and verify the USDC manager; complete ownership acceptance and keep intake paused.
+1. Deploy and verify the USDC manager; confirm the explicit constructor governor and zero pending owner, with intake paused. Current creation has no acceptance stage; historical handovers and later voluntary Manager transfers remain two-step.
 2. Set `JOB_MANAGER` and `NEW_OWNER` (or `FINAL_OWNER`) in the reviewed Hardhat configuration. Leave `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE` and `JOB_LABEL_PREFIX` empty so the script derives them. Use `ENS_DEPLOYMENT_MODE=fresh` (the default).
 3. Run `DRY_RUN=1 npm run deploy:ens-job-pages:mainnet` from `hardhat/`. The read-only plan prints the complete root, node, prefix and example job name. Without a key, supply `DEPLOYER_ADDRESS`.
-4. Review the plan and deploy using the existing [deployment procedure](DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md). The helper deployment sets `job-`, reads it back before locks or ownership handoff, and records the namespace in its journal. Keep `LOCK_CONFIG=0` until the complete lifecycle is checked.
+4. Review the plan and create the helper using the [deployment procedure](DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md). Current creation assigns its governor atomically, with zero manager binding, constructor prefix `agijob` and unlocked configuration. The script records the derived namespace and a separate governor action plan. The governor separately authorizes the planned manager binding and `job-` prefix; verify both readbacks before wiring. `LOCK_CONFIG` proposes a later lock in that plan and does not execute one during creation.
 5. Review root custody and recovery before creating or transferring a dedicated child. The generic documented wrapped route uses helper ownership of the root token; that is not the only authorization model supported by the contract. An existing wallet-held root requires separately reviewed operator approval and reconciliation, as in the recorded short-root instance above. Do not transfer `alpha.jobs.agi.eth`, transfer an emancipated root without a recovery plan, or grant blanket access as an unreviewed shortcut.
 6. Wire the new manager to its new helper. Verify actual name creation, resolver writes, actor permissions and terminal revocation. A successful settlement alone does not prove the best-effort ENS hooks worked.
 

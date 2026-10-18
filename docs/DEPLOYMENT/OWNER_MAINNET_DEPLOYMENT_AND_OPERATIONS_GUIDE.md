@@ -8,9 +8,9 @@ For the already deployed [October 17 Manager](../deployments/MAINNET_MANAGER_202
 ## 1) Start here
 
 1. Review the release, canonical USDC, both settlement recipients and intended owner.
-2. Rehearse with Hardhat on Sepolia using the intended signer arrangement.
+2. Retain applicable rehearsal evidence and any explicitly scoped owner-accepted omission; neither is established by source publication.
 3. For an authorized mainnet deployment, follow the reviewed Hardhat plan. The manager starts intake paused and the deploy script leaves it paused.
-4. Verify the manager and linked libraries, accept ownership where required, and configure participant eligibility and policy.
+4. Verify the manager, linked libraries, constructor-assigned governor and zero pending owner, then configure participant eligibility and policy while intake remains paused.
 5. Run the read-only readiness checker, review the operational gates, then have the accepted owner open intake.
 6. Reconcile a deliberately limited first job before increasing exposure.
 
@@ -35,7 +35,9 @@ A successful job pays validators first, then 30% and 10% of its original cost to
 
 ## 3) Prepare the deployment
 
-Use Node 22.23.2 and record the reviewed commit or immutable release with its matching [guide and evidence](../V1_RELEASE_SCOPE.md#published-download-versus-current-source). From the repository root:
+For owner-entered Ubuntu mainnet creation, use the [hidden-prompt creator guide](../deployment/ubuntu-ephemeral-creator.md). It reads the deployer key only through its local hidden prompt and rejects deployment dotenv files, secret environment values and secret arguments. Use a separate reviewed checkout without running setup below; governor configuration remains a separate Ledger action.
+
+The following preparation applies to the maintained environment-backed route. Use Node 22.23.2 and record the reviewed commit or immutable release with its matching [guide and evidence](../V1_RELEASE_SCOPE.md#published-download-versus-current-source). From the repository root:
 
 ```bash
 npm ci
@@ -44,9 +46,9 @@ npm --prefix hardhat run setup
 cd hardhat
 ```
 
-Setup creates missing private files, including `reviewed-nft-policy.json`, and preserves existing settings. Hardhat loads `hardhat/.env`; exported shell values take precedence. Review `deploy.config.cjs` as executable JavaScript from a trusted source. Review all six constructor inputs: USDC, base metadata URL, ENS address pair, four namespace roots, two Merkle roots and `[wallet30, wallet10]`. Supply two distinct, nonzero recipients different from USDC and the manager. Confirm the intended final owner separately. The example supplies no final owner or recipients; the intended final owner must be explicit in `FINAL_OWNER` or profile `finalOwner`, including in a dry run. The private `deploy.config.cjs` is loaded by default; the script does not silently use example configuration.
+Setup creates missing private files, including `reviewed-nft-policy.json`, and preserves existing settings. Hardhat loads `hardhat/.env`; exported shell values take precedence. Review `deploy.config.cjs` as executable JavaScript from a trusted source. Review all seven current constructor inputs: USDC, base metadata URL, ENS address pair, four namespace roots, two Merkle roots, `[wallet30, wallet10]` and the explicit initial governor. Historical six-argument receipts retain their original schema. Supply two distinct, nonzero recipients different from USDC and the manager. Confirm the intended final owner separately. The example supplies no final owner or recipients; the intended final owner must be explicit in `FINAL_OWNER` or profile `finalOwner`, including in a dry run. The private `deploy.config.cjs` is loaded by default; the script does not silently use example configuration.
 
-Configure the selected RPC, `DEPLOY_CONFIG`, intended `DEPLOYER_ADDRESS` for read-only planning, and explorer configuration. An actual deployment additionally requires a funded disposable deployer key through the supported Hardhat environment. Do not give production keys to local test tools, commit them or enter them into an explorer form. Prefer a tested multisignature owner when securing substantial funds.
+Configure the selected RPC, `DEPLOY_CONFIG`, intended `DEPLOYER_ADDRESS` for read-only planning, and explorer configuration. This environment-backed route additionally uses the funded disposable deployer key for broadcast; the recommended hidden-prompt route does not take a key from the environment. Do not give production keys to local test tools, commit them or enter them into an explorer form. Prefer a tested multisignature owner when securing substantial funds.
 
 From `hardhat/`:
 
@@ -95,7 +97,7 @@ READINESS_NFT_CONFIG=./reviewed-nft-policy.json \
 DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run check:readiness
 ```
 
-The checker verifies receipt/configuration integrity, exact linked runtime code, accepted ownership, both recipients, identity settings, USDC restrictions, pause posture and zero initial reserves at a recorded block, then rechecks its hash. Preserve the resulting report. It does not certify participant eligibility, off-chain judgment, signer security or the completeness of an independent review.
+The checker verifies receipt/configuration integrity, exact linked runtime code, intended governor and zero pending owner, both recipients, identity settings, USDC restrictions, pause posture and zero initial reserves at a recorded block, then rechecks its hash. Preserve the resulting report. It does not certify participant eligibility, off-chain judgment, signer security or the completeness of an independent review.
 
 Before activation, independently verify:
 
@@ -156,8 +158,8 @@ ENS job pages are an optional metadata integration, separate from escrow settlem
 
 | Step | Responsible party and expected behavior |
 | --- | --- |
-| Deploy replacement | Keep target manager intake paused and complete any pending ownership acceptance first. The script requires an explicit final helper owner, deploys ENSJobPages, sets its manager and journals receipts/compiler input. Broadcasts require source verification; reconcile any failure before use. |
-| Optional script lock/transfer | Verification must succeed before optional lock/ownership writes. Keep `LOCK_CONFIG=0` until the intended integration has been validated. ENSJobPages ownership transfers in **one step**, unlike the manager's proposal/acceptance flow. |
+| Create helper | Keep the reviewed target manager intake paused with the intended governor and zero pending owner. The script creates and verifies ENSJobPages with its explicit governor, zero manager binding and unlocked configuration, retaining its journal and compiler input. It emits a separate governor action plan; reconcile any failure before use. |
+| Review governor configuration plan | `LOCK_CONFIG` records a proposed lock in the separate plan; creation does not execute it. The helper governor separately authorizes `setJobManager`, label-prefix configuration and any reviewed lock. Current creation sends no ownership transfer. Later voluntary ENSJobPages transfers retain **one-step** Ownable semantics. |
 | Establish root authority | For a fresh USDC launch, the ENS parent owner creates the dedicated wrapped-root token owned by the new helper. Broader NameWrapper authority is a separate same-manager replacement decision, with its scope explicitly reviewed. The deployment script performs neither action. |
 | Connect manager | Manager owner calls `setEnsJobPages(newEnsJobPages)` while identity configuration remains unlocked. The deployment script does not switch this pointer. |
 | Preserve existing jobs | Fresh USDC deployment leaves the original manager and its pages unchanged. Only a same-manager helper replacement can require the helper owner to call `migrateLegacyWrappedJobPage(jobId,exactLabel)` for that manager’s existing pages. |

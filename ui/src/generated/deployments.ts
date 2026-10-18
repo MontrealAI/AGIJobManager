@@ -1,6 +1,6 @@
 // Generated from config/usdc-deployment.json and the dated deployment records. Never infer transaction defaults from these records.
 export const OFFICIAL_DEPLOYMENTS = {
-  "version": "1.19.2",
+  "version": "1.19.3",
   "status": "deployment-required",
   "chainId": 1,
   "explorerBaseUrl": "https://etherscan.io",
@@ -61,5 +61,6 @@ export const LATEST_REPORTED_MAINNET_INSTANCE = {
   "retainedSimilarMatches": 3,
   "recordPath": "config/mainnet/manager-8815-2026-10-17.json",
   "guidePath": "docs/deployments/MAINNET_MANAGER_2026-10-17.md",
+  "evidenceRevision": "d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2",
   "managerCodeUrl": "https://etherscan.io/address/0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8#code"
 } as const;

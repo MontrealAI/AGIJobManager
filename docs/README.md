@@ -135,7 +135,7 @@ If another document conflicts with these in an operational detail, follow the ca
 
 - **What is canonical if docs disagree?** Follow the canonical set above (Hardhat guide, ENS replacement runbook, ENS overview, deployment troubleshooting).
 - **What deployment path is recommended?** Hardhat 3 is the supported deployment and local test runtime; Truffle and Ganache have been removed.
-- **What is manual vs automated during ENS replacement?** The helper script deploys, checks runtime, sets its manager, verifies source and transfers to the explicit owner. Dedicated-root setup and the new manager pointer are manual. Same-manager page migration and any broad wrapper authority are separately reviewed; fresh USDC does not repoint original jobs.
+- **What is manual vs automated during ENS replacement?** The helper script creates the contract with its explicit governor, checks runtime and verifies source. Its Manager binding remains unset and configuration unlocked; a separate governor plan proposes manager binding, label prefix and any requested later lock. Dedicated-root authority and the Manager's helper pointer require separately authorized actions. Same-manager page migration and any broad wrapper authority are separately reviewed; fresh USDC does not repoint original jobs.
 - **How are ENS names built?** `<prefix><jobId>.<jobsRootName>` where `AGIJobManager` provides `jobId` and `ENSJobPages` provides prefix/root.
 - **When is locking safe?** Only after post-cutover read/event checks and any legacy migration decisions are complete.
 

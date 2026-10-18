@@ -9,14 +9,14 @@ Complete the [launch checklist](LAUNCH_CHECKLIST.md) for the actual instance. It
 ## In one minute (owner/operator)
 
 - Deploy the reviewed release with Hardhat. The constructor starts intake paused; the deployment script never opens it.
-- Verify native Circle USDC, both settlement wallets, linked code, policy settings and the intended owner. A proposed ownership transfer still requires `acceptOwnership()`.
+- Verify native Circle USDC, both settlement wallets, linked code, policy settings and the constructor-assigned governor with zero pending owner. Current creation requires no handover; historical six-argument records and later voluntary Manager transfers retain two-step acceptance.
 - Complete the read-only readiness check and operational review before the accepted owner calls `unpauseIntake()`.
 - Use `pauseIntake()` to stop new jobs while existing work settles. For an active exploit affecting funds, use `pauseAll()` and verify both pause flags.
 - Identity locks are irreversible governance choices. They do not repair an incident or pause activity.
 
 ## Start here by owner intent
 
-- **Deploy a manager:** [Hardhat guide](../hardhat/README.md), [deployment operations](DEPLOYMENT_OPERATIONS.md) and [deploy-day runbook](DEPLOY_DAY_RUNBOOK.md).
+- **Deploy a manager:** recommended [Ubuntu hidden-prompt creator](deployment/ubuntu-ephemeral-creator.md), [Hardhat guide](../hardhat/README.md) and [deploy-day runbook](DEPLOY_DAY_RUNBOOK.md). For the already deployed [17 October Manager](deployments/MAINNET_MANAGER_2026-10-17.md), preserve the existing session and use readiness instead of repeating creation.
 - **Change recipient wallets or ownership:** [owner controls](OWNER_CONTROLS.md).
 - **Replace ENSJobPages:** [ENS replacement guide](DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 - **Use a verified explorer:** [Etherscan guide](ETHERSCAN_GUIDE.md); check every method against the current [contract interface](REFERENCE/CONTRACT_INTERFACE.md).
@@ -36,7 +36,7 @@ A fresh USDC launch preserves the original manager, helper, namespace, approvals
 
 ## Manual vs automated (owner-safe expectations)
 
-The manager's Hardhat workflow builds, deploys, checks runtime code and completes explorer verification before proposing ownership transfer when needed. A verification failure stops before that proposal. It does not accept ownership, open intake, grant NameWrapper approvals or choose a migration policy for you.
+Current-schema Manager creation assigns the explicit governor atomically, with zero pending owner and no creator handover or acceptance. The selected route preserves its source-bound plan, journals and runtime checks; explorer acceptance remains separately evidenced. Historical six-argument deployments retain their original two-step handover, and later voluntary Manager transfers remain two-step. Creation does not open intake, grant NameWrapper approvals or choose a migration policy.
 
 Before an ENS lock, confirm both new manager/helper pointers and root authority, successful creation/delegated writes/terminal revocation without failed or skipped ENS hooks, and the preserved legacy inventory. Same-manager page migration is separately reviewed.
 
@@ -44,10 +44,10 @@ Before an ENS lock, confirm both new manager/helper pointers and root authority,
 
 1. Pin the reviewed source or immutable release and use its matching [guide and qualification evidence](V1_RELEASE_SCOPE.md#published-download-versus-current-source); verify checksums for published downloads. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
 2. Compile and qualify using the [Hardhat guide](../hardhat/README.md). Preserve the qualified Solidity compiler settings and Ethereum size limits; use the exact release compiler profile and linked artifacts for the public deployment build.
-3. Review all six constructor inputs: canonical USDC, base IPFS URL, two ENS addresses, four namespace roots, two Merkle roots, and **two distinct settlement wallets ordered 30% then 10%**. Confirm the intended final owner separately. Example addresses and roots are not a reviewed production configuration.
-4. Run a read-only deployment plan, rehearse on Sepolia and review the saved plan before any authorized mainnet broadcast. Review the eight library addresses and exact linked runtime code.
+3. Review all seven current constructor inputs: canonical USDC, base IPFS URL, two ENS addresses, four namespace roots, two Merkle roots, **two distinct settlement wallets ordered 30% then 10%**, and the explicit initial governor. Preserve the original six-argument schema for historical receipts. Example addresses and roots are not a reviewed production configuration.
+4. Review the selected route’s read-only deployment plan and applicable rehearsal evidence, including any explicitly scoped owner-accepted omission, before an authorized mainnet broadcast. Review the eight library addresses and exact linked runtime code.
 5. Verify the manager and every linked library on Etherscan. A failed deployment command may already have broadcast transactions: inspect the deployment journal and reconcile receipts before retrying. Where all nine manager/library deployments completed, use the Hardhat guide's read-only recovery procedure; preserve its separate reverified receipt and the original journal. Recovery does not propose or accept ownership.
-6. Have the proposed final owner call `acceptOwnership()` where needed. Verify `owner()`, zero `pendingOwner()` and the completed transfer event.
+6. Verify `owner()` equals the explicit constructor governor and `pendingOwner()` is zero. No current-creation acceptance is required. Apply historical two-step handover instructions only to an authentic historical record, or to a separately authorized later voluntary Manager transfer.
 7. While intake stays paused, configure moderators, authorization routes, eligible agent NFT collections, limits, bonds and review periods. Every agent needs identity authorization. A qualifying enabled ERC-721 holding is also required only when the job's posting-time NFT policy requires it; allowlisting does not bypass a required NFT. Fresh managers already have NFT admission disabled and an empty registry; retain that state or deliberately configure owner opt-in. Match the complete `READINESS_NFT_CONFIG` before opening intake.
 8. Run the read-only readiness checker with the reviewed deployment receipt and complete the operational gates in [mainnet readiness](MAINNET_READINESS.md). Confirm `paused()==true`, `settlementPaused()==false`, both recipient addresses, USDC issuer status and all five reserve counters, including `lockedClaims`.
 
@@ -65,7 +65,7 @@ node scripts/advisor/state_advisor.js --input scripts/advisor/sample_job_state.j
 ## 2) Safe defaults + staged rollout
 
 1. **Configure:** keep the constructor's intake pause in place. Settlement is initially enabled; no job can enter until intake is opened.
-2. **Verify:** finish source verification, accepted ownership, participant eligibility, read-only readiness and monitoring. Readiness is a point-in-time check; recheck any state changed afterward.
+2. **Verify:** finish source verification, constructor-governor and zero-pending-owner readback, participant eligibility, read-only readiness and monitoring. Readiness is a point-in-time check; recheck any state changed afterward.
 3. **Activate:** the accepted owner calls `unpauseIntake()` only after reviewing those results. This opens new work; there is no separate automatic launch transaction in the deployment scripts.
 4. **Limit exposure:** execute and reconcile a deliberately small production job before increasing limits. With the default 8% validator budget, a 100 USDC job allocates 8 / 30 / 10 / 52 before considering rounding, unused rewards and separate bonds. See [payout rules](USDC_PAYOUT_SPLIT.md).
 

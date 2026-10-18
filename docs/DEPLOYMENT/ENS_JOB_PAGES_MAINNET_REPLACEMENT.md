@@ -5,7 +5,7 @@ This runbook configures a fresh `ENSJobPages` or replaces it for the **same, ver
 ## In one minute
 
 Canonical cutover flow:
-1. Deploy new `ENSJobPages` (Hardhat script).
+1. Create and verify `ENSJobPages` with its explicit governor (Hardhat script), then have that governor separately execute the reviewed manager-binding and label-prefix plan.
 2. Establish the new helper’s ownership of the dedicated wrapped jobs-root token, as qualified below. Any broader NameWrapper operator approval is a separate same-manager replacement decision.
 3. AGIJobManager owner manually calls `AGIJobManager.setEnsJobPages(newEnsJobPages)`.
 4. For existing jobs of this same manager only, migrate historical page labels if needed (`migrateLegacyWrappedJobPage`). Never import the original mainnet manager’s pages or balances into a fresh USDC manager.
@@ -18,7 +18,7 @@ Canonical cutover flow:
 | Action | Automated by script? | Required caller |
 | --- | --- | --- |
 | Deploy new `ENSJobPages` | Yes | deployer key |
-| `setJobManager(JOB_MANAGER)` on new ENSJobPages | Yes | deployer key |
+| `setJobManager(JOB_MANAGER)` and planned label prefix on new ENSJobPages | No; separate governor action plan | explicit ENSJobPages governor |
 | Establish dedicated-root ownership by the new helper | No (manual) | ENS parent owner |
 | Broader NameWrapper approval, only for a separately reviewed same-manager wrapped-root replacement | No (manual) | wrapped-root owner |
 | `AGIJobManager.setEnsJobPages(newEnsJobPages)` | No (manual) | AGIJobManager owner |
@@ -32,7 +32,7 @@ Canonical cutover flow:
 `ENSJobPages` manages ENS job page naming and metadata writes for AGIJobManager hooks.
 
 It determines:
-- job label prefix (`jobLabelPrefix`, constructor default `agijob`; fresh deployment script sets `job-`),
+- job label prefix (`jobLabelPrefix`, constructor default `agijob`; fresh-mode governor plan proposes `job-`; creation leaves the constructor default),
 - job root suffix (`jobsRootName`, derived from chain and full manager address in fresh mode),
 - and stores snapshotted exact labels for each job.
 
@@ -81,7 +81,7 @@ Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labe
 
 - You control deployer key and owner key(s) needed for manual wiring.
 - `hardhat/.env` is configured.
-- You know the intended verified USDC manager address for `JOB_MANAGER`. Keep its intake paused and complete any pending manager ownership acceptance before helper deployment. Independently compare `owner()` with the intended owner in the reviewed manager receipt: the helper preflight’s zero `pendingOwner()` check alone cannot prove the intended handover occurred.
+- You know the intended verified USDC manager address for `JOB_MANAGER`. Keep its intake paused and reconcile any already-authorized pending voluntary Manager transfer before helper deployment. Current creation already assigns its governor atomically. Independently compare `owner()` with the intended owner in the reviewed manager receipt: the helper preflight’s zero `pendingOwner()` check alone does not establish that the intended governor controls `owner()`.
 - The printed namespace plan is reviewed. Fresh mode derives a distinct root and rejects occupied roots, existing jobs/helpers and mismatched overrides. Replacement mode validates the active helper’s manager back-reference and preserves its root/prefix.
 - The root owner is identified independently of the manager owner. At the qualification block they are different addresses.
 - You have identified whether your jobs root is wrapped or unwrapped.
@@ -117,11 +117,11 @@ Read-only planning needs a deployer address (`DEPLOYER_ADDRESS` when no key is c
 Review mainnet address overrides for `ENS_REGISTRY`, `NAME_WRAPPER` and `PUBLIC_RESOLVER`, and any `JOBS_ROOT_NODE` override, which must equal the root namehash. Sepolia has no copied mainnet defaults for those ENS addresses: set all three explicitly, using zero NameWrapper only for an intentionally unwrapped configuration. Both public networks require paused manager intake and zero pending owner; existing reserves do not by themselves block a separately reviewed same-manager helper replacement.
 
 Expected result:
-- New ENSJobPages address deployed.
-- `setJobManager(JOB_MANAGER)` and `setJobLabelPrefix(...)` executed by script; root, node and prefix readback match the journal.
+- New ENSJobPages address created with its explicit governor assigned atomically.
+- Creation leaves `jobManager()` zero, label prefix `agijob` and configuration unlocked. No helper setter, lock or ownership transfer is sent.
 - Exact runtime matched against the qualified artifact; journal and its `solcInputPath` compiler input preserved.
-- Explorer verification completed successfully before the one-step helper ownership transfer.
-- Final helper owner, manager pointer and unlocked configuration match the reviewed plan.
+- Explorer verification completed, with original root and node readback retained.
+- A separate governor action plan proposes `setJobManager`, the intended label prefix and, only if requested, a later lock. Plan output is not executed configuration.
 
 
 ### Common cutover mistakes
@@ -136,8 +136,8 @@ Expected result:
 ## 7) Required manual post-deploy wiring on mainnet
 
 What is automated vs manual:
-- Automated by deploy script: deploy contract, check runtime, set and verify `jobManager` and the planned prefix/root, complete required verification, transfer ownership to the explicit final helper owner and optionally lock only if requested. Keep deployment-time locking disabled.
-- Manual on mainnet: establish the reviewed root authority, then call `setEnsJobPages` on the intended manager. A fresh USDC cutover leaves all legacy pointers and approvals unchanged.
+- Automated by deploy script: create the contract with its explicit governor, check runtime, read constructor state, complete required verification and preserve a separate governor action plan. Creation performs no manager binding, prefix setter, lock or ownership transfer.
+- Separately authorized governor actions: execute the reviewed `setJobManager` and label-prefix calls and verify their state; establish reviewed root authority; then have the Manager owner call `setEnsJobPages`. Any lock remains a later reviewed action. A fresh USDC cutover leaves all legacy pointers and approvals unchanged.
 
 
 ### Step 1 — Establish authority over the reviewed root
@@ -224,7 +224,7 @@ On PublicResolver (`Read Contract`), through a full job lifecycle:
 - `isApprovedFor(newEnsJobPages, jobNode, actor)` matches the intended employer/agent authorization before settlement and is false afterward. Confirm actual allowed and rejected writes, not just a successful core transaction.
 
 Event checks:
-- ENSJobPages deployment transaction and one-step transfer to the reviewed final owner.
+- ENSJobPages creation transaction, constructor-assigned governor and any separately authorized configuration receipts. A later voluntary helper ownership transfer remains one-step; it is not part of creation.
 - AGIJobManager `EnsJobPagesUpdated(old,new)` event.
 
 ---
@@ -240,24 +240,31 @@ Event checks:
 
 ### Recover helper verification without redeploying
 
-1. Preserve the failed `ens-job-pages.<chain>.<id>.json` journal, the compiler input at its `solcInputPath`, and all transaction receipts. Reconcile the deployment address and successful transactions against the selected chain. Read current helper `owner()`, `jobManager()` and `configLocked()`; a failed command may already have deployed and wired the helper.
+1. Preserve the failed `ens-job-pages.<chain>.<id>.json` journal, the compiler input at its `solcInputPath`, and all transaction receipts. Reconcile the deployment address and successful transactions against the selected chain. Read current helper `owner()`, `jobManager()` and `configLocked()`; a failed command may already have created the helper. Current-schema creation leaves zero manager binding and unlocked configuration. Reconcile any separately executed governor configuration against its own receipts; do not redeploy to repair a record.
 2. Check the deployed runtime against the qualified artifact and the journal’s `expectedRuntimeCodeHash`/`runtimeCodeHash`. A mismatch requires investigation; do not submit different source merely to obtain a verification badge.
-3. On the correct explorer’s source-verification form, select Solidity Standard-JSON input and the exact release compiler **0.8.37**. Upload the unchanged input referenced by `solcInputPath`; it already contains optimizer, IR, EVM and metadata settings. Select `contracts/ens/ENSJobPages.sol:ENSJobPages` if the form requests the contract name. Use the original five constructor arguments from `constructorArgs`. If ABI-encoded arguments are required, derive them read-only from `hardhat/`:
+3. On the correct explorer’s source-verification form, select Solidity Standard-JSON input and the exact release compiler **0.8.37**. Upload the unchanged input referenced by `solcInputPath`; it already contains optimizer, IR, EVM and metadata settings. Select `contracts/ens/ENSJobPages.sol:ENSJobPages` if the form requests the contract name. For current `ens-job-pages-constructor-v2` journals, use all six original `constructorArgs`, including the recorded `initialGovernor` as the final address. Do not reconstruct arguments from mutable live settings. If ABI-encoded arguments are required, derive them read-only from the matching source checkout’s `hardhat/`:
 
 ```bash
 ENS_DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-ens-journal>.json node - <<'NODE'
 const fs = require("node:fs");
-const { AbiCoder } = require("ethers");
+const { AbiCoder, getAddress } = require("ethers");
 const journal = JSON.parse(fs.readFileSync(process.env.ENS_DEPLOYMENT_RECEIPT, "utf8"));
+if (journal.constructorSchema !== "ens-job-pages-constructor-v2" ||
+    !Array.isArray(journal.constructorArgs) || journal.constructorArgs.length !== 6 ||
+    getAddress(journal.constructorArgs[5]) !== getAddress(journal.finalOwner)) {
+  throw new Error("Use the original reviewed six-argument governed helper journal.");
+}
 console.log(AbiCoder.defaultAbiCoder().encode(
-  ["address", "address", "address", "bytes32", "string"],
+  ["address", "address", "address", "bytes32", "string", "address"],
   journal.constructorArgs
 ).slice(2));
 NODE
 ```
 
+An authentic historical five-argument helper must instead use its original archived source, artifact, compiler input and recorded five-value argument list. The current six-argument command deliberately rejects that schema. Never truncate a current journal, infer an old governor or append one to a historical journal to fit a different source.
+
 4. Save the explorer result and a separate recovery record identifying the original journal, exact source/compiler input and verified address. Preserve the original failed journal; do not rewrite its status into a synthetic successful deployment. No blockchain transaction is needed for explorer verification.
-5. Only after successful verification, review which intended owner actions are still missing. The current helper owner performs only those actions, such as `setJobManager` if it never succeeded or the one-step `transferOwnership` to the reviewed final helper owner. Re-read the actual state and reconcile each receipt. Keep configuration unlocked until root authority, both pointers, delegated writes and terminal revocation are validated. Do not rerun the deployment command to resume these actions.
+5. Only after successful verification, review which intended owner actions are still missing. The current helper governor separately reviews the recorded manager-binding and prefix plan and executes only still-needed authorized calls. No ownership transfer is part of current creation. A one-step `transferOwnership` applies only to an authentic historical handover or a separately authorized later voluntary helper transfer. Re-read the actual state and reconcile each receipt. Keep configuration unlocked until root authority, both pointers, delegated writes and terminal revocation are validated. Do not rerun the deployment command to resume these actions.
 
 ## 11) Operator “done successfully” checklist
 

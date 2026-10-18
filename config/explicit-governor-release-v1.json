@@ -3,7 +3,7 @@
   "profile": "manager-explicit-governor-release-v1",
   "baseCommit": "8815ed3181778664595f951befd672afbd7a9352",
   "baseTree": "913e49d65263bc53026916f7fc3b4cbfb93549f8",
-  "version": "1.19.2",
+  "version": "1.19.3",
   "qualification": "PENDING_FINAL_SOURCE_MAIN_PUSH",
   "changes": {
     ".github/workflows/current-state-release.yml": {
@@ -24,9 +24,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "d66bf2053de8d64904ef644458cf402654ede60468bd8da6fbf45085110e15f7"
+        "sha256": "c0dd75d23e11ef028ca0cf2d092d8603728e65f9c4304143c1bc5a9d57c42c18"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     ".github/workflows/pages.yml": {
       "before": {
@@ -46,9 +46,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "39ffafa1866689e04907fb245c305b6a31daf79848ec850ca83b5fcc2f548f86"
+        "sha256": "9f0325b36915c58a19c5d12c0cdbfd36092b75f5b145ea5fc76a39929a1723e4"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "OPERATOR_ACTIONS_REQUIRED.md": {
       "before": {
@@ -68,9 +68,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "3bbf49dc27608553b329491c0cffbaccaac732fb0ef72c8b2780534dca55e065"
+        "sha256": "b5cbca23db955e3c2b2dc4203e8af423bd6f7a7c7915634a7491fc7743dec206"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "agijobmanager.html": {
       "before": {
@@ -79,7 +79,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "3acd9a5d3ff2d581beda32ea5e7749e443d5058df1b5744c56b68068cd57c055"
+        "sha256": "7d974a2e13a28dca45f61cdebe931ddf367ca557661ef755cc939c3546869151"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -90,9 +90,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "81c7a70939314687bc67aa1eade77f35d7e331e4e4a56bf09e88a7d15873d2aa"
+        "sha256": "b33580b939f08729021c4fbc501a074cf6d37df7261ea21794c954cb1e2cf6fb"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "config/mainnet/manager-8815-2026-10-17.json": {
       "before": null,
@@ -109,9 +109,53 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "16be55e9cbb2de0249da567d05493d87ac6dfae28bc8e45582f8179526cf7782"
+        "sha256": "f692cbf01fbeb26100597c46208e02dad0de060b8684ab73684772bc47b31ec6"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
+    },
+    "docs/AGI_JOBS_ONE_PAGER.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "137e2b355cf434e7369ad3e57334068984c03023084837ba0eac1d670779b48b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f7da377935ab545ff8643aaf50e6622f9b99b2a5d6a4ded34d48339ebeccd3f3"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "ba295f0d7cb6ae162cdc5610efd4f74186de74b2f746f4281535643785b3c880"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "664fd3d5359dca36f7a8fb54bec0cc5967ea520019ffa4d36539968af58ce5ef"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "a7d562760fc7447308a8c190d0c00ba0a4459f4886227b6ba4be27a4a967cacf"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "96adc6fc9bbb2dcd3e96f45ad13449bf0f931dbfa900162b312d98d39f7c14d1"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/DEPLOYMENT/OPTIONAL_METADATA_ROUTER.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "1fdbf7bd5066be62160520486ddd9938aabb2f34bf0979000d5fb3cbe510cbf0"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "c1f9590719605af939798ac96116cbb632ee7d4d716054818f11c851aeb4683d"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md": {
       "before": {
@@ -120,9 +164,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "b1e955b6ee36f673402fd9e931b02040cdee236707e2c9ca4d746aa2093283fb"
+        "sha256": "7a4f9a4dc387875b90eb74f6f6721b92fca15d65449fa3b59542125f7c5480a5"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md": {
       "before": {
@@ -131,9 +175,119 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "0a262370e2cc40d3b532b08ee37edf287133194aa0bc97fd407469ab1384ab47"
+        "sha256": "bc499b2b39529e0ce6c17ae587cfad4cef13447354ebaa8998c87a8ef172cf3f"
       },
-      "reason": "Finite release-only publication policy, regression coverage, expected comparison input or active release documentation; inherited runtime and historical records preserved."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/DEPLOYMENT/TRUFFLE_MAINNET_DEPLOY.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "a7d562760fc7447308a8c190d0c00ba0a4459f4886227b6ba4be27a4a967cacf"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "96adc6fc9bbb2dcd3e96f45ad13449bf0f931dbfa900162b312d98d39f7c14d1"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/DEPLOYMENT/TRUFFLE_PRODUCTION_DEPLOY.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "a7d562760fc7447308a8c190d0c00ba0a4459f4886227b6ba4be27a4a967cacf"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "96adc6fc9bbb2dcd3e96f45ad13449bf0f931dbfa900162b312d98d39f7c14d1"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/DEPLOYMENT_CONFIGURATION.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "51c27dee5ba688613fa816c01457582ce56f5cd3dad4fc4af16cfab4f95a3fd2"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "57b2cff6787c84481caf2479b9e665455fd9c2d7ec78b24b4e83a6d45eceeab8"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/DEPLOYMENT_OPERATIONS.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "5454a676d207c30d9eeb556549cb59568f0316a979c5ef1c5e39950b53e4a85a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "a51e2cc9ca6cedd2a1b42af50b52285210ff1b0837f9c2c394ce1e072af4924e"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/DEPLOY_DAY_RUNBOOK.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "0d3a8b7d5453885b1fe8288880bd35a04de07a70652507bd7f96a87066b0c608"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "9d819dad0197fc8a42f0eb83bbb488935a44e00887cded07b5450d3b5636f219"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/Deployment.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "6c11cf2773b341070c0259dfe6db2498f6a0c6169da357e509370bcde48e7492"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ce94bd021d9725349f00af798322947b08ce8f080f591ce240b5b20ecb560e9a"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/ENS/ENS_JOB_PAGES_OVERVIEW.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "fc799adc49dd4282b99809f9edd1ba43cc236476dd9fbbec3fcff60185abad48"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "76b8a800ac0e2110e3f7808ea88b4b5050d6eb13060ac6d76a6b3327b330e8c8"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/ENS_DEPLOYMENT_NAMESPACES.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "c6d9b5fead5099bf02a08675829f53ead8ab9349c96c932cca31c240af5f5776"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "72d8dec683da7c1097144de409a0a66f9df19c8c0b6b22e03d1703b800e3af9f"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/LAUNCH_CHECKLIST.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "2374e885771b03187ed3b8a3a695ccb717842aff41175ee9818dbc6353cacac4"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "fd41f2b59b2da1ccab108d28ffe29109c1058ed28a3ee7e7946cd92c5289edb0"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/MAINNET_MIGRATION_FROM_LEGACY.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "5251d2f8610c07db12a3f9dc566c0641a33aeaa3301ae683a99ce8bfc4598791"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f22d346d8181af1173328b9ace1a6ff6126c90f76c8f67e4305db1d598c6b19e"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/MAINNET_READINESS.md": {
       "before": {
@@ -142,9 +296,20 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "77bbf929d8fe6dcf4711571fd023b872fb52bc64d27bbe3e9bf2a59af53f2f19"
+        "sha256": "6f3e07ea6b324afd56f0b2fa63f49e48621dd73da881b3f241eb51472c4f63b3"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/NFT_POLICY.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "d71c6a51fef442a6036a38c22de97ff4393306f192037a2c703115f502cb2a02"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f0f0b84e888e7181e298bdad63118d3d80a309c19f6c4dce2ef32ee9ce655175"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/OPERATIONS/COMMISSIONING.md": {
       "before": {
@@ -164,9 +329,64 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "5045ee9f3497bfd04b3e4129a5eee90469ba4da27ea5b05fdef883bfbe39bb5b"
+        "sha256": "ee18bf54900e49d5302e84971e37d2f16e91b45942a470dc39423539f3ef6905"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/OWNER_CONTROLS.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "0a648423462a0a4bdad37d87541efead4f8b187d6dbda0220f046a03608e585d"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "0bb9c7dd83390f2b459ac63f2959ccbdf4e3f2090ebc6afb3eb28bfa73e71783"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/OWNER_RUNBOOK.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "bb59740ff453260b681f671b8d28720911f2ef98533595160829c463dafa9b03"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "20a093bcf7b8d2e1683c3cddadc66a104ed47f317f20424841ca0abf2cdac493"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/QUICKSTART.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "b8bec249cf9cb533ce49622ac9228d678f20912b6df37df4ea6688e3f3671468"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "9dfe9d06cb0c442b19c373a9ab6045a72c71c327dcc23e7b617f52fb59c0e34d"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/QUINTESSENTIAL_USE_CASE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "21bb2c66e2f9e54bab112cbe6757f1642fda18fcfcb0d0a85ab16c29ca1f776c"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "37ae58e614c4027f43dc65a6c382936e51d02435626fe8e0a3a76e854f0ce00c"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/README.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "ba96fc8ba371cbcc1550052f79b6d4874c9a51ec921edef760057bcd00ce6d08"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "2524bf2bf8079d1e125f8a92d58c97b4f6849a0e5bcee3c60739a5c62a9d0dd2"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/REFERENCE/VERSIONS.md": {
       "before": {
@@ -175,9 +395,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "4ebebe291f5ba393a953ffaaac269f3e7cd2d7ef858486bf43bd3f8d762cfad7"
+        "sha256": "76cb06312921651294720595f889a52e6c1dcb8636ad76f22bc168067a9ae637"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/RELEASE_GUIDE.md": {
       "before": {
@@ -186,9 +406,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "ac1d130c2f93a6ef0da2b7d3f876a5f193b6dc33e9bc349a51a765921474b712"
+        "sha256": "ff00c5112a9898fa2654ec74bb564fedf85d452cc43dbf2c202240d88608ac99"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/START_HERE.md": {
       "before": {
@@ -197,9 +417,20 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "3f0ff75f1bfb0f328dfdb1e6b687bd2ed3f14c18674e0509b3f6b48420cc7e35"
+        "sha256": "5a00e80510e6950dbbb43936a91e45b670bf041c8898b0a14fb543ac2d75b959"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/USDC_MIGRATION.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "f992831168cdb0a5165592e8f329514354db8d710859e4ffb8df640057e46216"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b5773ef02fc85215aea65cd621d4665f80435680fd4dfdae874913219cfc66e2"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/V1_RELEASE_SCOPE.md": {
       "before": {
@@ -208,9 +439,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "cb950fb760591ae3f77f1aa34be19892738c11828c0ce6d33bb2e76dab930ad0"
+        "sha256": "beea15dcd9142b1e88e18f2ffa114e9d97845d2cc6045edddb16fc48c9e2c00a"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/deployments/MAINNET_MANAGER_2026-10-17.md": {
       "before": null,
@@ -230,6 +461,39 @@
         "sha256": "c840b1115f946e2ecd4c16a7de8aae3c1a80292cba5daf7c0c4cfb4e26d3c194"
       },
       "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
+    "docs/ens-job-pages.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "8d6d037060c3298e92d719cab88550e4fb21e22f888684a417eb1f26389d3ac2"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "d592e629e53edc8738dc6de01a8374aaf6248ca3b537ee03f9188a5955ac3232"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/minimal-governance.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "aead99e8fcbc43ac5c237a519f3be58295f729276eba3440117eade7837efd3c"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "193aa6baa4b30669b9209694cfcf737923d4d9b92829b9adcdc641af8b071e9f"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/operator-runbook.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "e79de6dcac5a8c37e89e50c4cc89dfcc01860e416f78bce9c0c3f04f2b28ab82"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "2b0ad171f66142640ae485bd68ad1a6d7ac5b194080056d43ad8db0b4cb18caf"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/qualification/mainnet-cutover-v1.19.0-expected.json": {
       "before": null,
@@ -255,6 +519,14 @@
       },
       "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
+    "docs/qualification/mainnet-cutover-v1.19.3-expected.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "ed50c043cc6cd291943d203be4cab4da3ed91fc06fbd1fec1fb0c141a6d78d24"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
     "docs/qualification/release-v1.19.0-provenance.json": {
       "before": null,
       "after": {
@@ -278,6 +550,14 @@
         "sha256": "846c3425107462cf31b5fe0b440e11457644f38329bf4f7a4302739d3ca9bc25"
       },
       "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+    },
+    "docs/qualification/release-v1.19.3-provenance.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "bd4a7c608aa3f3f696d2cd5a6f3e50f2646eeda00497c771deb6148770ffec3e"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/releases/v1.19.0/RECOVERY_GUIDE.md": {
       "before": null,
@@ -375,6 +655,38 @@
       },
       "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
+    "docs/releases/v1.19.3/RECOVERY_GUIDE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "b47d630b2adb29150439acf7af5493be7a575b2d0a9e69ac631f68839681f295"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/releases/v1.19.3/RELEASE_NOTES.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "394f8f830f3430d8d79d84ecad835e52bc241969fcf8282fef8cbe04d8a5fe27"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/releases/v1.19.3/START_HERE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "0987001f265bd957ede85ef62a9b744a59d48c9c25074a5a3779b761ec8cf52d"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "docs/releases/v1.19.3/VALIDATION.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "41b86a347efa80fb66579739110e6c43442b51990e83ddebf3554eb885796eb2"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
     "docs/ui/DEPLOYMENT_MAINNET.md": {
       "before": {
         "mode": "100644",
@@ -382,9 +694,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "27631899630dd9a4bf431d7f45f74496afc3bfb97a6fcfa2848cc7295b0cd28f"
+        "sha256": "86de1982e5f01a23d4677bcfe3f9ee9b4151492676d6ba878add468d7cc2f46a"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md": {
       "before": {
@@ -393,9 +705,20 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "9aa89dfe3720b28f0ec98f7528d157f1a157d8925bd2b712070f26ba44bea070"
+        "sha256": "9975889c52ee6e11e1707d093465ca54b284b9d51a440229d7d2f908dc97151b"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
+    "hardhat/README.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "6cf804b83e7ce6557c8ccc125b8aabefc2802f114fa3c4e58132ce8f568bc2b8"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "28404a0670ea5dec342a86bcc468f2e390ef21572fce05d8da86279011f98a8e"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "hardhat/package-lock.json": {
       "before": {
@@ -404,9 +727,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "6313bfdb011363ebfddd0f3adb2ba32f9a6311df750e144501b4badbf32aabb2"
+        "sha256": "824b85c81023a80a83ba7f5555406ca4f0d80be3bfc0a3fe74567809706c47b2"
       },
-      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
+      "reason": "Align software version to v1.19.3; preserve every dependency resolution and package setting."
     },
     "hardhat/package.json": {
       "before": {
@@ -415,9 +738,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "49a0ea30f3162dac96f7cf74215017892ed6ab4f288679dfc6149d1b82f17a5e"
+        "sha256": "5257ddc5d10da9fbe3116785627d132af608e44bb7e02d91f66c2466325c298a"
       },
-      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
+      "reason": "Align software version to v1.19.3; preserve every dependency resolution and package setting."
     },
     "hardhat/test/commissioning-docs.test.cjs": {
       "before": {
@@ -426,9 +749,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "14845d1837eb73b33ba2f5f020e7df89f71546c401bd61f1c8fda98b2cce9668"
+        "sha256": "4ef46e6e9e5a34837085835cfe66388444cae11f49144b7ca97feb7378b89d32"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "package-lock.json": {
       "before": {
@@ -437,9 +760,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "23645de75c587cb3f640fcf6f68e695234941a59ccbbfc7e87b488362d9252cd"
+        "sha256": "b3c344a4adf3b093f247bb377c029b2fffb03178ce18de418c453e5b96fe39e1"
       },
-      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
+      "reason": "Align software version to v1.19.3; preserve every dependency resolution and package setting."
     },
     "package.json": {
       "before": {
@@ -448,9 +771,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "8c606ec46ef437f025c46371640ce869445be6e1d59110ed1febb751197d3c85"
+        "sha256": "b15aeb457fdcdf8a12721bfa0acfbfdb2c3f797cb0c0cee3f31769fa02ddb793"
       },
-      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
+      "reason": "Align software version to v1.19.3; preserve every dependency resolution and package setting."
     },
     "scripts/docs/release-alignment.mjs": {
       "before": {
@@ -459,9 +782,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "90d684252d3fe120d1865f22506a8c1e34ed5cfd5a4242ce8ef12e660b03f0e4"
+        "sha256": "7b12af68b107d20d5eaaad622fe3d4be22ece629a883af651349938ddaebbd3a"
       },
-      "reason": "Generate release availability links from the current software version without inferring publication state from a source checkout; preserve command and version checks."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "scripts/docs/templates/README.md.tpl": {
       "before": {
@@ -470,9 +793,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "5b1c1ed5bfcbcb631035975e02ed82b930f985751dddfe41be172826fff8c62a"
+        "sha256": "aaba99df1e96d20c94cd8ce3e128ea861b54a78351ff246bbd9831097c70d44f"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl": {
       "before": {
@@ -481,9 +804,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "9666ffdf8b4cc18940cf4788f6c2c2e3b09dde0fea8b2a821de106c4b861321d"
+        "sha256": "0c9e52b68d4faf323ac0e94467039cbd519ddde3e2b28e8e17b5b11cb9987a9b"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "scripts/release/collect-qualification.py": {
       "before": {
@@ -530,9 +853,9 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "e07b375dab80fcf7f629b8304600840a4439f6b6214cd8b6cbb426d6f277541a"
+        "sha256": "e9cf1587c0862b848af5c866ae0254be237461967ce3b9ac5513f59a1fa0d82f"
       },
-      "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
+      "reason": "Bind the finite v1.19.3 release, reviewed deployment evidence and embedded-content checks to immutable source inputs; retain independent final-source qualification gates."
     },
     "scripts/release/release_common.py": {
       "before": {
@@ -541,9 +864,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "b0c28111eb070a6cdc3df143b044cc5609cb42a97363b1ae52899b5ca6acf6f4"
+        "sha256": "e4ba17be0398e47e2165f76be7ebe650190dc9f93f0807c0d6435485656f2440"
       },
-      "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
+      "reason": "Bind the finite v1.19.3 release, reviewed deployment evidence and embedded-content checks to immutable source inputs; retain independent final-source qualification gates."
     },
     "scripts/release/run-inherited-source-tests.py": {
       "before": null,
@@ -557,9 +880,9 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "2f154982e06ec8975c3f803d0a591ec59105ed4b97ffeead355f0fcc596b0350"
+        "sha256": "c8b4e3ecf4de854e83526a934853357c80e42b58758a763d2da3227c4517d027"
       },
-      "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
+      "reason": "Bind the finite v1.19.3 release, reviewed deployment evidence and embedded-content checks to immutable source inputs; retain independent final-source qualification gates."
     },
     "scripts/release/test-release-gates.py": {
       "before": {
@@ -576,9 +899,9 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "a279cf88f605286e1533f8d1ac875daf6317226bfe200757fd92da47720425d3"
+        "sha256": "cabaa230b42b2df1f8502cd53dbbe740e84f28802d40a13335a68e90513fa90b"
       },
-      "reason": "Bind the finite v1.19.2 release and exact reviewed static display changes to immutable source inputs; retain independent final-source qualification gates."
+      "reason": "Bind the finite v1.19.3 release, reviewed deployment evidence and embedded-content checks to immutable source inputs; retain independent final-source qualification gates."
     },
     "scripts/release/verify-package.py": {
       "before": {
@@ -615,6 +938,14 @@
       },
       "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
     },
+    "scripts/security/slither-reviewed-findings-v1.19.3.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "92e41fdd29fa264108604e359c470289b25ce0474d51553c82a9cd5995a565be"
+      },
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
+    },
     "scripts/security/verify-slither-review.py": {
       "before": {
         "mode": "100755",
@@ -622,9 +953,9 @@
       },
       "after": {
         "mode": "100755",
-        "sha256": "834ff99b043f708c7ca28bf75ccde9ee54284fe01225578ca5e86ced053ab9b4"
+        "sha256": "f726177f4ce1d56bfe90dd8367e165964db620654ead3a2d7941bd45db5795f0"
       },
-      "reason": "Align current v1.19.2 documentation, workflow or comparison inputs with the latest reported deployment while retaining historical evidence and observation limits."
+      "reason": "Align current v1.19.3 operator guidance, workflow or comparison inputs with explicit governor creation and separate ENS configuration while retaining historical evidence and observation limits."
     },
     "scripts/site/browser-test.mjs": {
       "before": {
@@ -633,9 +964,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "bfc988b2c194f395962437e9fb9cec25ce4ab65bfd7ffac6bf578f070fb151db"
+        "sha256": "ef4146606eb6c35c596d6e0e0993b5f7192750582d3ee5cdaa62bd443a030c58"
       },
-      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+      "reason": "Bind displayed deployment and governor claims to reviewed dated evidence, reject unsupported future reports, and preserve language-specific navigation and metadata."
     },
     "scripts/site/build.mjs": {
       "before": {
@@ -655,17 +986,17 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "5c5f7c2d1979327c13493d3be79cd5f473cbae79753cea4a5db05f5f16df6338"
+        "sha256": "cfa05f8f484c5b8c06229bceb0bacf144962e7acfcf8a191819c48ff56e087c1"
       },
-      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+      "reason": "Bind displayed deployment and governor claims to reviewed dated evidence, reject unsupported future reports, and preserve language-specific navigation and metadata."
     },
     "scripts/site/deployments.test.mjs": {
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "dda5f48adea79bcf7f344f1d7a39401dad4519ccaa9d600d258a039cf2fb12c0"
+        "sha256": "4b65f40932cc35884a0bf535c0f53f00bf2c64c942cd7277b12e5943e8bcbbca"
       },
-      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+      "reason": "Bind displayed deployment and governor claims to reviewed dated evidence, reject unsupported future reports, and preserve language-specific navigation and metadata."
     },
     "site/content/en.json": {
       "before": {
@@ -693,9 +1024,9 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "26853da1968fb05c36d432ef07f287f07069ddcd670aed55266bbfe5847edf81"
+        "sha256": "a560b9f37105ee4fb79b2a8ed1a159a6a7b2ea35a10cd822085e5a7c20a8b2f9"
       },
-      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+      "reason": "Bind displayed deployment and governor claims to reviewed dated evidence, reject unsupported future reports, and preserve language-specific navigation and metadata."
     },
     "site/template.mjs": {
       "before": {
@@ -704,9 +1035,20 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "04fc2680f14a78ee18bd3234621a3f4baa9ac006e861061fe749d86d00969a78"
+        "sha256": "7c069f607a5aca00a0f0d762af14e4a05b6c310c134082327b93ea41e086c8a4"
       },
-      "reason": "Render and verify the latest dated owner-reported deployment in both languages, with separate historical instance evidence and exact contract links."
+      "reason": "Bind displayed deployment and governor claims to reviewed dated evidence, reject unsupported future reports, and preserve language-specific navigation and metadata."
+    },
+    "site/workflows.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "088db607da9c9e953d1f614a24060b5fe466c489efb4ea73e7a4ed24f9a8ddbf"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "5051da13aa6ef1e522fa99633a3b741b6fbf84c81ff65adc453fba3b706c392e"
+      },
+      "reason": "Bind displayed deployment and governor claims to reviewed dated evidence, reject unsupported future reports, and preserve language-specific navigation and metadata."
     },
     "ui/README.md": {
       "before": {
@@ -715,7 +1057,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "67e04998c9adb9bd0f717584f184a36cf40137f7b621f48a6b1a4578326021e7"
+        "sha256": "3086a5e7ed292be015ec917df30163d86b373fe539c0449ce898d6f1d4c4bc46"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -726,7 +1068,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "5378b6f530a7969343acd647e6049a8bf7a74218de70b3b79102078e5e75d52f"
+        "sha256": "c3f94801e85fc3977e7b808b4418cb69373daa92cba85b253dd0e12b789c69a2"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -737,7 +1079,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "3acd9a5d3ff2d581beda32ea5e7749e443d5058df1b5744c56b68068cd57c055"
+        "sha256": "7d974a2e13a28dca45f61cdebe931ddf367ca557661ef755cc939c3546869151"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -748,9 +1090,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "4f938a2cf2d2ba1ad2d90eb6dec12d0971a55897d9877b49ca45149ded367224"
+        "sha256": "5533008893c2c15f5dd4f861c6f4736f5408fb80933ec16228cc9a87da3d967b"
       },
-      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
+      "reason": "Align software version to v1.19.3; preserve every dependency resolution and package setting."
     },
     "ui/package.json": {
       "before": {
@@ -759,9 +1101,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "c1ecba2df1df2d8ba016bab5a786cfa75500ccf1da9b36e9901d2890a4268ee1"
+        "sha256": "c2e0fa0304fe2632eb70cc04919033e7a1d141ba677ad055dcb97e969b7c86d8"
       },
-      "reason": "Align software version to v1.19.2; preserve every dependency resolution and package setting."
+      "reason": "Align software version to v1.19.3; preserve every dependency resolution and package setting."
     },
     "ui/scripts/docs-check.mjs": {
       "before": {
@@ -792,7 +1134,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "f2b09b1f19a290636c7b83bd2ab6f6c2cbd497c6e51df0c984875f0640b98151"
+        "sha256": "682343ff78c30b4afa04ffa64ac7125d66fd05c47fe934035c9a9d6689b7262f"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -803,7 +1145,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "4925bba95f0150d23162c8abe6c27451a833bdf04b9f6cbd9e6b982492d6300c"
+        "sha256": "86fbedbc55cb0435b82dd52b8be701f3b697f9fa1558ca0860561873ca9f9c82"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -814,7 +1156,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "d4c820138a34d0183bf5fdf799feebc3dbf351470d73ba94f20d6a7e41a53bec"
+        "sha256": "3f4ab5b3763ed6ab1c32019f7adbe7166cec71a2f15dd9831b1642f72f013e0a"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -825,7 +1167,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "8f8b303746a25430379000c677e36ffc5ab19cec793d5a4b98695b0d6ade2c18"
+        "sha256": "256dff579b5daa220e3d9f8135c1bd7b9071e33df47bf2886dbb831c893ce365"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     },
@@ -847,7 +1189,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "25a254d9255213f432c98dad360abf01ea54ea5d742f2ed282042d2655ad8a80"
+        "sha256": "de32586a8d1c0c459f553c272b515d13d7f277f832ba8cd0aca4c0ea5014c167"
       },
       "reason": "Synchronize reviewed read-only deployment presentation and software metadata; preserve executable transaction behavior and blank transaction defaults."
     }

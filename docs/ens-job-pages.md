@@ -1,6 +1,6 @@
 # ENS job-page naming and records
 
-This document describes the configurable naming scheme and public record layout for ENS job pages. Fresh USDC deployments require a dedicated namespace and helper. Preserve the legacy `alpha.jobs.agi.eth` root and its existing manager/helper/jobs. v1.0.3 fresh deployment tooling derives a root from the chain and full manager address and sets prefix `job-`; replacement mode preserves the active helper’s root and prefix. Read the [current naming policy](ENS_DEPLOYMENT_NAMESPACES.md). The historical examples below use the fork-rehearsed proposal `usdc-v095.alpha.jobs.agi.eth`, which is not a live deployment; see the [cutover qualification](qualification/USDC_CUTOVER.md).
+This document describes the configurable naming scheme and public record layout for ENS job pages. Fresh USDC deployments require a dedicated namespace and helper. Preserve the legacy `alpha.jobs.agi.eth` root and its existing manager/helper/jobs. Current fresh-mode tooling derives a root from the chain and full Manager address. Creation retains the constructor prefix `agijob`, leaves the Manager binding unset and configuration unlocked, and emits a separate governor plan proposing `job-` and Manager binding. Replacement mode preserves the active helper’s reviewed root and prefix in that plan. Read the [current naming policy](ENS_DEPLOYMENT_NAMESPACES.md). The historical examples below use the fork-rehearsed proposal `usdc-v095.alpha.jobs.agi.eth`, which is not a live deployment; see the [cutover qualification](qualification/USDC_CUTOVER.md).
 
 ## Configured naming convention
 
@@ -99,15 +99,15 @@ Ownership of the dedicated **wrapped-root token** by the helper is the qualified
 ## ENSJobPages helper wiring (on-chain)
 
 When using the `ENSJobPages` helper contract, complete these wiring steps:
-1. Deploy `ENSJobPages` with the ENS registry, NameWrapper (if any), PublicResolver, root node, and root name.
-2. Have the parent owner create the reviewed dedicated wrapped root with the new helper as its wrapped-token owner. Verify Registry owner is NameWrapper and `NameWrapper.ownerOf(root)` is the helper. No new token or blanket operator approval is required for the qualified route.
-3. Call `ENSJobPages.setJobManager(AGIJobManager)` so hooks are accepted.
-4. Call `AGIJobManager.setEnsJobPages(ENSJobPages)` to enable hook callbacks.
+1. Create and verify `ENSJobPages` with all six recorded constructor arguments: ENS registry, NameWrapper (if any), PublicResolver, root node, root name and `initialGovernor`. Confirm its constructor-assigned owner, zero Manager binding and unlocked configuration against the original journal.
+2. Establish the independently reviewed dedicated-root authority. For the qualified wrapped-root route, the parent owner creates the root with the helper as wrapped-token owner; verify Registry owner is NameWrapper and `NameWrapper.ownerOf(root)` is the helper. Unwrapped configurations use the separate Registry/controller requirements above. No blanket operator approval is implied.
+3. Have the helper governor separately execute the reviewed `ENSJobPages.setJobManager(AGIJobManager)` and label-prefix plan, then verify the actual readback. Creation does not send these calls.
+4. Have the Manager governor separately call `AGIJobManager.setEnsJobPages(ENSJobPages)` to enable hook callbacks. Review root authority, both pointers, delegated writes and terminal revocation before any later lock.
 
 These steps keep ENS integration **opt-in** and ensure lifecycle hooks remain best-effort.
 
 ## Operator checklist
-- Ensure the platform controls `usdc-v095.alpha.jobs.agi.eth` and the configured PublicResolver.
+- Verify authority over the intended Manager's separately reviewed namespace and PublicResolver. `usdc-v095.alpha.jobs.agi.eth` above is a historical fixture, not a current target to copy.
 - Ensure `ENSJobPages` is wired to `AGIJobManager` via `setJobManager` and `setEnsJobPages`.
 - Ensure employer/agent wallets are authorized to edit text records via the resolver.
 - Avoid secrets: use hashes or URIs only.

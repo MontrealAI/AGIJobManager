@@ -220,6 +220,12 @@ try {
     assert.equal(await page.locator('html').getAttribute('lang'), language ? 'fr' : 'en');
     assert.equal(await page.locator('#employer-form').isVisible(), true, 'The primary header entry opens guided onboarding');
     await page.goto(base + language);
+    await page.locator('.footer a.brand').focus();
+    await page.keyboard.press('Enter');
+    await page.waitForURL(base + language);
+    assert.equal(page.url(), base + language, 'The footer brand returns to the selected-language homepage');
+    assert.equal(await page.locator('html').getAttribute('lang'), language ? 'fr' : 'en', 'Footer navigation preserves the document language');
+    assert.equal(await page.locator('#employer-welcome').isVisible(), true, 'Footer navigation reaches the working homepage');
     await page.locator('a.language').click();
     await page.waitForURL(base + (language ? '' : 'fr/'));
     await page.locator('#advanced-console-link').evaluate((element) => {
@@ -294,6 +300,21 @@ try {
     const context = await browser.newContext();
     const page = await context.newPage();
     await page.goto(base + language + 'workflows/');
+    const publicRoot = 'https://montrealai.github.io/AGIJobManager/';
+    assert.equal(await page.locator('html').getAttribute('lang'), language ? 'fr' : 'en');
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), publicRoot + language + 'workflows/', 'Workflow canonical retains the selected language and route');
+    assert.deepEqual(await page.locator('link[rel="alternate"]').evaluateAll(nodes => nodes.map(node => [node.getAttribute('hreflang'), node.href])), [
+      ['en', publicRoot + 'workflows/'], ['fr', publicRoot + 'fr/workflows/'], ['x-default', publicRoot + 'workflows/'],
+    ], 'Workflow language alternatives identify reciprocal live routes');
+    const otherLanguage = language ? '' : 'fr/';
+    const switchLink = page.locator('body > nav a[hreflang]');
+    assert.equal(await switchLink.getAttribute('lang'), language ? 'en' : 'fr');
+    await switchLink.click();
+    await page.waitForURL(base + otherLanguage + 'workflows/');
+    assert.equal(await page.locator('html').getAttribute('lang'), language ? 'en' : 'fr', 'The workflow language switch opens the equivalent translated page');
+    assert.equal(await page.locator('article').count(), 8);
+    await page.goBack();
+    await page.waitForURL(base + language + 'workflows/');
     assert.equal(await page.locator('article').count(), 8);
     for (const width of [320, 390, 768, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
@@ -310,6 +331,10 @@ try {
     await page.locator('summary').first().focus();
     await page.keyboard.press('Enter');
     assert.equal(await page.locator('details').first().getAttribute('open'), '');
+    await page.locator('body > nav a').first().click();
+    await page.waitForURL(base + language);
+    assert.equal(await page.locator('html').getAttribute('lang'), language ? 'fr' : 'en', 'Workflow home navigation preserves the chosen language');
+    assert.equal(await page.locator('#employer-welcome').isVisible(), true);
     await context.close();
     const noJS = await browser.newContext({ javaScriptEnabled: false });
     const staticPage = await noJS.newPage();
@@ -318,7 +343,7 @@ try {
     await noJS.close();
   }
   console.log(
-    "Pages browser checks passed: English/French latest Manager copy action and nine-contract explorer inventory, explicit historical helper separation, deployment/hero/ecosystem WCAG checks, 320/390/768/1440 widths, larger and 200% text reflow, ecosystem and employer navigation, calculator, search, FAQ, no-JS evidence and advanced console navigation.",
+    "Pages browser checks passed: English/French latest Manager copy action and nine-contract explorer inventory, explicit historical helper separation, deployment/hero/ecosystem WCAG checks, 320/390/768/1440 widths, larger and 200% text reflow, locale-preserving footer and workflow navigation with reciprocal language metadata, ecosystem and employer navigation, calculator, search, FAQ, no-JS evidence and advanced console navigation.",
   );
 } finally {
   await browser.close();

@@ -20,6 +20,7 @@ describe('USDC standalone console boot', () => {
       expect(panel?.querySelector(`a[href="${latest.managerCodeUrl}"]`)).not.toBeNull();
       expect(panel?.querySelector(`a[href$="${latest.recordPath}"]`)).not.toBeNull();
       const evidenceBase = 'https://github.com/MontrealAI/AGIJobManager/blob/d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2/';
+      expect(latest.evidenceRevision).toBe('d5d4ad93f00a3dfe6439b0f32edb1a2fcf70e0c2');
       expect(panel?.querySelector(`a[href="${evidenceBase}${latest.recordPath}"]`)).not.toBeNull();
       expect(panel?.querySelector(`a[href="${evidenceBase}${latest.guidePath}"]`)).not.toBeNull();
       expect(panel?.nextElementSibling?.querySelector(`a[href="${evidenceBase}docs/deployments/MAINNET_USDC_2026-10-10.md"]`)).not.toBeNull();

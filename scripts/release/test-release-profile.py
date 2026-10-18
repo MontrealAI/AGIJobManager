@@ -74,7 +74,7 @@ class ReleaseProfile(unittest.TestCase):
         name='package.json';data=json.loads((self.root/name).read_bytes());data['dependencies']['@openzeppelin/contracts']='4.9.5';raw=(json.dumps(data,indent=2)+'\n').encode()
         self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
     def test_repinning_ui_runtime_change_is_rejected(self):
-        for name in ('ui/agijobmanager-usdc.html', 'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html', 'ui/src/generated/deployments.ts', 'ui/src/app/deployment/page.tsx', 'ui/scripts/singlefile-template.html'):
+        for name in ('ui/agijobmanager-usdc.html', 'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html', 'ui/src/generated/deployments.ts', 'ui/src/app/deployment/page.tsx', 'ui/scripts/singlefile-template.html', 'docs/USDC_MIGRATION.md'):
             raw=(self.root/name).read_bytes()+b'\n// unexpected executable change\n'
             with self.subTest(name=name):
                 self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
@@ -119,30 +119,33 @@ class ReleaseProfile(unittest.TestCase):
         name='config/mainnet/manager-8815-2026-10-17.json';value=json.loads((self.root/name).read_bytes())
         value['reportedAuthoritySnapshot']['intakePaused']=False;raw=(json.dumps(value,indent=2)+'\n').encode()
         self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
+    def test_repinning_dated_deployment_guide_is_rejected(self):
+        name='docs/deployments/MAINNET_MANAGER_2026-10-17.md';raw=(self.root/name).read_bytes()+b'\nChanged historical evidence\n'
+        self.mutate(name,raw,lambda:self.repin_delta(lambda m:m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)})))
     def test_repinning_embedded_document_script_breakout_is_rejected(self):
         names=('README.md','agijobmanager.html','ui/dist-ipfs/agijobmanager.html')
         originals={name:(self.root/name).read_bytes() for name in names}
-        injected=originals['README.md'].decode()+'\n</script><script>window.__INJECTED__=1</script>\n'
-        changes={'README.md':injected.encode()}
         pattern=r'(<script id="agijobmanager-runtime-bundle">window.__AGI_RUNTIME_BUNDLE__=)(.*?)(;window.__AGI_CONTRACT_ABI_REGISTRY__=)'
-        for name in names[1:]:
-            text=originals[name].decode();match=re.search(pattern,text,re.S);self.assertIsNotNone(match)
-            bundle=json.loads(match.group(2));bundle['sources']['README.md']=injected
-            bundle['sourcesSha256']=sha(json.dumps(bundle['sources'],ensure_ascii=False,separators=(',',':')).encode())
-            changes[name]=(text[:match.start(2)]+json.dumps(bundle,ensure_ascii=False,separators=(',',':'))+text[match.end(2):]).encode()
-        try:
-            for name,raw in changes.items():(self.root/name).write_bytes(raw)
-            self.repin_delta(lambda m:[m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)}) for name,raw in changes.items()])
-        finally:
-            for name,raw in originals.items():(self.root/name).write_bytes(raw)
+        for payload in ('</script><script>window.__INJECTED__=1</script>', '<!--<script>', '<!--<ScRiPt>'):
+            injected=originals['README.md'].decode()+'\n'+payload+'\n';changes={'README.md':injected.encode()}
+            for name in names[1:]:
+                text=originals[name].decode();match=re.search(pattern,text,re.S);self.assertIsNotNone(match)
+                bundle=json.loads(match.group(2));bundle['sources']['README.md']=injected
+                bundle['sourcesSha256']=sha(json.dumps(bundle['sources'],ensure_ascii=False,separators=(',',':')).encode())
+                changes[name]=(text[:match.start(2)]+json.dumps(bundle,ensure_ascii=False,separators=(',',':'))+text[match.end(2):]).encode()
+            try:
+                for name,raw in changes.items():(self.root/name).write_bytes(raw)
+                with self.subTest(payload=payload):self.repin_delta(lambda m:[m['changes'][name].update(after={'mode':'100644','sha256':sha(raw)}) for name,raw in changes.items()])
+            finally:
+                for name,raw in originals.items():(self.root/name).write_bytes(raw)
     def test_comparison_inputs_preserve_all_historical_observations(self):
         before=json.loads((ROOT/'docs/qualification/mainnet-cutover-integrated-20261017.json').read_bytes())
-        after=json.loads((ROOT/'docs/qualification/mainnet-cutover-v1.19.2-expected.json').read_bytes())
+        after=json.loads((ROOT/'docs/qualification/mainnet-cutover-v1.19.3-expected.json').read_bytes())
         b=before.pop('sourceSha256');a=after.pop('sourceSha256')
         self.assertEqual(before,after)
         self.assertEqual({n for n in a if a[n]!=b[n]}, {'package.json','package-lock.json','hardhat/package.json','hardhat/package-lock.json'})
         before=json.loads((ROOT/'scripts/security/slither-reviewed-findings-c174-integrated-yul.json').read_bytes())
-        after=json.loads((ROOT/'scripts/security/slither-reviewed-findings-v1.19.2.json').read_bytes())
+        after=json.loads((ROOT/'scripts/security/slither-reviewed-findings-v1.19.3.json').read_bytes())
         b=before.pop('source_sha256');a=after.pop('source_sha256')
         before.pop('scope');after.pop('scope')
         self.assertEqual(before,after)
@@ -163,7 +166,7 @@ class ReleaseProfile(unittest.TestCase):
         finally:p.chmod(0o644)
     def test_manifest_never_accepts_embedded_approval_or_candidate_flags(self):
         m={k:None for k in ('schemaVersion','repository','tag','name','sourceCommit','sourceTree','builderSource','stage','qualification','archiveLimitBytes','toolchain','exclusions','files')}
-        m.update(P['metadata'](self.selection),tag='v1.19.2',stage='source-package',schemaVersion=2,repository=REPOSITORY,name=TITLE,sourceCommit='a'*40,sourceTree='b'*40)
+        m.update(P['metadata'](self.selection),tag='v1.19.3',stage='source-package',schemaVersion=2,repository=REPOSITORY,name=TITLE,sourceCommit='a'*40,sourceTree='b'*40)
         P['validate_metadata'](m,self.selection)
         for k,v in [('schemaVersion', None), ('repository', 'wrong/repo'), ('name', None), ('sourceCommit', 'not-a-sha')]:
             with self.subTest(k=k),self.assertRaises(ValueError):P['validate_metadata']({**m,k:v},self.selection)
@@ -200,7 +203,7 @@ class ReleaseProfile(unittest.TestCase):
         self.assertIn('run-inherited-source-tests.py --dependency-root',w)
         self.assertIn('test-release-profile.py',w)
         pub=(ROOT/'.github/workflows/publish-v114.yml').read_text()
-        self.assertIn('PUBLISH_v1.19.2',pub)
+        self.assertIn('PUBLISH_v1.19.3',pub)
         self.assertEqual(pub.count('--profile manager-explicit-governor-release-v1'),3)
         from release_common import WORKFLOWS
         self.assertEqual(len(WORKFLOWS),8)

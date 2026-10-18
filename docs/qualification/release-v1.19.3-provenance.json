@@ -1,0 +1,33 @@
+{
+  "schema": "agijobmanager/release-comparison-inputs/v1",
+  "status": "EXPECTED_ONLY_PENDING_FINAL_SOURCE_EXECUTION",
+  "baseCommit": "8815ed3181778664595f951befd672afbd7a9352",
+  "baseTree": "913e49d65263bc53026916f7fc3b4cbfb93549f8",
+  "version": "1.19.3",
+  "executed": false,
+  "fork": {
+    "previousPath": "docs/qualification/mainnet-cutover-v1.19.2-expected.json",
+    "previousSha256": "6d9835e20127e38e1c12b88eff78f713899752a7e698f0d03865ccfcccd30d0f",
+    "expectedPath": "docs/qualification/mainnet-cutover-v1.19.3-expected.json",
+    "expectedSha256": "ed50c043cc6cd291943d203be4cab4da3ed91fc06fbd1fec1fb0c141a6d78d24",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "hardhat/package.json",
+      "package-lock.json",
+      "package.json"
+    ],
+    "observationsChanged": false
+  },
+  "staticAnalysis": {
+    "previousPath": "scripts/security/slither-reviewed-findings-v1.19.2.json",
+    "previousSha256": "27e952c0cca63d1a1720137e309b4654dceeb6094f14d2e24f863063eaa0c3df",
+    "expectedPath": "scripts/security/slither-reviewed-findings-v1.19.3.json",
+    "expectedSha256": "92e41fdd29fa264108604e359c470289b25ce0474d51553c82a9cd5995a565be",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "package-lock.json"
+    ],
+    "findingsOrDispositionsChanged": false
+  },
+  "scope": "Only software-version source hashes change in these comparison inputs. The patch corrects operator guidance and hardens deployment-record evidence validation and bilingual presentation without contract, compiler, dependency-resolution or on-chain changes. New exact-main-source hosted execution is mandatory; these comparison inputs are not execution receipts."
+}

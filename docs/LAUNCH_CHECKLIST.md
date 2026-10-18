@@ -1,18 +1,18 @@
 # Launch checklist
 
-For the already commissioned instance, start with the [supported inspection and recovery workflow](OPERATIONS/COMMISSIONING.md). It reports current observations separately from the completed historical milestone; no deployment is needed when connection checks pass.
+For the already deployed [17 October Manager](deployments/MAINNET_MANAGER_2026-10-17.md), preserve the original source, plan and journals and use instance-specific readiness. The [historical October 10 inspection commands](OPERATIONS/COMMISSIONING.md#historical-manager-and-ens-helper--10-october-2026) select only that older Manager/helper. Neither route calls for repeating creation.
 
 > Current guide for this source checkout. See [release identity and deployment commands](RELEASE_GUIDE.md).
 
 Use this checklist for the actual instance before opening paid intake. The release contains tested software; it supplies no production manager, owner, payment recipients, reviewer service or independent audit. Every item below starts unconfirmed. Record the evidence beside each completed item in your deployment record.
 
-The current release preserves the v1.0.3 contract build and disabled NFT default, read-only deployment defaults, v1.0.5 notices and subsequent console/admission safeguards. Verified v0.9.6-compatible managers can use the console without redeployment. Existing settings, jobs and agreements do not change. First deployments and moves from incompatible older versions require the current manager and eight libraries.
+Current creation uses the reviewed explicit-governor constructor and source-selected compiler profile, retaining the disabled NFT default, read-only deployment defaults, notices and console/admission safeguards. Earlier contract builds retain their own source and bytecode identities. Verified v0.9.6-compatible managers can use the console without redeployment. Existing settings, jobs and agreements do not change. First deployments and moves from incompatible older versions require the current manager and eight libraries.
 
 ## 1. Decide who controls and operates the instance
 
 | Decision | Evidence to record |
 | --- | --- |
-| Final manager owner and signing arrangement | Reviewed public address, proof of signer control, recovery procedure and proposed-owner acceptance rehearsal |
+| Final manager owner and signing arrangement | Reviewed public address, signer-control evidence, recovery procedure and constructor-governance readback; any later voluntary transfer has its own two-step rehearsal |
 | Actual operator and applicable legal requirements | Completed [operator notice](LEGAL/OPERATOR_NOTICE_TEMPLATE.md), true role/fee-beneficiary disclosure, service scope, jurisdiction review and required terms/privacy/language arrangements; keep privileged evidence private |
 | Public content and privacy handling | Prospective [user-data rules](LEGAL/USER_DATA_RULES.md), actual processing-role assessment, minimized provider/log/storage configuration, private rights/incident contact and [response procedure](OPERATIONS/PRIVACY_RESPONSE.md); no personal or confidential material in public submissions |
 | 30% and 10% recipients | Two distinct reviewed public addresses and confirmation that the intended recipients control them |
@@ -31,7 +31,7 @@ The current release preserves the v1.0.3 contract build and disabled NFT default
 - [ ] Review the accepted static-analysis findings and obtain independent security/operational review before substantial exposure. Release tests do not complete that external review.
 - [ ] Complete deployment-specific legal review for the actual parties, services, fees and territories, and implement applicable obligations. Publish the reviewed operator notice and use a valid acceptance process where contractual terms are needed. MIT licensing and a console checkbox do not establish regulatory exemption or bind every participant. See the [legal center](LEGAL/README.md).
 - [ ] Record observed buyer, agent, reviewer and operator sessions using [the acceptance protocol](V1_ACCEPTANCE.md). Do not substitute internal browser automation for user-study evidence.
-- [ ] Complete the Sepolia journey with the intended signing arrangement: post, apply, submit, vote, accept/finalize, cancel/expire, dispute and refund. Rehearse ownership acceptance and pause recovery. Historical fork impersonation does not prove control of real signers.
+- [ ] Complete the Sepolia journey with the intended signing arrangement: post, apply, submit, vote, accept/finalize, cancel/expire, dispute and refund. Verify constructor-assigned governance and rehearse pause recovery; a later voluntary ownership transfer has its own two-step rehearsal. Historical fork impersonation does not prove control of real signers.
 - [ ] Preserve the existing-manager job and ENS inventory. No new deployment imports its jobs, token approvals, escrow or payment claims.
 - [ ] With reviewed addresses and current mainnet reads, run `DRY_RUN=1 npm run deploy:mainnet` from `hardhat/`. Use `DEPLOYER_ADDRESS` for a keyless plan. Recheck USDC availability, code, linked artifacts and recipients; budget gas separately because the manager dry run is not a total cost estimate. The dry run sends no transactions.
 
@@ -41,7 +41,7 @@ Use the [Hardhat guide](../hardhat/README.md) for the complete setup and separat
 
 - [ ] Preserve the incremental deployment journal and exact compiler input. Verify all **nine manager/library contracts** on the explorer and compare their linked runtime code to the qualified artifacts. Optional ENS contracts are additional.
 - [ ] If a command fails, reconcile recorded transactions before retrying. Where all nine manager/library deployments completed, the documented read-only recovery can retry verification; it does not accept ownership or launch the manager.
-- [ ] Complete `acceptOwnership()` through the intended owner. Verify `owner()` and zero `pendingOwner()`; a proposal alone does not remove deployer authority.
+- [ ] Verify current-schema creation assigned the reviewed governor atomically: `owner()` matches and `pendingOwner()` is zero. No creator handover or acceptance is required. Historical six-argument deployment records and separately authorized later voluntary Manager transfers retain their original two-step semantics.
 - [ ] Configure and verify moderators, eligibility, NFT policy, bonds, limits and review periods. Keep intake paused and settlement enabled. Configure optional ENS job pages and confirm successful hooks before considering an irreversible identity lock.
 - [ ] Run the readiness checker with the deployment receipt and complete `READINESS_NFT_CONFIG`. Save the passing report's block/hash. Initial activation requires zero escrow, bonds and pending claims.
 - [ ] Confirm that the operator notice still matches actual owners, fee beneficiaries, service and data flows. A passing technical report does not mark legal review, authorizations or user agreement complete.
