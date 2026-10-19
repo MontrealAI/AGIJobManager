@@ -1,0 +1,15 @@
+{
+  "schema": "manager-tty-source-target-v1",
+  "sourceCommit": "cae39d198017595382949ad6efc69f36fa8c028b",
+  "sourceTree": "4beda66094ffadca6f6b02a8217ff69c3524458b",
+  "manifestSha256": "0e258187f97b8d6da452fae2bd692b3baef36d73dd2c221b0cf81103b6d297af",
+  "contractBuildDigest": "911fc3db7d41d0699b4f49309595c17f7124ac406a3a9fd55a57915f70a88283",
+  "node": "22.23.2",
+  "unitCases": 80,
+  "evmCases": 2,
+  "localCreationReceipts": 18,
+  "conventionalUnitCases": 6,
+  "conventionalEvmCases": 2,
+  "conventionalLocalCreationReceipts": 18,
+  "conventionalOfflineCases": 2
+}
