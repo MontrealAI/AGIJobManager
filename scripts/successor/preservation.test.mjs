@@ -83,3 +83,31 @@ test('historical reviews stay unchanged and new fork evidence binds the candidat
     if (!['package.json', 'package-lock.json', 'hardhat/package.json', 'hardhat/package-lock.json'].includes(file)) assert.equal(hash, oldHashes[file]);
   }
 });
+
+test('runtime-bytecode review preserves the v1.18.0 expectations and binds the rerun source exactly', () => {
+  const review = JSON.parse(fs.readFileSync('config/runtime-bytecode-qualification-20261016.json'));
+  assert.equal(review.schema, 'agijobmanager/runtime-bytecode-qualification/v1');
+  assert.deepEqual(Object.keys(review.files).sort(), [
+    'hardhat/scripts/deploy.cjs', 'hardhat/scripts/deployment-safety.cjs', 'hardhat/test/deployment-preflight.test.cjs',
+  ]);
+  for (const [file, change] of Object.entries(review.files)) {
+    assert.equal(digest(fs.readFileSync(file)), change.afterSha256, file);
+    assert.ok(change.purpose, file);
+  }
+  for (const [file, record] of Object.entries(review.preservedRecords)) {
+    assert.equal(digest(fs.readFileSync(file)), record.sha256, file + ' must retain the exact prior expected bytes');
+  }
+  const historical = JSON.parse(fs.readFileSync(review.fork.previousExpected));
+  const current = JSON.parse(fs.readFileSync(review.fork.currentExpected));
+  assert.equal(digest(fs.readFileSync(review.fork.currentExpected)), review.fork.reportSha256);
+  assert.equal(current.passed, 23); assert.equal(current.publicTransactionsBroadcast, 0);
+  assert.equal(current.productionActivationApproved, false);
+  const changedInputs = Object.keys(current.sourceSha256).filter(file => current.sourceSha256[file] !== historical.sourceSha256[file]);
+  assert.deepEqual(changedInputs, ['hardhat/scripts/deployment-safety.cjs']);
+  assert.equal(current.sourceSha256[changedInputs[0]], review.files[changedInputs[0]].afterSha256);
+  assert.equal(changes.evidenceInputs[changedInputs[0]].afterSha256, review.files[changedInputs[0]].afterSha256);
+  const { sourceSha256: previousHashes, ...previousOutcomes } = historical;
+  const { sourceSha256: currentHashes, ...currentOutcomes } = current;
+  assert.deepEqual(Object.keys(currentHashes), Object.keys(previousHashes));
+  assert.deepEqual(currentOutcomes, previousOutcomes);
+});
