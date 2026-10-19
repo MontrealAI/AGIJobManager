@@ -70,9 +70,9 @@ class CorrectionProfile(unittest.TestCase):
         # permission to change their reviewed predecessor bytes.
         names = ('.github/workflows/security-verification.yml',
             'scripts/release/package-release.py', 'scripts/release/verify-package.py',
-            'scripts/site/build.mjs', 'scripts/site/check.mjs',
+            'ui/scripts/generate-deployment-docs.mjs', 'scripts/site/check.mjs',
             'scripts/site/browser-test.mjs', 'scripts/site/deployments.test.mjs',
-            'site/deployments.mjs', 'site/template.mjs', 'site/workflows.mjs',
+            'site/deployments.mjs', 'ui/scripts/docs-check.mjs', 'site/workflows.mjs',
             'ui/scripts/sync-deployments.mjs', 'ui/src/app/deployment/page.tsx')
         for name in names:
             self.assertIn(name, P['PREVIOUS']['ALLOWED'])

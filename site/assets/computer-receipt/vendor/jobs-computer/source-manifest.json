@@ -1,0 +1,74 @@
+{
+  "schema": "agijobmanager/jobs-computer-browser-source/v1",
+  "repository": "MontrealAI/AGIJobsv0",
+  "commit": "31538abe9cdd605966bcc414e4f824e0a742f806",
+  "tree": "150a4dc6c1efcf9ed8abcfed25a7d167bed2a56e",
+  "entry": "integrations/alpha-agent/four-repo-computer-receipt.mjs",
+  "files": {
+    "LICENSE": {
+      "bytes": 1068,
+      "sha256": "70842e0e7ae73b3ce65baa06a1c62b466bdb694570301969031cc48d9ac705d1",
+      "gitBlob": "131fbe769fbc9377d6caad6143b02231d872e3b2"
+    },
+    "integrations/alpha-agent/four-repo-computer-receipt.mjs": {
+      "bytes": 7674,
+      "sha256": "e089a426dab2d301595f1cb8f63057a21107c7484439cfcb3975895a67d21b94",
+      "gitBlob": "f745a45c10e61f920c2a25cc98ebd8865cbf0a83"
+    },
+    "packages/successor-core/src/compiler.mjs": {
+      "bytes": 13787,
+      "sha256": "5e4fc86d78af7a22e915d8b19803fc219cb68b9b73201f47cf1f643f19380762",
+      "gitBlob": "5444d4108d8c8622b2b0f9afefff1b55705a1030"
+    },
+    "packages/successor-core/src/computer-mission.mjs": {
+      "bytes": 54323,
+      "sha256": "b28fa657e51c49970f1465773afd4c96ceaa16e08e28555ee7b066c51b7949cf",
+      "gitBlob": "960ef8e1b2fcf8fca1c64df825fa1d19dbba527b"
+    },
+    "packages/successor-core/src/domain.mjs": {
+      "bytes": 17209,
+      "sha256": "2869bb750a408e12ada19f6d0b216d47c3b9f67fc66039db4372dae8430e47a3",
+      "gitBlob": "dd90d00693dd3535d8a51c857efd68ae50df7fee"
+    },
+    "packages/successor-core/src/integrity.mjs": {
+      "bytes": 3776,
+      "sha256": "164000134cc9c8b54209c420a348e3e5c324ebf7ff8f71fc84dc44812345c428",
+      "gitBlob": "86b7dc21fbf6f6e948323bbeec154bd23ae49907"
+    },
+    "packages/successor-core/src/templates.mjs": {
+      "bytes": 6313,
+      "sha256": "bc035b1c38b36d2db24031ac92fb193946df9cf4f180120394506a8802be2b31",
+      "gitBlob": "7ba5128bdff1daf30e13b091eddac7e161deef5e"
+    },
+    "scripts/pages/computer-mission.mjs": {
+      "bytes": 13651,
+      "sha256": "c8f43a608795ecfbc5de1c570eea900fd2a49b7da8d390764604c0a1027c614d",
+      "gitBlob": "b04e6c07bbfccc1a91c30e24c4ab5c1541428fd1"
+    },
+    "scripts/pages/computer-receipt.mjs": {
+      "bytes": 3340,
+      "sha256": "8291a51d64696632a4c8cc8c6b2ef35f6ea2039da506170f56b0595dfebe0450",
+      "gitBlob": "530268f57680f9639ac72fcff277769df61294d8"
+    },
+    "website/assets/computer-desk-runtime-source.mjs": {
+      "bytes": 8218,
+      "sha256": "596bb0604df28242cea0b00bc94fd3b0ff013be4cba923eeb945f034b5be2455",
+      "gitBlob": "f623ac7daa016df0db339ea49f3c8bdda13650e3"
+    },
+    "website/assets/computer-desk.mjs": {
+      "bytes": 22058,
+      "sha256": "a79c3b8639caf90ec091f9da900d1794fd44ebb595d676e6b0a9d472af3cc772",
+      "gitBlob": "9241b77a7d382cc60f4dd480bea7a6a44804ac2a"
+    },
+    "website/assets/computer-mission-copy.mjs": {
+      "bytes": 22452,
+      "sha256": "ec6624978429a6eac22fcd554fe823b5ba309714b1b939372cdae6485a3942cd",
+      "gitBlob": "42ef80de58ad14d92d15b6f2420dbf01f508fc31"
+    },
+    "website/assets/computer-receipt-copy.mjs": {
+      "bytes": 9583,
+      "sha256": "21e08c3a28ac0efb93d94eac10c3efe32ee4eaec654ac3ee378854d12ee63684",
+      "gitBlob": "eaf1adb18eef687eb894c3adee3c41b8cdd44cc5"
+    }
+  }
+}
