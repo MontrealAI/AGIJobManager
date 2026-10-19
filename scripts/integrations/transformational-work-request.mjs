@@ -15,10 +15,21 @@ const need = (condition, code) => { if (!condition) throw Object.assign(Error(co
 const same = (a, b) => canonical(a) === canonical(b);
 const isDigest = value => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
 const nativeDigest = (domain, value) => sha('successor-omega/v1:' + domain + '\0' + canonical(value));
+const credentialKeys = new Set(['password', 'passwd', 'apikey', 'privatekey', 'seedphrase', 'accesstoken',
+  'refreshtoken', 'bearertoken', 'authtoken', 'clientsecret', 'secret', 'credentials']);
+function rejectCredentialFields(value) {
+  if (value === null || typeof value !== 'object') return;
+  for (const [key, child] of Object.entries(value)) {
+    need(!credentialKeys.has(key.toLowerCase().replace(/[^a-z0-9]/g, '')) || child === null || child === '',
+      'TRANSFORMATION_PRIVATE_FIELD');
+    rejectCredentialFields(child);
+  }
+}
 function read(raw, maximum) {
   need(typeof raw === 'string' && Buffer.byteLength(raw, 'utf8') <= maximum, 'TRANSFORMATION_DRAFT_SIZE');
   const value = parseStrict(raw, maximum);
   publicOnly(canonical(value));
+  rejectCredentialFields(value);
   return value;
 }
 function baseUnits(value, code) {

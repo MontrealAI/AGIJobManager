@@ -143,6 +143,13 @@ test('decoded private inputs and ambiguous duplicate fields are refused before n
     ...options(campaign()), inspectWorkRequest:async () => { invoked = true; },
   }), /DUPLICATE_KEY/);
   assert.equal(invoked, false);
+  for (const key of ['api_key', 'private-key', 'accessToken', 'Password', 'client.secret']) {
+    const credential = campaign(x => { x.bindings.configuration = { nested:[{ [key]:'synthetic-fixture-only' }] }; });
+    await assert.rejects(createTransformationWorkDraft(canonical(credential), {
+      ...options(credential), inspectWorkRequest:async () => { invoked = true; },
+    }), /TRANSFORMATION_PRIVATE_FIELD/);
+    assert.equal(invoked, false);
+  }
 });
 
 test('malformed evidence epoch, authority scope and settlement declarations fail closed', async () => {
