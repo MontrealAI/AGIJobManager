@@ -63,6 +63,7 @@ class TransformationalProfile(unittest.TestCase):
                 'scripts/release/release_common.py', 'scripts/release/correction-profile.py',
                 'config/manager-boundary-corrections-v1.json', 'scripts/release/test-correction-profile.py',
                 'scripts/release/publication-authorization.py', 'scripts/release/test-publication-authorization.py',
+                'scripts/release/pages-publication.py', 'scripts/release/test-pages-publication.py',
                 'docs/releases/v1.19.4/RELEASE_NOTES.md',
                 'config/mainnet/manager-8815-2026-10-17.json'):
             raw = (self.root / name).read_bytes() + b'\n'
@@ -115,11 +116,12 @@ class TransformationalProfile(unittest.TestCase):
     def test_rehashed_workflow_or_security_changes_cannot_remove_old_gates(self):
         mutations = {
             '.github/workflows/current-state-release.yml': ('npm run build', 'true'),
-            '.github/workflows/alpha-project-handoff.yml': ('ac2626c7dd253580a58b75e2255650e44eaec6ff', '0' * 40),
+            '.github/workflows/alpha-project-handoff.yml': ('8473e91d705c22793ed9e6f721fdb056de43fb1e', '0' * 40),
             '.github/workflows/pages.yml': ('npm run successor:browser', 'true'),
             '.github/workflows/mainnet-fork.yml': ('npm run test:cutover', 'true'),
             '.github/workflows/publish-v114.yml': ('--deny-self-hosted-runners', ''),
             'scripts/security/verify-slither-review.py': ('if changed:', 'if False:'),
+            'scripts/release/pages-publication-ti.py': ('--deny-self-hosted-runners', ''),
         }
         for name, (before, after) in mutations.items():
             original = (self.root / name).read_bytes()

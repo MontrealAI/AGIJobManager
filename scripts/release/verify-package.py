@@ -96,7 +96,7 @@ def verify_package(assets, *, published=False, profile='legacy-v114', manifest=N
         subprocess.run(['node', 'scripts/release/verify-usdc-ui.mjs', '.'], cwd=source_dir, check=True)
         subprocess.run(['python3', 'scripts/release/test-release-gates.py'], cwd=source_dir, check=True)
         if selection is not None and selection.get('releaseProfile') == 'manager-transformational-v1':
-            subprocess.run(['node', '--test', 'scripts/integrations/transformational-work-request.test.mjs'], cwd=source_dir, check=True)
+            subprocess.run(['node', '--test', 'scripts/integrations/transformational-work-request.test.mjs', 'scripts/integrations/transformational-native-source.test.mjs'], cwd=source_dir, check=True)
             subprocess.run(['python3', 'scripts/release/test-transformational-qualification.py'], cwd=source_dir, check=True)
             subprocess.run(['python3', 'scripts/release/test-publication-authorization-ti.py'], cwd=source_dir, check=True)
     print('Verified complete inventory and clean-extraction offline smoke checks. No wallet, credentials or network required.')

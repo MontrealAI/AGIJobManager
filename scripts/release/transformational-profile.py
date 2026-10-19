@@ -15,7 +15,7 @@ VERIFIER = 'scripts/release/transformational-profile.py'
 BASE = 'f4a50134ba8d3a5ded9650565cbdb737a00c1189'
 TREE = '0e7e3577d1476cbf5135c7cb42dc1e25eef7c44b'
 VERSION = '1.19.5'
-PREVIOUS_PINS = {'scripts/release/correction-profile.py': '9f24e5c12ce6652b54043c0d03d58fe885183d5b53a74dbdb685177e0430eab6', 'config/manager-boundary-corrections-v1.json': '0475bdcf1e6c2a1c5b593a4de4a2c2c63cad16757931c1badb5c6c802df9a9ef', 'scripts/release/test-correction-profile.py': '59cd824c0fcfe795a0fca66434b2bcbb6e8355dd01d35872d6069ada0e94e066', 'scripts/release/publication-authorization.py': '57eb5696e7927a1aadb5fd74eb3d61782bc733402e441d521605dda1105ba63e', 'scripts/release/test-publication-authorization.py': 'dc460963017a883bffc7b6fe0fc9cf41d3084cef740ea31816701df6bc18c9b5', 'scripts/release/run-correction-preservation.py': 'a76644c45e7fc1d0f911188e7ce26e55eaee7ff560a99c6cb02f77c5e659dd97', 'scripts/release/release_common.py': 'e4ba17be0398e47e2165f76be7ebe650190dc9f93f0807c0d6435485656f2440'}
+PREVIOUS_PINS = {'scripts/release/correction-profile.py': '9f24e5c12ce6652b54043c0d03d58fe885183d5b53a74dbdb685177e0430eab6', 'config/manager-boundary-corrections-v1.json': '0475bdcf1e6c2a1c5b593a4de4a2c2c63cad16757931c1badb5c6c802df9a9ef', 'scripts/release/test-correction-profile.py': '59cd824c0fcfe795a0fca66434b2bcbb6e8355dd01d35872d6069ada0e94e066', 'scripts/release/publication-authorization.py': '57eb5696e7927a1aadb5fd74eb3d61782bc733402e441d521605dda1105ba63e', 'scripts/release/test-publication-authorization.py': 'dc460963017a883bffc7b6fe0fc9cf41d3084cef740ea31816701df6bc18c9b5', 'scripts/release/run-correction-preservation.py': 'a76644c45e7fc1d0f911188e7ce26e55eaee7ff560a99c6cb02f77c5e659dd97', 'scripts/release/release_common.py': 'e4ba17be0398e47e2165f76be7ebe650190dc9f93f0807c0d6435485656f2440', 'scripts/release/pages-publication.py': '3f802a61a51ce958e1e447d3a428c03f0df1f71dc9d28671b608ac33d675b1f1', 'scripts/release/test-pages-publication.py': '3d26b831c5cb529d79f66341a8300e99962939b5031e0cc97d7922159a296f1e'}
 for name, digest in PREVIOUS_PINS.items():
     if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
         raise ValueError('Immutable previous policy input differs: ' + name)
@@ -63,6 +63,7 @@ ALLOWED = {
     'scripts/docs/templates/README.md.tpl',
     'scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl',
     'scripts/integrations/transformational-native-test.mjs',
+    'scripts/integrations/transformational-native-source.test.mjs',
     'scripts/integrations/transformational-work-request.mjs',
     'scripts/integrations/transformational-work-request.test.mjs',
     'scripts/release/collect-qualification.py',
@@ -176,12 +177,12 @@ def validate_plumbing(root, baseline):
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGI-Alpha-Agent-v0
-          ref: ac2626c7dd253580a58b75e2255650e44eaec6ff
+          ref: 8473e91d705c22793ed9e6f721fdb056de43fb1e
           path: build/alpha-ti-source
           persist-credentials: false
       - name: Validate native transformation campaign boundary
         run: |
-          node --test scripts/integrations/transformational-work-request.test.mjs
+          node --test scripts/integrations/transformational-work-request.test.mjs scripts/integrations/transformational-native-source.test.mjs
           node scripts/integrations/transformational-native-test.mjs "$GITHUB_WORKSPACE/build/alpha-ti-source"
 '''
     tests = '''      - name: Native transformation profile and inherited release tests
@@ -211,15 +212,15 @@ def validate_plumbing(root, baseline):
         else:
             text = text.replace('v1.19.5', 'v1.19.4').replace('manager-transformational-v1', 'manager-boundary-corrections-v1').replace('transformational-profile.py', 'correction-profile.py')
         require(sha(text.encode()) == baseline[name]['sha256'], 'Prior workflow or security gate changed beyond explicit TI additions: ' + name)
-    pages = read(root, 'scripts/release/pages-publication-ti.py')[1].decode('utf8')
-    native_pages = "        ti_qualification = runpy.run_path(str(ROOT / 'scripts/release/transformational-qualification.py'))\n        require(config.get('transformationQualification') == ti_qualification['validate'](config, api, lambda job_id: gh('api', f'repos/{REPOSITORY}/actions/jobs/{job_id}/logs', '--method', 'GET', '--allow-escape-sequences').decode()), 'Pages native transformation qualification differs')\n"
-    require(pages.count(native_pages) == 1, 'Current Pages must revalidate native transformation qualification')
-    pages = pages.replace(native_pages, '').replace('v1.19.5', 'v1.19.4').replace('manager-transformational-v1', 'manager-boundary-corrections-v1').replace('transformational-profile.py', 'correction-profile.py')
-    require(sha(pages.encode()) == baseline['scripts/release/pages-publication.py']['sha256'], 'Current Pages publication changed beyond version, policy and additive native checks')
+    guard = read(root, 'scripts/release/pages-publication-ti.py')[1].decode('utf8')
+    native_pages = "        native = runpy.run_path(str(ROOT / 'scripts/release/transformational-qualification.py'))\n        require(config.get('transformationQualification') == native['validate'](config, api, lambda job_id: gh('api', f'repos/{REPOSITORY}/actions/jobs/{job_id}/logs', '--method', 'GET', '--allow-escape-sequences').decode()), 'Pages native transformation qualification binding differs')\n"
+    require(guard.count(native_pages) == 1, 'Additional live native Pages qualification is required')
+    guard = guard.replace(native_pages, '').replace('v1.19.5', 'v1.19.4').replace('manager-transformational-v1', 'manager-boundary-corrections-v1').replace('transformational-profile.py', 'correction-profile.py')
+    require(sha(guard.encode()) == baseline['scripts/release/pages-publication.py']['sha256'], 'Prior Pages publisher gates changed beyond explicit TI selection and additive native qualification')
     source = strict_json(read(root, 'config/transformational-alpha-source.json')[1])
     require(source == {
         'schema': 'agijobmanager/transformational-alpha-source/v1', 'repository': 'MontrealAI/AGI-Alpha-Agent-v0',
-        'commit': 'ac2626c7dd253580a58b75e2255650e44eaec6ff', 'tree': 'd6fda24a9bd2fdfdc131c2de5dfcc73cb5c286fd',
+        'commit': '8473e91d705c22793ed9e6f721fdb056de43fb1e', 'tree': '96e9a7d1a178366dceec6eeaf4561538f07b407d',
         'fixturePath': 'examples/transformational-intelligence/campaign.json', 'files': {
             'docs/assets/successor/engine.mjs': '38c4f38978bf9fc29f207bae3adee0755bc6530d04502a36c491cc430787e488',
             'examples/transformational-intelligence/campaign.json': 'fa5f570e89c20cffd0df844869047a7c0594c5460c3e95df5ada44592ea4fd20',

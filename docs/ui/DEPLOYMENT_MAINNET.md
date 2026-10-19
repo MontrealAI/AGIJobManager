@@ -1,5 +1,7 @@
 # USDC deployment registry
 
+The [v1.19.5 transformation adapter](../successor/TRANSFORMATIONAL_WORK.md) is free inspection only for the current native zero-currency pilot. It creates no deployment, transaction or new intake authority. Existing deployment records and recovery inputs retain their original source identities.
+
 ## Software version
 
 AGIJobManager v1.19.5. Status: **deployment-required**.

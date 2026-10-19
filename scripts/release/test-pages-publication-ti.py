@@ -1,110 +1,151 @@
-"""Adversarial published-Pages authorization checks; no network or publication."""
+"""Inherited Pages negatives at v1.19.5 plus mocked orchestration; no publication."""
 import copy
+import json
+import os
 import pathlib
 import runpy
+import subprocess
+import sys
+import tempfile
 import unittest
-from release_common import REPOSITORY, TAG, TITLE
+from types import SimpleNamespace
+from unittest.mock import patch
+from release_common import sha
 
-P = runpy.run_path(str(pathlib.Path(__file__).with_name('pages-publication-ti.py')))
-SOURCE = 'a' * 40
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
+# Execute every unchanged predecessor assertion against the new guard. Only the
+# selected guard filename changes; the original test file remains immutable.
+old_test = (HERE / 'test-pages-publication.py').read_text()
+assert old_test.count("'pages-publication.py'") == 1
+inherited = {'__file__': str(HERE / 'test-pages-publication.py'), '__name__': 'inherited_ti_pages_tests'}
+exec(compile(old_test.replace("'pages-publication.py'", "'pages-publication-ti.py'"), str(HERE / 'test-pages-publication.py'), 'exec'), inherited)
+PublishedPages = inherited['PublishedPages']
+P = inherited['P']
+SOURCE = inherited['SOURCE']
 
 
-class PublishedPages(unittest.TestCase):
+class PagesOrchestration(unittest.TestCase):
     def setUp(self):
-        self.env = {'GITHUB_REPOSITORY': REPOSITORY, 'GITHUB_REF': 'refs/heads/main', 'GITHUB_EVENT_NAME': 'workflow_run'}
-        self.run = {'id': 101, 'workflow_id': 202, 'run_attempt': 1, 'path': P['TRIGGER_PATH'],
-            'event': 'workflow_run', 'head_branch': 'main', 'head_sha': SOURCE, 'status': 'completed', 'conclusion': 'success',
-            'repository': {'full_name': REPOSITORY}, 'head_repository': {'full_name': REPOSITORY}}
-        self.event = {'action': 'completed', 'repository': {'full_name': REPOSITORY}, 'workflow_run': self.run}
-        self.observed = copy.deepcopy(self.run)
-        self.job = {'name': 'publish', 'status': 'completed', 'conclusion': 'success', 'head_sha': SOURCE, 'run_id': 101,
-            'steps': [{'name': name, 'status': 'completed', 'conclusion': 'success'} for name in P['PUBLISH_STEPS']]}
-        self.release = {'id': 303, 'tag_name': TAG, 'target_commitish': SOURCE, 'name': TITLE,
-            'draft': False, 'prerelease': False, 'immutable': True, 'published_at': '2026-10-19T00:00:00Z'}
-        self.expected = {name: 'b'*64 for name in P['ASSET_NAMES']}; self.sizes = {name: 100 for name in self.expected}
-        self.assets = [{'name': name, 'digest': 'sha256:' + digest, 'size': self.sizes[name], 'state': 'uploaded'} for name, digest in self.expected.items()]
-        self.main = SOURCE; self.tag = SOURCE
-        self.config = {'candidateArtifact': {'id': 404, 'name': f'AGIJobManager-{TAG}-candidate-{SOURCE}', 'digest': 'sha256:' + 'c'*64, 'size_in_bytes': 100},
-            'requiredSourceRuns': {'current-state-release.yml': {'id': 505}}}
-        self.artifact = {**self.config['candidateArtifact'], 'expired': False, 'workflow_run': {'id': 505, 'head_sha': SOURCE}}
+        self.fixture = PublishedPages()
+        self.fixture.setUp()
+        self.temporary = tempfile.TemporaryDirectory(prefix='manager-ti-pages-test-')
+        self.addCleanup(self.temporary.cleanup)
+        self.directory = pathlib.Path(self.temporary.name)
+        self.event = self.directory / 'event.json'
+        self.event.write_text(json.dumps(self.fixture.event))
+        self.output = self.directory / 'output'
+        self.selection = {
+            'releaseProfile': 'manager-transformational-v1',
+            'manifestPath': 'config/manager-transformational-v1.json',
+            'manifestSha256': sha((ROOT / 'config/manager-transformational-v1.json').read_bytes()),
+            'verifierSha256': sha((ROOT / 'scripts/release/transformational-profile.py').read_bytes()),
+        }
+        self.native = {'schema': 'synthetic-native-checkpoint-only'}
+        self.config = {**self.fixture.config, 'sourceCommit': SOURCE,
+            'publicationAuthorized': True, 'sourcePolicy': copy.deepcopy(self.selection),
+            'transformationQualification': copy.deepcopy(self.native)}
+        self.attestations = []
+        self.fail_attestation = False
+        self.native_calls = []
+        self.qualifications = []
+        self.payload = {name: b'x' * 100 for name in self.fixture.expected}
+
     def api(self, endpoint):
-        if endpoint == 'actions/runs/101': return self.observed
-        if endpoint == 'actions/workflows/202': return {'id': 202, 'path': P['TRIGGER_PATH']}
-        if endpoint == 'actions/runs/101/attempts/1/jobs?per_page=100&page=1': return {'jobs': [self.job]}
-        if endpoint == 'git/ref/heads/main': return {'object': {'sha': self.main}}
-        if endpoint == f'git/ref/tags/{TAG}': return {'object': {'type': 'tag', 'sha': 'd'*40}}
-        if endpoint == 'git/tags/' + 'd'*40: return {'object': {'type': 'commit', 'sha': self.tag}}
-        if endpoint == 'releases/303/assets?per_page=100&page=1': return self.assets
-        if endpoint == 'actions/artifacts/404': return self.artifact
-        raise AssertionError('Unexpected metadata request: ' + endpoint)
-    def authorize(self): P['authorize_event'](self.env, SOURCE, self.api, self.event)
-    def release_check(self): P['validate_published_release'](self.release, SOURCE, self.api, self.expected, self.sizes)
-    def test_fresh_successful_exact_source_published_release_is_authorized(self):
-        self.authorize(); self.release_check(); P['validate_candidate'](self.config, SOURCE, self.api)
-        self.run['event'] = self.observed['event'] = 'workflow_dispatch'
-        self.authorize()
-    def test_prior_release_version_cannot_authorize_current_pages(self):
-        environment = P['authorize_event'].__globals__
-        original = environment['TAG']
-        try:
-            environment['TAG'] = 'v1.19.4'
-            with self.assertRaisesRegex(ValueError, 'fixed to the authorized release'): self.authorize()
-        finally: environment['TAG'] = original
-    def test_wrong_event_repository_ref_or_trigger_is_rejected(self):
-        for key, value in [('GITHUB_EVENT_NAME', 'push'), ('GITHUB_EVENT_NAME', 'pull_request'),
-                ('GITHUB_REF', 'refs/tags/' + TAG), ('GITHUB_REPOSITORY', 'fork/repository')]:
-            old = self.env[key]; self.env[key] = value
-            with self.subTest(key=key, value=value), self.assertRaises(ValueError): self.authorize()
-            self.env[key] = old
-        self.event['action'] = 'requested'
-        with self.assertRaises(ValueError): self.authorize()
-    def test_event_and_observed_publisher_require_exact_identity_source_attempt_and_success(self):
-        for target in (self.run, self.observed):
-            for key, value in [('id', 999), ('workflow_id', 999), ('run_attempt', 2), ('head_sha', 'e'*40),
-                    ('head_branch', 'feature'), ('event', 'pull_request'), ('path', '.github/workflows/other.yml'),
-                    ('status', 'in_progress'), ('conclusion', 'failure'), ('conclusion', 'skipped'),
-                    ('repository', {'full_name': 'fork/repository'}), ('head_repository', {'full_name': 'fork/repository'})]:
-                old = target[key]; target[key] = value
-                with self.subTest(key=key, value=value), self.assertRaises((ValueError, AssertionError)): self.authorize()
-                target[key] = old
-    def test_missing_failed_or_skipped_publisher_steps_block_pages(self):
-        for step in self.job['steps']:
-            for conclusion in ('failure', 'skipped', None):
-                step['conclusion'] = conclusion
-                with self.subTest(step=step['name'], conclusion=conclusion), self.assertRaises(ValueError): self.authorize()
-            step['conclusion'] = 'success'
-        self.job['steps'].pop()
-        with self.assertRaises(ValueError): self.authorize()
-    def test_stale_main_or_release_tag_is_rejected(self):
-        self.main = 'e'*40
-        with self.assertRaises(ValueError): self.authorize()
-        with self.assertRaises(ValueError): self.release_check()
-        self.main = SOURCE; self.tag = 'e'*40
-        with self.assertRaises(ValueError): self.release_check()
-    def test_unpublished_mutable_old_or_wrong_release_is_rejected(self):
-        for key, value in [('draft', True), ('prerelease', True), ('immutable', False), ('published_at', None),
-                ('tag_name', 'v1.19.3'), ('target_commitish', 'main'), ('target_commitish', 'e'*40), ('name', 'other')]:
-            old = self.release[key]; self.release[key] = value
-            with self.subTest(key=key, value=value), self.assertRaises(ValueError): self.release_check()
-            self.release[key] = old
-    def test_release_assets_require_complete_exact_uploaded_bytes_and_digests(self):
-        for key, value in [('digest', 'sha256:' + 'e'*64), ('size', 101), ('state', 'starter')]:
-            old = self.assets[0][key]; self.assets[0][key] = value
-            with self.subTest(key=key), self.assertRaises(ValueError): self.release_check()
-            self.assets[0][key] = old
-        original = list(self.assets)
-        for modified in (original[:-1], original + [original[0]], original + [{'name': 'extra'}]):
-            self.assets = modified
-            with self.assertRaises(ValueError): self.release_check()
-        self.assets = original
-    def test_candidate_artifact_requires_qualified_run_source_and_exact_metadata(self):
-        P['validate_candidate'](self.config, SOURCE, self.api)
-        for key, value in [('expired', True), ('name', 'other'), ('digest', 'sha256:' + 'e'*64),
-                ('size_in_bytes', 101), ('workflow_run', {'id': 999, 'head_sha': SOURCE}),
-                ('workflow_run', {'id': 505, 'head_sha': 'e'*40})]:
-            old = self.artifact[key]; self.artifact[key] = value
-            with self.subTest(key=key), self.assertRaises(ValueError): P['validate_candidate'](self.config, SOURCE, self.api)
-            self.artifact[key] = old
+        if endpoint.startswith('releases/tags/'):
+            return {**self.fixture.release, 'assets': self.fixture.assets}
+        return self.fixture.api(endpoint)
+
+    def command(self, command, **kwargs):
+        assert command[0] == 'gh'
+        if command[1] == 'api':
+            prefix = 'repos/MontrealAI/AGIJobManager/'
+            assert command[2].startswith(prefix) and command[3:] == ['--method', 'GET']
+            return SimpleNamespace(returncode=0, stdout=json.dumps(self.api(command[2][len(prefix):])).encode())
+        if command[1:3] == ['release', 'download']:
+            target = pathlib.Path(command[command.index('--dir') + 1])
+            for name, raw in self.payload.items():
+                (target / name).write_bytes(raw)
+            return SimpleNamespace(returncode=0, stdout=b'')
+        if command[1:3] == ['attestation', 'verify']:
+            self.attestations.append(command)
+            assert command[command.index('--signer-digest') + 1] == SOURCE
+            assert command[command.index('--source-digest') + 1] == SOURCE
+            assert command[command.index('--source-ref') + 1] == 'refs/heads/main'
+            assert '--deny-self-hosted-runners' in command
+            return SimpleNamespace(returncode=1 if self.fail_attestation else 0, stdout=b'')
+        raise AssertionError('Unexpected synthetic command: ' + repr(command))
+
+    def invoke(self):
+        raw = json.dumps(self.config).encode()
+        self.payload['QUALIFICATION.json'] = raw
+        for item in self.fixture.assets:
+            item['size'] = len(self.payload[item['name']])
+        real_run_path = runpy.run_path
+
+        def selected(path, *args, **kwargs):
+            if pathlib.Path(path).name == 'transformational-qualification.py':
+                def validate(config, api, logs):
+                    self.native_calls.append(config)
+                    return self.native
+                return {'validate': validate}
+            return real_run_path(path, *args, **kwargs)
+
+        def qualify(config, api, logs, *, publication=False):
+            assert publication is True
+            self.qualifications.append(config)
+
+        globals_ = P['main'].__globals__
+        with patch.dict(os.environ, {**self.fixture.env, 'GITHUB_EVENT_PATH': str(self.event), 'GITHUB_OUTPUT': str(self.output)}), \
+                patch.object(sys, 'argv', ['pages-publication-ti.py', '--source', SOURCE]), \
+                patch.object(subprocess, 'run', side_effect=self.command), \
+                patch.object(subprocess, 'check_output', return_value=SOURCE + '\n'), \
+                patch.object(runpy, 'run_path', side_effect=selected), \
+                patch.dict(globals_, {'validate_qualification': qualify,
+                    'verify_assets': lambda assets, config: self.fixture.expected}):
+            P['main']()
+
+    def test_complete_mocked_orchestration_rechecks_every_attestation_and_native_binding(self):
+        self.invoke()
+        self.assertEqual(self.output.read_text(), 'authorized=true\nsource=' + SOURCE + '\n')
+        self.assertEqual(len(self.attestations), len(self.fixture.expected))
+        self.assertEqual(len(self.native_calls), 1)
+        self.assertEqual(len(self.qualifications), 1)
+
+    def test_wrong_source_policy_or_missing_native_record_refuses_before_authorization(self):
+        for key, value in [('sourcePolicy', {**self.selection, 'releaseProfile': 'manager-boundary-corrections-v1'}),
+                ('sourcePolicy', {**self.selection, 'manifestSha256': '0' * 64}),
+                ('transformationQualification', None)]:
+            old = self.config[key]
+            self.config[key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                self.invoke()
+            self.assertFalse(self.output.exists())
+            self.config[key] = old
+
+    def test_missing_published_asset_cannot_authorize(self):
+        self.fixture.assets.pop()
+        with self.assertRaises(ValueError):
+            self.invoke()
+        self.assertFalse(self.output.exists())
+
+    def test_failed_attestation_cannot_authorize(self):
+        self.fail_attestation = True
+        with self.assertRaises(ValueError):
+            self.invoke()
+        self.assertTrue(self.attestations)
+        self.assertFalse(self.output.exists())
+
+    def test_incomplete_publisher_cannot_authorize(self):
+        self.fixture.job['steps'].pop()
+        with self.assertRaises(ValueError):
+            self.invoke()
+        self.assertFalse(self.output.exists())
+
+    def test_old_version_does_not_select_new_automatic_pages_authority(self):
+        with patch.dict(P['authorize_event'].__globals__, {'TAG': 'v1.19.4'}), self.assertRaises(ValueError):
+            self.fixture.authorize()
 
 
-if __name__ == '__main__': unittest.main()
+if __name__ == '__main__':
+    unittest.main()

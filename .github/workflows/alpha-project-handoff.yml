@@ -40,10 +40,10 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGI-Alpha-Agent-v0
-          ref: ac2626c7dd253580a58b75e2255650e44eaec6ff
+          ref: 8473e91d705c22793ed9e6f721fdb056de43fb1e
           path: build/alpha-ti-source
           persist-credentials: false
       - name: Validate native transformation campaign boundary
         run: |
-          node --test scripts/integrations/transformational-work-request.test.mjs
+          node --test scripts/integrations/transformational-work-request.test.mjs scripts/integrations/transformational-native-source.test.mjs
           node scripts/integrations/transformational-native-test.mjs "$GITHUB_WORKSPACE/build/alpha-ti-source"
