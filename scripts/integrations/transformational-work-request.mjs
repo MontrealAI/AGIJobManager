@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { isIP } from 'node:net';
 import { canonical, keys, parseStrict, publicOnly } from '../../site/assets/successor/safe.mjs';
 
 export const TRANSFORMATION_WORK_DRAFT_SCHEMA = 'agijobmanager/transformational-work-draft/v1';
@@ -16,13 +17,33 @@ const same = (a, b) => canonical(a) === canonical(b);
 const isDigest = value => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
 const nativeDigest = (domain, value) => sha('successor-omega/v1:' + domain + '\0' + canonical(value));
 const credentialKeys = new Set(['password', 'passwd', 'apikey', 'privatekey', 'seedphrase', 'accesstoken',
-  'refreshtoken', 'bearertoken', 'authtoken', 'clientsecret', 'signingkey', 'secret', 'credentials']);
-function rejectCredentialFields(value) {
+  'refreshtoken', 'bearertoken', 'authtoken', 'clientsecret', 'signingkey', 'secret', 'credentials',
+  'token', 'authorization', 'idtoken', 'sessiontoken', 'apisecret', 'secretkey', 'credential']);
+const normalizedKey = key => key.toLowerCase().replace(/[^a-z0-9]/g, '');
+function publicUrls(value) {
+  for (const match of value.matchAll(/https?:\/\/[^\s"<>]+/gi)) {
+    let url;
+    try { url = new URL(match[0]); } catch { need(false, 'TRANSFORMATION_PRIVATE_URL'); }
+    const host = url.hostname.replace(/^\[|\]$/g, '');
+    need(url.protocol === 'https:' && !url.username && !url.password && !url.port && !url.hash && !isIP(host)
+      && host.includes('.') && !/(?:^|\.)(?:localhost|local|internal|lan|home)$/.test(host)
+      && host.length <= 253 && host.split('.').every(label => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label)),
+    'TRANSFORMATION_PRIVATE_URL');
+    for (const [key] of url.searchParams) need(!credentialKeys.has(normalizedKey(key))
+      && !/^(?:key|sig|signature|xamz|xgoog)/.test(normalizedKey(key)), 'TRANSFORMATION_PRIVATE_URL');
+  }
+}
+function rejectCredentialFields(value, path = []) {
+  if (typeof value === 'string') { publicUrls(value); return; }
   if (value === null || typeof value !== 'object') return;
   for (const [key, child] of Object.entries(value)) {
-    need(!credentialKeys.has(key.toLowerCase().replace(/[^a-z0-9]/g, '')) || child === null || child === '',
+    const inertAuthorization = path.length === 0 && key === 'authorization' && child && typeof child === 'object'
+      && !Array.isArray(child) && Object.keys(child).sort().join('|') === 'authority_expansion|binding|scope'
+      && child.scope === 'local-bounded' && child.authority_expansion === false && (child.binding === null || isDigest(child.binding));
+    const publicCurrencyToken = path.length === 1 && path[0] === 'route' && key === 'token' && child === route.token;
+    need(!credentialKeys.has(normalizedKey(key)) || child === null || child === '' || inertAuthorization || publicCurrencyToken,
       'TRANSFORMATION_PRIVATE_FIELD');
-    rejectCredentialFields(child);
+    rejectCredentialFields(child, [...path, key]);
   }
 }
 function read(raw, maximum) {

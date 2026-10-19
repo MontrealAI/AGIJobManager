@@ -143,13 +143,32 @@ test('decoded private inputs and ambiguous duplicate fields are refused before n
     ...options(campaign()), inspectWorkRequest:async () => { invoked = true; },
   }), /DUPLICATE_KEY/);
   assert.equal(invoked, false);
-  for (const key of ['api_key', 'private-key', 'accessToken', 'Password', 'client.secret', 'signing_key']) {
+  for (const key of ['api_key', 'private-key', 'accessToken', 'Password', 'client.secret', 'signing_key',
+    'token', 'authorization', 'id_token', 'session_token', 'api_secret', 'secret_key', 'credential']) {
     const credential = campaign(x => { x.bindings.configuration = { nested:[{ [key]:'synthetic-fixture-only' }] }; });
     await assert.rejects(createTransformationWorkDraft(canonical(credential), {
       ...options(credential), inspectWorkRequest:async () => { invoked = true; },
     }), /TRANSFORMATION_PRIVATE_FIELD/);
     assert.equal(invoked, false);
   }
+});
+
+test('public provenance is credential-free HTTPS DNS and refuses private or ambiguous URL forms before native inspection', async () => {
+  let invoked = false;
+  for (const url of ['http://example.invalid/paper', 'https://localhost/paper', 'https://service.local/paper',
+    'https://service.internal/paper', 'https://10.0.0.1/paper', 'https://172.16.0.1/paper', 'https://192.168.0.1/paper',
+    'https://127.0.0.1/paper', 'https://0177.0.0.1/paper', 'https://2130706433/paper', 'https://[::1]/paper',
+    'https://[::ffff:127.0.0.1]/paper', 'https://example.invalid:8443/paper', 'https://user:synthetic@example.invalid/paper',
+    'https://example.invalid/paper?refresh_token=synthetic-fixture', 'https://example.invalid/paper?api%5fsecret=synthetic-fixture',
+    'https://example.invalid/paper?X-Amz-Credential=synthetic-fixture', 'https://example.invalid/paper#access_token=synthetic-fixture']) {
+    const request = campaign(x => { x.charter.purpose = 'Inspect ' + url; });
+    await assert.rejects(inspectTransformationWorkRequest(canonical(request), {
+      ...options(request), inspectWorkRequest:async () => { invoked = true; },
+    }), /PRIVATE_(?:URL|INPUT)/);
+    assert.equal(invoked, false);
+  }
+  const request = campaign(x => { x.charter.purpose = 'Inspect https://github.com/MontrealAI/AGI-Alpha-Agent-v0?page=1'; });
+  assert.deepEqual(await inspectTransformationWorkRequest(canonical(request), options(request)), request);
 });
 
 test('malformed evidence epoch, authority scope and settlement declarations fail closed', async () => {

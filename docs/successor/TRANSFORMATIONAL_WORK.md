@@ -76,6 +76,15 @@ URI, duration, details and transaction unset. Imported execution and review
 statements are not authenticated proof. Hashes bind bytes and do not establish
 semantic truth, independent review or trustworthy freeze timing.
 
+The input screen examines decoded credential-shaped fields before native
+inspection. Conventional token/authorization aliases are refused, except the
+exact inert native authorization object and Manager's fixed public token-address
+field. URL provenance uses a deliberately bounded profile: credential-free HTTPS
+on the default port, DNS hostnames, no fragment and no credential-bearing query
+parameters. IP literals (including normalized IPv4 and IPv6), local names and
+private-network forms are refused. This performs no DNS resolution or fetching;
+source-rights review and execution-time network admission remain separate.
+
 ## Paper-to-implementation boundary
 
 | Paper section | Implementation | Regression evidence | Supported scope / limitation |
