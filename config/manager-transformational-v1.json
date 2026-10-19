@@ -13,7 +13,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "3c70e7a54ac51aa38f3fca1ad4f139162d25f2a0d8964134adaf19301662045a"
+        "sha256": "a323d3e8838f68dc5fcda9ab697e2ee91e416000a1a77ff1ae4695086f80fbe2"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -98,7 +98,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "5fe3a794118b87c80ac803ecb3a25d4b26705910fdb443299c1fb8fc5bf9f5b1"
+        "sha256": "dff164778b7b4bcb9c8f869f171dbaa76cd2248461123023e6ad648362f5ecdc"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -483,7 +483,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "a6a8083d40bf5883ec489a0c11aafd12d505c32839ad1f621bb68fbb9146455d"
+        "sha256": "e6c2a95b6874770e51a055c1470ce86251d25b9b64b11a7b4ff8af0ea0785865"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -491,7 +491,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "7365ec35cd4bbfa1a3a34364d3bee14085bfac8b27fe12391ebe89ddaf1a12e5"
+        "sha256": "5e5e5ebd79e768407284d3c7f4e6918dd2cc37b39050b5e801b71fe6bc530253"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -499,7 +499,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "b47eecaae99c95b2d9c4d9a983fcae064c5719d6945166f1f2a7f5529566b9c8"
+        "sha256": "a4152537447b969be05a8802ad258b825c8db08379fff927898476417c9a87d6"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -540,6 +540,17 @@
         "sha256": "83cd337e8a699bcaf69c83b93055a6942f8f962066eca8f759178bcdbac64e62"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/site/check.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "cfa05f8f484c5b8c06229bceb0bacf144962e7acfcf8a191819c48ff56e087c1"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f2d69e777756ff67a72889e07ce861576ec9aa5b05ebafbe1859bdc61e7a1b56"
+      },
+      "reason": "Change only the exact resource-card expected count from 12 to 13; preserve all other site-check assertions through byte-exact normalization."
     },
     "site/content/en.json": {
       "before": {

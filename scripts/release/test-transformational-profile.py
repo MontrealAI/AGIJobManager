@@ -74,7 +74,7 @@ class TransformationalProfile(unittest.TestCase):
         # permission to change their reviewed predecessor bytes.
         names = ('.github/workflows/security-verification.yml',
             'scripts/release/package-release.py', 'scripts/release/release_common.py',
-            'scripts/site/build.mjs', 'scripts/site/check.mjs',
+            'scripts/site/build.mjs',
             'scripts/site/browser-test.mjs', 'scripts/site/deployments.test.mjs',
             'site/deployments.mjs', 'site/template.mjs', 'site/workflows.mjs',
             'ui/scripts/sync-deployments.mjs', 'ui/src/app/deployment/page.tsx')
@@ -94,6 +94,14 @@ class TransformationalProfile(unittest.TestCase):
             variants.append(original[:card_end].replace(insertion, b'') + insertion + original[card_end:])
             for raw in variants:
                 with self.subTest(name=name): self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_website_checker_repin_cannot_change_count_or_other_assertions(self):
+        name = 'scripts/site/check.mjs'
+        original = (self.root / name).read_bytes()
+        for raw in [original.replace(b'length, 13);', b'length, 14);'),
+                original.replace(b'assert.equal(entries.length, 1,', b'assert.equal(1, 1,'),
+                original + b'\n// changed checker bytes\n']:
+            self.assertNotEqual(raw, original)
+            self.mutate(name, raw, lambda: self.repin(name, raw))
     def test_all_reviewed_corrections_are_required(self):
         manifest = json.loads((self.root / P['MANIFEST']).read_bytes())
         self.assertEqual(set(manifest['changes']), P['ALLOWED'])
@@ -128,7 +136,7 @@ class TransformationalProfile(unittest.TestCase):
     def test_rehashed_workflow_or_security_changes_cannot_remove_old_gates(self):
         mutations = {
             '.github/workflows/current-state-release.yml': ('npm run build', 'true'),
-            '.github/workflows/alpha-project-handoff.yml': ('8473e91d705c22793ed9e6f721fdb056de43fb1e', '0' * 40),
+            '.github/workflows/alpha-project-handoff.yml': ('dbaf5696d64ddcbf133f05d88d35496ebb85c3f0', '0' * 40),
             '.github/workflows/pages.yml': ('npm run successor:browser', 'true'),
             '.github/workflows/mainnet-fork.yml': ('npm run test:cutover', 'true'),
             '.github/workflows/publish-v114.yml': ('--deny-self-hosted-runners', ''),

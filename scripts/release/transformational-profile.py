@@ -82,6 +82,7 @@ ALLOWED = {
     'scripts/release/verify-package.py',
     'scripts/security/slither-reviewed-findings-v1.19.5.json',
     'scripts/security/verify-slither-review.py',
+    'scripts/site/check.mjs',
     'site/content/en.json',
     'site/content/fr.json',
     'ui/README.md',
@@ -183,6 +184,11 @@ def validate_source(root, selection, paths=None):
                 require(value['packages']['']['version'] == VERSION, 'Transformation lock version differs')
                 value['packages']['']['version'] = '1.19.4'
             require(sha((json.dumps(value, indent=2, ensure_ascii=False) + '\n').encode()) == baseline[name]['sha256'], 'Transformation changed dependency resolution or transaction configuration: ' + name)
+        if name == 'scripts/site/check.mjs':
+            current = b'    assert.equal((html.match(/class="resource"/g) || []).length, 13);'
+            previous = current.replace(b', 13)', b', 12)')
+            require(data.count(current) == 1 and sha(data.replace(current, previous, 1)) == baseline[name]['sha256'],
+                'Website checker changed beyond the exact reviewed resource count')
         if name in WEBSITE_RESOURCE_INSERTIONS:
             insertion = WEBSITE_RESOURCE_INSERTIONS[name]
             require(data.count(insertion) == 1, 'The exact reviewed website resource is required: ' + name)
@@ -206,7 +212,7 @@ def validate_plumbing(root, baseline):
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGI-Alpha-Agent-v0
-          ref: 8473e91d705c22793ed9e6f721fdb056de43fb1e
+          ref: dbaf5696d64ddcbf133f05d88d35496ebb85c3f0
           path: build/alpha-ti-source
           persist-credentials: false
       - name: Validate native transformation campaign boundary
@@ -249,7 +255,7 @@ def validate_plumbing(root, baseline):
     source = strict_json(read(root, 'config/transformational-alpha-source.json')[1])
     require(source == {
         'schema': 'agijobmanager/transformational-alpha-source/v1', 'repository': 'MontrealAI/AGI-Alpha-Agent-v0',
-        'commit': '8473e91d705c22793ed9e6f721fdb056de43fb1e', 'tree': '96e9a7d1a178366dceec6eeaf4561538f07b407d',
+        'commit': 'dbaf5696d64ddcbf133f05d88d35496ebb85c3f0', 'tree': '30dc828703a6e9cd64103e0ebc965fc701e9bcf3',
         'fixturePath': 'examples/transformational-intelligence/campaign.json', 'files': {
             'docs/assets/successor/engine.mjs': '38c4f38978bf9fc29f207bae3adee0755bc6530d04502a36c491cc430787e488',
             'examples/transformational-intelligence/campaign.json': 'fa5f570e89c20cffd0df844869047a7c0594c5460c3e95df5ada44592ea4fd20',
