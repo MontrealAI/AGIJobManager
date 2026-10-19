@@ -123,7 +123,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "dcc081c1ce4c1af142d9eb7e1408b2116869d15090d78b5c9cfb4968135b6319"
+        "sha256": "46d7c2c84af2fe8edbb258f0df4b1edea88cee07bdf52c05b8bf0506e778880c"
       },
       "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
     },
@@ -406,7 +406,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "9f24e5c12ce6652b54043c0d03d58fe885183d5b53a74dbdb685177e0430eab6"
+        "sha256": "d029dcf76de84bf4875169e4b5847bb282f57d8de3556b1967fed11c91430a53"
       },
       "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
     },
@@ -468,7 +468,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "59cd824c0fcfe795a0fca66434b2bcbb6e8355dd01d35872d6069ada0e94e066"
+        "sha256": "4c6642b89bb583b993c4e6d73c75daf706e4987e3f30da732ada80705fc3b7e6"
       },
       "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
     },
@@ -525,6 +525,17 @@
         "sha256": "d67151764ae888169cdbaf1115f61f79dedd9898cfa25cf8b3e9ab6bc8d362e8"
       },
       "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "scripts/site/browser-test.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "ef4146606eb6c35c596d6e0e0993b5f7192750582d3ee5cdaa62bd443a030c58"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "de14a271fc73d515aeeb0b21b940dd006e1b90567fe68d0f8bd6152e43960098"
+      },
+      "reason": "Preserve all eight original workflow families and their source entries exactly; add a separate bilingual native Computer Use evidence-inspection family with its finite receiver closure, exhaustive coverage and adjacent browser regressions."
     },
     "scripts/site/build.mjs": {
       "before": {
@@ -584,6 +595,17 @@
         "sha256": "56ff4d1eea1bb80eae285a572649a5254a0396083e163adfa313e875408b92d2"
       },
       "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "scripts/site/workflows.test.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "d3676bcd78a3ed2c45ac7bb3d9cb603e3c3c034d5772a968073425eec16d8ffc"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "09dba0195942e53bb8e351649ee1d30238a5ff09dfda651aacb71267baee37ee"
+      },
+      "reason": "Preserve all eight original workflow families and their source entries exactly; add a separate bilingual native Computer Use evidence-inspection family with its finite receiver closure, exhaustive coverage and adjacent browser regressions."
     },
     "scripts/successor/alpha-project-browser-test.mjs": {
       "before": {
@@ -976,6 +998,28 @@
         "sha256": "bf69ca9b6d14cb1e3514b51a9bc73d9a9afcf4084bec28c90791639a53620d37"
       },
       "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/workflow-sources.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "3fd1063a5cbf5dfbc66f6035712ec408cbac33a163bc93b0a2e00f58965b22d9"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f1a1e9e1e532c346d11dc82329eac43a7dad072ca924941f72b6ab1219f5f1cb"
+      },
+      "reason": "Preserve all eight original workflow families and their source entries exactly; add a separate bilingual native Computer Use evidence-inspection family with its finite receiver closure, exhaustive coverage and adjacent browser regressions."
+    },
+    "site/workflows.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "5051da13aa6ef1e522fa99633a3b741b6fbf84c81ff65adc453fba3b706c392e"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b2d3b908ec42880947cb6dff0d12a8152dcd4c3f8ed5801d5bcd3ce52532aae3"
+      },
+      "reason": "Preserve all eight original workflow families and their source entries exactly; add a separate bilingual native Computer Use evidence-inspection family with its finite receiver closure, exhaustive coverage and adjacent browser regressions."
     },
     "ui/README.md": {
       "before": {

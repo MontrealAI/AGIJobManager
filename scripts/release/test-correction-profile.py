@@ -71,8 +71,8 @@ class CorrectionProfile(unittest.TestCase):
         names = ('.github/workflows/security-verification.yml',
             'scripts/release/package-release.py', 'scripts/release/verify-package.py',
             'ui/scripts/generate-deployment-docs.mjs', 'scripts/site/check.mjs',
-            'scripts/site/browser-test.mjs', 'scripts/site/deployments.test.mjs',
-            'site/deployments.mjs', 'ui/scripts/docs-check.mjs', 'site/workflows.mjs',
+            'scripts/site/deployments.test.mjs',
+            'site/deployments.mjs', 'ui/scripts/docs-check.mjs',
             'ui/scripts/sync-deployments.mjs', 'ui/src/app/deployment/page.tsx')
         for name in names:
             self.assertIn(name, P['PREVIOUS']['ALLOWED'])
@@ -105,8 +105,11 @@ class CorrectionProfile(unittest.TestCase):
             raw = (self.root / name).read_bytes() + b'\nwindow.ethereum.request({method:"eth_requestAccounts"});\n'
             with self.subTest(name=name): self.mutate(name, raw, lambda: self.repin(name, raw))
     def test_changed_source_bytes_missing_inputs_and_extra_inputs_are_rejected(self):
-        for name in ('hardhat/scripts/ephemeral-key.cjs', 'site/assets/successor/jobs.mjs'):
-            self.mutate(name, (self.root / name).read_bytes() + b'\n', self.rejects)
+        for name in ('hardhat/scripts/ephemeral-key.cjs', 'site/assets/successor/jobs.mjs',
+                'site/workflows.mjs', 'site/workflow-sources.json',
+                'scripts/site/workflows.test.mjs', 'scripts/site/browser-test.mjs'):
+            raw = bytearray((self.root / name).read_bytes()); raw[-1] ^= 1
+            with self.subTest(name=name): self.mutate(name, bytes(raw), self.rejects)
         path = self.root / 'extra.js'
         try: path.write_text('unexpected'); self.rejects()
         finally: path.unlink()
