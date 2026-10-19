@@ -182,6 +182,9 @@ log or child input. Existing Git source observers still launch sanitized read-on
 subprocesses, without the key in arguments/environment. The Wallet stays only in
 the script process and references are released on success/failure. JavaScript,
 V8 and ethers cannot guarantee erasure of immutable strings or memory copies.
+After a typo, invalid paste or overlong input, the prompt keeps echo disabled and
+discards the remaining line until Enter or explicit cancellation. Invalid input
+cannot be repaired with backspace; end that line and restart the reviewed route.
 A hidden prompt does not protect a compromised Ubuntu host, terminal, debugger,
 clipboard, dependency or OS. It cannot restore a terminal after SIGKILL or repair
 an uncooperative terminal driver. Keep operator files exclusively controlled;
