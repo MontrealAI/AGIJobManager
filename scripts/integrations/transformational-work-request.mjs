@@ -16,7 +16,7 @@ const same = (a, b) => canonical(a) === canonical(b);
 const isDigest = value => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
 const nativeDigest = (domain, value) => sha('successor-omega/v1:' + domain + '\0' + canonical(value));
 const credentialKeys = new Set(['password', 'passwd', 'apikey', 'privatekey', 'seedphrase', 'accesstoken',
-  'refreshtoken', 'bearertoken', 'authtoken', 'clientsecret', 'secret', 'credentials']);
+  'refreshtoken', 'bearertoken', 'authtoken', 'clientsecret', 'signingkey', 'secret', 'credentials']);
 function rejectCredentialFields(value) {
   if (value === null || typeof value !== 'object') return;
   for (const [key, child] of Object.entries(value)) {
