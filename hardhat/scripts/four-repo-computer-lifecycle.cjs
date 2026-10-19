@@ -2,6 +2,7 @@
 // Disposable simulated-chain acceptance only. Never selects a URL, real wallet or live authority.
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {pathToFileURL}=require('node:url'),{createHash}=require('node:crypto'),{execFileSync}=require('node:child_process');
+const {registerHooks}=require('node:module'),{randomUUID}=require('node:crypto');
 const ROOT=path.resolve(__dirname,'../..');
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const json=value=>JSON.stringify(value,(_,item)=>typeof item==='bigint'?item.toString():item,2)+'\n';
@@ -32,7 +33,8 @@ function assertFixtureAmount(value){
 }
 // Same full tracked-tree boundary as the reviewed Jobs pinned-checkout helper.
 // Return the canonical path so a configured root link cannot select later imports.
-function assertPinnedSourceCheckout(configuredRoot,expectedCommit){
+const MODULE_SCOPES={alpha:['examples/successor-alpha/','examples/successor-workbench/','examples/build-successor/','docs/assets/successor/'],jobs:['integrations/alpha-agent/','packages/successor-core/src/','scripts/pages/','website/assets/']};
+function snapshotPinnedSourceCheckout(configuredRoot,expectedCommit,captureKind=null){
   assert(path.isAbsolute(configuredRoot??''),'Reviewed source requires an absolute root');
   assert(/^[a-f0-9]{40}$/.test(expectedCommit??''),'Reviewed source requires an explicit full commit');
   const root=fs.realpathSync(configuredRoot);
@@ -45,6 +47,7 @@ function assertPinnedSourceCheckout(configuredRoot,expectedCommit){
   catch{throw Error('Reviewed tracked source differs');}
   const tree=git('ls-tree','--full-tree','-r','-z',expectedCommit).split('\0').filter(Boolean);
   assert(tree.length>0,'Reviewed source tree is empty');
+  const modules=new Map();let capturedBytes=0;
   for(const entry of tree){
     const separator=entry.indexOf('\t'),header=/^([0-7]{6}) blob ([a-f0-9]{40})$/.exec(entry.slice(0,separator));
     const name=entry.slice(separator+1),segments=name.split('/');
@@ -56,23 +59,52 @@ function assertPinnedSourceCheckout(configuredRoot,expectedCommit){
     try{
       const before=fs.fstatSync(descriptor),maximum=256*1024*1024;
       assert(before.isFile()&&before.size<=maximum,'Reviewed source exceeds the regular-file bound');
-      const blob=createHash('sha1').update('blob '+before.size+'\0'),chunk=Buffer.alloc(64*1024);let used=0;
-      while(used<=maximum){const count=fs.readSync(descriptor,chunk,0,Math.min(chunk.length,maximum+1-used),null);if(count===0)break;used+=count;blob.update(chunk.subarray(0,count));}
+      const capture=captureKind&&name.endsWith('.mjs')&&MODULE_SCOPES[captureKind].some(scope=>name.startsWith(scope)),chunks=[];
+      if(capture){assert(before.size<=8*1024*1024,'Reviewed module exceeds 8 MiB');capturedBytes+=before.size;assert(capturedBytes<=32*1024*1024,'Reviewed module snapshot exceeds 32 MiB');}
+      const blob=createHash('sha1').update('blob '+before.size+'\0'),limit=before.size+1,chunk=Buffer.alloc(Math.min(64*1024,limit));let used=0;
+      while(used<limit){const count=fs.readSync(descriptor,chunk,0,Math.min(chunk.length,limit-used),null);if(count===0)break;used+=count;blob.update(chunk.subarray(0,count));if(capture)chunks.push(Buffer.from(chunk.subarray(0,count)));}
       const after=fs.fstatSync(descriptor);
       assert(used<=maximum&&used===before.size&&['dev','ino','mode','size','mtimeMs','ctimeMs'].every(key=>before[key]===after[key]),'Reviewed source grew or changed during bounded read');
       assert(blob.digest('hex')===header[2]&&Boolean(before.mode&0o111)===(header[1]==='100755'),'Reviewed source bytes or mode differ');
+      if(capture)modules.set(name,new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(Buffer.concat(chunks,used)));
     }finally{fs.closeSync(descriptor);}
   }
   const untracked=git('ls-files','--others','--exclude-standard','-z').split('\0').filter(Boolean).filter(name=>name.endsWith('/')||/\.(?:[cm]?[jt]sx?|json|node|wasm|py|sh)$/i.test(name));
   assert.equal(untracked.length,0,'Reviewed checkout contains nonignored untracked source');
-  return Object.freeze({root,commit:expectedCommit});
+  return {source:Object.freeze({root,commit:expectedCommit}),modules};
 }
-async function loadReviewedSourceModules({alphaRoot,jobsRoot,alphaCommit,jobsCommit}){
-  const alphaSource=assertPinnedSourceCheckout(alphaRoot,alphaCommit),jobsSource=assertPinnedSourceCheckout(jobsRoot,jobsCommit);
-  const load=(source,relative)=>import(pathToFileURL(path.join(source.root,relative)).href);
-  const alpha=await load(alphaSource,'examples/successor-alpha/computer.mjs'),jobs=await load(jobsSource,'integrations/alpha-agent/four-repo-computer-receipt.mjs');
-  for(const source of [alphaSource,jobsSource])assertPinnedSourceCheckout(source.root,source.commit);
-  return {alpha,jobs,alphaSource,jobsSource};
+function assertPinnedSourceCheckout(root,commit){return snapshotPinnedSourceCheckout(root,commit).source;}
+function memorySourceLoader(snapshot){
+  // No origin path is supplied to Node. Source strings come from the same FD
+  // chunks whose Git blob and mode passed above; the private Map never escapes.
+  const {source,modules}=snapshot,base='fqr-reviewed://'+randomUUID()+'/'+source.commit+'/';let disposed=false;
+  const urlFor=name=>base+name.split('/').map(encodeURIComponent).join('/');
+  const keyFor=url=>{const value=new URL(url);assert(url.startsWith(base)&&!value.search&&!value.hash,'Reviewed import escaped its snapshot');const name=decodeURIComponent(value.pathname.slice(('/'+source.commit+'/').length));assert(urlFor(name)===url&&modules.has(name),'Reviewed import is absent from its captured snapshot');return name;};
+  const hook=registerHooks({
+    resolve(specifier,context,nextResolve){
+      if(context.parentURL?.startsWith('fqr-reviewed://')){
+        if(!context.parentURL.startsWith(base))return nextResolve(specifier,context);
+        assert(specifier.startsWith('./')||specifier.startsWith('../'),'Reviewed modules permit only captured relative imports');
+        const url=new URL(specifier,context.parentURL).href;keyFor(url);return {url,shortCircuit:true};
+      }
+      if(specifier.startsWith(base)){keyFor(specifier);return {url:specifier,shortCircuit:true};}
+      return nextResolve(specifier,context);
+    },
+    load(url,context,nextLoad){if(!url.startsWith(base))return nextLoad(url,context);const name=keyFor(url);return {format:'module',source:modules.get(name),shortCircuit:true};},
+  });
+  return Object.freeze({load:relative=>{assert(!disposed,'Reviewed snapshot loader is closed');const url=urlFor(relative);keyFor(url);return import(url);},dispose:()=>{if(!disposed){disposed=true;hook.deregister();modules.clear();}}});
+}
+function prepareReviewedSourceModules({alphaRoot,jobsRoot,alphaCommit,jobsCommit}){
+  const alphaSnapshot=snapshotPinnedSourceCheckout(alphaRoot,alphaCommit,'alpha'),jobsSnapshot=snapshotPinnedSourceCheckout(jobsRoot,jobsCommit,'jobs'),alphaSource=alphaSnapshot.source,jobsSource=jobsSnapshot.source;
+  const alphaLoader=memorySourceLoader(alphaSnapshot),jobsLoader=memorySourceLoader(jobsSnapshot);let disposed=false;
+  const dispose=()=>{if(!disposed){disposed=true;jobsLoader.dispose();alphaLoader.dispose();}};
+  return Object.freeze({alphaSource,jobsSource,dispose,load:async()=>{
+    assert(!disposed,'Reviewed source loaders are closed');
+    try{const alpha=await alphaLoader.load('examples/successor-alpha/computer.mjs'),jobs=await jobsLoader.load('integrations/alpha-agent/four-repo-computer-receipt.mjs');for(const source of [alphaSource,jobsSource])assertPinnedSourceCheckout(source.root,source.commit);return {alpha,jobs,alphaSource,jobsSource,dispose};}
+    catch(error){dispose();throw error;}
+  }});
+}
+async function loadReviewedSourceModules(options){const prepared=prepareReviewedSourceModules(options);return prepared.load();
 }
 async function main(){
   const input=process.env.FQR_DRAFT_FILE,alphaRoot=process.env.FQR_ALPHA_SOURCE,jobsRoot=process.env.FQR_JOBS_SOURCE,output=process.env.FQR_EVIDENCE_FILE;
@@ -80,7 +112,9 @@ async function main(){
   assert(!fs.existsSync(output),'Refuse to overwrite retained evidence');
   assert(!fs.existsSync(path.join(ROOT,'hardhat/.env')),'Use a disposable checkout without an operator .env');
   const load=(root,relative)=>import(pathToFileURL(path.join(root,relative)).href);
-  const {alpha,jobs,alphaSource,jobsSource}=await loadReviewedSourceModules({alphaRoot,jobsRoot,alphaCommit:process.env.FQR_ALPHA_COMMIT,jobsCommit:process.env.FQR_JOBS_COMMIT});
+  const reviewed=await loadReviewedSourceModules({alphaRoot,jobsRoot,alphaCommit:process.env.FQR_ALPHA_COMMIT,jobsCommit:process.env.FQR_JOBS_COMMIT});
+  try{
+  const {alpha,jobs,alphaSource,jobsSource}=reviewed;
   const adapter=await load(ROOT,'scripts/integrations/four-repo-computer-receipt.mjs'),raw=bounded(input);
   const options={inspectAlphaReturn:alpha.inspectComputerReturn,inspectComputerEvidence:jobs.inspectComputerReceiptEvidence};
   const draft=await adapter.inspectComputerReceiptDraft(raw,options);
@@ -150,9 +184,10 @@ async function main(){
     assert(!rejectedTransfers.some(t=>t.to.toLowerCase()===agent.address.toLowerCase()&&BigInt(t.amountBaseUnits)>0n),'Rejected settlement must have zero mock token transfer to worker');
     assert.equal(await manager.lockedEscrow(),0n);assert.equal(await manager.lockedAgentBonds(),0n);assert.equal(await manager.lockedValidatorBonds(),0n);
     for(const source of [alphaSource,jobsSource])assertPinnedSourceCheckout(source.root,source.commit);
-    const evidence={schema:'agijobmanager/four-repository-local-lifecycle/v1',scope:'DISPOSABLE_EDR_CHAIN_WITH_MOCK_USDC_AND_CONTROLLED_REVIEWER_VOTES',chainId:31337,publicNetwork:false,realWallets:false,fork:false,sourceCommit:execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim(),reviewedSourceCommits:{alpha:alphaSource.commit,jobs:jobsSource.commit},fixtureSha256:sha(fs.readFileSync(__filename)),draftSha256:sha(Buffer.from(raw)),project:draft.project,bindings:draft.bindings,specURI,completionURI,payoutBaseUnits:payout.toString(),decimals:6,deployments,sourceHashes,receipts,settlementTransfers,before,afterSuccess,after,invalidNativeReturnRejectedBeforeTransactions:true,successfulMockPayoutObserved:true,rejectedWorkRefunded:true,rejectedWorkerNetPayout:false,actualNativeBrowserClaim:false,controlledEconomicReview:true,independentEconomicReview:false,elapsedMilliseconds:performance.now()-started,productionApproved:false,settlementApproved:false,authority:'none'};
+    const evidence={schema:'agijobmanager/four-repository-local-lifecycle/v1',scope:'DISPOSABLE_EDR_CHAIN_WITH_MOCK_USDC_AND_CONTROLLED_REVIEWER_VOTES',chainId:31337,publicNetwork:false,realWallets:false,fork:false,sourceCommit:execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim(),reviewedSourceCommits:{alpha:alphaSource.commit,jobs:jobsSource.commit},reviewedSourceExecution:'IMMUTABLE_CAPTURED_ESM_GRAPH',fixtureSha256:sha(fs.readFileSync(__filename)),draftSha256:sha(Buffer.from(raw)),project:draft.project,bindings:draft.bindings,specURI,completionURI,payoutBaseUnits:payout.toString(),decimals:6,deployments,sourceHashes,receipts,settlementTransfers,before,afterSuccess,after,invalidNativeReturnRejectedBeforeTransactions:true,successfulMockPayoutObserved:true,rejectedWorkRefunded:true,rejectedWorkerNetPayout:false,actualNativeBrowserClaim:false,controlledEconomicReview:true,independentEconomicReview:false,elapsedMilliseconds:performance.now()-started,productionApproved:false,settlementApproved:false,authority:'none'};
     fs.writeFileSync(output,json(evidence),{flag:'wx',mode:0o600});console.log(json({schema:evidence.schema,chainId:31337,transactions:receipts.length,successfulMockPayoutObserved:true,rejectedWorkRefunded:true,realWallets:false,elapsedMilliseconds:evidence.elapsedMilliseconds,evidenceFile:output}));
   }finally{await chain.close();}
+  }finally{reviewed.dispose();}
 }
-module.exports={assertDisposableConfig,assertFixtureAmount,readBoundedFixtureFile:bounded,assertPinnedSourceCheckout,loadReviewedSourceModules};
+module.exports={assertDisposableConfig,assertFixtureAmount,readBoundedFixtureFile:bounded,assertPinnedSourceCheckout,loadReviewedSourceModules,prepareReviewedSourceModules};
 if(require.main===module)main().catch(error=>{console.error(error.message);process.exitCode=1;});

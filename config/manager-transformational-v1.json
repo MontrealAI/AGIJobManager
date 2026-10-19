@@ -1,8 +1,8 @@
 {
   "schema": "agijobmanager/transformational-source/v1",
   "profile": "manager-transformational-v1",
-  "baseCommit": "640fc715f88436b71457c36b78925b3e2caebe83",
-  "baseTree": "f67f80ab3beb3c3cd32ac67810df5c3574a5e853",
+  "baseCommit": "f4a50134ba8d3a5ded9650565cbdb737a00c1189",
+  "baseTree": "0e7e3577d1476cbf5135c7cb42dc1e25eef7c44b",
   "version": "1.19.5",
   "qualification": "PENDING_FINAL_SOURCE_MAIN_PUSH",
   "changes": {
@@ -191,7 +191,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "a754f241a46fa4fb2f424ee6f2606d6b70aefebc41616a9b548a314ba384a377"
+        "sha256": "a2c2d71f8785270fa9033573f89d671039ddeeca2da600eb922d7c104e586ec3"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -467,7 +467,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "f0256e189a5b26a9907574780770c2c525132422bf82fa2772b469e1cfbf8711"
+        "sha256": "b3976b5e4019693a42071e0a393c257a6d06a42a9b4e412f4a1fd7742f8fc5d4"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },

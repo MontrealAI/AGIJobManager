@@ -9,8 +9,8 @@
     },
     "jobs-computer": {
       "repository": "MontrealAI/AGIJobsv0",
-      "commit": "31538abe9cdd605966bcc414e4f824e0a742f806",
-      "tree": "150a4dc6c1efcf9ed8abcfed25a7d167bed2a56e",
+      "commit": "26ad85348189aa5dce14fbdc6c9f533e21be6aa9",
+      "tree": "c5a50ba64727affa3c9816e35135bd1286611483",
       "entry": "integrations/alpha-agent/four-repo-computer-receipt.mjs"
     }
   },
@@ -117,7 +117,7 @@
     },
     "vendor/jobs-computer/source-manifest.json": {
       "bytes": 3170,
-      "sha256": "6494ff0ad9c6c8a2dc00e49fada8ae678a77ece58fbfc35f4226ee29f47c50b9"
+      "sha256": "dab5e9435167cc572d0f4c7c7ed9346de94f60338739cd2e272a03d869a9c268"
     },
     "vendor/jobs-computer/website/assets/computer-desk-runtime-source.mjs": {
       "bytes": 8218,
