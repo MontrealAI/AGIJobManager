@@ -27,34 +27,75 @@ from release_common import require, sha, strict_json, REPOSITORY, TITLE, valid_s
 PREVIOUS = runpy.run_path(str(ROOT / 'scripts/release/release-profile.py'))
 read = PREVIOUS['read']
 git = PREVIOUS['git']
-HISTORICAL_ONLY = {
-    'scripts/release/release-profile.py', 'scripts/release/release_common.py',
-    'scripts/release/test-release-profile.py', 'scripts/release/run-inherited-source-tests.py',
-    'scripts/release/run-release-preservation.py',
-    'config/mainnet/manager-8815-2026-10-17.json',
-    'docs/deployments/MAINNET_MANAGER_2026-10-17.md',
-    'docs/deployments/MAINNET_USDC_2026-10-10.md',
-}
-ALLOWED = {name for name in PREVIOUS['ALLOWED'] if name not in HISTORICAL_ONLY
-    and not name.startswith(('docs/releases/', 'docs/qualification/', 'scripts/security/slither-reviewed-findings-v'))} | {
-    'hardhat/scripts/ephemeral-key.cjs', 'hardhat/test/ephemeral-key.test.cjs',
+# This is the complete reviewed delta over v1.19.3, not the previous
+# policy's broader historical exception list. Every other input stays exact.
+ALLOWED = {
+    '.github/workflows/alpha-project-handoff.yml',
+    '.github/workflows/current-state-release.yml',
+    '.github/workflows/mainnet-fork.yml',
+    '.github/workflows/pages.yml',
+    '.github/workflows/publish-v114.yml',
+    'README.md',
+    'agijobmanager.html',
+    'config/companion-releases.json',
+    'config/successor-builder-source.json',
+    'config/usdc-deployment.json',
+    'docs/MAINNET_READINESS.md',
+    'docs/OPERATIONS/PRIVATE_FLEET.md',
+    'docs/REFERENCE/VERSIONS.md',
+    'docs/RELEASE_GUIDE.md',
+    'docs/START_HERE.md',
+    'docs/V1_RELEASE_SCOPE.md',
     'docs/deployment/ubuntu-ephemeral-creator.md',
-    'site/assets/successor/jobs.mjs', 'site/assets/successor/missions.mjs', 'site/assets/successor/app.mjs', 'site/successor.mjs',
-    'scripts/successor/core.test.mjs', 'scripts/successor/portable.test.mjs',
-    'scripts/successor/alpha-project-browser-test.mjs', 'docs/successor/ALPHA_PROJECT_HANDOFF.md',
-    'config/successor-builder-source.json', '.github/workflows/alpha-project-handoff.yml',
-    'scripts/integrations/four-repo-computer-receipt.mjs',
-    'scripts/integrations/four-repo-computer-receipt.test.mjs', 'scripts/integrations/README.md',
-    'hardhat/scripts/four-repo-computer-lifecycle.cjs',
-    'hardhat/test/four-repo-computer-lifecycle.test.cjs', 'scripts/docs/check-docs.mjs',
-    VERIFIER, 'scripts/release/test-correction-profile.py',
-    'scripts/release/publication-authorization.py', 'scripts/release/wait-qualification.py',
-    'scripts/release/test-publication-authorization.py',
-    'scripts/release/run-inherited-release-tests.py', 'scripts/release/run-correction-preservation.py',
     'docs/qualification/mainnet-cutover-v1.19.4-expected.json',
     'docs/qualification/release-v1.19.4-provenance.json',
+    'docs/releases/v1.19.4/RECOVERY_GUIDE.md',
+    'docs/releases/v1.19.4/RELEASE_NOTES.md',
+    'docs/releases/v1.19.4/START_HERE.md',
+    'docs/releases/v1.19.4/VALIDATION.md',
+    'docs/successor/ALPHA_PROJECT_HANDOFF.md',
+    'docs/ui/DEPLOYMENT_MAINNET.md',
+    'docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md',
+    'hardhat/package-lock.json',
+    'hardhat/package.json',
+    'hardhat/scripts/ephemeral-key.cjs',
+    'hardhat/scripts/four-repo-computer-lifecycle.cjs',
+    'hardhat/test/ephemeral-key.test.cjs',
+    'hardhat/test/four-repo-computer-lifecycle.test.cjs',
+    'package-lock.json',
+    'package.json',
+    'scripts/docs/check-docs.mjs',
+    'scripts/integrations/README.md',
+    'scripts/integrations/four-repo-computer-receipt.mjs',
+    'scripts/integrations/four-repo-computer-receipt.test.mjs',
+    'scripts/release/collect-qualification.py',
+    'scripts/release/correction-profile.py',
+    'scripts/release/package-policy.py',
+    'scripts/release/publication-authorization.py',
+    'scripts/release/publish-release.py',
+    'scripts/release/run-correction-preservation.py',
+    'scripts/release/run-inherited-release-tests.py',
+    'scripts/release/test-correction-profile.py',
+    'scripts/release/test-publication-authorization.py',
+    'scripts/release/test-release-gates.py',
+    'scripts/release/wait-qualification.py',
     'scripts/security/slither-reviewed-findings-v1.19.4.json',
-} | {'docs/releases/v1.19.4/' + name + '.md' for name in ('START_HERE', 'RELEASE_NOTES', 'RECOVERY_GUIDE', 'VALIDATION')}
+    'scripts/security/verify-slither-review.py',
+    'scripts/successor/alpha-project-browser-test.mjs',
+    'scripts/successor/core.test.mjs',
+    'scripts/successor/portable.test.mjs',
+    'site/assets/successor/app.mjs',
+    'site/assets/successor/jobs.mjs',
+    'site/assets/successor/missions.mjs',
+    'site/successor.mjs',
+    'ui/README.md',
+    'ui/agijobmanager-usdc.html',
+    'ui/dist-ipfs/agijobmanager.html',
+    'ui/package-lock.json',
+    'ui/package.json',
+    'ui/scripts/singlefile-template.html',
+    'ui/src/generated/deployments.ts',
+}
 VERSION_ONLY = PREVIOUS['VERSION_ONLY']
 UI_LABEL_ONLY = {'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html',
     'ui/agijobmanager-usdc.html', 'ui/src/generated/deployments.ts', 'ui/scripts/singlefile-template.html'}
@@ -98,7 +139,7 @@ def inventory(root, selection):
     require(manifest['schema'] == 'agijobmanager/source-corrections/v1' and manifest['profile'] == PROFILE and manifest['baseCommit'] == BASE and manifest['baseTree'] == TREE and manifest['version'] == VERSION, 'Correction source baseline differs')
     require(manifest['qualification'] == 'PENDING_FINAL_SOURCE_MAIN_PUSH', 'Correction inventory cannot claim qualification')
     changes = manifest['changes']
-    require(isinstance(changes, dict) and changes and set(changes) <= ALLOWED, 'Correction source exceeds finite reviewed paths')
+    require(isinstance(changes, dict) and changes and set(changes) == ALLOWED, 'Correction source differs from finite reviewed paths')
     result = dict(baseline)
     for name, change in changes.items():
         require(set(change) == {'before', 'after', 'reason'} and isinstance(change['reason'], str) and change['reason'].strip(), 'Correction change attribution is missing')

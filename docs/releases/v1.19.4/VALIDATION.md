@@ -6,7 +6,7 @@ This file records preparation scope, not final qualification or publication. The
 
 - Previous immutable release: v1.19.3, source `d0c2cbaf58b594e20d888c3fc744bada06172306`, tree `09de3f32ae89416f764b508e0147457ca8b54d9d`.
 - Original deployed integrated source remains `8815ed3181778664595f951befd672afbd7a9352`, tree `913e49d65263bc53026916f7fc3b4cbfb93549f8`.
-- Corrected immutable Builder checkpoint: `9d7bbcefd79b4b4b403082713b3878c33dc36c76`, tree `b1109d00dda418cd4c1fb9a0f603fe5b895b1e57`; engine `0379a9f53eafe5c28b0d75ad4f7b1a813d7e1e9240a09f6e33a520ff9de960fd`.
+- Corrected immutable Builder checkpoint: `2478198819227d4414e17fe90a04e8137d543241`, tree `df22390a8955c68a45f4c5b515b807b9112adbca`; engine `58fd794b4089a29f9290c555fa083db73a70f16f4d0c54adb48950af3346175a`.
 - Final v1.19.4 wrapper source, final-source qualification and publication are pending at this snapshot.
 
 The exact final source must pass CI, UI CI, Docs Integrity, Security Verification, Mainnet USDC Fork Qualification, Release Candidate Preparation, GitHub Pages and Alpha project handoff. All required jobs and steps must execute, with correct checkout markers and retained artifacts. Missing, failed, skipped, stale or incomplete evidence blocks publication.

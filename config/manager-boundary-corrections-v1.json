@@ -101,7 +101,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "ac24562f5c96c3368c58257a61ca47b4a16d44e42dd9bbdb2e045724c1f9a953"
+        "sha256": "17a5e217effa2e82b0531f5c85ac6479649245894b1109c7833b0f62ae0d1468"
       },
       "reason": "Select the published corrected Builder code checkpoint9d7bbcef with exact tree, complete source inventory digest and retained package version; no self-reference or inherited release qualification."
     },
@@ -221,7 +221,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "965fabfb1106cc93b00da7ed0a4eaa3cdde27526ebcfdb4722722cbf6acef492"
+        "sha256": "b9714b0fa0c9a24124770ecb034109f7e5c453d962f2a93cbcee4d07ff2da810"
       },
       "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
     },
@@ -237,7 +237,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "6d0654467f29220c1c27890607f8d03d975472d6de5f55510aa21edadcfe0ec0"
+        "sha256": "f016214d595b02f1b9e93289a1f8b89bbc39b382147245440bb246da4cc680f5"
       },
       "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
     },
@@ -406,7 +406,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "7b9008d280f7f1b79cb4aafdb1b0617ac21b14a894a34bd84b1f9ca321d2ad7b"
+        "sha256": "7645b1f7564446bbb3ee5b4f7b182513898d8f3cc7ed19fba6ee23eff850b952"
       },
       "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
     },
@@ -460,7 +460,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "30aa9301ca544bf8f6d92947165a7fb4cccecf2a2be97d94ab4368f70735974d"
+        "sha256": "5c0733d8936b511e8b19e1aba95a0069bff9d340713d8ff7c47adcc2f368e2ec"
       },
       "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
     },

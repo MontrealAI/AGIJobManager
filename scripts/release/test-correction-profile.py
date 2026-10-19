@@ -64,6 +64,27 @@ class CorrectionProfile(unittest.TestCase):
                 'config/mainnet/manager-8815-2026-10-17.json'):
             raw = (self.root / name).read_bytes() + b'\n'
             with self.subTest(name=name): self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_unchanged_runtime_verifiers_workflows_and_ui_cannot_be_repinned(self):
+        # These were broad exceptions for the preceding release, but this
+        # correction does not change them. Updating a supplied checksum is not
+        # permission to change their reviewed predecessor bytes.
+        names = ('.github/workflows/security-verification.yml',
+            'scripts/release/package-release.py', 'scripts/release/verify-package.py',
+            'scripts/site/build.mjs', 'scripts/site/check.mjs',
+            'scripts/site/browser-test.mjs', 'scripts/site/deployments.test.mjs',
+            'site/deployments.mjs', 'site/template.mjs', 'site/workflows.mjs',
+            'ui/scripts/sync-deployments.mjs', 'ui/src/app/deployment/page.tsx')
+        for name in names:
+            self.assertIn(name, P['PREVIOUS']['ALLOWED'])
+            self.assertNotIn(name, P['ALLOWED'])
+            raw = (self.root / name).read_bytes() + b'\n/* adversarial unchanged-path mutation */\n'
+            with self.subTest(name=name): self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_all_reviewed_corrections_are_required(self):
+        manifest = json.loads((self.root / P['MANIFEST']).read_bytes())
+        self.assertEqual(set(manifest['changes']), P['ALLOWED'])
+        del manifest['changes']['hardhat/scripts/ephemeral-key.cjs']
+        raw = (json.dumps(manifest, indent=2) + '\n').encode()
+        self.mutate(P['MANIFEST'], raw, lambda: self.rejects({**self.selection, 'manifestSha256': sha(raw)}))
     def test_wrong_predecessor_and_fabricated_qualification_are_rejected(self):
         original = json.loads((self.root / P['MANIFEST']).read_bytes())
         for mutate in (lambda value: value.update(qualification='PASSED'),
