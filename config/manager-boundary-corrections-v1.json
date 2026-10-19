@@ -311,7 +311,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "aa692ba051ebd1602ab6255965afefbcbec96a377b4ee57c90f056557162d0ed"
+        "sha256": "acb6fcb9fc794c01d97a0c4c40764bd53941aaedcf0bcf655219c077d8282a8c"
       },
       "reason": "Add bounded, independently validated computer-receipt continuity with explicit new USDC6 pricing and disposable mock-token acceptance/rejection evidence; no live or independent-review claim."
     },
@@ -330,7 +330,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "82efbbf1e888410a44f05ce995476b11b847062c377bb85bed5570ded5449581"
+        "sha256": "81c4e7ed998929ac015ff15e2505e71eaa6eeac2f98343dd7cc000734cec376d"
       },
       "reason": "Regress the disposable signing boundary: exact local EDR chain31337 and public fixture accounts only; no HTTP, fork or additional network."
     },
@@ -371,7 +371,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "31f4f2bd8a1c2cd731918b8442124640986f1ed7816aa7530467fe65d0b6a652"
+        "sha256": "aeab6b35ac535578a3c341a22e8c20775c962b2ccd81c73449e97ff5d89a02f4"
       },
       "reason": "Add bounded, independently validated computer-receipt continuity with explicit new USDC6 pricing and disposable mock-token acceptance/rejection evidence; no live or independent-review claim."
     },
@@ -662,7 +662,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "3ee535a56b2c4b577ce8f2149f8bd357ab6290105eb01159824b10acf7f4ba8c"
+        "sha256": "584a04bb85b3f512af9028e31269c21893fc890b5e9bae3833b7fb105d119cc4"
       },
       "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
     },
@@ -878,7 +878,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "6494ff0ad9c6c8a2dc00e49fada8ae678a77ece58fbfc35f4226ee29f47c50b9"
+        "sha256": "dab5e9435167cc572d0f4c7c7ed9346de94f60338739cd2e272a03d869a9c268"
       },
       "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
     },
