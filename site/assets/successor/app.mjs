@@ -8,7 +8,7 @@ import {inputColumns, previewMapping} from './mapping.mjs';
 import { sourceZip } from './archive.mjs';
 
 export function initialize() {
-  let lang = document.documentElement.lang, state = null, candidate = null, plan = null, inspected = null, previewURL = null, currentWorker = null, rejectWork = null, runNumber = 0, backupRaw = null, actionBusy = false, reuseRequested = false, mappingPreview = null, approvedMapping = null, alphaPending = null, alphaTransfer = null, alphaRead = null, alphaDirty = false, alphaSavedRaw = null;
+  let lang = document.documentElement.lang, state = null, candidate = null, plan = null, inspected = null, previewURL = null, currentWorker = null, rejectWork = null, runNumber = 0, backupRaw = null, actionBusy = false, reuseRequested = false, mappingPreview = null, approvedMapping = null, alphaPending = null, alphaTransfer = null, alphaRead = null, alphaDirty = false, alphaSavedRaw = null, recoveryRaw = null;
   const alphaStorageKey = 'agijobmanager_alpha_project_transfer_v1';
   const storedAlphaMatches = raw => { try { return localStorage.getItem(alphaStorageKey) === raw; } catch { return false; } };
   const pendingAlphaUnstored = () => Boolean(alphaPending?.saved && !storedAlphaMatches(alphaPending.raw));
@@ -45,6 +45,7 @@ export function initialize() {
   async function report(error) {
     if (error.failureState) { try { await commitState(error.failureState, source); candidate = state.candidates.find(c => c.id === state.active) || null; redraw(); } catch (capacityError) { error = capacityError; } }
     const messages = {
+      MANAGER_SOURCE_DRIFT: ['Recover this history below.', 'Récupérez cet historique ci-dessous.'],
       CAPSULE_CAPACITY: ['This change would exceed the 4 MB capsule limit. Your previous workspace is preserved. Download it, then reuse its selected method on new inputs.', 'Cette modification dépasserait la limite de 4 Mo. Votre espace précédent est conservé. Téléchargez-le, puis réutilisez sa méthode choisie sur de nouvelles données.'],
       HISTORY_LIMIT: ['This history segment is full. You can inspect, restore and download every file. Save a checkpoint, then explicitly continue history below before running again.', 'Ce segment d’historique est plein. Vous pouvez examiner, restaurer et télécharger tous les fichiers. Enregistrez un repère, puis confirmez la continuation de l’historique ci-dessous avant de relancer.'],
       INPUT_BOM: ['This JSON file begins with a UTF-8 byte-order mark. Preserve the original and export valid UTF-8 JSON without a BOM; the file was not imported.', 'Ce fichier JSON commence par une marque d’ordre des octets UTF-8. Conservez l’original et exportez du JSON UTF-8 sans cette marque; le fichier n’a pas été importé.'],
@@ -175,13 +176,17 @@ export function initialize() {
     resetAlphaConsent();
     const value = parseStrict(raw);
     const transfer = value.schema === 'agijobmanager/alpha-project-transfer/v1';
-    const preview = transfer ? await work('alpha-inspect', { raw }) : await work('alpha-preview', { raw });
+    let preview;
+    try { preview = transfer ? await work('alpha-inspect', { raw }) : await work('alpha-preview', { raw }); }
+    catch (error) { if (error.code === 'MANAGER_SOURCE_DRIFT') { recoveryRaw = raw; redrawAlpha(); } throw error; }
     const identity = transfer ? preview.transfer.project : preview;
+    recoveryRaw = null;
     alphaPending = { raw, transfer, identity, saved }; redrawAlpha();
   }
   function redrawAlpha() {
+    $('alpha-recovery').hidden = !recoveryRaw;
     $('alpha-preview').hidden = !alphaPending;
-    $('alpha-clear').disabled = Boolean(alphaPending);
+    $('alpha-clear').disabled = Boolean(alphaPending || recoveryRaw);
     $('alpha-pending-storage').hidden = !pendingAlphaUnstored();
     if (alphaPending) {
       const { identity } = alphaPending;
@@ -266,6 +271,8 @@ export function initialize() {
       await previewAlpha(await exactFileText(file));
     }, 'change');
     bind('alpha-cancel', () => { fail(!pendingAlphaUnstored(), 'ALPHA_PENDING_STORAGE_CHANGED'); alphaPending = null; resetAlphaConsent(); redrawAlpha(); });
+    bind('alpha-recovery-download', () => { fail(recoveryRaw, 'RUN_REQUIRED'); download('Original-Alpha-Manager-history.json', recoveryRaw); });
+    bind('alpha-recovery-dismiss', () => { recoveryRaw = null; redrawAlpha(); });
     bind('alpha-preview-download', () => { fail(alphaPending, 'RUN_REQUIRED'); download(alphaPending.transfer ? 'Inspected-Alpha-Manager-project-history.json' : 'Inspected-Alpha-project.json', alphaPending.raw); });
     bind('alpha-confirm', async () => {
       fail(alphaPending && $('alpha-mapping').checked && $('alpha-rights').checked, 'EXPLICIT_MAPPING_REQUIRED');
@@ -290,7 +297,7 @@ export function initialize() {
     bind('alpha-download', () => { fail(alphaTransfer, 'RUN_REQUIRED'); download('Alpha-Manager-project-history.json', alphaTransfer); });
     bind('alpha-save', () => { fail(!alphaPending, 'ALPHA_PENDING'); fail(alphaTransfer, 'RUN_REQUIRED'); try { localStorage.setItem(alphaStorageKey, alphaTransfer); } catch { fail(false, 'STORAGE'); } alphaSavedRaw = alphaTransfer; alphaDirty = false; say(t('Alpha history saved in this browser. Retain a complete-history download too.', 'Historique Alpha enregistré dans ce navigateur. Conservez aussi un téléchargement complet.')); });
     bind('alpha-load', async () => { let raw; try { raw = localStorage.getItem(alphaStorageKey); } catch { fail(false, 'STORAGE'); } fail(raw, 'STORAGE'); await previewAlpha(raw, true); });
-    bind('alpha-clear', () => { fail(!alphaPending, 'ALPHA_PENDING'); try { localStorage.removeItem(alphaStorageKey); } catch { fail(false, 'STORAGE'); } alphaDirty = Boolean(alphaTransfer); say(t('Saved Alpha browser copy cleared. The open Alpha workspace and downloaded files remain.', 'Copie Alpha du navigateur effacée. L’espace Alpha ouvert et les fichiers téléchargés sont conservés.')); });
+    bind('alpha-clear', () => { fail(!alphaPending && !recoveryRaw, 'ALPHA_PENDING'); try { localStorage.removeItem(alphaStorageKey); } catch { fail(false, 'STORAGE'); } alphaDirty = Boolean(alphaTransfer); say(t('Saved Alpha browser copy cleared. The open Alpha workspace and downloaded files remain.', 'Copie Alpha du navigateur effacée. L’espace Alpha ouvert et les fichiers téléchargés sont conservés.')); });
     bind('alpha-download-source', async () => { const files = await editableSources(); download('SUCCESSOR-Omega-editable-source.zip', sourceZip(files), 'application/zip'); });
     bind('alpha-original', () => { fail(alphaRead, 'RUN_REQUIRED'); download('Original-Alpha-project.json', alphaRead.transfer.original.raw); });
     bind('alpha-download-plan', () => { fail(alphaRead?.state.plans.length, 'PLAN'); download('Alpha-Manager-unfunded-USDC-request.json', JSON.stringify(alphaRead.state.plans.at(-1), null, 2)); });

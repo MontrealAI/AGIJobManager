@@ -49,6 +49,13 @@ The initial uncompressed Builder remains below its existing 750 KB gate. Only th
 
 The hosted receiver supplies local project continuity and USDC planning. Jobs v0/Fleet execution envelopes, actual paid commissioning, protected evaluation and independently controlled review require their own accepted integrations and evidence. Existing A1–A5 HOLD, qualification gates, signing approval and deployment checks remain in force. No cross-repository production commissioning is claimed.
 
+When an earlier Manager transfer belongs to a different Builder edition, the
+receiver keeps its source checks strict and offers an unchanged-file download
+plus the immutable v1.19.3 English/French offline edition for recovery. The file
+is not treated as inspected or imported by the current edition. The saved copy
+and open workspace remain intact; start new work through an explicit fresh Alpha
+cycle. Earlier release assets and source identities remain unchanged.
+
 The separately qualified [Alpha return adapter in PR #4820](https://github.com/MontrealAI/AGI-Alpha-Agent-v0/pull/4820)
 can retain this transfer inside a new native Alpha cycle through a separate CLI
 continuity envelope. Use its exact selected Manager revision; a source pin from
