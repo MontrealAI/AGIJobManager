@@ -24,13 +24,16 @@ function credentialKey(key) {
   const name = normalizedKey(key);
   return credentialKeys.has(name) || /(?:password|passwd|apikey|privatekey|seedphrase|authentication|authorization|clientsecret|signingkey|secret|credential)/.test(name) || name.endsWith('token') || name.endsWith('auth');
 }
-function publicUrls(value) {
+function publicUrls(value, urlField = false) {
   const normalized = value.replace(/[\t\r\n]/g, '');
-  for (const match of normalized.matchAll(/(?<![a-z0-9+.-])(?:[a-z][a-z0-9+.-]*:[^\s"<>]+|[\/\\]{2}[^\s"<>]+)/gi)) {
-    if (/^sha256:[a-f0-9]{64}$/i.test(match[0])) continue;
-    need(/^https:/i.test(match[0]), 'TRANSFORMATION_PRIVATE_URL');
+  // A prose label such as Phase:Plan is not a URL. Recognize explicit URI
+  // structure and known schemes; URL fields require HTTPS or an exact digest.
+  const references = urlField && normalized ? [normalized] : Array.from(normalized.matchAll(/(?<![a-z0-9+.-])(?:(?:https?|file|ftps?|wss?|s3|gs|ipfs|ipns|data|javascript|vbscript|blob|about|mailto|tel|sms|ssh|git|git\+ssh|nfs|smb|ldaps?|chrome|chrome-extension|moz-extension|intent|market|news|nntp|rtsp|urn|sha256):[^\s"<>]+|[a-z][a-z0-9+.-]*:[\/\\]+[^\s"<>]*|[a-z][a-z0-9+.-]*:[^:\s"<>]*[/?#@%][^:\s"<>]*|[\/\\]{2}[^\s"<>]+)/gi), match => match[0]);
+  for (const reference of references) {
+    if ((urlField ? /^sha256:[a-f0-9]{64}$/i : /^sha256:[a-f0-9]{64}[,.;:!?)\]]*$/i).test(reference)) continue;
+    need(/^https:/i.test(reference) && !/[\s"<>]/.test(reference), 'TRANSFORMATION_PRIVATE_URL');
     let url;
-    try { url = new URL(match[0]); } catch { need(false, 'TRANSFORMATION_PRIVATE_URL'); }
+    try { url = new URL(reference); } catch { need(false, 'TRANSFORMATION_PRIVATE_URL'); }
     const host = url.hostname.replace(/^\[|\]$/g, '');
     need(url.protocol === 'https:' && !url.username && !url.password && !url.port && !url.hash && !isIP(host)
       && host.includes('.') && !/(?:^|\.)(?:localhost|local|internal|lan|home)$/.test(host)
@@ -40,11 +43,11 @@ function publicUrls(value) {
       && !/^(?:key|sig|signature|xamz|xgoog)/.test(normalizedKey(key)), 'TRANSFORMATION_PRIVATE_URL');
   }
 }
-function rejectCredentialFields(value, path = [], draft = false) {
+function rejectCredentialFields(value, path = [], draft = false, urlField = false) {
   if (typeof value === 'string') {
     publicOnly(value);
     need(!/\bBearer\s+\S{6,}/i.test(value), 'TRANSFORMATION_PRIVATE_FIELD');
-    publicUrls(value); return;
+    publicUrls(value, urlField); return;
   }
   if (value === null || typeof value !== 'object') return;
   for (const [key, child] of Object.entries(value)) {
@@ -58,7 +61,8 @@ function rejectCredentialFields(value, path = [], draft = false) {
       && path[0] === 'bindings' && key === 'authorizationBinding' && (child === null || isDigest(child));
     need(!credentialKey(key) || child === null || child === '' || inertAuthorization || publicCurrencyToken || publicAuthorizationDigest,
       'TRANSFORMATION_PRIVATE_FIELD');
-    rejectCredentialFields(child, [...path, key], draft);
+    rejectCredentialFields(child, [...path, key], draft,
+      urlField || /(?:urls?|uris?|hrefs?|endpoints?)$/.test(normalizedKey(key)));
   }
 }
 function read(raw, maximum, draft = false) {

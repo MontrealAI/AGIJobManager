@@ -82,6 +82,8 @@ ALLOWED = {
     'scripts/release/verify-package.py',
     'scripts/security/slither-reviewed-findings-v1.19.5.json',
     'scripts/security/verify-slither-review.py',
+    'site/content/en.json',
+    'site/content/fr.json',
     'ui/README.md',
     'ui/agijobmanager-usdc.html',
     'ui/dist-ipfs/agijobmanager.html',
@@ -89,6 +91,24 @@ ALLOWED = {
     'ui/package.json',
     'ui/scripts/singlefile-template.html',
     'ui/src/generated/deployments.ts',
+}
+
+# The only website-content change is this exact resource entry at index one.
+WEBSITE_RESOURCE_INSERTIONS = {
+    'site/content/en.json': '''    [
+      "Try a free TI project",
+      "Compare ways to solve a task and keep the same Fleet project. Source preview; no paid TI work.",
+      "docs/successor/TRANSFORMATIONAL_WORK.md",
+      "transformational intelligence ti alpha fleet project source preview free comparison history"
+    ],
+'''.encode('utf8'),
+    'site/content/fr.json': '''    [
+      "Essayer un projet TI gratuit",
+      "Comparez des méthodes et conservez le même projet Fleet. Aperçu des sources; aucun travail TI payant.",
+      "docs/successor/TRANSFORMATIONAL_WORK.md",
+      "intelligence transformationnelle ti alpha fleet projet aperçu sources gratuit comparaison historique"
+    ],
+'''.encode('utf8'),
 }
 
 VERSION_ONLY = PREVIOUS['VERSION_ONLY']
@@ -163,6 +183,15 @@ def validate_source(root, selection, paths=None):
                 require(value['packages']['']['version'] == VERSION, 'Transformation lock version differs')
                 value['packages']['']['version'] = '1.19.4'
             require(sha((json.dumps(value, indent=2, ensure_ascii=False) + '\n').encode()) == baseline[name]['sha256'], 'Transformation changed dependency resolution or transaction configuration: ' + name)
+        if name in WEBSITE_RESOURCE_INSERTIONS:
+            insertion = WEBSITE_RESOURCE_INSERTIONS[name]
+            require(data.count(insertion) == 1, 'The exact reviewed website resource is required: ' + name)
+            normalized = data.replace(insertion, b'', 1)
+            require(sha(normalized) == baseline[name]['sha256'], 'Other website content changed: ' + name)
+            resources = strict_json(data).get('resources')
+            require(isinstance(resources, list) and len(resources) == 13
+                and resources[1] == strict_json(insertion.rstrip().removesuffix(b',')),
+                'The reviewed resource must occupy its exact website position: ' + name)
         if name in UI_LABEL_ONLY:
             normalized = data.replace(b'v1.19.5', b'v1.19.4').replace(b'"version":"1.19.5"', b'"version":"1.19.4"').replace(b'"version": "1.19.5"', b'"version": "1.19.4"')
             require(sha(normalized) == baseline[name]['sha256'], 'Transformation changed the advanced console beyond version labels: ' + name)

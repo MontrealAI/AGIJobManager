@@ -82,6 +82,18 @@ class TransformationalProfile(unittest.TestCase):
             self.assertNotIn(name, P['ALLOWED'])
             raw = (self.root / name).read_bytes() + b'\n/* adversarial unchanged-path mutation */\n'
             with self.subTest(name=name): self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_website_repin_cannot_change_surrounding_content_or_resource_position(self):
+        for name, insertion in P['WEBSITE_RESOURCE_INSERTIONS'].items():
+            original = (self.root / name).read_bytes()
+            variants = [original.replace(b'"resources": [', b'"otherResources": ['),
+                original.replace(insertion, insertion.replace(b'docs/successor/', b'docs/other/')),
+                original.replace(insertion, b''), original.replace(insertion, insertion + insertion)]
+            # The same block at another list position still strips to the old
+            # bytes; position admission must reject it independently.
+            card_end = original.index(b'    ],', original.index(insertion) + len(insertion)) + len(b'    ],\n')
+            variants.append(original[:card_end].replace(insertion, b'') + insertion + original[card_end:])
+            for raw in variants:
+                with self.subTest(name=name): self.mutate(name, raw, lambda: self.repin(name, raw))
     def test_all_reviewed_corrections_are_required(self):
         manifest = json.loads((self.root / P['MANIFEST']).read_bytes())
         self.assertEqual(set(manifest['changes']), P['ALLOWED'])

@@ -197,6 +197,48 @@ test('public provenance is credential-free HTTPS DNS and refuses private or ambi
   assert.equal(invoked, false);
 });
 
+test('ordinary colon labels and punctuated content digests retain exact text through inert inspection and draft recovery', async () => {
+  for (const purpose of ['Phase:Plan', 'ratio:2', 'Source:https://github.com/MontrealAI/AGI-Alpha-Agent-v0',
+    'Use sha256:' + hash('public-source') + ', then inspect the source.',
+    'Retain (sha256:' + hash('public-source') + ').']) {
+    const request = campaign(x => { x.charter.purpose = purpose;
+      x.bindings.configuration = { 'metric:p95':'ratio:2' }; });
+    assert.deepEqual(await inspectTransformationWorkRequest(canonical(request), options(request)), request);
+    const raw = await createTransformationWorkDraft(canonical(request), options(request));
+    assert.equal((await inspectTransformationWorkDraft(raw, options(request))).original, canonical(request));
+  }
+});
+
+test('explicit URI shapes, known active schemes and URL-named fields retain strict public HTTPS admission', async () => {
+  for (const [key, value] of [
+    ['notes', 'Source:https://127.0.0.1/private'],
+    ['notes', 'Source:https://example.invalid/?access_token=synthetic-fixture'],
+    ['notes', 'unknown-protocol://example.invalid/item'],
+    ['notes', 'unknown-protocol:opaque/path'],
+    ['notes', 'unknown-protocol:opaque?query=value'],
+    ['notes', 'blob:https://example.invalid/item'],
+    ['notes', 'mailto:person@example.invalid'],
+    ['source_url', 'unknown-protocol:opaque'], ['sourceURI', 'Phase:Plan'],
+    ['href', 'https://example.invalid/item another-value'],
+    ['serviceEndpoint', 'https://127.0.0.1/item'],
+    ['provenanceURLs', ['unknown-protocol:opaque']],
+    ['notes', 'sha256:invalid'],
+  ]) {
+    let invoked = false;
+    const request = campaign(x => { x.bindings.configuration = { [key]:value }; });
+    await assert.rejects(inspectTransformationWorkRequest(canonical(request), {
+      ...options(request), inspectWorkRequest:async () => { invoked = true; },
+    }), /PRIVATE_(?:URL|INPUT)/);
+    assert.equal(invoked, false);
+  }
+  const request = campaign(x => { x.bindings.configuration = {
+    source_url:'https://github.com/MontrealAI/AGI-Alpha-Agent-v0',
+    provenanceURLs:['https://github.com/MontrealAI/AGIJobManager'],
+    sourceURI:'sha256:' + hash('public-source'),
+  }; });
+  assert.deepEqual(await inspectTransformationWorkRequest(canonical(request), options(request)), request);
+});
+
 test('large valid generated drafts reopen under their declared bound while the default public screen stays bounded', async () => {
   const request = campaign(x => { x.charter.purpose = '"'.repeat(1_899_000); });
   const requestRaw = canonical(request);

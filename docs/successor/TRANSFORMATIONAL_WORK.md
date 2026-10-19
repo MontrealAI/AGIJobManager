@@ -8,6 +8,35 @@ execution and review. Manager retains its USDC lifecycle; Jobs retains its
 separate AGIALPHA lifecycle. This adapter neither executes a campaign nor
 implements independent evaluation.
 
+## First steps — source preview
+
+1. Open the [free Alpha TI workspace](https://montrealai.github.io/AGI-Alpha-Agent-v0/transformational-intelligence/).
+   Use public, non-personal material, follow the guided comparison and save your project file.
+   The workspace explains the separate local steps needed for a native result.
+2. Continue **that same project** with the [Fleet project guide](https://github.com/MontrealAI/AGI-Fleet-Linux/blob/main/docs/transformational-project.md).
+   Keep its identifier and complete request, result and review history; retain the original downloaded files.
+3. This Manager boundary can inspect the native campaign without commissioning work.
+   Both native currency caps are zero. Manager refuses positive USDC proposals; Jobs’ AGIALPHA route stays separate.
+   A saved project is not a posted job or permission to pay or execute anything.
+
+This is a source preview. Final compatible releases and their qualification evidence remain pending;
+use the guides and evidence supplied with the versions you actually install.
+
+## Premiers pas — aperçu des sources
+
+1. Ouvrez l’[espace Alpha TI gratuit](https://montrealai.github.io/AGI-Alpha-Agent-v0/transformational-intelligence/).
+   Utilisez des données publiques non personnelles, suivez la comparaison guidée et enregistrez votre projet.
+   L’espace explique les étapes locales distinctes nécessaires pour obtenir un résultat natif.
+2. Poursuivez **ce même projet** avec le [guide Fleet](https://github.com/MontrealAI/AGI-Fleet-Linux/blob/main/docs/transformational-project.md).
+   Conservez son identifiant, les demandes, résultats et revues antérieurs, ainsi que les fichiers d’origine.
+3. Cette interface Manager peut inspecter la campagne native sans commander de travail.
+   Les deux plafonds monétaires natifs sont zéro. Manager refuse les propositions USDC positives;
+   le parcours AGIALPHA de Jobs reste distinct.
+   Un projet enregistré ne publie pas de mandat et ne donne aucune permission de paiement ou d’exécution.
+
+Il s’agit d’un aperçu des sources. La qualification des versions compatibles reste à terminer;
+consultez les guides et les preuves correspondant aux versions réellement installées.
+
 The specification is the owner's attached October 2026 manuscript:
 
 | Input | SHA-256 |
@@ -92,6 +121,11 @@ slash/backslash network paths, are refused. Exact
 `sha256:` content digests remain data identifiers, not network provenance.
 The draft-only authorization-binding exception comes from the caller's parser
 mode; an imported schema name cannot enable it in a native request.
+Ordinary colon labels and punctuated `sha256:` content identifiers remain inert
+text. Explicit URI structure and known schemes are checked throughout the input;
+URL-named fields and their arrays require complete public HTTPS references or
+exact SHA256 content identifiers.
+No colon label or imported value is resolved, fetched or executed by this adapter.
 
 Native requests remain bounded to 4,000,000 UTF-8 bytes. Generated drafts retain
 the exact original request and may expand through JSON escaping; reinspection

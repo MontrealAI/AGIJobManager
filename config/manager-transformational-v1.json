@@ -263,7 +263,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "2d844ad37219bfa8ad77ed11c008d320931fddc6f838aa4afbafd4ed8cd4160f"
+        "sha256": "9d64b5eb33a04c6f4cbd4f6830046443468af6e8ecaf9ff37784878754613e00"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -386,7 +386,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "97888fb8f1638d77807f9d88d41fc169eb7bace4dd3368ef8b9c223deea86ae5"
+        "sha256": "1e4b053d2ceefd995b183d5253162c7339378ce148f5f040421a948068a87555"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -394,7 +394,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "1549c90ded9b166fab50470c1522bc88aff29394435eefc6184e8571504cb6aa"
+        "sha256": "b551689f2cfed371d25ccd9cb601d6ab095e09efcd368c8066501da7df55732e"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -483,7 +483,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "c443712266f91b57c5fd023c3b407e4b680465cde3e9d7e2d8ac8aa4662273a7"
+        "sha256": "a6a8083d40bf5883ec489a0c11aafd12d505c32839ad1f621bb68fbb9146455d"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -499,7 +499,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "a957a7143d9bc8b67d0d4a3cddb47cf948bbc75a9534075d8c184d86829086e1"
+        "sha256": "b47eecaae99c95b2d9c4d9a983fcae064c5719d6945166f1f2a7f5529566b9c8"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -540,6 +540,28 @@
         "sha256": "83cd337e8a699bcaf69c83b93055a6942f8f962066eca8f759178bcdbac64e62"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "site/content/en.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "83d3062d0b5e2aceea1d860f7cfc20f34e1187652ec3885e110f9a03627bd434"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "aa0d1d8f6368651ba09473a34699ed1d624742ea148137c63c1ce8682230a8ab"
+      },
+      "reason": "Insert one exact reviewed bilingual TI source-preview resource at the second position; preserve all surrounding website bytes."
+    },
+    "site/content/fr.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "2d2c0445240377f399a3a3f848324b7fb033d90ef74d06f396872c18ef437f05"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b35eb3197247345e75b9504424a2fd3caa2a71e4c8928bcf8adb76b1a4047a7f"
+      },
+      "reason": "Insert one exact reviewed bilingual TI source-preview resource at the second position; preserve all surrounding website bytes."
     },
     "ui/README.md": {
       "before": {
