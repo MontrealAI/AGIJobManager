@@ -66,7 +66,7 @@ export function render(t, data) {
   <a class="skip" href="#main">${e(t.skip)}</a>
   <header class="header"><div class="nav-wrap">
     <a class="brand" href="${fr ? "./" : "./"}" aria-label="AGI Jobs"><img src="${base}assets/mark.svg" alt="" width="36" height="36"><span>AGI Jobs<small>${fr ? "Faisons avancer vos idées" : "Let’s make it happen"}</small></span></a>
-    <nav aria-label="${fr ? "Navigation principale" : "Main navigation"}">${[["employer-welcome", t.easyStart.navLabel], ["ecosystem", t.ecosystem.nav], ["how-it-works", t.nav[0]], ["resources", t.nav[3]]].map(([id, label]) => `<a href="#${id}">${e(label)}</a>`).join("")}<a href="./successor/">${e(t.successor.nav)}</a></nav>
+    <nav aria-label="${fr ? "Navigation principale" : "Main navigation"}">${[["employer-welcome", t.easyStart.navLabel], ["ecosystem", t.ecosystem.nav], ["how-it-works", t.nav[0]], ["resources", t.nav[3]]].map(([id, label]) => `<a href="#${id}">${e(label)}</a>`).join("")}<a href="./successor/">${e(t.successor.nav)}</a><a href="./computer-receipt/">${fr ? 'Poursuivre Computer Use' : 'Continue Computer Use'}</a></nav>
     <div class="nav-actions"><button id="home-larger-text" type="button" disabled hidden aria-pressed="false"><span aria-hidden="true">Aa</span> ${e(t.easyStart.largerText)}</button><a class="language" href="${fr ? "../" : "./fr/"}" lang="${fr ? "en" : "fr"}" hreflang="${fr ? "en" : "fr"}">${e(t.language)}</a><a class="button button-small" data-employer-entry="header" href="./employers/">${e(t.easyStart.cta)} <span aria-hidden="true">→</span></a></div>
   </div></header>
   <main id="main">

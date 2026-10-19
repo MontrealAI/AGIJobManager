@@ -45,7 +45,10 @@ def validate_pages(root, pages, commit):
         data = (pages / name).read_bytes()
         require(len(data) == item['bytes'] and sha(data) == item['sha256'], 'Current Pages asset differs: ' + name)
     baseline = strict_json((root / 'docs/successor/PRESERVATION_BASELINE.json').read_bytes())
-    for name in baseline['routes'] + ['successor/index.html', 'fr/successor/index.html']:
+    for name in baseline['routes'] + ['successor/index.html', 'fr/successor/index.html',
+            'computer-receipt/index.html', 'fr/computer-receipt/index.html',
+            'assets/computer-receipt/app.mjs', 'assets/computer-receipt/history.mjs',
+            'assets/computer-receipt/adapter.mjs', 'assets/computer-receipt/inspectors.mjs']:
         require(name in actual, 'Current Pages route is missing: ' + name)
 
 
