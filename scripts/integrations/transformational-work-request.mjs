@@ -18,14 +18,15 @@ const isDigest = value => typeof value === 'string' && /^[0-9a-f]{64}$/.test(val
 const nativeDigest = (domain, value) => sha('successor-omega/v1:' + domain + '\0' + canonical(value));
 const credentialKeys = new Set(['password', 'passwd', 'apikey', 'privatekey', 'seedphrase', 'accesstoken',
   'refreshtoken', 'bearertoken', 'authtoken', 'clientsecret', 'signingkey', 'secret', 'credentials',
-  'token', 'authorization', 'idtoken', 'sessiontoken', 'apisecret', 'secretkey', 'credential']);
+  'token', 'authorization', 'auth', 'authentication', 'idtoken', 'sessiontoken', 'apisecret', 'secretkey', 'credential']);
 const normalizedKey = key => key.toLowerCase().replace(/[^a-z0-9]/g, '');
 function credentialKey(key) {
   const name = normalizedKey(key);
-  return credentialKeys.has(name) || /(?:password|passwd|apikey|privatekey|seedphrase|authorization|clientsecret|signingkey|secret|credential)/.test(name) || name.endsWith('token');
+  return credentialKeys.has(name) || /(?:password|passwd|apikey|privatekey|seedphrase|authentication|authorization|clientsecret|signingkey|secret|credential)/.test(name) || name.endsWith('token') || name.endsWith('auth');
 }
 function publicUrls(value) {
-  for (const match of value.matchAll(/https?:\/\/[^\s"<>]+/gi)) {
+  const normalized = value.replace(/[\t\r\n]/g, '');
+  for (const match of normalized.matchAll(/https?:[^\s"<>]+/gi)) {
     let url;
     try { url = new URL(match[0]); } catch { need(false, 'TRANSFORMATION_PRIVATE_URL'); }
     const host = url.hostname.replace(/^\[|\]$/g, '');
@@ -38,9 +39,14 @@ function publicUrls(value) {
   }
 }
 function rejectCredentialFields(value, path = [], root = value) {
-  if (typeof value === 'string') { publicUrls(value); return; }
+  if (typeof value === 'string') {
+    publicOnly(value);
+    need(!/\bBearer\s+\S{6,}/i.test(value), 'TRANSFORMATION_PRIVATE_FIELD');
+    publicUrls(value); return;
+  }
   if (value === null || typeof value !== 'object') return;
   for (const [key, child] of Object.entries(value)) {
+    publicOnly(key);
     const inertAuthorization = path.length === 0 && key === 'authorization' && child && typeof child === 'object'
       && !Array.isArray(child) && Object.keys(child).sort().join('|') === 'authority_expansion|binding|scope'
       && child.scope === 'local-bounded' && child.authority_expansion === false && (child.binding === null || isDigest(child.binding));
@@ -55,7 +61,6 @@ function rejectCredentialFields(value, path = [], root = value) {
 function read(raw, maximum) {
   need(typeof raw === 'string' && Buffer.byteLength(raw, 'utf8') <= maximum, 'TRANSFORMATION_DRAFT_SIZE');
   const value = parseStrict(raw, maximum);
-  publicOnly(canonical(value));
   rejectCredentialFields(value);
   return value;
 }
