@@ -12,10 +12,10 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 PROFILE = 'manager-transformational-v1'
 MANIFEST = 'config/manager-transformational-v1.json'
 VERIFIER = 'scripts/release/transformational-profile.py'
-BASE = 'f4a50134ba8d3a5ded9650565cbdb737a00c1189'
-TREE = '0e7e3577d1476cbf5135c7cb42dc1e25eef7c44b'
+BASE = '18da53cdf1cd67f6e4dc646e6b1fc0c7c33379dd'
+TREE = 'ce090d08fd53a335a56189087b40188c7a7f99de'
 VERSION = '1.19.5'
-PREVIOUS_PINS = {'scripts/release/correction-profile.py': '9f24e5c12ce6652b54043c0d03d58fe885183d5b53a74dbdb685177e0430eab6', 'config/manager-boundary-corrections-v1.json': '0475bdcf1e6c2a1c5b593a4de4a2c2c63cad16757931c1badb5c6c802df9a9ef', 'scripts/release/test-correction-profile.py': '59cd824c0fcfe795a0fca66434b2bcbb6e8355dd01d35872d6069ada0e94e066', 'scripts/release/publication-authorization.py': '57eb5696e7927a1aadb5fd74eb3d61782bc733402e441d521605dda1105ba63e', 'scripts/release/test-publication-authorization.py': 'dc460963017a883bffc7b6fe0fc9cf41d3084cef740ea31816701df6bc18c9b5', 'scripts/release/run-correction-preservation.py': 'a76644c45e7fc1d0f911188e7ce26e55eaee7ff560a99c6cb02f77c5e659dd97', 'scripts/release/release_common.py': 'e4ba17be0398e47e2165f76be7ebe650190dc9f93f0807c0d6435485656f2440', 'scripts/release/pages-publication.py': '3f802a61a51ce958e1e447d3a428c03f0df1f71dc9d28671b608ac33d675b1f1', 'scripts/release/test-pages-publication.py': '3d26b831c5cb529d79f66341a8300e99962939b5031e0cc97d7922159a296f1e'}
+PREVIOUS_PINS = {'scripts/release/correction-profile.py': 'd029dcf76de84bf4875169e4b5847bb282f57d8de3556b1967fed11c91430a53', 'config/manager-boundary-corrections-v1.json': 'b93b16f1d0d4a580c04f22f649e8dd365918f435a71a8adc0f5c495e60965341', 'scripts/release/test-correction-profile.py': '4c6642b89bb583b993c4e6d73c75daf706e4987e3f30da732ada80705fc3b7e6', 'scripts/release/publication-authorization.py': '57eb5696e7927a1aadb5fd74eb3d61782bc733402e441d521605dda1105ba63e', 'scripts/release/test-publication-authorization.py': 'dc460963017a883bffc7b6fe0fc9cf41d3084cef740ea31816701df6bc18c9b5', 'scripts/release/run-correction-preservation.py': 'a76644c45e7fc1d0f911188e7ce26e55eaee7ff560a99c6cb02f77c5e659dd97', 'scripts/release/release_common.py': 'e4ba17be0398e47e2165f76be7ebe650190dc9f93f0807c0d6435485656f2440', 'scripts/release/pages-publication.py': '3f802a61a51ce958e1e447d3a428c03f0df1f71dc9d28671b608ac33d675b1f1', 'scripts/release/test-pages-publication.py': '3d26b831c5cb529d79f66341a8300e99962939b5031e0cc97d7922159a296f1e'}
 for name, digest in PREVIOUS_PINS.items():
     if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
         raise ValueError('Immutable previous policy input differs: ' + name)

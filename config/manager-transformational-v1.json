@@ -1,8 +1,8 @@
 {
   "schema": "agijobmanager/transformational-source/v1",
   "profile": "manager-transformational-v1",
-  "baseCommit": "f4a50134ba8d3a5ded9650565cbdb737a00c1189",
-  "baseTree": "0e7e3577d1476cbf5135c7cb42dc1e25eef7c44b",
+  "baseCommit": "18da53cdf1cd67f6e4dc646e6b1fc0c7c33379dd",
+  "baseTree": "ce090d08fd53a335a56189087b40188c7a7f99de",
   "version": "1.19.5",
   "qualification": "PENDING_FINAL_SOURCE_MAIN_PUSH",
   "changes": {
@@ -116,11 +116,11 @@
     "docs/MAINNET_READINESS.md": {
       "before": {
         "mode": "100644",
-        "sha256": "dcc081c1ce4c1af142d9eb7e1408b2116869d15090d78b5c9cfb4968135b6319"
+        "sha256": "46d7c2c84af2fe8edbb258f0df4b1edea88cee07bdf52c05b8bf0506e778880c"
       },
       "after": {
         "mode": "100644",
-        "sha256": "ef143b7347c570ea9a1d267961faf823a40fc99a75a53ca88cc64845eb36ac3c"
+        "sha256": "89084977adc18f867b6292bfda393fe8df79b6a1c957c8b523bf1719269e316c"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -223,7 +223,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "a2c2d71f8785270fa9033573f89d671039ddeeca2da600eb922d7c104e586ec3"
+        "sha256": "eb61d9c00372d2274e6962ff7357adc593a165c06dbc23aa0f6737ce9cfbbcd3"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -499,7 +499,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "573ecd6aa011ab6a34502f9b2c2ddce0b30f4f5fac1a0ae51578397ce2718276"
+        "sha256": "d761eea1eef9b9a5658b937f76b7caf8adca242cb9fa4286866487b8f1fc109f"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -544,11 +544,11 @@
     "scripts/site/browser-test.mjs": {
       "before": {
         "mode": "100644",
-        "sha256": "ef4146606eb6c35c596d6e0e0993b5f7192750582d3ee5cdaa62bd443a030c58"
+        "sha256": "de14a271fc73d515aeeb0b21b940dd006e1b90567fe68d0f8bd6152e43960098"
       },
       "after": {
         "mode": "100644",
-        "sha256": "43ef339f5cb73e666b885a0103885fe96a5b73ab6ab9eaf87d8af7ed5fa24a4c"
+        "sha256": "4c80b5ac1d5338d89300ff463d725e32b9b91572acd87a70c1aaea93e18dbeed"
       },
       "reason": "Change only the two exact resource-card counts from 12 to 13; preserve every other existing browser assertion through byte-exact normalization."
     },
