@@ -123,7 +123,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "dcc081c1ce4c1af142d9eb7e1408b2116869d15090d78b5c9cfb4968135b6319"
+        "sha256": "46d7c2c84af2fe8edbb258f0df4b1edea88cee07bdf52c05b8bf0506e778880c"
       },
       "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
     },
