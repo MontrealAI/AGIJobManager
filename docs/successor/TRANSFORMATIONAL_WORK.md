@@ -126,6 +126,7 @@ text. Explicit URI structure and known schemes are checked throughout the input;
 URL-named fields and their arrays require complete public HTTPS references or
 exact SHA256 content identifiers.
 No colon label or imported value is resolved, fetched or executed by this adapter.
+Tabs and line breaks retain token boundaries rather than joining adjacent URI references.
 
 Native requests remain bounded to 4,000,000 UTF-8 bytes. Generated drafts retain
 the exact original request and may expand through JSON escaping; reinspection

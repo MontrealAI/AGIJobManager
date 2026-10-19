@@ -239,6 +239,28 @@ test('explicit URI shapes, known active schemes and URL-named fields retain stri
   assert.deepEqual(await inspectTransformationWorkRequest(canonical(request), options(request)), request);
 });
 
+test('prose control separators keep independent URL references and benign multiline labels separate', async () => {
+  for (const separator of ['\t', '\r', '\n', '\r\n']) {
+    let invoked = false;
+    const request = campaign(x => { x.charter.purpose = 'https://example.invalid/' + separator + 'file:///fixture'; });
+    await assert.rejects(inspectTransformationWorkRequest(canonical(request), {
+      ...options(request), inspectWorkRequest:async () => { invoked = true; },
+    }), /TRANSFORMATION_PRIVATE_URL/);
+    assert.equal(invoked, false);
+  }
+  const request = campaign(x => { x.charter.purpose = 'Phase:Plan\nSource:\thttps://github.com/MontrealAI'; });
+  assert.deepEqual(await inspectTransformationWorkRequest(canonical(request), options(request)), request);
+  const raw = await createTransformationWorkDraft(canonical(request), options(request));
+  assert.equal((await inspectTransformationWorkDraft(raw, options(request))).original, canonical(request));
+  const changed = JSON.parse(raw);
+  changed.original = canonical(campaign(x => { x.charter.purpose = 'https://example.invalid/\nfile:///fixture'; }));
+  let invoked = false;
+  await assert.rejects(inspectTransformationWorkDraft(resign(changed), {
+    ...options(request), inspectWorkRequest:async () => { invoked = true; },
+  }), /TRANSFORMATION_PRIVATE_URL/);
+  assert.equal(invoked, false);
+});
+
 test('large valid generated drafts reopen under their declared bound while the default public screen stays bounded', async () => {
   const request = campaign(x => { x.charter.purpose = '"'.repeat(1_899_000); });
   const requestRaw = canonical(request);

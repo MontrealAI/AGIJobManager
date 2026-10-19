@@ -25,7 +25,7 @@ function credentialKey(key) {
   return credentialKeys.has(name) || /(?:password|passwd|apikey|privatekey|seedphrase|authentication|authorization|clientsecret|signingkey|secret|credential)/.test(name) || name.endsWith('token') || name.endsWith('auth');
 }
 function publicUrls(value, urlField = false) {
-  const normalized = value.replace(/[\t\r\n]/g, '');
+  const normalized = value.replace(/[\t\r\n]/g, ' ');
   // A prose label such as Phase:Plan is not a URL. Recognize explicit URI
   // structure and known schemes; URL fields require HTTPS or an exact digest.
   const references = urlField && normalized ? [normalized] : Array.from(normalized.matchAll(/(?<![a-z0-9+.-])(?:(?:https?|file|ftps?|wss?|s3|gs|ipfs|ipns|data|javascript|vbscript|blob|about|mailto|tel|sms|ssh|git|git\+ssh|nfs|smb|ldaps?|chrome|chrome-extension|moz-extension|intent|market|news|nntp|rtsp|urn|sha256):[^\s"<>]+|[a-z][a-z0-9+.-]*:[\/\\]+[^\s"<>]*|[a-z][a-z0-9+.-]*:[^:\s"<>]*[/?#@%][^:\s"<>]*|[\/\\]{2}[^\s"<>]+)/gi), match => match[0]);
@@ -45,6 +45,9 @@ function publicUrls(value, urlField = false) {
 }
 function rejectCredentialFields(value, path = [], draft = false, urlField = false) {
   if (typeof value === 'string') {
+    if (draft && path.length === 1 && path[0] === 'original') {
+      read(value, MAX_REQUEST); return;
+    }
     publicOnly(value);
     need(!/\bBearer\s+\S{6,}/i.test(value), 'TRANSFORMATION_PRIVATE_FIELD');
     publicUrls(value, urlField); return;

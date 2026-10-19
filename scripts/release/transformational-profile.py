@@ -113,6 +113,11 @@ WEBSITE_RESOURCE_INSERTIONS = {
 '''.encode('utf8'),
 }
 
+PUBLICATION_READINESS_FAILURE = '''      - name: Refuse superseded or unready publication
+        if: steps.readiness.outputs.ready != 'true'
+        run: exit 1
+'''
+
 VERSION_ONLY = PREVIOUS['VERSION_ONLY']
 UI_LABEL_ONLY = {'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html',
     'ui/agijobmanager-usdc.html', 'ui/src/generated/deployments.ts', 'ui/scripts/singlefile-template.html'}
@@ -251,6 +256,10 @@ def validate_plumbing(root, baseline):
         elif name.endswith('pages.yml'):
             text = text.replace('run-transformational-preservation.py', 'run-correction-preservation.py').replace('pages-publication-ti.py', 'pages-publication.py')
         else:
+            if name.endswith('publish-v114.yml'):
+                require(text.count(PUBLICATION_READINESS_FAILURE) == 1,
+                    'Unready or superseded publication must fail explicitly')
+                text = text.replace(PUBLICATION_READINESS_FAILURE, '', 1)
             text = text.replace('v1.19.5', 'v1.19.4').replace('manager-transformational-v1', 'manager-boundary-corrections-v1').replace('transformational-profile.py', 'correction-profile.py')
         require(sha(text.encode()) == baseline[name]['sha256'], 'Prior workflow or security gate changed beyond explicit TI additions: ' + name)
     guard = read(root, 'scripts/release/pages-publication-ti.py')[1].decode('utf8')

@@ -110,6 +110,15 @@ class TransformationalProfile(unittest.TestCase):
                 original + b'\n// changed browser checker bytes\n']:
             self.assertNotEqual(raw, original)
             self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_superseded_publication_cannot_be_repinned_to_success(self):
+        name = '.github/workflows/publish-v114.yml'
+        original = (self.root / name).read_bytes()
+        guard = P['PUBLICATION_READINESS_FAILURE'].encode()
+        for changed in [b'', guard.replace(b"ready != 'true'", b"ready == 'true'"),
+                guard.replace(b'run: exit 1', b'run: exit 0')]:
+            raw = original.replace(guard, changed)
+            self.assertNotEqual(raw, original)
+            self.mutate(name, raw, lambda: self.repin(name, raw))
     def test_all_reviewed_corrections_are_required(self):
         manifest = json.loads((self.root / P['MANIFEST']).read_bytes())
         self.assertEqual(set(manifest['changes']), P['ALLOWED'])

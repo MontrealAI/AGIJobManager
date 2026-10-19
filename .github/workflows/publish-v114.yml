@@ -44,6 +44,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/release/wait-qualification.py --source "$SOURCE_COMMIT"
+      - name: Refuse superseded or unready publication
+        if: steps.readiness.outputs.ready != 'true'
+        run: exit 1
       - name: Consume completed exact-source runs and immutable candidate artifact
         if: steps.readiness.outputs.ready == 'true'
         env:
