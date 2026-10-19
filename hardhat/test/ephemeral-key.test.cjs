@@ -184,7 +184,7 @@ for (const [name, data] of invalidCases) {
     const { input, output } = fixture(t);
     const promise = promptPrivateKey({ input, output });
     const bytes = input.send(data);
-    input.send('\r');
+    if (!/[\r\n]/.test(data)) input.send('\r');
     await assertSanitized(promise, 'EPHEMERAL_KEY_INVALID');
     assertClean(input);
     assert.equal(bytes.every((byte) => byte === 0), true);

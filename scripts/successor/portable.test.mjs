@@ -30,6 +30,19 @@ for (const kind of ['analyst', 'website']) test(`portable ${kind}: work, gap, dr
   assert.equal(state.active, original.id);
 });
 
+test('portable plan validation rechecks public-only mission bytes after recomputed checksums', async () => {
+  const { canonical, sha256 } = await import('../../site/assets/successor/safe.mjs');
+  const run = await runCandidate(await createSystem(defaultMission()), 'baseline', '0'.repeat(64));
+  const state = await chooseCandidate(run.state, run.candidate.id, 'keep');
+  const plan = await prepareImprovement(state, { budget: '100' });
+  const mission = JSON.parse(plan.immutableInputs[0].content);
+  mission.input = 'id,category,value\na,person@example.com,1';
+  plan.immutableInputs[0].content = canonical(mission);
+  plan.missionSha256 = plan.immutableInputs[0].sha256 = await sha256(plan.immutableInputs[0].content);
+  const { commitment, ...payload } = plan; plan.commitment = await sha256(payload);
+  await assert.rejects(validateImprovement(plan), { code: 'PRIVATE_INPUT' });
+});
+
 test('report row associations, exact columns, completeness and closed visible presentation reject planted defects', async () => {
   const {executeMission}=await import('../../site/assets/successor/missions.mjs');
   const {checkArtifacts}=await import('../../site/assets/successor/checker.mjs');

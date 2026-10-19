@@ -92,6 +92,25 @@ test('actual computer-work validator accepts exact runtime/input-bound compilati
   const bad = structuredClone(context); bad.inputs[0].sha256 = 'b'.repeat(64); await assert.rejects(compileComputerWork(plan, bad, 1900000000));
   bad.inputs = context.inputs; bad.deadline = 1900000001; await assert.rejects(compileComputerWork(plan, bad, 1900000000), { code: 'EXECUTION_WINDOW' });
 });
+test('recomputed improvement checksums cannot classify personal or invalid mission input as public', async () => {
+  const original = await prepareImprovement(await selected(), { budget: '100' });
+  for (const mutate of [
+    mission => { mission.input = 'id,category,value\na,person@example.com,1'; },
+    mission => { mission.rights = 'api_key=synthetic-private-fixture'; },
+    mission => { mission.limits.network = true; },
+    mission => { mission.schema = 'untrusted-mission/v1'; },
+  ]) {
+    const plan = structuredClone(original), mission = JSON.parse(plan.immutableInputs[0].content);
+    mutate(mission); plan.immutableInputs[0].content = canonical(mission);
+    plan.missionSha256 = plan.immutableInputs[0].sha256 = await sha256(plan.immutableInputs[0].content);
+    const { commitment, ...payload } = plan; plan.commitment = await sha256(payload);
+    await assert.rejects(validateImprovement(plan));
+    await assert.rejects(compileComputerWork(plan, null, 1900000000));
+  }
+  const plan = structuredClone(original); plan.goal = 'Contact person@example.com';
+  const { commitment, ...payload } = plan; plan.commitment = await sha256(payload);
+  await assert.rejects(validateImprovement(plan), { code: 'PRIVATE_INPUT' });
+});
 test('acyclic plans require accepted downstream hashes and reserve all costs before receipts', () => {
   const a = { id: 'a', dependencies: [], costBaseUnits: '100', acceptedInputs: [] }, b = { id: 'b', dependencies: ['a'], costBaseUnits: '80', acceptedInputs: [{ stage: 'a', artifactSha256: hash, independentlyAccepted: true }] };
   assert.equal(validateGraph([a, b], '180').atomicSettlement, false); assert.throws(() => validateGraph([a, b], '179'), { code: 'PLAN_CAPITAL' });

@@ -1,6 +1,7 @@
 import { emptyDraft, validateDraft, toMetadata, toConsoleDraft, normalizeBudget, publicInputURLs } from '../employer-model.mjs';
 import { parseUSDC, splitPayment } from '../payments.mjs';
-import { fail, keys, text, canonical, sha256, isHash, publicOnly } from './safe.mjs';
+import { fail, keys, text, canonical, sha256, isHash, publicOnly, parseStrict } from './safe.mjs';
+import { validateMission } from './missions.mjs';
 
 export function planAlternatives(state) {
   const active = state.candidates.find(c => c.id === state.active);
@@ -32,6 +33,7 @@ export async function prepareImprovement(state, { budget, repairReserve = '0', d
 }
 export async function validateImprovement(plan) {
   fail(plan && typeof plan === 'object', 'PLAN');
+  publicOnly(canonical(plan));
   keys(plan, ['schema', 'missionSha256', 'candidateSha256', 'goal', 'currency', 'pricing', 'successfulIllustration', 'draft', 'metadata', 'consoleDraft', 'immutableInputs', 'outputByteLimit', 'maxSeconds', 'dependencies', 'mode', 'authorization', 'payment', 'blockers', 'commitment'], 'PLAN_FIELDS');
   const { commitment, ...record } = plan; fail(isHash(commitment) && commitment === await sha256(record), 'PLAN_CHANGED');
   fail(plan.schema === 'agijobmanager/successor-improvement-draft/v1' && plan.mode === 'draft-only' && plan.authorization === 'none' && plan.payment === 'unfunded', 'AUTHORITY_NONE');
@@ -42,6 +44,8 @@ export async function validateImprovement(plan) {
   fail(plan.pricing.reservedFunds === false && plan.pricing.quote === false, 'AUTHORITY_NONE');
   fail(Array.isArray(plan.immutableInputs) && plan.immutableInputs.length === 1 && plan.immutableInputs[0].name === 'mission.json' && plan.immutableInputs[0].sha256 === plan.missionSha256 && canonical(plan.dependencies) === '[]' && plan.outputByteLimit === 300000 && plan.maxSeconds === 600, 'PLAN_BOUNDS');
   for (const input of plan.immutableInputs) { keys(input, ['name', 'content', 'sha256'], 'INPUT_FIELDS'); fail(input.sha256 === await sha256(input.content), 'INPUT_CHANGED'); }
+  const mission = validateMission(parseStrict(plan.immutableInputs[0].content));
+  fail(canonical(mission) === plan.immutableInputs[0].content, 'MISSION_CHANGED');
   return plan;
 }
 export function validateGraph(stages, ceilingBaseUnits) {
