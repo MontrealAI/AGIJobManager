@@ -158,6 +158,14 @@ test('decoded private inputs and ambiguous duplicate fields are refused before n
     ...options(bearer), inspectWorkRequest:async () => { invoked = true; },
   }), /TRANSFORMATION_PRIVATE_FIELD/);
   assert.equal(invoked, false);
+  const forgedDraft = campaign(x => {
+    x.schema = 'agijobmanager/transformational-work-draft/v1';
+    x.bindings.authorizationBinding = 'a'.repeat(64);
+  });
+  await assert.rejects(inspectTransformationWorkRequest(canonical(forgedDraft), {
+    ...options(forgedDraft), inspectWorkRequest:async raw => { invoked = true; return parseStrict(raw); },
+  }), /TRANSFORMATION_PRIVATE_FIELD/);
+  assert.equal(invoked, false);
 });
 
 test('public provenance is credential-free HTTPS DNS and refuses private or ambiguous URL forms before native inspection', async () => {
@@ -170,7 +178,9 @@ test('public provenance is credential-free HTTPS DNS and refuses private or ambi
     'https://example.invalid/paper?X-Amz-Credential=synthetic-fixture', 'https://example.invalid/paper#access_token=synthetic-fixture',
     'https:\\\\127.0.0.1/paper', 'https:\t//127.0.0.1/paper', 'ht\ttps://127.0.0.1/paper',
     'https:\n//10.0.0.1/paper', 'https:2130706433/paper', 'https:\\\\[::1]/paper',
-    'https://example.invalid/paper?auth=synthetic-fixture', 'https://example.invalid/paper?authentication=synthetic-fixture']) {
+    'https://example.invalid/paper?auth=synthetic-fixture', 'https://example.invalid/paper?authentication=synthetic-fixture',
+    'ftp://127.0.0.1/private', 'file:///private/document', 'ws://127.0.0.1/socket', 's3://public-bucket/document',
+    'data:text/plain,fixture', 'javascript:fixture()', '//127.0.0.1/private', '//github.com/MontrealAI', '\\\\127.0.0.1/private']) {
     const request = campaign(x => { x.charter.purpose = 'Inspect ' + url; });
     await assert.rejects(inspectTransformationWorkRequest(canonical(request), {
       ...options(request), inspectWorkRequest:async () => { invoked = true; },
@@ -179,6 +189,11 @@ test('public provenance is credential-free HTTPS DNS and refuses private or ambi
   }
   const request = campaign(x => { x.charter.purpose = 'Inspect https://github.com/MontrealAI/AGI-Alpha-Agent-v0?page=1'; });
   assert.deepEqual(await inspectTransformationWorkRequest(canonical(request), options(request)), request);
+  const privateName = campaign(x => { x.bindings.configuration = { 'ftp://127.0.0.1/private':'fixture' }; });
+  await assert.rejects(inspectTransformationWorkRequest(canonical(privateName), {
+    ...options(privateName), inspectWorkRequest:async () => { invoked = true; },
+  }), /TRANSFORMATION_PRIVATE_URL/);
+  assert.equal(invoked, false);
 });
 
 test('large valid generated drafts reopen under their declared bound while the default public screen stays bounded', async () => {

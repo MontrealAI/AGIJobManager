@@ -87,6 +87,10 @@ parameters. IP literals (including normalized IPv4 and IPv6), local names and
 private-network forms are refused even when the WHATWG URL parser normalizes
 backslashes, omitted slashes or embedded ASCII tab/newline characters. This performs no DNS resolution or fetching;
 source-rights review and execution-time network admission remain separate.
+Non-HTTPS absolute URLs and scheme-relative references are refused. Exact
+`sha256:` content digests remain data identifiers, not network provenance.
+The draft-only authorization-binding exception comes from the caller's parser
+mode; an imported schema name cannot enable it in a native request.
 
 Native requests remain bounded to 4,000,000 UTF-8 bytes. Generated drafts retain
 the exact original request and may expand through JSON escaping; reinspection
