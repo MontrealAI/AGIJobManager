@@ -25,10 +25,26 @@ class PublicationAuthorization(unittest.TestCase):
         if endpoint == 'git/ref/heads/main': return {'object': {'sha': SOURCE}}
         raise AssertionError('Unexpected public metadata request')
     def authorize(self): return AUTH['authorize'](self.env, SOURCE, self.api, {'workflow_run': self.run})
-    def test_exact_qualified_completion_and_manual_confirmation_are_allowed(self):
-        self.assertIn('qualification-completion', self.authorize())
+    def test_only_manual_confirmation_is_allowed(self):
+        with self.assertRaisesRegex(ValueError, 'explicit workflow_dispatch'): self.authorize()
         self.env['GITHUB_EVENT_NAME'] = 'workflow_dispatch'
         self.assertEqual(self.authorize(), 'manual-confirmed-main')
+    def test_automatic_completion_is_refused_before_reading_evidence_or_api(self):
+        def refuse_api(endpoint): raise AssertionError('Non-dispatch publication must not read API evidence')
+        for event_name in ('workflow_run', 'push', 'pull_request', 'schedule', None):
+            env = {**self.env, 'GITHUB_EVENT_NAME': event_name, 'GITHUB_EVENT_PATH': '/not-read'}
+            with self.subTest(event=event_name), self.assertRaisesRegex(ValueError, 'explicit workflow_dispatch'):
+                AUTH['authorize'](env, SOURCE, refuse_api, {'workflow_run': self.run})
+    def test_manual_confirmation_still_requires_exact_main_repository_and_source(self):
+        env = {**self.env, 'GITHUB_EVENT_NAME': 'workflow_dispatch'}
+        for key, value in [('GITHUB_REF', 'refs/heads/feature'), ('GITHUB_REPOSITORY', 'other/repository'),
+                ('RELEASE_PUBLISH_CONFIRMATION', 'PUBLISH_other'), ('RELEASE_PUBLISH_CONFIRMATION', ''),
+                ('GITHUB_EVENT_NAME', 'workflow_run')]:
+            with self.subTest(key=key, value=value), self.assertRaises(ValueError):
+                AUTH['authorize']({**env, key: value}, SOURCE, self.api)
+        for source in ('', 'a' * 39, 'b' * 41, 'not-a-sha'):
+            with self.subTest(source=source), self.assertRaises(ValueError):
+                AUTH['authorize'](env, source, self.api)
     def test_unrelated_events_branches_repositories_or_confirmation_are_rejected(self):
         for key, value in [('GITHUB_EVENT_NAME', 'push'), ('GITHUB_EVENT_NAME', 'pull_request'),
                 ('GITHUB_REF', 'refs/heads/feature'), ('GITHUB_REPOSITORY', 'other/repository'),

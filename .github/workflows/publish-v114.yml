@@ -1,8 +1,5 @@
 name: Publish reviewed release after final-source qualification
 on:
-  workflow_run:
-    workflows: ['Release Candidate Preparation']
-    types: [completed]
   workflow_dispatch:
     inputs:
       confirmation:
@@ -17,12 +14,12 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main' && ((github.event_name == 'workflow_dispatch' && inputs.confirmation == 'PUBLISH_v1.19.5') || (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.conclusion == 'success'))
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.confirmation == 'PUBLISH_v1.19.5'
     runs-on: ubuntu-latest
     timeout-minutes: 65
     env:
-      SOURCE_COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
-      RELEASE_PUBLISH_CONFIRMATION: ${{ github.event_name == 'workflow_run' && 'PUBLISH_v1.19.5' || inputs.confirmation }}
+      SOURCE_COMMIT: ${{ github.sha }}
+      RELEASE_PUBLISH_CONFIRMATION: ${{ inputs.confirmation }}
     permissions:
       contents: write
       actions: read
@@ -31,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020

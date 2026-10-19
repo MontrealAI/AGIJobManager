@@ -59,6 +59,7 @@ ALLOWED = {
     'hardhat/package.json',
     'package-lock.json',
     'package.json',
+    'scripts/docs/release-alignment.mjs',
     'scripts/docs/templates/PRIVATE_FLEET.md.tpl',
     'scripts/docs/templates/README.md.tpl',
     'scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl',
@@ -118,6 +119,22 @@ PUBLICATION_READINESS_FAILURE = '''      - name: Refuse superseded or unready pu
         if: steps.readiness.outputs.ready != 'true'
         run: exit 1
 '''
+
+PUBLICATION_MANUAL_ONLY = (
+    ("name: Publish reviewed release after final-source qualification\non:\n  workflow_dispatch:\n", "name: Publish reviewed release after final-source qualification\non:\n  workflow_run:\n    workflows: ['Release Candidate Preparation']\n    types: [completed]\n  workflow_dispatch:\n"),
+    ("    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.confirmation == 'PUBLISH_v1.19.5'\n", "    if: github.ref == 'refs/heads/main' && ((github.event_name == 'workflow_dispatch' && inputs.confirmation == 'PUBLISH_v1.19.5') || (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.conclusion == 'success'))\n"),
+    ("      SOURCE_COMMIT: ${{ github.sha }}\n", "      SOURCE_COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}\n"),
+    ("      RELEASE_PUBLISH_CONFIRMATION: ${{ inputs.confirmation }}\n", "      RELEASE_PUBLISH_CONFIRMATION: ${{ github.event_name == 'workflow_run' && 'PUBLISH_v1.19.5' || inputs.confirmation }}\n"),
+    ("          ref: ${{ github.sha }}\n", "          ref: ${{ github.event.workflow_run.head_sha || github.sha }}\n"),
+)
+
+PUBLICATION_AUTHORIZATION = "\"\"\"Authorize publication only after explicit confirmation on exact main source.\"\"\"\nfrom release_common import REPOSITORY, TAG, require, valid_sha\n\nTRIGGER_PATH = '.github/workflows/current-state-release.yml'\n\n\ndef authorize(environment, source, api, event=None):\n    require(valid_sha(source) and environment.get('GITHUB_REPOSITORY') == REPOSITORY and environment.get('GITHUB_REF') == 'refs/heads/main', 'Publication requires the exact main repository and source')\n    require(environment.get('RELEASE_PUBLISH_CONFIRMATION') == 'PUBLISH_' + TAG, 'Current-version publication authorization is required')\n    require(environment.get('GITHUB_EVENT_NAME') == 'workflow_dispatch', 'Publication requires explicit workflow_dispatch confirmation')\n    return 'manual-confirmed-main'\n".encode('utf8')
+
+RELEASE_PAGES_PARAGRAPH_BEFORE = "Merging runs website validation but does not publish Pages. After reviewing the applicable checks on the exact main revision, a maintainer must separately dispatch the GitHub Pages workflow with \\`publish: true\\` and \\`source_commit\\` equal to that revision's full SHA. A mismatched SHA stops the workflow. Release publication and intake activation remain separate decisions.".encode('utf8')
+RELEASE_PAGES_PARAGRAPH_AFTER = "Merging runs website validation but does not publish Pages. Software release publication requires a separate \\`workflow_dispatch\\` of the reviewed release publisher on the exact qualified main revision with confirmation \\`PUBLISH_${tag}\\`. Pages has two separate routes: the authenticated completion of that software publisher, or a maintainer dispatch after reviewing the applicable website checks with \\`publish: true\\` and \\`source_commit\\` equal to the reviewed main revision's full SHA. A mismatched or superseded SHA stops publication. Software publication does not authorize on-chain deployment or intake activation.".encode('utf8')
+RELEASE_GUIDE_PARAGRAPH_BEFORE = "Merging runs website validation but does not publish Pages. After reviewing the applicable checks on the exact main revision, a maintainer must separately dispatch the GitHub Pages workflow with `publish: true` and `source_commit` equal to that revision's full SHA. A mismatched SHA stops the workflow. Release publication and intake activation remain separate decisions.".encode('utf8')
+RELEASE_GUIDE_PARAGRAPH_AFTER = "Merging runs website validation but does not publish Pages. Software release publication requires a separate `workflow_dispatch` of the reviewed release publisher on the exact qualified main revision with confirmation `PUBLISH_v1.19.5`. Pages has two separate routes: the authenticated completion of that software publisher, or a maintainer dispatch after reviewing the applicable website checks with `publish: true` and `source_commit` equal to the reviewed main revision's full SHA. A mismatched or superseded SHA stops publication. Software publication does not authorize on-chain deployment or intake activation.".encode('utf8')
+RELEASE_GUIDE_PREDECESSOR_SHA256 = '0f7fe3a459f2e2bf6fa5276be823d350a11622ab90e675645d4622c2b6639b5b'
 
 VERSION_ONLY = PREVIOUS['VERSION_ONLY']
 UI_LABEL_ONLY = {'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html',
@@ -205,6 +222,14 @@ def validate_source(root, selection, paths=None):
                 'The deployment generator requires the exact reviewed TI paragraph at its original guide position')
             require(sha(data.replace(DEPLOYMENT_GUIDE_INSERTION, b'', 1)) == baseline[name]['sha256'],
                 'Deployment generator changed beyond the exact reviewed TI paragraph')
+        if name == 'scripts/docs/release-alignment.mjs':
+            require(data.count(RELEASE_PAGES_PARAGRAPH_AFTER) == 1
+                and sha(data.replace(RELEASE_PAGES_PARAGRAPH_AFTER, RELEASE_PAGES_PARAGRAPH_BEFORE, 1)) == baseline[name]['sha256'],
+                'Release guide generator changed beyond the exact reviewed publication paragraph')
+        if name == 'docs/RELEASE_GUIDE.md':
+            require(data.count(RELEASE_GUIDE_PARAGRAPH_AFTER) == 1
+                and sha(data.replace(RELEASE_GUIDE_PARAGRAPH_AFTER, RELEASE_GUIDE_PARAGRAPH_BEFORE, 1)) == RELEASE_GUIDE_PREDECESSOR_SHA256,
+                'Generated release guide changed beyond the exact reviewed publication paragraph')
         if name == 'scripts/site/check.mjs':
             current = b'    assert.equal((html.match(/class="resource"/g) || []).length, 13);'
             previous = current.replace(b', 13)', b', 12)')
@@ -267,11 +292,16 @@ def validate_plumbing(root, baseline):
             text = text.replace('run-transformational-preservation.py', 'run-correction-preservation.py').replace('pages-publication-ti.py', 'pages-publication.py')
         else:
             if name.endswith('publish-v114.yml'):
+                for current, previous in PUBLICATION_MANUAL_ONLY:
+                    require(text.count(current) == 1, 'Explicit manual publication boundary differs')
+                    text = text.replace(current, previous, 1)
                 require(text.count(PUBLICATION_READINESS_FAILURE) == 1,
                     'Unready or superseded publication must fail explicitly')
                 text = text.replace(PUBLICATION_READINESS_FAILURE, '', 1)
             text = text.replace('v1.19.5', 'v1.19.4').replace('manager-transformational-v1', 'manager-boundary-corrections-v1').replace('transformational-profile.py', 'correction-profile.py')
         require(sha(text.encode()) == baseline[name]['sha256'], 'Prior workflow or security gate changed beyond explicit TI additions: ' + name)
+    require(read(root, 'scripts/release/publication-authorization-ti.py')[1] == PUBLICATION_AUTHORIZATION,
+        'Publication authorization must remain explicit workflow_dispatch confirmation only')
     guard = read(root, 'scripts/release/pages-publication-ti.py')[1].decode('utf8')
     native_pages = "        native = runpy.run_path(str(ROOT / 'scripts/release/transformational-qualification.py'))\n        require(config.get('transformationQualification') == native['validate'](config, api, lambda job_id: gh('api', f'repos/{REPOSITORY}/actions/jobs/{job_id}/logs', '--method', 'GET', '--allow-escape-sequences').decode()), 'Pages native transformation qualification binding differs')\n"
     require(guard.count(native_pages) == 1, 'Additional live native Pages qualification is required')

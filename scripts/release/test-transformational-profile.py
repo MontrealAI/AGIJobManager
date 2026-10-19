@@ -133,6 +133,41 @@ class TransformationalProfile(unittest.TestCase):
             raw = original.replace(guard, changed)
             self.assertNotEqual(raw, original)
             self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_publication_boundary_repin_cannot_restore_automatic_or_unconfirmed_publication(self):
+        name = '.github/workflows/publish-v114.yml'
+        original = (self.root / name).read_bytes()
+        for current, previous in P['PUBLICATION_MANUAL_ONLY']:
+            self.assertEqual(original.count(current.encode()), 1)
+            raw = original.replace(current.encode(), previous.encode(), 1)
+            self.assertNotEqual(raw, original)
+            with self.subTest(boundary=current):
+                self.mutate(name, raw, lambda: self.repin(name, raw))
+        raw = original.replace(b" && inputs.confirmation == 'PUBLISH_v1.19.5'", b'')
+        self.assertNotEqual(raw, original)
+        self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_publication_helper_repin_cannot_weaken_dispatch_confirmation_or_source(self):
+        name = 'scripts/release/publication-authorization-ti.py'
+        original = (self.root / name).read_bytes()
+        for before, after in [(b"== 'workflow_dispatch'", b"in ('workflow_dispatch', 'workflow_run')"),
+                (b"== 'PUBLISH_' + TAG", b"is not None"),
+                (b"== 'refs/heads/main'", b"!= 'refs/heads/other'"),
+                (b'valid_sha(source)', b'True')]:
+            raw = original.replace(before, after)
+            self.assertNotEqual(raw, original)
+            with self.subTest(guard=before): self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_release_guide_and_generator_repins_cannot_change_other_bytes_or_move_the_paragraph(self):
+        for name, before, after in [('scripts/docs/release-alignment.mjs', P['RELEASE_PAGES_PARAGRAPH_BEFORE'], P['RELEASE_PAGES_PARAGRAPH_AFTER']),
+                ('docs/RELEASE_GUIDE.md', P['RELEASE_GUIDE_PARAGRAPH_BEFORE'], P['RELEASE_GUIDE_PARAGRAPH_AFTER'])]:
+            original = (self.root / name).read_bytes()
+            self.assertEqual(original.count(after), 1)
+            for raw in [original.replace(after, before), original.replace(after, b''),
+                    original.replace(after, after + after),
+                    original.replace(after, after.replace(b'PUBLISH_', b'AUTO_PUBLISH_')),
+                    original.replace(after, b'', 1) + after,
+                    original + b'\nChanged unrelated guide bytes\n']:
+                self.assertNotEqual(raw, original)
+                with self.subTest(name=name, variant=sha(raw)):
+                    self.mutate(name, raw, lambda: self.repin(name, raw))
     def test_all_reviewed_corrections_are_required(self):
         manifest = json.loads((self.root / P['MANIFEST']).read_bytes())
         self.assertEqual(set(manifest['changes']), P['ALLOWED'])

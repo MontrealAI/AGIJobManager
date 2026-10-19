@@ -57,7 +57,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "5b82701c1364ce1f34e0cae076d9d910d789a34471dbd497c1fc66c826d1b606"
+        "sha256": "27ba1fece5d699efde5d82d674f3accf9668f9fab61643a66711e54c06665a85"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -153,7 +153,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "0f7fe3a459f2e2bf6fa5276be823d350a11622ab90e675645d4622c2b6639b5b"
+        "sha256": "62a38597dc7562f51cc72eaa685f0b6639447111a4f56686eeee8cd2facd9211"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -333,6 +333,17 @@
       },
       "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
     },
+    "scripts/docs/release-alignment.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "7b12af68b107d20d5eaaad622fe3d4be22ece629a883af651349938ddaebbd3a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "439413e66d4bbf7bfc21849ff45772129caa15e2c05531d99d6785d19e4aa085"
+      },
+      "reason": "Keep the generated release/Pages guide coherent with explicit confirmed software publication; all other generator bytes remain exact"
+    },
     "scripts/docs/templates/PRIVATE_FLEET.md.tpl": {
       "before": {
         "mode": "100644",
@@ -432,7 +443,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "47eaf2731f35c9a7ad7dc93eac424060df49dc65ad53b6052152a2e3340a3d32"
+        "sha256": "5b21e0b63c8e83c3f8d9f611cb6323c418ff63781cf61141f5147e59ca60a867"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -475,7 +486,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "488b11ec93312d82ab1b8525922c94177b56b696a74dfe0f4d99de336d7bc4aa"
+        "sha256": "2ed93266e8add32bd65f3bd87571fadda3b8a8597ff716397968b489525e18e6"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -483,7 +494,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "2646e061bfc774fbe225f6fc40a1feddad7fe6e7f3f859ef09b83014c78a61ed"
+        "sha256": "25fd8d58d2fe8d425ee9b9e73aa5459ee0aa931c016904f327c1802a06f974b9"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -499,7 +510,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "5f19957eb83e15436c859c83056f14c37b281faddaf1a70431ef2ec2a53101e8"
+        "sha256": "5745e59cf2f4d1e50457f3dbdd2ee98b71c465e89f1bb6608ac7a91e981681c7"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
