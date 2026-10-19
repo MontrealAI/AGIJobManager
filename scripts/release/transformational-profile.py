@@ -223,7 +223,7 @@ def validate_plumbing(root, baseline):
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGI-Alpha-Agent-v0
-          ref: dbaf5696d64ddcbf133f05d88d35496ebb85c3f0
+          ref: c6459bdfb509b10f0d757eb332775902a4bb04b7
           path: build/alpha-ti-source
           persist-credentials: false
       - name: Validate native transformation campaign boundary
@@ -270,7 +270,7 @@ def validate_plumbing(root, baseline):
     source = strict_json(read(root, 'config/transformational-alpha-source.json')[1])
     require(source == {
         'schema': 'agijobmanager/transformational-alpha-source/v1', 'repository': 'MontrealAI/AGI-Alpha-Agent-v0',
-        'commit': 'dbaf5696d64ddcbf133f05d88d35496ebb85c3f0', 'tree': '30dc828703a6e9cd64103e0ebc965fc701e9bcf3',
+        'commit': 'c6459bdfb509b10f0d757eb332775902a4bb04b7', 'tree': 'c25ac996e27eb317c795809f923431f9e4ab4933',
         'fixturePath': 'examples/transformational-intelligence/campaign.json', 'files': {
             'docs/assets/successor/engine.mjs': '38c4f38978bf9fc29f207bae3adee0755bc6530d04502a36c491cc430787e488',
             'examples/transformational-intelligence/campaign.json': 'fa5f570e89c20cffd0df844869047a7c0594c5460c3e95df5ada44592ea4fd20',

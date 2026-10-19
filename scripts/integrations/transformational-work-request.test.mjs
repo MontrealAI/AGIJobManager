@@ -291,3 +291,27 @@ test('input bounds, canonical clock and repeated inspection have deterministic r
   await assert.rejects(createTransformationWorkDraft(canonical(request), { ...options(request), createdAt:'2026-10-19' }), /TRANSFORMATION_DRAFT_CLOCK/);
   await assert.rejects(inspectTransformationWorkDraft(raw + '\n', options(request)), /TRANSFORMATION_DRAFT_INTEGRITY/);
 });
+
+
+test('ordinary punctuation-separated public references preserve exact prose and HTTPS authorities', async () => {
+  for (const prose of [
+    'Sources: https://docs.example/one,https://reference.example/two',
+    'Source: https://docs.example/Phase:Plan?edition=1',
+    'Source: https://docs.example/Phase:Plan%20Notes',
+    'Source: https://docs.example/edition?chapter=Phase:Plan/overview',
+    'Source: https://docs.example/edition?chapter=Phase:Plan@Overview',
+    'Sources (https://docs.example/one);https://reference.example/two',
+    'Phase:Plan; status:ready. https://docs.example:443/one?chapter=Phase:Plan',
+    'Public edition: https:docs.example:443/one,https://reference.example/two',
+    'Phase:Plan\nReview:Ready https://docs.example/one;\thttps://reference.example/two',
+  ]) {
+    const request = campaign(value => { value.transformation.provenance = prose;
+      value.transformation.reference_url = 'https://docs.example:443/edition?phase=Plan:Ready/overview'; });
+    const original = canonical(request);
+    const inspected = await inspectTransformationWorkRequest(original, options(request));
+    assert.equal(inspected.transformation.provenance, prose);
+    assert.equal(inspected.transformation.reference_url, request.transformation.reference_url);
+    const draft = await createTransformationWorkDraft(original, options(request));
+    assert.equal((await inspectTransformationWorkDraft(draft, options(request))).original, original);
+  }
+});

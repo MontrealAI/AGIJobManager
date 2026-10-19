@@ -24,11 +24,30 @@ function credentialKey(key) {
   const name = normalizedKey(key);
   return credentialKeys.has(name) || /(?:password|passwd|apikey|privatekey|seedphrase|authentication|authorization|clientsecret|signingkey|secret|credential)/.test(name) || name.endsWith('token') || name.endsWith('auth');
 }
+// Preserve ordinary HTTPS authorities while separating recognized scheme
+// starts in a second screening view. The original view is still checked too.
+function separatedSchemeReferences(value) {
+  const authorities = Array.from(value.matchAll(/(?<![a-z0-9+.-])https:[\/\\]*[^\/\\?#\s"<>]*/gi),
+    match => [match.index + 6, match.index + match[0].length]);
+  let authority = 0;
+  return value.replace(/(?<![a-z0-9+.-])[a-z][a-z0-9+.-]*:/gi, (scheme, offset) => {
+    while (authority < authorities.length && authorities[authority][1] <= offset) authority++;
+    const span = authorities[authority];
+    const following = value[offset + scheme.length];
+    const explicit = /^(?:https?|file|ftps?|wss?|s3|gs|ipfs|ipns|data|javascript|vbscript|blob|about|mailto|tel|sms|ssh|git|git\+ssh|nfs|smb|ldaps?|chrome|chrome-extension|moz-extension|intent|market|news|nntp|rtsp|urn|sha256):$/i.test(scheme)
+      || following === '/' || following === '\\';
+    // Ordinary colon-bearing HTTPS path/query text remains part of its URL.
+    const separate = explicit || offset > 0 && ',;()[]{}!'.includes(value[offset - 1]);
+    return !separate || span && offset >= span[0] && offset < span[1] ? scheme : ' ' + scheme;
+  });
+}
 function publicUrls(value, urlField = false) {
   const normalized = value.replace(/[\t\r\n]/g, ' ');
   // A prose label such as Phase:Plan is not a URL. Recognize explicit URI
   // structure and known schemes; URL fields require HTTPS or an exact digest.
-  const references = urlField && normalized ? [normalized] : Array.from(normalized.matchAll(/(?<![a-z0-9+.-])(?:(?:https?|file|ftps?|wss?|s3|gs|ipfs|ipns|data|javascript|vbscript|blob|about|mailto|tel|sms|ssh|git|git\+ssh|nfs|smb|ldaps?|chrome|chrome-extension|moz-extension|intent|market|news|nntp|rtsp|urn|sha256):[^\s"<>]+|[a-z][a-z0-9+.-]*:[\/\\]+[^\s"<>]*|[a-z][a-z0-9+.-]*:[^:\s"<>]*[/?#@%][^:\s"<>]*|[\/\\]{2}[^\s"<>]+)/gi), match => match[0]);
+  const referencesIn = text => Array.from(text.matchAll(/(?<![a-z0-9+.-])(?:(?:https?|file|ftps?|wss?|s3|gs|ipfs|ipns|data|javascript|vbscript|blob|about|mailto|tel|sms|ssh|git|git\+ssh|nfs|smb|ldaps?|chrome|chrome-extension|moz-extension|intent|market|news|nntp|rtsp|urn|sha256):[^\s"<>]+|[a-z][a-z0-9+.-]*:[\/\\]+[^\s"<>]*|[a-z][a-z0-9+.-]*:[^:\s"<>]*[/?#@%][^:\s"<>]*|[\/\\]{2}[^\s"<>]+)/gi), match => match[0]);
+  const references = (urlField && normalized ? [normalized] : referencesIn(normalized))
+    .concat(referencesIn(separatedSchemeReferences(normalized)));
   for (const reference of references) {
     if ((urlField ? /^sha256:[a-f0-9]{64}$/i : /^sha256:[a-f0-9]{64}[,.;:!?)\]]*$/i).test(reference)) continue;
     need(/^https:/i.test(reference) && !/[\s"<>]/.test(reference), 'TRANSFORMATION_PRIVATE_URL');
