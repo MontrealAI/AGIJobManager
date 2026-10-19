@@ -193,6 +193,29 @@ export const workflows = [
     ],
     guide: "docs/examples/GENESIS_JOB_TODAY.md",
   },
+  {
+    id: "computer-receipt",
+    title: [
+      "Inspect Computer Use evidence",
+      "Examiner les preuves Computer Use",
+    ],
+    mode: ["Local browser inspection", "Examen local dans le navigateur"],
+    goal: [
+      "Inspect a native Alpha return and its supplier report, then retain the same project and its original history.",
+      "Examinez un retour Alpha natif et son rapport fournisseur, puis conservez le même projet et son historique original.",
+    ],
+    route: "computer-receipt/",
+    routeLabel: ["Open the evidence inspector", "Ouvrir l’examen des preuves"],
+    result: [
+      "An unsigned USDC proposal at your explicit price, plus a portable history that can be reopened. The listed native modules implement the local inspection.",
+      "Une proposition USDC non signée au prix explicite choisi, avec un historique portable à rouvrir. Les modules natifs répertoriés effectuent l’examen local.",
+    ],
+    scope: [
+      "Imported results remain historical, unverified claims. Execution, independent review, funding and transaction approval require their own qualified routes; this inspection grants no authority.",
+      "Les résultats importés restent des déclarations historiques non vérifiées. Exécution, revue indépendante, financement et approbation des transactions exigent leurs propres parcours qualifiés ; cet examen ne donne aucun pouvoir.",
+    ],
+    guide: "scripts/integrations/README.md",
+  },
 ];
 export function renderWorkflows(lang, { commit, version, sources }) {
   if (!/^[a-f0-9]{40}$/.test(commit)) throw Error("Invalid source commit");
@@ -223,8 +246,8 @@ export function renderWorkflows(lang, { commit, version, sources }) {
     "Choose a useful next step.",
     "Choisissez une prochaine étape utile."
   )}</h1><p>${text(
-    "Every original demo family, with a clear way to start and a clear boundary on what its results mean.",
-    "Chaque famille de démos originales, avec un démarrage clair et une limite explicite sur la portée des résultats."
+    "Every original demo family and the Computer Use evidence inspector, with a clear way to start and a clear boundary on what results mean.",
+    "Chaque famille de démos originales et l’examen des preuves Computer Use, avec un démarrage clair et une limite explicite sur la portée des résultats."
   )}</p><p class="notice">${text(
     "Browser tools, local simulations and reference material have different prerequisites. Directory coverage is not execution or production qualification.",
     "Les outils navigateur, simulations locales et références ont des prérequis différents. La couverture du répertoire ne vaut pas qualification d’exécution ou de production."
@@ -243,10 +266,10 @@ export function renderWorkflows(lang, { commit, version, sources }) {
           "Ce que vous pouvez examiner"
         )}</h3><p>${e(w.result[i])}</p><p class="scope">${e(w.scope[i])}</p>${
           w.route
-            ? `<a class="button" href="${home + w.route}">${text(
+            ? `<a class="button" href="${home + w.route}">${e(w.routeLabel ? w.routeLabel[i] : text(
                 "Open the original tool",
                 "Ouvrir l’outil original"
-              )}</a>`
+              ))}</a>`
             : ""
         }<p><a href="${doc(w.guide)}">${text(
           "Read the exact-source guide",
