@@ -1,0 +1,17 @@
+{
+  "schema": "agijobmanager/source-review-binding/v1",
+  "profile": "manager-explicit-governor-v1",
+  "sourceCommit": "d371d95cfcc44b9133cda4bba55304f727917f18",
+  "sourceTree": "93faf6e9a6875026c1eb9bc2f0f9bdada308d296",
+  "manifestPath": "config/explicit-governor-source-v1.json",
+  "manifestSha256": "f1a2a9a9f902807cc4fd2f57665f03fedcd2e745b445abe15e517953fa5189d1",
+  "dispatcherSha256": "ad709686244d87320276285e69594d3f8c17ff93f73bd8695fc872b6e250c016",
+  "verifierSha256": "5cc3207c4da88012a3abad9136e4f75f5aa074a4a4c7b470b33dcc730ab487c0",
+  "schemaSha256": "c2778358ec77d1a83f2e1ad1b81575b30b91eac3c3194cbf6050370f76aac412",
+  "lockSha256": {
+    "package-lock.json": "cdd3b46e8de3be61efb0a60648eb1915f8127db0ed2ea01eb69cf2b6898e18f0",
+    "hardhat/package-lock.json": "ebdb3e307e42e6ea0739451252f2606789cdc9f47a21044dea095f6ab4b5638a",
+    "ui/package-lock.json": "3d93fe0a4dc0d8399b7b5e27115e04dd146f6148d13a6a6e6d9a4f0700fbdb0e"
+  },
+  "disposition": "SOURCE_BOUNDARIES_ONLY_NOT_RELEASE_QUALIFICATION"
+}
