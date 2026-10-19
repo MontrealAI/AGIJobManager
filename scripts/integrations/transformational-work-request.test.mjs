@@ -127,7 +127,7 @@ test('all outer authority, currency, budget, epoch and identity edits reject eve
     x => { x.route.decimals = 18; }, x => { x.route.deployment = '0x' + '1'.repeat(40); },
     x => { x.planning.reservedBaseUnits = '1'; }, x => { x.planning.amountBaseUnits = '1'; },
     x => { x.authorizedCapBaseUnits = '99999999'; }, x => { x.bindings.measurementEpoch++; },
-    x => { x.bindings.charterDigest = '0'.repeat(64); }, x => { x.bindings.adapterSha256 = 'sha256:' + '0'.repeat(64); },
+    x => { x.bindings.authorizationBinding = '0'.repeat(64); }, x => { x.bindings.charterDigest = '0'.repeat(64); }, x => { x.bindings.adapterSha256 = 'sha256:' + '0'.repeat(64); },
     x => { x.commissioning.transaction = {}; }]) {
     const changed = JSON.parse(raw); mutate(changed);
     await assert.rejects(inspectTransformationWorkDraft(resign(changed), options(request)), /TRANSFORMATION_DRAFT_INTEGRITY/);
@@ -144,7 +144,8 @@ test('decoded private inputs and ambiguous duplicate fields are refused before n
   }), /DUPLICATE_KEY/);
   assert.equal(invoked, false);
   for (const key of ['api_key', 'private-key', 'accessToken', 'Password', 'client.secret', 'signing_key',
-    'token', 'authorization', 'id_token', 'session_token', 'api_secret', 'secret_key', 'credential']) {
+    'token', 'authorization', 'id_token', 'session_token', 'api_secret', 'secret_key', 'credential',
+    'x-api-key', 'x-auth-token', 'proxy-authorization', 'aws_secret_access_key', 'httpAuthorization', 'providerBearerToken', 'authorizationBinding']) {
     const credential = campaign(x => { x.bindings.configuration = { nested:[{ [key]:'synthetic-fixture-only' }] }; });
     await assert.rejects(createTransformationWorkDraft(canonical(credential), {
       ...options(credential), inspectWorkRequest:async () => { invoked = true; },

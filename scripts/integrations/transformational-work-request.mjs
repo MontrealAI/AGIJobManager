@@ -20,6 +20,10 @@ const credentialKeys = new Set(['password', 'passwd', 'apikey', 'privatekey', 's
   'refreshtoken', 'bearertoken', 'authtoken', 'clientsecret', 'signingkey', 'secret', 'credentials',
   'token', 'authorization', 'idtoken', 'sessiontoken', 'apisecret', 'secretkey', 'credential']);
 const normalizedKey = key => key.toLowerCase().replace(/[^a-z0-9]/g, '');
+function credentialKey(key) {
+  const name = normalizedKey(key);
+  return credentialKeys.has(name) || /(?:password|passwd|apikey|privatekey|seedphrase|authorization|clientsecret|signingkey|secret|credential)/.test(name) || name.endsWith('token');
+}
 function publicUrls(value) {
   for (const match of value.matchAll(/https?:\/\/[^\s"<>]+/gi)) {
     let url;
@@ -29,11 +33,11 @@ function publicUrls(value) {
       && host.includes('.') && !/(?:^|\.)(?:localhost|local|internal|lan|home)$/.test(host)
       && host.length <= 253 && host.split('.').every(label => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label)),
     'TRANSFORMATION_PRIVATE_URL');
-    for (const [key] of url.searchParams) need(!credentialKeys.has(normalizedKey(key))
+    for (const [key] of url.searchParams) need(!credentialKey(key)
       && !/^(?:key|sig|signature|xamz|xgoog)/.test(normalizedKey(key)), 'TRANSFORMATION_PRIVATE_URL');
   }
 }
-function rejectCredentialFields(value, path = []) {
+function rejectCredentialFields(value, path = [], root = value) {
   if (typeof value === 'string') { publicUrls(value); return; }
   if (value === null || typeof value !== 'object') return;
   for (const [key, child] of Object.entries(value)) {
@@ -41,9 +45,11 @@ function rejectCredentialFields(value, path = []) {
       && !Array.isArray(child) && Object.keys(child).sort().join('|') === 'authority_expansion|binding|scope'
       && child.scope === 'local-bounded' && child.authority_expansion === false && (child.binding === null || isDigest(child.binding));
     const publicCurrencyToken = path.length === 1 && path[0] === 'route' && key === 'token' && child === route.token;
-    need(!credentialKeys.has(normalizedKey(key)) || child === null || child === '' || inertAuthorization || publicCurrencyToken,
+    const publicAuthorizationDigest = root.schema === TRANSFORMATION_WORK_DRAFT_SCHEMA && path.length === 1
+      && path[0] === 'bindings' && key === 'authorizationBinding' && (child === null || isDigest(child));
+    need(!credentialKey(key) || child === null || child === '' || inertAuthorization || publicCurrencyToken || publicAuthorizationDigest,
       'TRANSFORMATION_PRIVATE_FIELD');
-    rejectCredentialFields(child, [...path, key]);
+    rejectCredentialFields(child, [...path, key], root);
   }
 }
 function read(raw, maximum) {
