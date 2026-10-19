@@ -1,0 +1,109 @@
+// SPDX-License-Identifier: MIT
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { canonical, keys, parseStrict, publicOnly } from '../../site/assets/successor/safe.mjs';
+
+export const TRANSFORMATION_WORK_DRAFT_SCHEMA = 'agijobmanager/transformational-work-draft/v1';
+const MAX_REQUEST = 4_000_000, MAX_DRAFT = 8_388_608;
+const sha = value => createHash('sha256').update(value).digest('hex');
+const digest = value => 'sha256:' + sha(value);
+const adapterSha256 = digest(readFileSync(new URL(import.meta.url)));
+const dataPolicySha256 = digest(readFileSync(new URL('../../site/assets/successor/safe.mjs', import.meta.url)));
+const route = Object.freeze({ backend:'agijobmanager', asset:'USDC', decimals:6, chainId:1,
+  token:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', deployment:null });
+const need = (condition, code) => { if (!condition) throw Object.assign(Error(code), { code }); };
+const same = (a, b) => canonical(a) === canonical(b);
+const isDigest = value => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
+const nativeDigest = (domain, value) => sha('successor-omega/v1:' + domain + '\0' + canonical(value));
+function read(raw, maximum) {
+  need(typeof raw === 'string' && Buffer.byteLength(raw, 'utf8') <= maximum, 'TRANSFORMATION_DRAFT_SIZE');
+  const value = parseStrict(raw, maximum);
+  publicOnly(canonical(value));
+  return value;
+}
+function baseUnits(value, code) {
+  need(typeof value === 'string' && /^(?:0|[1-9][0-9]{0,38})$/.test(value), code);
+  const units = BigInt(value);
+  need(units <= (1n << 128n) - 1n, code);
+  return units;
+}
+function proposedBudget(value) {
+  need(typeof value === 'string' && /^(?:0|[1-9][0-9]{0,32})(?:\.[0-9]{1,6})?$/.test(value), 'TRANSFORMATION_DRAFT_USDC');
+  const [whole, fractional = ''] = value.split('.');
+  const units = baseUnits((BigInt(whole) * 1_000_000n + BigInt(fractional.padEnd(6, '0'))).toString(), 'TRANSFORMATION_DRAFT_USDC');
+  need(units > 0n, 'TRANSFORMATION_DRAFT_USDC');
+  return { budgetUSDC:value, amountBaseUnits:units.toString(), decimals:6,
+    reservedBaseUnits:'0', status:'unfunded-proposal' };
+}
+
+/** Installed native validation is mandatory; this inspection grants no authority. */
+export async function inspectTransformationWorkRequest(requestRaw, { expectedBindingsDigest, inspectWorkRequest } = {}) {
+  const request = read(requestRaw, MAX_REQUEST);
+  need(typeof inspectWorkRequest === 'function', 'TRANSFORMATION_INSPECTOR_REQUIRED');
+  need(isDigest(expectedBindingsDigest), 'TRANSFORMATION_EXPECTED_BINDINGS');
+  const inspected = read(canonical(await inspectWorkRequest(requestRaw)), MAX_REQUEST);
+  need(same(inspected, request), 'TRANSFORMATION_NATIVE_BINDING');
+  need(request.schema === 'transformational-intelligence/v1', 'TRANSFORMATION_SCHEMA');
+  need(typeof request.campaign_id === 'string' && request.campaign_id.trim().length > 0
+    && Number.isSafeInteger(request.revision) && request.revision >= 0, 'TRANSFORMATION_IDENTITY');
+  need(request.charter?.schema === 'intent-charter/v1' && request.charter.publicOnly === true,
+    'TRANSFORMATION_PUBLIC_CHARTER');
+  need(['none', 'USDC', 'AGIALPHA'].includes(request.charter.payment_route)
+    && request.settlement?.route === request.charter.payment_route, 'TRANSFORMATION_USDC_ROUTE');
+  need(request.settlement.status === 'unfunded' && request.settlement.transaction_prepared === false,
+    'TRANSFORMATION_SETTLEMENT_STATE');
+  for (const field of ['charter', 'formulation', 'transformation', 'bindings'])
+    need(request[field] && isDigest(request[field + '_digest'])
+      && request[field + '_digest'] === nativeDigest('ti-' + field, request[field]), 'TRANSFORMATION_OBJECT_BINDING');
+  need(request.bindings_digest === expectedBindingsDigest, 'TRANSFORMATION_STALE_BINDINGS');
+  need(isDigest(request.evaluation?.instrument_digest) && Number.isSafeInteger(request.evaluation.epoch)
+    && request.evaluation.epoch >= 1 && request.evaluation.instrument
+    && request.evaluation.instrument_digest === nativeDigest('ti-instrument', request.evaluation.instrument), 'TRANSFORMATION_EVALUATION');
+  need(request.authorization?.scope === 'local-bounded' && request.authorization.authority_expansion === false
+    && (request.authorization.binding === null || isDigest(request.authorization.binding)), 'TRANSFORMATION_AUTHORIZATION_SCOPE');
+  need(request.review?.independent === false, 'TRANSFORMATION_REVIEW_AUTHORITY');
+  baseUnits(request.charter.budgets?.USDCBaseUnits, 'TRANSFORMATION_USDC_CAP');
+  return request;
+}
+
+/** Prepare only an unfunded USDC proposal under a separately authorized nonzero cap. */
+export async function createTransformationWorkDraft(requestRaw, {
+  budgetUSDC, createdAt, expectedBindingsDigest, inspectWorkRequest,
+} = {}) {
+  const request = await inspectTransformationWorkRequest(requestRaw, { expectedBindingsDigest, inspectWorkRequest });
+  need(request.charter.payment_route === 'USDC', 'TRANSFORMATION_USDC_ROUTE');
+  need(typeof createdAt === 'string' && Number.isFinite(Date.parse(createdAt))
+    && new Date(createdAt).toISOString() === createdAt, 'TRANSFORMATION_DRAFT_CLOCK');
+  const planning = proposedBudget(budgetUSDC);
+  const cap = baseUnits(request.charter.budgets?.USDCBaseUnits, 'TRANSFORMATION_USDC_CAP');
+  need(cap > 0n && BigInt(planning.amountBaseUnits) <= cap, 'TRANSFORMATION_USDC_CAP');
+  const bindings = { campaignId:request.campaign_id, revision:request.revision,
+    requestRawSha256:digest(requestRaw), charterDigest:request.charter_digest,
+    formulationDigest:request.formulation_digest, transformationDigest:request.transformation_digest,
+    instrumentDigest:request.evaluation.instrument_digest, measurementEpoch:request.evaluation.epoch,
+    runtimeBindingsDigest:request.bindings_digest, authorizationBinding:request.authorization.binding,
+    adapterSha256, dataPolicySha256 };
+  const specification = { schema:'agijobmanager/transformational-work-specification/v1', bindings,
+    inputPolicy:'public-nonpersonal-only', requiredReview:'independent-review-required', authority:'none' };
+  const specificationRaw = canonical(specification);
+  const body = { schema:TRANSFORMATION_WORK_DRAFT_SCHEMA, createdAt, route, original:requestRaw, bindings, planning,
+    authorizedCapBaseUnits:cap.toString(),
+    jobSpecification:{ raw:specificationRaw, sha256:digest(specificationRaw), uri:null },
+    commissioning:{ method:'createJob(string,uint256,uint256,string)', payoutBaseUnits:planning.amountBaseUnits,
+      specURI:null, durationSeconds:null, details:null, transaction:null, state:'requires-deployment-and-terms-selection' },
+    provenance:'untrusted-campaign-revalidated', authority:'none', review:'independent-review-required',
+    independentProof:false, executionApproved:false, productionApproved:false, settlementApproved:false,
+    settlement:'not-connected', trustedComputerExecution:false };
+  const raw = canonical({ ...body, sha256:digest(canonical(body)) });
+  need(Buffer.byteLength(raw, 'utf8') <= MAX_DRAFT, 'TRANSFORMATION_DRAFT_SIZE');
+  return raw;
+}
+
+export async function inspectTransformationWorkDraft(raw, options = {}) {
+  const value = read(raw, MAX_DRAFT);
+  keys(value.planning, ['budgetUSDC', 'amountBaseUnits', 'decimals', 'reservedBaseUnits', 'status'], 'TRANSFORMATION_DRAFT_PLANNING');
+  const rebuilt = await createTransformationWorkDraft(value.original, { ...options,
+    budgetUSDC:value.planning.budgetUSDC, createdAt:value.createdAt });
+  need(raw === rebuilt, 'TRANSFORMATION_DRAFT_INTEGRITY');
+  return value;
+}
