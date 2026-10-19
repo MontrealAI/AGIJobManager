@@ -11,7 +11,7 @@
 | UI workspace | 1.19.5 | ui/package.json and lockfile |
 | Deployment registry | 1.19.5 | config/usdc-deployment.json; version labels software, not an on-chain deployment |
 
-Check [release and download availability for v1.19.5](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.5). Published tags and release assets identify their exact source. Later main-branch changes and candidate builds require separate qualification; they do not inherit the release evidence. The [previous published release v1.19.4](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.4) remains available for historical comparison.
+Check [release and download availability for v1.19.5](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.5). Published tags and release assets identify their exact source. Later main-branch changes and candidate builds require separate qualification; they do not inherit the release evidence. The [previous published release v1.19.3](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.3) remains available for historical comparison.
 
 Checksums bind content; they do not establish GitHub-enforced immutability. Maintainers should [enable release immutability](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes) before future releases and verify `immutable: true` in the published release metadata. Existing releases are not retroactively protected.
 

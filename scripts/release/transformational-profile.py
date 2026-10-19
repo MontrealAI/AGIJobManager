@@ -136,6 +136,16 @@ RELEASE_GUIDE_PARAGRAPH_BEFORE = "Merging runs website validation but does not p
 RELEASE_GUIDE_PARAGRAPH_AFTER = "Merging runs website validation but does not publish Pages. Software release publication requires a separate `workflow_dispatch` of the reviewed release publisher on the exact qualified main revision with confirmation `PUBLISH_v1.19.5`. Pages has two separate routes: the authenticated completion of that software publisher, or a maintainer dispatch after reviewing the applicable website checks with `publish: true` and `source_commit` equal to the reviewed main revision's full SHA. A mismatched or superseded SHA stops publication. Software publication does not authorize on-chain deployment or intake activation.".encode('utf8')
 RELEASE_GUIDE_PREDECESSOR_SHA256 = '0f7fe3a459f2e2bf6fa5276be823d350a11622ab90e675645d4622c2b6639b5b'
 
+COMPANION_HISTORY_BEFORE = "  \"previousPublished\": \"1.19.4\"\n".encode('utf8')
+COMPANION_HISTORY_AFTER = "  \"previousPublished\": \"1.19.3\"\n".encode('utf8')
+COMPANION_PREDECESSOR_SHA256 = 'f5057fb0a299ce5bce52c435481923a169fa28dd14717c3632fd23d9f5ce1022'
+RELEASE_GUIDE_HISTORY_BEFORE = "The [previous published release v1.19.4](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.4) remains available for historical comparison.".encode('utf8')
+RELEASE_GUIDE_HISTORY_AFTER = "The [previous published release v1.19.3](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.3) remains available for historical comparison.".encode('utf8')
+
+README_HISTORY_BEFORE = "**[previously published v1.19.4 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.4/AGIJobManager-v1.19.4-COMPLETE.zip)** · [previously published v1.19.4 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.4/QUALIFICATION.json).\n".encode('utf8')
+README_HISTORY_AFTER = "**[previously published v1.19.3 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.3/AGIJobManager-v1.19.3-COMPLETE.zip)** · [previously published v1.19.3 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.3/QUALIFICATION.json).\n".encode('utf8')
+README_PREDECESSOR_SHA256 = '3e57fb51eb92a4d4ace24f94ccd50634d8df10b289c25745d0987c9f06e579e5'
+
 VERSION_ONLY = PREVIOUS['VERSION_ONLY']
 UI_LABEL_ONLY = {'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html',
     'ui/agijobmanager-usdc.html', 'ui/src/generated/deployments.ts', 'ui/scripts/singlefile-template.html'}
@@ -211,6 +221,14 @@ def validate_source(root, selection, paths=None):
                 require(value['packages']['']['version'] == VERSION, 'Transformation lock version differs')
                 value['packages']['']['version'] = '1.19.4'
             require(sha((json.dumps(value, indent=2, ensure_ascii=False) + '\n').encode()) == baseline[name]['sha256'], 'Transformation changed dependency resolution or transaction configuration: ' + name)
+        if name == 'config/companion-releases.json':
+            require(data.count(COMPANION_HISTORY_AFTER) == 1
+                and sha(data.replace(COMPANION_HISTORY_AFTER, COMPANION_HISTORY_BEFORE, 1)) == COMPANION_PREDECESSOR_SHA256,
+                'Companion configuration changed beyond the exact published-history pointer')
+        if name == 'README.md':
+            require(data.count(README_HISTORY_AFTER) == 1
+                and sha(data.replace(README_HISTORY_AFTER, README_HISTORY_BEFORE, 1)) == README_PREDECESSOR_SHA256,
+                'README changed beyond the exact published-history download line')
         if name == 'scripts/site/browser-test.mjs':
             current = b'assert.equal(await page.locator(".resource:visible").count(), 13);'
             previous = current.replace(b', 13)', b', 12)')
@@ -228,8 +246,10 @@ def validate_source(root, selection, paths=None):
                 'Release guide generator changed beyond the exact reviewed publication paragraph')
         if name == 'docs/RELEASE_GUIDE.md':
             require(data.count(RELEASE_GUIDE_PARAGRAPH_AFTER) == 1
-                and sha(data.replace(RELEASE_GUIDE_PARAGRAPH_AFTER, RELEASE_GUIDE_PARAGRAPH_BEFORE, 1)) == RELEASE_GUIDE_PREDECESSOR_SHA256,
-                'Generated release guide changed beyond the exact reviewed publication paragraph')
+                and data.count(RELEASE_GUIDE_HISTORY_AFTER) == 1
+                and sha(data.replace(RELEASE_GUIDE_PARAGRAPH_AFTER, RELEASE_GUIDE_PARAGRAPH_BEFORE, 1)
+                    .replace(RELEASE_GUIDE_HISTORY_AFTER, RELEASE_GUIDE_HISTORY_BEFORE, 1)) == RELEASE_GUIDE_PREDECESSOR_SHA256,
+                'Generated release guide changed beyond the exact reviewed publication and history paragraphs')
         if name == 'scripts/site/check.mjs':
             current = b'    assert.equal((html.match(/class="resource"/g) || []).length, 13);'
             previous = current.replace(b', 13)', b', 12)')

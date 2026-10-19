@@ -168,6 +168,46 @@ class TransformationalProfile(unittest.TestCase):
                 self.assertNotEqual(raw, original)
                 with self.subTest(name=name, variant=sha(raw)):
                     self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_previous_published_config_guide_and_readme_repins_cannot_drift(self):
+        name = 'config/companion-releases.json'
+        original = (self.root / name).read_bytes()
+        before, after = P['COMPANION_HISTORY_BEFORE'], P['COMPANION_HISTORY_AFTER']
+        self.assertEqual(original.count(after), 1)
+        for raw in [original.replace(after, before), original.replace(after, b''),
+                original.replace(after, after + after),
+                original.replace(after, after.replace(b'1.19.3', b'1.19.2')),
+                original.replace(b'"public": "1.19.5"', b'"public": "1.19.6"'),
+                original.replace(b'"fleet": "1.10.0"', b'"fleet": "1.10.1"')]:
+            self.assertNotEqual(raw, original)
+            with self.subTest(name=name, variant=sha(raw)):
+                self.mutate(name, raw, lambda: self.repin(name, raw))
+        name = 'docs/RELEASE_GUIDE.md'
+        original = (self.root / name).read_bytes()
+        before, after = P['RELEASE_GUIDE_HISTORY_BEFORE'], P['RELEASE_GUIDE_HISTORY_AFTER']
+        self.assertEqual(original.count(after), 1)
+        for raw in [original.replace(after, before), original.replace(after, b''),
+                original.replace(after, after + after),
+                original.replace(after, after.replace(b'release v1.19.3]', b'release v1.19.4]')),
+                original.replace(after, after.replace(b'/tag/v1.19.3)', b'/tag/v1.19.4)')),
+                original.replace(after, b'', 1) + after,
+                original.replace(b'for v1.19.5]', b'for v1.19.6]')]:
+            self.assertNotEqual(raw, original)
+            with self.subTest(name=name, variant=sha(raw)):
+                self.mutate(name, raw, lambda: self.repin(name, raw))
+        name = 'README.md'
+        original = (self.root / name).read_bytes()
+        before, after = P['README_HISTORY_BEFORE'], P['README_HISTORY_AFTER']
+        self.assertEqual(original.count(after), 1)
+        for raw in [original.replace(after, before), original.replace(after, b''),
+                original.replace(after, after + after),
+                original.replace(after, after.replace(b'published v1.19.3 COMPLETE', b'published v1.19.4 COMPLETE')),
+                original.replace(after, after.replace(b'/download/v1.19.3/', b'/download/v1.19.4/', 1)),
+                original.replace(after, after.replace(b'AGIJobManager-v1.19.3-COMPLETE.zip', b'AGIJobManager-v1.19.4-COMPLETE.zip')),
+                original.replace(after, b'', 1) + after,
+                original + b'\nUnrelated README change\n']:
+            self.assertNotEqual(raw, original)
+            with self.subTest(name=name, variant=sha(raw)):
+                self.mutate(name, raw, lambda: self.repin(name, raw))
     def test_all_reviewed_corrections_are_required(self):
         manifest = json.loads((self.root / P['MANIFEST']).read_bytes())
         self.assertEqual(set(manifest['changes']), P['ALLOWED'])

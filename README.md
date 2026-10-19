@@ -64,7 +64,7 @@ AGIJobManager is the software behind the USDC job contract and supporting tools.
 [Latest deployment and instance-specific operations](docs/OPERATIONS/COMMISSIONING.md) ·
 [Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Release notes](docs/releases/v1.19.5/RELEASE_NOTES.md).
 
-**[previously published v1.19.4 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.4/AGIJobManager-v1.19.4-COMPLETE.zip)** · [previously published v1.19.4 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.4/QUALIFICATION.json).
+**[previously published v1.19.3 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.3/AGIJobManager-v1.19.3-COMPLETE.zip)** · [previously published v1.19.3 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.3/QUALIFICATION.json).
 Check [release and download availability for v1.19.5](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.5). Published assets identify their exact source; later main-branch work requires separate qualification.
 Software publication and intake activation are separate decisions.
 
