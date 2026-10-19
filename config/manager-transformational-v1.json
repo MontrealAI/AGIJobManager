@@ -1,8 +1,8 @@
 {
   "schema": "agijobmanager/transformational-source/v1",
   "profile": "manager-transformational-v1",
-  "baseCommit": "8b0cf7fbc09e48ffe55d8ed35df8cd40920231d2",
-  "baseTree": "8276c8beb31021a6f88d39522722305932bf621f",
+  "baseCommit": "f4a50134ba8d3a5ded9650565cbdb737a00c1189",
+  "baseTree": "0e7e3577d1476cbf5135c7cb42dc1e25eef7c44b",
   "version": "1.19.5",
   "qualification": "PENDING_FINAL_SOURCE_MAIN_PUSH",
   "changes": {
@@ -13,18 +13,18 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "d88d74e239b943185781be87d5510340646e3598e1dcf7bf1c15d041a3c6cbc3"
+        "sha256": "8f58b70c349b7f5f52515e29e5b5fd910c7eb2cd8389bf1ab0f0e51d474bc052"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
     ".github/workflows/current-state-release.yml": {
       "before": {
         "mode": "100644",
-        "sha256": "bf58338a87cdd0f70cdc78997f01833dcb54da91e6cec5acb566f498084c87f7"
+        "sha256": "65d22392c85a599094dbc33091fd956d55ddc9bc82bdb45034a18bc90c4da4cd"
       },
       "after": {
         "mode": "100644",
-        "sha256": "54f36d7d85d92204be473eb5d3a9cda70990bad35e2688f2a72ed34fbe883579"
+        "sha256": "266c9f9af477bf9d8399ae7227db92232b28910210cddcefd96a88b4e999b5c2"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -42,11 +42,11 @@
     ".github/workflows/pages.yml": {
       "before": {
         "mode": "100644",
-        "sha256": "f34204e354c06d57cf2c801b2114108625589ffb9517c4399cee0ea40f906d4f"
+        "sha256": "830135d8ec5a6cacbe03b0f9c34f50e539e6d7e9e04d27277cc549714bfacdc0"
       },
       "after": {
         "mode": "100644",
-        "sha256": "06a81a2c91ab3277564f56f95f0191b7fe8972fa6dd9dc03b3f12e5c12906610"
+        "sha256": "e46ac079514b9e23ac800b7a9b3a74ca119720ff2d9bb9dd5020ed83ca32073a"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -68,7 +68,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "e64319d7c402eac5865d99e7a73d9d1f578ab07abf8eee272d4f80227daafa7c"
+        "sha256": "3e57fb51eb92a4d4ace24f94ccd50634d8df10b289c25745d0987c9f06e579e5"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -98,7 +98,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "6721a80e7ee7d13ad22c072e1531951a6862503e0b1fa8189a571a82dc064099"
+        "sha256": "f4df1052780521c12afcd35479e18a1833472fc8614557d9d7aa8d3e456e9374"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -120,7 +120,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "4be8e886f12af597fcb7bc64d3e6a0a786624d9cdf29f9ee1cce93a31ce958fe"
+        "sha256": "ef143b7347c570ea9a1d267961faf823a40fc99a75a53ca88cc64845eb36ac3c"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -164,7 +164,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "8d69d37cb33d2ebaa5f89c75ee51ffe08ac30e765e4538654990a5f1bc286fa7"
+        "sha256": "edb059b66a2fa2a993d298a115346a29142ac326071614906ca1bfd04be5f880"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -179,6 +179,38 @@
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
+    "docs/deployments/ENS_CONFIGURATION_RETAINED_2026-10-19.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "b5ebdac6b696619ea913f592186b8749e60bdeadbc8e8b966a855380afafc6cc"
+      },
+      "reason": "Retain dated ENS configuration evidence with immutable original reports and separately verified historical block metadata"
+    },
+    "docs/deployments/evidence/ens-configuration-retained-2026-10-19/ens-configuration-closeout-original.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "10b252325897fe1b9c2134623d02ca8e139e850b7b72f91951ccc29f2b70a840"
+      },
+      "reason": "Retain dated ENS configuration evidence with immutable original reports and separately verified historical block metadata"
+    },
+    "docs/deployments/evidence/ens-configuration-retained-2026-10-19/ens-explorer-verification-original.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "385a2dc667897a1576bdb7957a0b09fcdd728ff4069ed71a43796bebeb550471"
+      },
+      "reason": "Retain dated ENS configuration evidence with immutable original reports and separately verified historical block metadata"
+    },
+    "docs/deployments/evidence/ens-configuration-retained-2026-10-19/historical-block-26227598.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "dd227211b95f93e6981f7208a50842a9bcaf80b360413cfecf88cd9212583acd"
+      },
+      "reason": "Retain dated ENS configuration evidence with immutable original reports and separately verified historical block metadata"
+    },
     "docs/qualification/mainnet-cutover-v1.19.5-expected.json": {
       "before": null,
       "after": {
@@ -191,7 +223,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "9610e2dca93d851c7ede0193596b00e1a6d50431754ef50b6560a1866a0c8576"
+        "sha256": "a2c2d71f8785270fa9033573f89d671039ddeeca2da600eb922d7c104e586ec3"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -207,7 +239,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "7fb9690afad4ca0c9203c8e1ecf4c06c3d4da982f7b066b81e90a9912b17490f"
+        "sha256": "a78420bf660312ba77e64461bb0d2cf0f251e67b92931a3bc84868dbb59754fd"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -215,7 +247,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "01151d3e982f91c53c483b5515ed1c3d425785cf8e044562eee2a5db786e5eb6"
+        "sha256": "961da160d85568e75d87c144dc263f4ed53dbe205c2306bbaa192816430491a5"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -231,7 +263,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "69abb1f36a96506c8eb6b92fc9d2da0b7f93ebff4c2e45aa581ae3cb8e829b41"
+        "sha256": "2d844ad37219bfa8ad77ed11c008d320931fddc6f838aa4afbafd4ed8cd4160f"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -242,7 +274,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "7a24c23bfeec3a9cb015fbb2b28bbe5e806a4b105ec140ebd006935b351d3dff"
+        "sha256": "8c25ea763e5d736f63d75bfcf56b8d426ccea539973f7886b5e49b599b306eec"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -319,7 +351,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "c099ec3c4bae5769a96b90b9a67ccbcb96b46e4cce00ef42aaa9562ae025f274"
+        "sha256": "8a19fea980f0e7c8097d81a6886fecae2902acf1545fdc2e326a11acf7704ae7"
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
@@ -346,7 +378,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "1703da2445f52ff34df8cf9678a915f6f370aebd7926b2fd225717840d69aa8b"
+        "sha256": "97888fb8f1638d77807f9d88d41fc169eb7bace4dd3368ef8b9c223deea86ae5"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -354,7 +386,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "c324d7cd7814ea76b512290d6c2d3b429a57c150d5b7fe671e436a386b85a369"
+        "sha256": "1549c90ded9b166fab50470c1522bc88aff29394435eefc6184e8571504cb6aa"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -380,6 +412,14 @@
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
+    "scripts/release/pages-publication-ti.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "7788c338a1b0bb338af37cca81b4c93744a246d535a5fcb62e1dc8ae1f598c66"
+      },
+      "reason": "Preserve original Pages authorization and add version-specific native qualification gates"
+    },
     "scripts/release/publication-authorization-ti.py": {
       "before": null,
       "after": {
@@ -403,7 +443,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "99fca621b7bae918aca47e71c82f8f619c0645409bf1e47ca2214feb6914968a"
+        "sha256": "641432d9479ed9519e7e975a4523f5f71ab03c195267311e64de35c181425cdd"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -414,6 +454,14 @@
         "sha256": "e35724885b2a28ba257963991dd39ffdf8b62430694a01c4167ddbe6626665b2"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/test-pages-publication-ti.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "53f192b7b6e86a1829918d969f6e9885fba24470d57fdbd45ef59f1c064d61ef"
+      },
+      "reason": "Preserve original Pages authorization and add version-specific native qualification gates"
     },
     "scripts/release/test-publication-authorization-ti.py": {
       "before": null,
@@ -427,7 +475,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "7bb11404fd551fd0cae116564235888a9f7c54232d07ce9dd6a2903fc19472f6"
+        "sha256": "2d6724ffa3783b539a3940a496d4c9979d6afe6fafc78b12e910142303c4782a"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -435,7 +483,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "48e38f557452773b657d7d37c1deeef2d97ac35e378522c59e108bf8260f74c2"
+        "sha256": "f92838e3c206bf1d3adffdcf4e8f878ec0a83b14dde7fada09524f7c23ef5b9e"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -443,7 +491,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "33e2275be6f4b6275a1119432e2d673fec25c8fa19144726446acd4fe46aa07e"
+        "sha256": "1cafba03a95d7d57fccbe5bee5a51d22b486919e744a485e59e0cca1c374649c"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },

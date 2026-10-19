@@ -78,13 +78,28 @@ semantic truth, independent review or trustworthy freeze timing.
 
 The input screen examines decoded credential-shaped fields before native
 inspection. Conventional credential-family aliases, including header/provider prefixes and
-normalized names ending in token, are refused, except the
+normalized names ending in token or auth, including auth/authentication aliases,
+and bare Bearer credentials are refused, except the
 exact inert native authorization object, the draft's public authorization-binding
 digest, and Manager's fixed public token-address field. URL provenance uses a deliberately bounded profile: credential-free HTTPS
 on the default port, DNS hostnames, no fragment and no credential-bearing query
 parameters. IP literals (including normalized IPv4 and IPv6), local names and
-private-network forms are refused. This performs no DNS resolution or fetching;
+private-network forms are refused even when the WHATWG URL parser normalizes
+backslashes, omitted slashes or embedded ASCII tab/newline characters. This performs no DNS resolution or fetching;
 source-rights review and execution-time network admission remain separate.
+Non-HTTPS absolute URLs and scheme-relative references, including mixed
+slash/backslash network paths, are refused. Exact
+`sha256:` content digests remain data identifiers, not network provenance.
+The draft-only authorization-binding exception comes from the caller's parser
+mode; an imported schema name cannot enable it in a native request.
+
+Native requests remain bounded to 4,000,000 UTF-8 bytes. Generated drafts retain
+the exact original request and may expand through JSON escaping; reinspection
+uses the declared 8,388,608-byte draft bound for parsing and screens every
+decoded string and field name. Each string remains within the unchanged shared
+4,000,000-character public-data screen; JSON escaping in the outer draft does
+not reduce the supported original-request limit. The shared screen and Builder
+source bytes remain unchanged.
 
 ## Paper-to-implementation boundary
 

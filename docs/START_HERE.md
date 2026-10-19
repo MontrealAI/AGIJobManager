@@ -6,6 +6,8 @@
 
 For the latest reported deployment, start with the [17 October Manager and authority record](deployments/MAINNET_MANAGER_2026-10-17.md). The [historical October 10 inspection and recovery workflow](OPERATIONS/COMMISSIONING.md#historical-manager-and-ens-helper--10-october-2026) selects only that earlier Manager and its ENS helper; its commands do not inspect the October 17 Manager.
 
+The [retained 19 October ENS configuration addendum](deployments/ENS_CONFIGURATION_RETAINED_2026-10-19.md) adds the subsequent helper/root/prefix snapshot, the historical block timestamp, the fee exception and separate unresolved explorer source review. It changes no transaction target or activation authority.
+
 ## Have an idea? Start with a simple request
 
 **[Start my request — English →](https://montrealai.github.io/AGIJobManager/employers/)** · **[Commencer ma demande — français →](https://montrealai.github.io/AGIJobManager/fr/employers/)**

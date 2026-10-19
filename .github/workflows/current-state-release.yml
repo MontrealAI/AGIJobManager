@@ -64,6 +64,7 @@ jobs:
           python3 scripts/release/test-transformational-profile.py
           python3 scripts/release/test-transformational-qualification.py
           python3 scripts/release/test-publication-authorization-ti.py
+          python3 scripts/release/test-pages-publication-ti.py
           python3 scripts/release/run-transformational-inherited-tests.py
       - name: Resolve candidate identity from package metadata
         id: candidate

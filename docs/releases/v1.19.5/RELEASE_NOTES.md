@@ -16,3 +16,5 @@ Credential-shaped input and bounded URL checks are rejection rules, not a comple
 The inherited Builder remains at its immutable v1.19.4 code pin. Historical v1.19.4 release records, deployed contracts, compiler profile, dependency resolutions, addresses and recovery obligations retain their original identities. Private Fleet/Agent/Node versions remain separate. This wrapper changes software labels, not deployed bytecode or paused-intake status.
 
 Read the [validation boundary](VALIDATION.md) before treating a download as qualified, and [recovery instructions](RECOVERY_GUIDE.md) before changing an existing installation. No new deployment, mainnet/ENS operation, production activation or independent audit is claimed.
+
+The [retained 19 October ENS configuration evidence](../../deployments/ENS_CONFIGURATION_RETAINED_2026-10-19.md) adds a later historical helper snapshot without changing the original deployment record or transaction defaults. Its actual fee exceeded the original ceiling, and the separate explorer exact-source-input match remains unresolved; publication does not convert either into a pass.

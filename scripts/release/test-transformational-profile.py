@@ -115,7 +115,7 @@ class TransformationalProfile(unittest.TestCase):
     def test_rehashed_workflow_or_security_changes_cannot_remove_old_gates(self):
         mutations = {
             '.github/workflows/current-state-release.yml': ('npm run build', 'true'),
-            '.github/workflows/alpha-project-handoff.yml': ('124a3b636baa916fe6c4400e03e55198114dd212', '0' * 40),
+            '.github/workflows/alpha-project-handoff.yml': ('ac2626c7dd253580a58b75e2255650e44eaec6ff', '0' * 40),
             '.github/workflows/pages.yml': ('npm run successor:browser', 'true'),
             '.github/workflows/mainnet-fork.yml': ('npm run test:cutover', 'true'),
             '.github/workflows/publish-v114.yml': ('--deny-self-hosted-runners', ''),
@@ -126,6 +126,10 @@ class TransformationalProfile(unittest.TestCase):
             self.assertIn(before.encode(), original)
             raw = original.replace(before.encode(), after.encode())
             with self.subTest(name=name): self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_pages_native_qualification_cannot_be_rehashed_away(self):
+        name = 'scripts/release/pages-publication-ti.py'
+        raw = (self.root / name).read_bytes().replace(b"require(config.get('transformationQualification')", b"require(True or config.get('transformationQualification')")
+        self.mutate(name, raw, lambda: self.repin(name, raw))
     def test_rehashed_native_pin_does_not_select_a_different_contract(self):
         name = 'config/transformational-alpha-source.json'
         value = json.loads((self.root / name).read_bytes()); value['commit'] = '0' * 40

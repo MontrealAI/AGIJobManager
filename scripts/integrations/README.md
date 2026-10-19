@@ -10,7 +10,7 @@ Use public, non-personal inputs only. Retain Ubuntu Hardhat creation with local 
 
 Run local policy regressions with `node --test scripts/integrations/four-repo-computer-receipt.test.mjs`. The Fleet source integration kit supplies actual pinned Alpha and Jobs inspectors for the native browser compatibility test. Local policy doubles alone are not browser or settlement evidence.
 
-The separate `hardhat/scripts/four-repo-computer-lifecycle.cjs` fixture exercises accepted mock-USDC work and a rejected-work refund on a disposable EDR chain. It checks every compiler input against installed source, allows only the known disposable test accounts and chain 31337, and refuses HTTP, forks and additional networks. Its reviewer votes are controlled test inputs, not independent review. It never changes a previous deployment.
+The separate `hardhat/scripts/four-repo-computer-lifecycle.cjs` fixture exercises accepted mock-USDC work and a rejected-work refund on a disposable EDR chain. Before importing either native inspector, it checks both complete tracked source trees against explicit reviewed commits and captures the validated module bytes in private memory. Inspector imports resolve only within those captured modules, including later imports during inspection; filesystem changes cannot select replacement code. It repeats the source checks after imports and before retaining evidence. It also checks every compiler input against installed source, allows only the known disposable test accounts and chain 31337, and refuses HTTP, forks and additional networks. Its reviewer votes are controlled test inputs, not independent review. It never changes a previous deployment.
 
 Supply these public test settings directly to the fixture process. No `.env` file or operator key is used:
 
@@ -18,7 +18,9 @@ Supply these public test settings directly to the fixture process. No `.env` fil
 | --- | --- |
 | `FQR_DRAFT_FILE` | Absolute path to the bounded synthetic Manager draft |
 | `FQR_ALPHA_SOURCE` | Absolute path to the reviewed exact Alpha source checkout |
+| `FQR_ALPHA_COMMIT` | Reviewed full 40-character lowercase Alpha commit; the entire tracked checkout must match |
 | `FQR_JOBS_SOURCE` | Absolute path to the reviewed exact Jobs source checkout |
+| `FQR_JOBS_COMMIT` | Reviewed full 40-character lowercase Jobs commit; the entire tracked checkout must match |
 | `FQR_EVIDENCE_FILE` | Absolute new evidence path; existing files are refused |
 | `FQR_ARTIFACTS_DIR` | Optional absolute compiled artifact directory; every source and optimizer input must still match |
 

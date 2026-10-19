@@ -32,7 +32,7 @@ for (const file of requiredFiles) {
 const deploymentReference = fs.readFileSync(path.join(root, 'docs/DEPLOYMENT_CONFIGURATION.md'), 'utf8');
 const deploymentExample = fs.readFileSync(path.join(root, 'hardhat/.env.example'), 'utf8');
 const documentedVariables = new Set([...deploymentExample.matchAll(/^([A-Z][A-Z0-9_]*)=/gm)].map(match => match[1]));
-const fixtureVariables = new Set(['FQR_DRAFT_FILE', 'FQR_ALPHA_SOURCE', 'FQR_JOBS_SOURCE', 'FQR_EVIDENCE_FILE', 'FQR_ARTIFACTS_DIR']);
+const fixtureVariables = new Set(['FQR_DRAFT_FILE', 'FQR_ALPHA_SOURCE', 'FQR_ALPHA_COMMIT', 'FQR_JOBS_SOURCE', 'FQR_JOBS_COMMIT', 'FQR_EVIDENCE_FILE', 'FQR_ARTIFACTS_DIR']);
 const fixtureReference = fs.readFileSync(path.join(root, 'scripts/integrations/README.md'), 'utf8');
 for (const name of documentedVariables) {
   if (!deploymentReference.includes('`' + name + '`')) fail(`Deployment environment setting lacks documentation: ${name}`);

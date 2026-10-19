@@ -24,7 +24,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "bf58338a87cdd0f70cdc78997f01833dcb54da91e6cec5acb566f498084c87f7"
+        "sha256": "65d22392c85a599094dbc33091fd956d55ddc9bc82bdb45034a18bc90c4da4cd"
       },
       "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
     },
@@ -46,9 +46,9 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "f34204e354c06d57cf2c801b2114108625589ffb9517c4399cee0ea40f906d4f"
+        "sha256": "830135d8ec5a6cacbe03b0f9c34f50e539e6d7e9e04d27277cc549714bfacdc0"
       },
-      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+      "reason": "Preserve the eight exact-source qualification gates; require real bilingual Computer Use UI checks and authenticate successful publisher/source/immutable release/complete attested assets before automatic Pages publication, retaining manual confirmation."
     },
     ".github/workflows/publish-v114.yml": {
       "before": {
@@ -213,7 +213,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "0fd3939c0a834be3d79b3654581561687b8ba4f622ac4bfb0fd0d39d6f9fa186"
+        "sha256": "c287d5f889d3a09bc95b389e5503f3eeb1c592d83394d1002a89ef7b225a6932"
       },
       "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
     },
@@ -221,7 +221,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "b9714b0fa0c9a24124770ecb034109f7e5c453d962f2a93cbcee4d07ff2da810"
+        "sha256": "7e7e4ff076953a1d181a35d7862e9a231c59dc77a0ed048e62fe5d2208740d1b"
       },
       "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
     },
@@ -229,7 +229,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "eb23d0bd972795ad8f9fd06fcab587f60ccc46fab6a99a44dc056ed253c4f3c6"
+        "sha256": "aff708e898022081d7e0cfc976a349292f90d8f69cd8340f3538bc55c2c8ec73"
       },
       "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
     },
@@ -237,7 +237,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "f016214d595b02f1b9e93289a1f8b89bbc39b382147245440bb246da4cc680f5"
+        "sha256": "193daa36784e2bee0c65a9345e470625599f3fddb0fa3e2095ce62abe0deeb84"
       },
       "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
     },
@@ -311,7 +311,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "fdd39b89fca91a17745eed0f1a4fd9ad9ad9577d4cc25d2e918c22cb8c66a1cb"
+        "sha256": "acb6fcb9fc794c01d97a0c4c40764bd53941aaedcf0bcf655219c077d8282a8c"
       },
       "reason": "Add bounded, independently validated computer-receipt continuity with explicit new USDC6 pricing and disposable mock-token acceptance/rejection evidence; no live or independent-review claim."
     },
@@ -330,7 +330,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "8f9db6f51a5de1d04da41bb93e1a0412c2e148bac4764f99f59eb96124c2b51b"
+        "sha256": "81c4e7ed998929ac015ff15e2505e71eaa6eeac2f98343dd7cc000734cec376d"
       },
       "reason": "Regress the disposable signing boundary: exact local EDR chain31337 and public fixture accounts only; no HTTP, fork or additional network."
     },
@@ -363,7 +363,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "ead0bb54300f35c1cb5c0c80d6f863587173a2783060e87beefd717822cc8669"
+        "sha256": "869f30dc98f7edf8089979e75a051273aa96336a8f350a2236cc8ee58f825748"
       },
       "reason": "Require the five exact public fixture settings in its integration guide; all other deployment-variable and dotenv documentation checks remain unchanged."
     },
@@ -371,7 +371,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "786b47350b69900b06d234e202754d78efa9c17519322058b2e08468f3779ae7"
+        "sha256": "aeab6b35ac535578a3c341a22e8c20775c962b2ccd81c73449e97ff5d89a02f4"
       },
       "reason": "Add bounded, independently validated computer-receipt continuity with explicit new USDC6 pricing and disposable mock-token acceptance/rejection evidence; no live or independent-review claim."
     },
@@ -379,7 +379,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "39b7ca2f0eac57385cef22d5908ef181ea1636eae67bbea3f137847f6e515cae"
+        "sha256": "fe125555b4e25f091cbcc2104da68ff8ff7f37a71b887f17e8e7637204b02c44"
       },
       "reason": "Add bounded, independently validated computer-receipt continuity with explicit new USDC6 pricing and disposable mock-token acceptance/rejection evidence; no live or independent-review claim."
     },
@@ -406,7 +406,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "7645b1f7564446bbb3ee5b4f7b182513898d8f3cc7ed19fba6ee23eff850b952"
+        "sha256": "9f24e5c12ce6652b54043c0d03d58fe885183d5b53a74dbdb685177e0430eab6"
       },
       "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
     },
@@ -420,6 +420,14 @@
         "sha256": "ca6d9a904eef8299e54817603db08c1a00a0df9e0f7d090b0125f5a6716fc79b"
       },
       "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/pages-publication.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "3f802a61a51ce958e1e447d3a428c03f0df1f71dc9d28671b608ac33d675b1f1"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
     },
     "scripts/release/publication-authorization.py": {
       "before": null,
@@ -444,7 +452,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "f29786f1885e39a147af83a61240460fb0bbd133a1f09bc2414e0f8da6e72e19"
+        "sha256": "a76644c45e7fc1d0f911188e7ce26e55eaee7ff560a99c6cb02f77c5e659dd97"
       },
       "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
     },
@@ -460,9 +468,17 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "5c0733d8936b511e8b19e1aba95a0069bff9d340713d8ff7c47adcc2f368e2ec"
+        "sha256": "59cd824c0fcfe795a0fca66434b2bcbb6e8355dd01d35872d6069ada0e94e066"
       },
       "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/test-pages-publication.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "3d26b831c5cb529d79f66341a8300e99962939b5031e0cc97d7922159a296f1e"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
     },
     "scripts/release/test-publication-authorization.py": {
       "before": null,
@@ -510,6 +526,65 @@
       },
       "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
     },
+    "scripts/site/build.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "75e42b1a41466f2c93cad09ea88efc59334c715a62bf9735f8f2f99e778a6456"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "7adfa5ef216e065fa2b33317349ae58944461887e30f323c5b5f6584cec1a4de"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "scripts/site/computer-receipt-browser-test.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "3d5d87dd0496a88ba0560436cfa57715d4c1beb3ed29143799b883145578674e"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "scripts/site/computer-receipt-fixture.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "02f1851b0d8e7eab5b63395ee7adc992c8e0ecae6ead2f0a415472ddab28f923"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "scripts/site/computer-receipt.test.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "d41e163f0fa9e2dfd3c8ad8de8210f9522cf7df1983dbfecdd621351a9dffa70"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "scripts/site/fixtures/README.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "c937f8595415bd87f9d71262ed652ee8d1faba5706103eec3739757f9226c96c"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "scripts/site/fixtures/alpha-learning-archive-three-protocol.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "dda0f4f85813412278c817bc983cab3baa3755497676bf2cfe9e086e2ba70543"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "scripts/site/generate-computer-receipt-source.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "56ff4d1eea1bb80eae285a572649a5254a0396083e163adfa313e875408b92d2"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
     "scripts/successor/alpha-project-browser-test.mjs": {
       "before": {
         "mode": "100644",
@@ -542,6 +617,302 @@
         "sha256": "b6f57a271e779a606d694ca62029a21871a745bdf47c0e1b8d21651f042f2da5"
       },
       "reason": "Revalidate public-only mission bytes, schema and operating limits despite recomputed unkeyed checksums; preserve exact token and authority boundaries."
+    },
+    "site/assets/computer-receipt/adapter.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "63ec1d7bd10c56f93728edc2efb0188070db8dfa87249b0d33b56bfdcbbbc1ed"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/app.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "d8be78b60d4d73d8d079650f6872edb75d14684fed8648244cdb6b7a93b49122"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/copy.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "cb2dcf355f046297fbd68f5531dc86a3fb734c81008f9ea03a8cd7506903cc9b"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/history.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "3241f1ea47e465807ccb006f5e860e8ffd05ee44b554216932f1ff6c1198bd43"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/inspectors.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "43dc878f0f1b89d381a5cbb88f2ff9046d00e6787daf1f82a2fec5c3623eb48c"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/sources.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "584a04bb85b3f512af9028e31269c21893fc890b5e9bae3833b7fb105d119cc4"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/style.css": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "4e90b4e44bd946b8719cc463d2df834081d9c92eae52c5d60dc5511d835a40a3"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/LICENSE": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/docs/assets/successor/engine.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "38c4f38978bf9fc29f207bae3adee0755bc6530d04502a36c491cc430787e488"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/build-successor/model.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "8ea94108ef2ed27bce0fcff0b5d312f2e8f6db6584246cc66ab8c1c8d9281175"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/build-successor/vendor/agijobs/compiler.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "5e4fc86d78af7a22e915d8b19803fc219cb68b9b73201f47cf1f643f19380762"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/build-successor/vendor/agijobs/domain.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "2869bb750a408e12ada19f6d0b216d47c3b9f67fc66039db4372dae8430e47a3"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/build-successor/vendor/agijobs/integrity.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "164000134cc9c8b54209c420a348e3e5c324ebf7ff8f71fc84dc44812345c428"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/build-successor/vendor/agijobs/templates.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "bc035b1c38b36d2db24031ac92fb193946df9cf4f180120394506a8802be2b31"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/computer.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "496e8ba214acff9a4460adc77fcc291f7c7960ac697741d704bb687261580947"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/continuity.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "0b13673d291a6a76618f3c289e234bfdc238acad0a8bb154a4f0a67e69ed8e1e"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/engine.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "09a673d124b9ddcf47e29250f1aad4fa737ce99cdc2364afbfb9911ec9579ea2"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/learning.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "6cc68c0f03559bb1f3af5489d975a45a0081822e09ef53c14986f1621a206d69"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/project.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "9ea8c39f87d894e79c3e64cc66d3acea55ec30eb7737ef461b14abfb2aabde86"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/research.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "cac318319051de4dc1fdbe2d8a148416b3ceffe206d7fc64f111f2fe6f099c8a"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/examples/successor-workbench/engine.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "f36f4c3fa45124901755bbb530a8161e98c164f5a66e9b8f932548f5286c93d7"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/source-identity.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "9791f7d0cfb35eba9d9fd7bbd24be45cbe029440145fa580deaec1e4e6521a00"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/alpha-computer/source-manifest.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "0e0ae12b6f9d1a6f2f9f0650b141e1fb6ef5eb554ad62b2bf82f0d5a247a29b7"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/LICENSE": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "70842e0e7ae73b3ce65baa06a1c62b466bdb694570301969031cc48d9ac705d1"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/integrations/alpha-agent/four-repo-computer-receipt.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "e089a426dab2d301595f1cb8f63057a21107c7484439cfcb3975895a67d21b94"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/packages/successor-core/src/compiler.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "5e4fc86d78af7a22e915d8b19803fc219cb68b9b73201f47cf1f643f19380762"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/packages/successor-core/src/computer-mission.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "b28fa657e51c49970f1465773afd4c96ceaa16e08e28555ee7b066c51b7949cf"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/packages/successor-core/src/domain.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "2869bb750a408e12ada19f6d0b216d47c3b9f67fc66039db4372dae8430e47a3"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/packages/successor-core/src/integrity.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "164000134cc9c8b54209c420a348e3e5c324ebf7ff8f71fc84dc44812345c428"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/packages/successor-core/src/templates.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "bc035b1c38b36d2db24031ac92fb193946df9cf4f180120394506a8802be2b31"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/scripts/pages/computer-mission.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "c8f43a608795ecfbc5de1c570eea900fd2a49b7da8d390764604c0a1027c614d"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/scripts/pages/computer-receipt.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "8291a51d64696632a4c8cc8c6b2ef35f6ea2039da506170f56b0595dfebe0450"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/source-manifest.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "dab5e9435167cc572d0f4c7c7ed9346de94f60338739cd2e272a03d869a9c268"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/website/assets/computer-desk-runtime-source.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "596bb0604df28242cea0b00bc94fd3b0ff013be4cba923eeb945f034b5be2455"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/website/assets/computer-desk.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "a79c3b8639caf90ec091f9da900d1794fd44ebb595d676e6b0a9d472af3cc772"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/website/assets/computer-mission-copy.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "ec6624978429a6eac22fcd554fe823b5ba309714b1b939372cdae6485a3942cd"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
+    "site/assets/computer-receipt/vendor/jobs-computer/website/assets/computer-receipt-copy.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "21e08c3a28ac0efb93d94eac10c3efe32ee4eaec654ac3ee378854d12ee63684"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
     },
     "site/assets/successor/app.mjs": {
       "before": {
@@ -576,6 +947,14 @@
       },
       "reason": "Scan decoded JSON mission fields for known personal/secret input while preserving exact supplied bytes; escaped Unicode must not bypass the public-only boundary."
     },
+    "site/computer-receipt.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "471eaefe8863434de1a62fd90af113fd847209112fed58e87c67289915d02350"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
+    },
     "site/successor.mjs": {
       "before": {
         "mode": "100644",
@@ -586,6 +965,17 @@
         "sha256": "8d3b61a53ded210f7e841b5c323cefeccb993cf9bb2741023dbf2008265950ca"
       },
       "reason": "Keep strict transfer provenance while preserving original bytes and explicit bilingual previous-edition recovery; no silent history or approval migration."
+    },
+    "site/template.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "7c069f607a5aca00a0f0d762af14e4a05b6c310c134082327b93ea41e086c8a4"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "bf69ca9b6d14cb1e3514b51a9bc73d9a9afcf4084bec28c90791639a53620d37"
+      },
+      "reason": "Finite reviewed v1.19.4 source correction, explicit provenance and adversarial regression coverage; complete exact-source qualification remains mandatory."
     },
     "ui/README.md": {
       "before": {

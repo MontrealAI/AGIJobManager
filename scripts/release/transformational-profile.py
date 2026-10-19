@@ -12,10 +12,10 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 PROFILE = 'manager-transformational-v1'
 MANIFEST = 'config/manager-transformational-v1.json'
 VERIFIER = 'scripts/release/transformational-profile.py'
-BASE = '8b0cf7fbc09e48ffe55d8ed35df8cd40920231d2'
-TREE = '8276c8beb31021a6f88d39522722305932bf621f'
+BASE = 'f4a50134ba8d3a5ded9650565cbdb737a00c1189'
+TREE = '0e7e3577d1476cbf5135c7cb42dc1e25eef7c44b'
 VERSION = '1.19.5'
-PREVIOUS_PINS = {'scripts/release/correction-profile.py': '7645b1f7564446bbb3ee5b4f7b182513898d8f3cc7ed19fba6ee23eff850b952', 'config/manager-boundary-corrections-v1.json': 'a1fd1ac0a1f3f95cc660777764e289e03fdbe96be2b7ffb52e1f3510c61d84b1', 'scripts/release/test-correction-profile.py': '5c0733d8936b511e8b19e1aba95a0069bff9d340713d8ff7c47adcc2f368e2ec', 'scripts/release/publication-authorization.py': '57eb5696e7927a1aadb5fd74eb3d61782bc733402e441d521605dda1105ba63e', 'scripts/release/test-publication-authorization.py': 'dc460963017a883bffc7b6fe0fc9cf41d3084cef740ea31816701df6bc18c9b5', 'scripts/release/run-correction-preservation.py': 'f29786f1885e39a147af83a61240460fb0bbd133a1f09bc2414e0f8da6e72e19', 'scripts/release/release_common.py': 'e4ba17be0398e47e2165f76be7ebe650190dc9f93f0807c0d6435485656f2440'}
+PREVIOUS_PINS = {'scripts/release/correction-profile.py': '9f24e5c12ce6652b54043c0d03d58fe885183d5b53a74dbdb685177e0430eab6', 'config/manager-boundary-corrections-v1.json': '0475bdcf1e6c2a1c5b593a4de4a2c2c63cad16757931c1badb5c6c802df9a9ef', 'scripts/release/test-correction-profile.py': '59cd824c0fcfe795a0fca66434b2bcbb6e8355dd01d35872d6069ada0e94e066', 'scripts/release/publication-authorization.py': '57eb5696e7927a1aadb5fd74eb3d61782bc733402e441d521605dda1105ba63e', 'scripts/release/test-publication-authorization.py': 'dc460963017a883bffc7b6fe0fc9cf41d3084cef740ea31816701df6bc18c9b5', 'scripts/release/run-correction-preservation.py': 'a76644c45e7fc1d0f911188e7ce26e55eaee7ff560a99c6cb02f77c5e659dd97', 'scripts/release/release_common.py': 'e4ba17be0398e47e2165f76be7ebe650190dc9f93f0807c0d6435485656f2440'}
 for name, digest in PREVIOUS_PINS.items():
     if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
         raise ValueError('Immutable previous policy input differs: ' + name)
@@ -37,6 +37,10 @@ ALLOWED = {
     'config/transformational-alpha-source.json',
     'config/usdc-deployment.json',
     'docs/MAINNET_READINESS.md',
+    'docs/deployments/ENS_CONFIGURATION_RETAINED_2026-10-19.md',
+    'docs/deployments/evidence/ens-configuration-retained-2026-10-19/ens-configuration-closeout-original.json',
+    'docs/deployments/evidence/ens-configuration-retained-2026-10-19/ens-explorer-verification-original.json',
+    'docs/deployments/evidence/ens-configuration-retained-2026-10-19/historical-block-26227598.json',
     'docs/OPERATIONS/PRIVATE_FLEET.md',
     'docs/REFERENCE/VERSIONS.md',
     'docs/RELEASE_GUIDE.md',
@@ -63,10 +67,12 @@ ALLOWED = {
     'scripts/integrations/transformational-work-request.test.mjs',
     'scripts/release/collect-qualification.py',
     'scripts/release/package-policy.py',
+    'scripts/release/pages-publication-ti.py',
     'scripts/release/publication-authorization-ti.py',
     'scripts/release/publish-release.py',
     'scripts/release/run-transformational-inherited-tests.py',
     'scripts/release/run-transformational-preservation.py',
+    'scripts/release/test-pages-publication-ti.py',
     'scripts/release/test-publication-authorization-ti.py',
     'scripts/release/test-transformational-profile.py',
     'scripts/release/test-transformational-qualification.py',
@@ -170,7 +176,7 @@ def validate_plumbing(root, baseline):
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGI-Alpha-Agent-v0
-          ref: 124a3b636baa916fe6c4400e03e55198114dd212
+          ref: ac2626c7dd253580a58b75e2255650e44eaec6ff
           path: build/alpha-ti-source
           persist-credentials: false
       - name: Validate native transformation campaign boundary
@@ -183,6 +189,7 @@ def validate_plumbing(root, baseline):
           python3 scripts/release/test-transformational-profile.py
           python3 scripts/release/test-transformational-qualification.py
           python3 scripts/release/test-publication-authorization-ti.py
+          python3 scripts/release/test-pages-publication-ti.py
           python3 scripts/release/run-transformational-inherited-tests.py
 '''
     for name in ('.github/workflows/alpha-project-handoff.yml', '.github/workflows/current-state-release.yml',
@@ -197,21 +204,26 @@ def validate_plumbing(root, baseline):
             text = text.replace(tests, '')
             anchor = '      - name: Resolve candidate identity from package metadata'
             require(text.count(anchor) == 1, 'Candidate selection step differs')
-            text = text.replace(anchor, '          python3 scripts/release/test-correction-profile.py\n          python3 scripts/release/test-publication-authorization.py\n' + anchor)
+            text = text.replace(anchor, '          python3 scripts/release/test-correction-profile.py\n          python3 scripts/release/test-publication-authorization.py\n          python3 scripts/release/test-pages-publication.py\n' + anchor)
             text = text.replace('manager-transformational-v1', 'manager-boundary-corrections-v1').replace('transformational-profile.py', 'correction-profile.py')
         elif name.endswith('pages.yml'):
-            text = text.replace('run-transformational-preservation.py', 'run-correction-preservation.py')
+            text = text.replace('run-transformational-preservation.py', 'run-correction-preservation.py').replace('pages-publication-ti.py', 'pages-publication.py')
         else:
             text = text.replace('v1.19.5', 'v1.19.4').replace('manager-transformational-v1', 'manager-boundary-corrections-v1').replace('transformational-profile.py', 'correction-profile.py')
         require(sha(text.encode()) == baseline[name]['sha256'], 'Prior workflow or security gate changed beyond explicit TI additions: ' + name)
+    pages = read(root, 'scripts/release/pages-publication-ti.py')[1].decode('utf8')
+    native_pages = "        ti_qualification = runpy.run_path(str(ROOT / 'scripts/release/transformational-qualification.py'))\n        require(config.get('transformationQualification') == ti_qualification['validate'](config, api, lambda job_id: gh('api', f'repos/{REPOSITORY}/actions/jobs/{job_id}/logs', '--method', 'GET', '--allow-escape-sequences').decode()), 'Pages native transformation qualification differs')\n"
+    require(pages.count(native_pages) == 1, 'Current Pages must revalidate native transformation qualification')
+    pages = pages.replace(native_pages, '').replace('v1.19.5', 'v1.19.4').replace('manager-transformational-v1', 'manager-boundary-corrections-v1').replace('transformational-profile.py', 'correction-profile.py')
+    require(sha(pages.encode()) == baseline['scripts/release/pages-publication.py']['sha256'], 'Current Pages publication changed beyond version, policy and additive native checks')
     source = strict_json(read(root, 'config/transformational-alpha-source.json')[1])
     require(source == {
         'schema': 'agijobmanager/transformational-alpha-source/v1', 'repository': 'MontrealAI/AGI-Alpha-Agent-v0',
-        'commit': '124a3b636baa916fe6c4400e03e55198114dd212', 'tree': 'dce26926d2a4282a1591dbce4bfd6c36ef4caaa9',
+        'commit': 'ac2626c7dd253580a58b75e2255650e44eaec6ff', 'tree': 'd6fda24a9bd2fdfdc131c2de5dfcc73cb5c286fd',
         'fixturePath': 'examples/transformational-intelligence/campaign.json', 'files': {
             'docs/assets/successor/engine.mjs': '38c4f38978bf9fc29f207bae3adee0755bc6530d04502a36c491cc430787e488',
-            'examples/transformational-intelligence/campaign.json': 'a8a1e549d80c234e785fd4008f3b0e4f9f571c47cbb1e1cfef74414633cb4e19',
-            'examples/transformational-intelligence/inspector.mjs': 'e7b584f2c79a7c574e5be60bbec4205c95c07bbd0d842ce7b0766a92b24cd2ea'}}, 'Native source closure differs from reviewed free-only contract')
+            'examples/transformational-intelligence/campaign.json': 'fa5f570e89c20cffd0df844869047a7c0594c5460c3e95df5ada44592ea4fd20',
+            'examples/transformational-intelligence/inspector.mjs': 'b5f8e704aaab345f9d6503c854d38910ddfabbf98fe674c48b051097812b07f4'}}, 'Native source closure differs from reviewed free-only contract')
 
 
 def validate_comparison_inputs(root):

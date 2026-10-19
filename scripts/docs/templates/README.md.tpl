@@ -6,6 +6,8 @@
 
 **Latest reported mainnet deployment:** [17 October Manager and authority record](docs/deployments/MAINNET_MANAGER_2026-10-17.md). Manager `0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8`; intake paused, identity configuration unlocked. Earlier instances and their claims remain separate.
 
+**Latest retained ENS configuration:** [19 October snapshot and fee/source-review limitations](docs/deployments/ENS_CONFIGURATION_RETAINED_2026-10-19.md). Helper `0xBaC826CF5f169EA168A23173F3DbBdA7Ed953400`, root `usdc.jobs.agi.eth`, prefix `job-v2-`; historical block `26,227,598` at `2026-10-19T15:44:23Z`. This is not a current-state or activation claim.
+
 ## What would you like done?
 
 A simple website. A presentation. A clear report. Begin with your idea and prepare a request for AI workers, one step at a time. You do not need to install software or understand the code in this repository.

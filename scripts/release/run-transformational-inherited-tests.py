@@ -35,5 +35,6 @@ with tempfile.TemporaryDirectory(prefix='manager-inherited-v1.19.4-') as tmp:
     policy['git'](target, 'symbolic-ref', 'HEAD', 'refs/heads/inherited-release-fixture')
     subprocess.run(['python3', 'scripts/release/test-correction-profile.py'], cwd=target, check=True)
     subprocess.run(['python3', 'scripts/release/test-publication-authorization.py'], cwd=target, check=True)
+    subprocess.run(['python3', 'scripts/release/test-pages-publication.py'], cwd=target, check=True)
     subprocess.run(['python3', 'scripts/release/run-inherited-release-tests.py'], cwd=target, check=True)
 print('Unchanged v1.19.4 release-policy adversarial regressions passed on authenticated source; current correction qualification remains separate.')

@@ -8,7 +8,7 @@ For a browser-only first result, use the existing [SUCCESSOR Ω Builder](../../s
 
 For campaign inspection, use one verified checkout and its matching qualification record. Keep the original public `transformational-intelligence/v1` campaign. Follow the [installed adapter API](../../successor/TRANSFORMATIONAL_WORK.md): supply the exact compatible native Alpha inspector and the consuming runtime’s independently obtained `expectedBindingsDigest`. Do not copy the expected digest from the imported file. Imported data cannot install its own validator.
 
-The Manager adapter requires a charter and settlement route explicitly set to USDC. A native campaign with another route is rejected. A different route requires a newly authorized Alpha charter before execution; never edit a completed campaign to make an import pass. A zero USDC cap remains zero. A refusal is a useful inspection result, not a reason to increase authority or invent an allowance.
+Free inspection preserves the native campaign’s declared route. Creating a separate positive USDC proposal would require a charter and settlement route both explicitly set to USDC and an independently authorized nonzero USDC cap; the current native pilot does not supply that allowance. A zero USDC cap remains zero. Never edit a completed campaign to make an import pass. A refusal is a useful inspection result, not a reason to increase authority or invent an allowance.
 
 The supported outcome is an inert inspected campaign or an explicit rejection. There is no new console button, automatic worker assignment, live execution, paid native proposal or transaction. See [release notes](RELEASE_NOTES.md), [validation](VALIDATION.md) and [recovery](RECOVERY_GUIDE.md).
 

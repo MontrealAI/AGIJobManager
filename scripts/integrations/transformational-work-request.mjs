@@ -18,14 +18,17 @@ const isDigest = value => typeof value === 'string' && /^[0-9a-f]{64}$/.test(val
 const nativeDigest = (domain, value) => sha('successor-omega/v1:' + domain + '\0' + canonical(value));
 const credentialKeys = new Set(['password', 'passwd', 'apikey', 'privatekey', 'seedphrase', 'accesstoken',
   'refreshtoken', 'bearertoken', 'authtoken', 'clientsecret', 'signingkey', 'secret', 'credentials',
-  'token', 'authorization', 'idtoken', 'sessiontoken', 'apisecret', 'secretkey', 'credential']);
+  'token', 'authorization', 'auth', 'authentication', 'idtoken', 'sessiontoken', 'apisecret', 'secretkey', 'credential']);
 const normalizedKey = key => key.toLowerCase().replace(/[^a-z0-9]/g, '');
 function credentialKey(key) {
   const name = normalizedKey(key);
-  return credentialKeys.has(name) || /(?:password|passwd|apikey|privatekey|seedphrase|authorization|clientsecret|signingkey|secret|credential)/.test(name) || name.endsWith('token');
+  return credentialKeys.has(name) || /(?:password|passwd|apikey|privatekey|seedphrase|authentication|authorization|clientsecret|signingkey|secret|credential)/.test(name) || name.endsWith('token') || name.endsWith('auth');
 }
 function publicUrls(value) {
-  for (const match of value.matchAll(/https?:\/\/[^\s"<>]+/gi)) {
+  const normalized = value.replace(/[\t\r\n]/g, '');
+  for (const match of normalized.matchAll(/(?<![a-z0-9+.-])(?:[a-z][a-z0-9+.-]*:[^\s"<>]+|[\/\\]{2}[^\s"<>]+)/gi)) {
+    if (/^sha256:[a-f0-9]{64}$/i.test(match[0])) continue;
+    need(/^https:/i.test(match[0]), 'TRANSFORMATION_PRIVATE_URL');
     let url;
     try { url = new URL(match[0]); } catch { need(false, 'TRANSFORMATION_PRIVATE_URL'); }
     const host = url.hostname.replace(/^\[|\]$/g, '');
@@ -37,26 +40,31 @@ function publicUrls(value) {
       && !/^(?:key|sig|signature|xamz|xgoog)/.test(normalizedKey(key)), 'TRANSFORMATION_PRIVATE_URL');
   }
 }
-function rejectCredentialFields(value, path = [], root = value) {
-  if (typeof value === 'string') { publicUrls(value); return; }
+function rejectCredentialFields(value, path = [], draft = false) {
+  if (typeof value === 'string') {
+    publicOnly(value);
+    need(!/\bBearer\s+\S{6,}/i.test(value), 'TRANSFORMATION_PRIVATE_FIELD');
+    publicUrls(value); return;
+  }
   if (value === null || typeof value !== 'object') return;
   for (const [key, child] of Object.entries(value)) {
+    publicOnly(key);
+    publicUrls(key);
     const inertAuthorization = path.length === 0 && key === 'authorization' && child && typeof child === 'object'
       && !Array.isArray(child) && Object.keys(child).sort().join('|') === 'authority_expansion|binding|scope'
       && child.scope === 'local-bounded' && child.authority_expansion === false && (child.binding === null || isDigest(child.binding));
     const publicCurrencyToken = path.length === 1 && path[0] === 'route' && key === 'token' && child === route.token;
-    const publicAuthorizationDigest = root.schema === TRANSFORMATION_WORK_DRAFT_SCHEMA && path.length === 1
+    const publicAuthorizationDigest = draft && path.length === 1
       && path[0] === 'bindings' && key === 'authorizationBinding' && (child === null || isDigest(child));
     need(!credentialKey(key) || child === null || child === '' || inertAuthorization || publicCurrencyToken || publicAuthorizationDigest,
       'TRANSFORMATION_PRIVATE_FIELD');
-    rejectCredentialFields(child, [...path, key], root);
+    rejectCredentialFields(child, [...path, key], draft);
   }
 }
-function read(raw, maximum) {
+function read(raw, maximum, draft = false) {
   need(typeof raw === 'string' && Buffer.byteLength(raw, 'utf8') <= maximum, 'TRANSFORMATION_DRAFT_SIZE');
   const value = parseStrict(raw, maximum);
-  publicOnly(canonical(value));
-  rejectCredentialFields(value);
+  rejectCredentialFields(value, [], draft);
   return value;
 }
 function baseUnits(value, code) {
@@ -138,7 +146,7 @@ export async function createTransformationWorkDraft(requestRaw, {
 }
 
 export async function inspectTransformationWorkDraft(raw, options = {}) {
-  const value = read(raw, MAX_DRAFT);
+  const value = read(raw, MAX_DRAFT, true);
   keys(value.planning, ['budgetUSDC', 'amountBaseUnits', 'decimals', 'reservedBaseUnits', 'status'], 'TRANSFORMATION_DRAFT_PLANNING');
   const rebuilt = await createTransformationWorkDraft(value.original, { ...options,
     budgetUSDC:value.planning.budgetUSDC, createdAt:value.createdAt });

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { canonical, parseStrict } from '../../site/assets/successor/safe.mjs';
+import { canonical, parseStrict, publicOnly } from '../../site/assets/successor/safe.mjs';
 import { createTransformationWorkDraft, inspectTransformationWorkDraft, inspectTransformationWorkRequest } from './transformational-work-request.mjs';
 
 const hash = value => createHash('sha256').update(value).digest('hex');
@@ -145,13 +145,27 @@ test('decoded private inputs and ambiguous duplicate fields are refused before n
   assert.equal(invoked, false);
   for (const key of ['api_key', 'private-key', 'accessToken', 'Password', 'client.secret', 'signing_key',
     'token', 'authorization', 'id_token', 'session_token', 'api_secret', 'secret_key', 'credential',
-    'x-api-key', 'x-auth-token', 'proxy-authorization', 'aws_secret_access_key', 'httpAuthorization', 'providerBearerToken', 'authorizationBinding']) {
+    'x-api-key', 'x-auth-token', 'proxy-authorization', 'aws_secret_access_key', 'httpAuthorization', 'providerBearerToken', 'authorizationBinding',
+    'auth', 'authentication', 'x-auth', 'providerAuthentication']) {
     const credential = campaign(x => { x.bindings.configuration = { nested:[{ [key]:'synthetic-fixture-only' }] }; });
     await assert.rejects(createTransformationWorkDraft(canonical(credential), {
       ...options(credential), inspectWorkRequest:async () => { invoked = true; },
     }), /TRANSFORMATION_PRIVATE_FIELD/);
     assert.equal(invoked, false);
   }
+  const bearer = campaign(x => { x.bindings.configuration = { notes:'Bearer synthetic-fixture-only' }; });
+  await assert.rejects(inspectTransformationWorkRequest(canonical(bearer), {
+    ...options(bearer), inspectWorkRequest:async () => { invoked = true; },
+  }), /TRANSFORMATION_PRIVATE_FIELD/);
+  assert.equal(invoked, false);
+  const forgedDraft = campaign(x => {
+    x.schema = 'agijobmanager/transformational-work-draft/v1';
+    x.bindings.authorizationBinding = 'a'.repeat(64);
+  });
+  await assert.rejects(inspectTransformationWorkRequest(canonical(forgedDraft), {
+    ...options(forgedDraft), inspectWorkRequest:async raw => { invoked = true; return parseStrict(raw); },
+  }), /TRANSFORMATION_PRIVATE_FIELD/);
+  assert.equal(invoked, false);
 });
 
 test('public provenance is credential-free HTTPS DNS and refuses private or ambiguous URL forms before native inspection', async () => {
@@ -161,7 +175,13 @@ test('public provenance is credential-free HTTPS DNS and refuses private or ambi
     'https://127.0.0.1/paper', 'https://0177.0.0.1/paper', 'https://2130706433/paper', 'https://[::1]/paper',
     'https://[::ffff:127.0.0.1]/paper', 'https://example.invalid:8443/paper', 'https://user:synthetic@example.invalid/paper',
     'https://example.invalid/paper?refresh_token=synthetic-fixture', 'https://example.invalid/paper?api%5fsecret=synthetic-fixture',
-    'https://example.invalid/paper?X-Amz-Credential=synthetic-fixture', 'https://example.invalid/paper#access_token=synthetic-fixture']) {
+    'https://example.invalid/paper?X-Amz-Credential=synthetic-fixture', 'https://example.invalid/paper#access_token=synthetic-fixture',
+    'https:\\\\127.0.0.1/paper', 'https:\t//127.0.0.1/paper', 'ht\ttps://127.0.0.1/paper',
+    'https:\n//10.0.0.1/paper', 'https:2130706433/paper', 'https:\\\\[::1]/paper',
+    'https://example.invalid/paper?auth=synthetic-fixture', 'https://example.invalid/paper?authentication=synthetic-fixture',
+    'ftp://127.0.0.1/private', 'file:///private/document', 'ws://127.0.0.1/socket', 's3://public-bucket/document',
+    'data:text/plain,fixture', 'javascript:fixture()', '//127.0.0.1/private', '//github.com/MontrealAI', '\\\\127.0.0.1/private',
+    '/\\127.0.0.1/private', '\\/127.0.0.1/private']) {
     const request = campaign(x => { x.charter.purpose = 'Inspect ' + url; });
     await assert.rejects(inspectTransformationWorkRequest(canonical(request), {
       ...options(request), inspectWorkRequest:async () => { invoked = true; },
@@ -170,6 +190,24 @@ test('public provenance is credential-free HTTPS DNS and refuses private or ambi
   }
   const request = campaign(x => { x.charter.purpose = 'Inspect https://github.com/MontrealAI/AGI-Alpha-Agent-v0?page=1'; });
   assert.deepEqual(await inspectTransformationWorkRequest(canonical(request), options(request)), request);
+  const privateName = campaign(x => { x.bindings.configuration = { 'ftp://127.0.0.1/private':'fixture' }; });
+  await assert.rejects(inspectTransformationWorkRequest(canonical(privateName), {
+    ...options(privateName), inspectWorkRequest:async () => { invoked = true; },
+  }), /TRANSFORMATION_PRIVATE_URL/);
+  assert.equal(invoked, false);
+});
+
+test('large valid generated drafts reopen under their declared bound while the default public screen stays bounded', async () => {
+  const request = campaign(x => { x.charter.purpose = '"'.repeat(1_899_000); });
+  const requestRaw = canonical(request);
+  assert.ok(Buffer.byteLength(requestRaw) < 4_000_000);
+  const raw = await createTransformationWorkDraft(requestRaw, options(request));
+  assert.ok(Buffer.byteLength(raw) > 4_000_000 && Buffer.byteLength(raw) < 8_388_608);
+  const value = await inspectTransformationWorkDraft(raw, options(request));
+  assert.equal(value.original, requestRaw);
+  assert.equal(value.bindings.requestRawSha256, digest(requestRaw));
+  assert.throws(() => publicOnly('x'.repeat(4_000_001)), /TEXT/);
+  await assert.rejects(inspectTransformationWorkDraft('x'.repeat(8_388_609), options(request)), /TRANSFORMATION_DRAFT_SIZE/);
 });
 
 test('malformed evidence epoch, authority scope and settlement declarations fail closed', async () => {
