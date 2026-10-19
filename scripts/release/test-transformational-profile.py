@@ -82,6 +82,20 @@ class TransformationalProfile(unittest.TestCase):
             self.assertNotIn(name, P['ALLOWED'])
             raw = (self.root / name).read_bytes() + b'\n/* adversarial unchanged-path mutation */\n'
             with self.subTest(name=name): self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_deployment_generator_repin_cannot_change_paragraph_position_or_other_code(self):
+        name = 'ui/scripts/generate-deployment-docs.mjs'
+        original = (self.root / name).read_bytes()
+        insertion = b'The [v${c.version} transformation adapter](../successor/TRANSFORMATIONAL_WORK.md) is free inspection only for the current native zero-currency pilot. It creates no deployment, transaction or new intake authority. Existing deployment records and recovery inputs retain their original source identities.\n\n'
+        self.assertEqual(original.count(insertion), 1)
+        for raw in [original.replace(insertion, b''),
+                original.replace(insertion, insertion + insertion),
+                original.replace(insertion, insertion.replace(b'zero-currency', b'funded')),
+                original.replace(insertion, b'').replace(b'## Software version\n\n', b'## Software version\n\n' + insertion),
+                original.replace(b'c.managerAddress', b'c.ensJobPagesAddress'),
+                original + b'\n// unrelated generator edit\n']:
+            self.assertNotEqual(raw, original)
+            with self.subTest(variant=sha(raw)):
+                self.mutate(name, raw, lambda: self.repin(name, raw))
     def test_website_repin_cannot_change_surrounding_content_or_resource_position(self):
         for name, insertion in P['WEBSITE_RESOURCE_INSERTIONS'].items():
             original = (self.root / name).read_bytes()

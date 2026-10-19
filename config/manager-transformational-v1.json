@@ -483,7 +483,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "c4e5b80c70cac6a940e3b451f3a4e24d46d77013899ad3d6894bdef42f22150e"
+        "sha256": "2646e061bfc774fbe225f6fc40a1feddad7fe6e7f3f859ef09b83014c78a61ed"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -499,7 +499,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "e6b4a727385dcd8d00c9959362714b257d14a7d31f32b02869ce5e150673f350"
+        "sha256": "5f19957eb83e15436c859c83056f14c37b281faddaf1a70431ef2ec2a53101e8"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -639,6 +639,17 @@
         "sha256": "d320776de97369132287a2224c16b5bffc485749d300ddb13fb7819511deceb1"
       },
       "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "ui/scripts/generate-deployment-docs.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "3bf519ff1fcfe07472fe40a5fc0814e0a53725d83f34dc6546f3e0fff88fe465"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "755f3d183cd3e83d3fbeac922ccf90e5084f5276788751921084c9613c60e46e"
+      },
+      "reason": "Preserve the exact committed free-only TI paragraph in deployment-doc generation; all other generator bytes remain the predecessor."
     },
     "ui/scripts/singlefile-template.html": {
       "before": {

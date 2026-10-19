@@ -91,6 +91,7 @@ ALLOWED = {
     'ui/dist-ipfs/agijobmanager.html',
     'ui/package-lock.json',
     'ui/package.json',
+    'ui/scripts/generate-deployment-docs.mjs',
     'ui/scripts/singlefile-template.html',
     'ui/src/generated/deployments.ts',
 }
@@ -121,6 +122,9 @@ PUBLICATION_READINESS_FAILURE = '''      - name: Refuse superseded or unready pu
 VERSION_ONLY = PREVIOUS['VERSION_ONLY']
 UI_LABEL_ONLY = {'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html',
     'ui/agijobmanager-usdc.html', 'ui/src/generated/deployments.ts', 'ui/scripts/singlefile-template.html'}
+
+DEPLOYMENT_GUIDE_INSERTION = b'The [v${c.version} transformation adapter](../successor/TRANSFORMATIONAL_WORK.md) is free inspection only for the current native zero-currency pilot. It creates no deployment, transaction or new intake authority. Existing deployment records and recovery inputs retain their original source identities.\n\n'
+DEPLOYMENT_GUIDE_ANCHOR = b"fs.writeFileSync('../docs/ui/DEPLOYMENT_MAINNET.md', `# USDC deployment registry\n\n"
 
 
 def previous_selection():
@@ -195,6 +199,12 @@ def validate_source(root, selection, paths=None):
             previous = current.replace(b', 13)', b', 12)')
             require(data.count(current) == 2 and sha(data.replace(current, previous)) == baseline[name]['sha256'],
                 'Browser checker changed beyond the exact two reviewed resource counts')
+        if name == 'ui/scripts/generate-deployment-docs.mjs':
+            require(data.count(DEPLOYMENT_GUIDE_INSERTION) == 1
+                and data.count(DEPLOYMENT_GUIDE_ANCHOR + DEPLOYMENT_GUIDE_INSERTION) == 1,
+                'The deployment generator requires the exact reviewed TI paragraph at its original guide position')
+            require(sha(data.replace(DEPLOYMENT_GUIDE_INSERTION, b'', 1)) == baseline[name]['sha256'],
+                'Deployment generator changed beyond the exact reviewed TI paragraph')
         if name == 'scripts/site/check.mjs':
             current = b'    assert.equal((html.match(/class="resource"/g) || []).length, 13);'
             previous = current.replace(b', 13)', b', 12)')
