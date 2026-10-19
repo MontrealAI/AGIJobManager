@@ -4,6 +4,10 @@
 
 Public companion: **AGIJobManager {{VERSION}}**. Private editions: **Fleet {{FLEET}}, Agent {{AGENT}}, Node {{NODE}}**. These private applications are delivered separately; cloning this repository does not install them.
 
+## Transformation campaign inspection
+
+Public {{TAG}} adds inert inspection of complete Alpha transformation campaigns through an installed compatible native inspector. Its current native pilot has zero currency allowances and cannot create a positive paid USDC proposal. It does not install, execute, commission or qualify a private Fleet runtime. Keep the existing Builder source pin, private editions and recovery journals. See [the transformation adapter boundary](../successor/TRANSFORMATIONAL_WORK.md) and [current release recovery](../releases/{{TAG}}/RECOVERY_GUIDE.md).
+
 ## Choose the machine and role
 
 | Machine or service | Role | Start page in the private download |

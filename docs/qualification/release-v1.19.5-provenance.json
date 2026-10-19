@@ -1,0 +1,33 @@
+{
+  "schema": "agijobmanager/release-comparison-inputs/v1",
+  "status": "EXPECTED_ONLY_PENDING_FINAL_SOURCE_EXECUTION",
+  "baseCommit": "8b0cf7fbc09e48ffe55d8ed35df8cd40920231d2",
+  "baseTree": "8276c8beb31021a6f88d39522722305932bf621f",
+  "version": "1.19.5",
+  "executed": false,
+  "fork": {
+    "previousPath": "docs/qualification/mainnet-cutover-v1.19.4-expected.json",
+    "previousSha256": "dad70c2308d4ff00ac8d05e6b1648df8791b20139e67a2e1dbf1efe55be9bd02",
+    "expectedPath": "docs/qualification/mainnet-cutover-v1.19.5-expected.json",
+    "expectedSha256": "d48cce34e7f20d836018d1619cf916475051b9c15908b5fc164568587ff1584d",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "hardhat/package.json",
+      "package-lock.json",
+      "package.json"
+    ],
+    "observationsChanged": false
+  },
+  "staticAnalysis": {
+    "previousPath": "scripts/security/slither-reviewed-findings-v1.19.4.json",
+    "previousSha256": "ff61228451fc054961c3842e3c24cf1d395271f10fdb763bc28e41f91b2eee7b",
+    "expectedPath": "scripts/security/slither-reviewed-findings-v1.19.5.json",
+    "expectedSha256": "12a981f1c4ae8241c1e9702796647eb42bbaf3761897adce810a2f294725a7d6",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "package-lock.json"
+    ],
+    "findingsOrDispositionsChanged": false
+  },
+  "scope": "Only package/lock software-version hashes change within these comparison input sets. The finite addition exposes inert native free-only transformation inspection and separately bounded USDC proposal policy; none is promoted into chain or scanner evidence. Fresh exact-final-source hosted execution remains mandatory."
+}

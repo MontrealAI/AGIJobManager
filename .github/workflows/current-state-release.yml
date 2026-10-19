@@ -39,9 +39,9 @@ jobs:
         id: source-policy
         run: |
           set -euo pipefail
-          manifest_sha=$(sha256sum config/manager-boundary-corrections-v1.json | cut -d' ' -f1)
-          verifier_sha=$(sha256sum scripts/release/correction-profile.py | cut -d' ' -f1)
-          python3 scripts/release/correction-profile.py --dependency-root "$(realpath node_modules)"
+          manifest_sha=$(sha256sum config/manager-transformational-v1.json | cut -d' ' -f1)
+          verifier_sha=$(sha256sum scripts/release/transformational-profile.py | cut -d' ' -f1)
+          python3 scripts/release/transformational-profile.py --dependency-root "$(realpath node_modules)"
           printf 'manifest=%s\nverifier=%s\n' "$manifest_sha" "$verifier_sha" >> "$GITHUB_OUTPUT"
       - name: Compile reviewed candidate contracts
         run: npm run build
@@ -59,8 +59,12 @@ jobs:
           python3 scripts/release/test-dependency-boundaries.py
           python3 scripts/release/run-inherited-source-tests.py --dependency-root "$(realpath node_modules)"
           python3 scripts/release/run-inherited-release-tests.py
-          python3 scripts/release/test-correction-profile.py
-          python3 scripts/release/test-publication-authorization.py
+      - name: Native transformation profile and inherited release tests
+        run: |
+          python3 scripts/release/test-transformational-profile.py
+          python3 scripts/release/test-transformational-qualification.py
+          python3 scripts/release/test-publication-authorization-ti.py
+          python3 scripts/release/run-transformational-inherited-tests.py
       - name: Resolve candidate identity from package metadata
         id: candidate
         run: |
@@ -80,9 +84,9 @@ jobs:
         run: |
           for output in "build/release/${{ steps.candidate.outputs.tag }}-candidate" /tmp/agi-candidate-rebuild; do
             python3 scripts/release/package-release.py --out "$output" \
-              --profile manager-boundary-corrections-v1 --object-store "$PWD" \
+              --profile manager-transformational-v1 --object-store "$PWD" \
               --dependency-root "$(realpath node_modules)" \
-              --manifest config/manager-boundary-corrections-v1.json \
+              --manifest config/manager-transformational-v1.json \
               --manifest-sha256 "$CANDIDATE_MANIFEST_SHA" \
               --verifier-sha256 "$CANDIDATE_VERIFIER_SHA"
           done
@@ -93,7 +97,7 @@ jobs:
           CANDIDATE_VERIFIER_SHA: ${{ steps.source-policy.outputs.verifier }}
         run: |
           python3 scripts/release/verify-package.py "build/release/${{ steps.candidate.outputs.tag }}-candidate" \
-            --profile manager-boundary-corrections-v1 --manifest config/manager-boundary-corrections-v1.json \
+            --profile manager-transformational-v1 --manifest config/manager-transformational-v1.json \
             --manifest-sha256 "$CANDIDATE_MANIFEST_SHA" \
             --verifier-sha256 "$CANDIDATE_VERIFIER_SHA"
       - name: Retain source-pinned candidate assets

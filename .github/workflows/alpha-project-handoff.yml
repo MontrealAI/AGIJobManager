@@ -36,3 +36,14 @@ jobs:
         env:
           SUCCESSOR_ALPHA_SOURCE: ${{ github.workspace }}/build/alpha-source
         run: node --test scripts/successor/alpha-project.test.mjs scripts/successor/alpha-project-browser.test.mjs scripts/successor/source-identity.test.mjs scripts/integrations/four-repo-computer-receipt.test.mjs
+      - name: Fetch the exact reviewed transformation inspector
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: MontrealAI/AGI-Alpha-Agent-v0
+          ref: 124a3b636baa916fe6c4400e03e55198114dd212
+          path: build/alpha-ti-source
+          persist-credentials: false
+      - name: Validate native transformation campaign boundary
+        run: |
+          node --test scripts/integrations/transformational-work-request.test.mjs
+          node scripts/integrations/transformational-native-test.mjs "$GITHUB_WORKSPACE/build/alpha-ti-source"

@@ -1,4 +1,6 @@
-# v1.19.4 software qualification and operating boundaries
+# v1.19.5 software qualification and operating boundaries
+
+Version 1.19.5 adds [free native transformation-campaign inspection](successor/TRANSFORMATIONAL_WORK.md) and a separate finite source policy. The native pilot has zero currency allowances; positive paid proposals remain unsupported. Its [validation record](releases/v1.19.5/VALIDATION.md) distinguishes local checks from pending exact-final-source qualification. This adapter changes no deployed contract, intake setting, Builder code pin, compiler behavior or dependency resolution. It does not establish independent review or live readiness.
 
 Latest deployment: see the [17 October Manager record](deployments/MAINNET_MANAGER_2026-10-17.md) for the reported nine finalized creations, mixed explorer-match results, governor/moderator and paused/unlocked configuration. This dated evidence does not establish current full readiness or paid-intake approval.
 

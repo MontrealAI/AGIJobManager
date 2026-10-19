@@ -36,6 +36,12 @@ Two bounded local engines produce real editable artifacts: a public-data report 
 
 **En français :** créez un rapport de données publiques ou un site simple, vérifiez le résultat, choisissez une amélioration et téléchargez votre système. Le parcours local fonctionne sans compte, portefeuille ni clé de fournisseur. [Guide français](docs/successor/GUIDE_FR.md).
 
+## Inspect a transformation campaign
+
+The {{TAG}} developer adapter inspects a complete Alpha transformation campaign with an installed, compatible native inspector and independently supplied runtime bindings. The current native pilot has zero currency allowances: **inspection is free; a positive paid proposal is unsupported**. Inspection does not execute work, grant permissions or sign a transaction. The existing local Builder and its pinned runtime remain unchanged. Start with the [{{TAG}} guide](docs/releases/{{TAG}}/START_HERE.md) and [adapter contract and recovery](docs/successor/TRANSFORMATIONAL_WORK.md). This is a developer API, not a new console action.
+
+**En français :** l’inspection d’une campagne Alpha reste gratuite, sans permission d’exécution ni paiement. Le pilote natif à plafond zéro ne permet aucune proposition payante. Le Créateur local existant reste inchangé.
+
 ## Historical October 10 instance — ENS connected, activation on HOLD
 
 The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_USDC_2026-10-10.md) reports the verified helper at `0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC` connected to manager `0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7`, using **`job-<jobId>.usdc.jobs.agi.eth`**. At the recorded block **26,165,026**, intake was paused and no job had been posted. This is dated operator evidence, not a live status indicator or permission to fund jobs.
@@ -52,7 +58,7 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Current software version: {{TAG}} — Operator guidance and deployment evidence.**
+**Current software version: {{TAG}} — Free transformation-campaign inspection.**
 [Latest deployment and instance-specific operations](docs/OPERATIONS/COMMISSIONING.md) ·
 [Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Release notes](docs/releases/{{TAG}}/RELEASE_NOTES.md).
 

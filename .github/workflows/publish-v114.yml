@@ -6,23 +6,23 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Enter PUBLISH_v1.19.4 after reviewing completed final-source qualification'
+        description: 'Enter PUBLISH_v1.19.5 after reviewing completed final-source qualification'
         required: true
         type: string
 permissions:
   contents: read
   actions: read
 concurrency:
-  group: publish-v1.19.4
+  group: publish-v1.19.5
   cancel-in-progress: false
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main' && ((github.event_name == 'workflow_dispatch' && inputs.confirmation == 'PUBLISH_v1.19.4') || (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.conclusion == 'success'))
+    if: github.ref == 'refs/heads/main' && ((github.event_name == 'workflow_dispatch' && inputs.confirmation == 'PUBLISH_v1.19.5') || (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.conclusion == 'success'))
     runs-on: ubuntu-latest
     timeout-minutes: 65
     env:
       SOURCE_COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
-      RELEASE_PUBLISH_CONFIRMATION: ${{ github.event_name == 'workflow_run' && 'PUBLISH_v1.19.4' || inputs.confirmation }}
+      RELEASE_PUBLISH_CONFIRMATION: ${{ github.event_name == 'workflow_run' && 'PUBLISH_v1.19.5' || inputs.confirmation }}
     permissions:
       contents: write
       actions: read
@@ -48,25 +48,25 @@ jobs:
         if: steps.readiness.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/release/collect-qualification.py --source "$SOURCE_COMMIT" --out build/release/v1.19.4 --profile manager-boundary-corrections-v1 --manifest config/manager-boundary-corrections-v1.json --manifest-sha256 "$(sha256sum config/manager-boundary-corrections-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/correction-profile.py | cut -d' ' -f1)"
+        run: python3 scripts/release/collect-qualification.py --source "$SOURCE_COMMIT" --out build/release/v1.19.5 --profile manager-transformational-v1 --manifest config/manager-transformational-v1.json --manifest-sha256 "$(sha256sum config/manager-transformational-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/transformational-profile.py | cut -d' ' -f1)"
       - name: Verify complete published download inventory
         if: steps.readiness.outputs.ready == 'true'
-        run: python3 scripts/release/verify-package.py build/release/v1.19.4 --published --profile manager-boundary-corrections-v1 --manifest config/manager-boundary-corrections-v1.json --manifest-sha256 "$(sha256sum config/manager-boundary-corrections-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/correction-profile.py | cut -d' ' -f1)"
+        run: python3 scripts/release/verify-package.py build/release/v1.19.5 --published --profile manager-transformational-v1 --manifest config/manager-transformational-v1.json --manifest-sha256 "$(sha256sum config/manager-transformational-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/transformational-profile.py | cut -d' ' -f1)"
       - name: Attest exact-source release assembly
         if: steps.readiness.outputs.ready == 'true'
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
-          subject-path: build/release/v1.19.4/*
+          subject-path: build/release/v1.19.5/*
       - name: Verify artifact, repository, workflow and source attestation bindings
         if: steps.readiness.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for asset in build/release/v1.19.4/*; do
+          for asset in build/release/v1.19.5/*; do
             gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY" --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/publish-v114.yml" --signer-digest "$SOURCE_COMMIT" --source-digest "$SOURCE_COMMIT" --source-ref refs/heads/main --deny-self-hosted-runners
           done
       - name: Validate evidence, create draft, verify assets, then publish
         if: steps.readiness.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/release/publish-release.py --qualification build/release/v1.19.4/QUALIFICATION.json --assets build/release/v1.19.4 --publish --profile manager-boundary-corrections-v1 --manifest config/manager-boundary-corrections-v1.json --manifest-sha256 "$(sha256sum config/manager-boundary-corrections-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/correction-profile.py | cut -d' ' -f1)"
+        run: python3 scripts/release/publish-release.py --qualification build/release/v1.19.5/QUALIFICATION.json --assets build/release/v1.19.5 --publish --profile manager-transformational-v1 --manifest config/manager-transformational-v1.json --manifest-sha256 "$(sha256sum config/manager-transformational-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/transformational-profile.py | cut -d' ' -f1)"
