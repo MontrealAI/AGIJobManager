@@ -180,7 +180,8 @@ test('public provenance is credential-free HTTPS DNS and refuses private or ambi
     'https:\n//10.0.0.1/paper', 'https:2130706433/paper', 'https:\\\\[::1]/paper',
     'https://example.invalid/paper?auth=synthetic-fixture', 'https://example.invalid/paper?authentication=synthetic-fixture',
     'ftp://127.0.0.1/private', 'file:///private/document', 'ws://127.0.0.1/socket', 's3://public-bucket/document',
-    'data:text/plain,fixture', 'javascript:fixture()', '//127.0.0.1/private', '//github.com/MontrealAI', '\\\\127.0.0.1/private']) {
+    'data:text/plain,fixture', 'javascript:fixture()', '//127.0.0.1/private', '//github.com/MontrealAI', '\\\\127.0.0.1/private',
+    '/\\127.0.0.1/private', '\\/127.0.0.1/private']) {
     const request = campaign(x => { x.charter.purpose = 'Inspect ' + url; });
     await assert.rejects(inspectTransformationWorkRequest(canonical(request), {
       ...options(request), inspectWorkRequest:async () => { invoked = true; },

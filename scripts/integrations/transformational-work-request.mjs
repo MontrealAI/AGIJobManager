@@ -26,7 +26,7 @@ function credentialKey(key) {
 }
 function publicUrls(value) {
   const normalized = value.replace(/[\t\r\n]/g, '');
-  for (const match of normalized.matchAll(/(?<![a-z0-9+.-])(?:[a-z][a-z0-9+.-]*:[^\s"<>]+|\/\/[^\s"<>]+|\\\\[^\s"<>]+)/gi)) {
+  for (const match of normalized.matchAll(/(?<![a-z0-9+.-])(?:[a-z][a-z0-9+.-]*:[^\s"<>]+|[\/\\]{2}[^\s"<>]+)/gi)) {
     if (/^sha256:[a-f0-9]{64}$/i.test(match[0])) continue;
     need(/^https:/i.test(match[0]), 'TRANSFORMATION_PRIVATE_URL');
     let url;
