@@ -82,6 +82,7 @@ ALLOWED = {
     'scripts/release/verify-package.py',
     'scripts/security/slither-reviewed-findings-v1.19.5.json',
     'scripts/security/verify-slither-review.py',
+    'scripts/site/browser-test.mjs',
     'scripts/site/check.mjs',
     'site/content/en.json',
     'site/content/fr.json',
@@ -184,6 +185,11 @@ def validate_source(root, selection, paths=None):
                 require(value['packages']['']['version'] == VERSION, 'Transformation lock version differs')
                 value['packages']['']['version'] = '1.19.4'
             require(sha((json.dumps(value, indent=2, ensure_ascii=False) + '\n').encode()) == baseline[name]['sha256'], 'Transformation changed dependency resolution or transaction configuration: ' + name)
+        if name == 'scripts/site/browser-test.mjs':
+            current = b'assert.equal(await page.locator(".resource:visible").count(), 13);'
+            previous = current.replace(b', 13)', b', 12)')
+            require(data.count(current) == 2 and sha(data.replace(current, previous)) == baseline[name]['sha256'],
+                'Browser checker changed beyond the exact two reviewed resource counts')
         if name == 'scripts/site/check.mjs':
             current = b'    assert.equal((html.match(/class="resource"/g) || []).length, 13);'
             previous = current.replace(b', 13)', b', 12)')

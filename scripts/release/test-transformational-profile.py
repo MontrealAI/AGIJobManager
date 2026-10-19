@@ -75,7 +75,7 @@ class TransformationalProfile(unittest.TestCase):
         names = ('.github/workflows/security-verification.yml',
             'scripts/release/package-release.py', 'scripts/release/release_common.py',
             'scripts/site/build.mjs',
-            'scripts/site/browser-test.mjs', 'scripts/site/deployments.test.mjs',
+            'scripts/site/deployments.test.mjs',
             'site/deployments.mjs', 'site/template.mjs', 'site/workflows.mjs',
             'ui/scripts/sync-deployments.mjs', 'ui/src/app/deployment/page.tsx')
         for name in names:
@@ -100,6 +100,14 @@ class TransformationalProfile(unittest.TestCase):
         for raw in [original.replace(b'length, 13);', b'length, 14);'),
                 original.replace(b'assert.equal(entries.length, 1,', b'assert.equal(1, 1,'),
                 original + b'\n// changed checker bytes\n']:
+            self.assertNotEqual(raw, original)
+            self.mutate(name, raw, lambda: self.repin(name, raw))
+    def test_browser_checker_repin_cannot_change_counts_or_other_assertions(self):
+        name = 'scripts/site/browser-test.mjs'
+        original = (self.root / name).read_bytes()
+        for raw in [original.replace(b'count(), 13);', b'count(), 14);'),
+                original.replace(b'assert.deepEqual(errors, [],', b'assert.deepEqual([], [],'),
+                original + b'\n// changed browser checker bytes\n']:
             self.assertNotEqual(raw, original)
             self.mutate(name, raw, lambda: self.repin(name, raw))
     def test_all_reviewed_corrections_are_required(self):

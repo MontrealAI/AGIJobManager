@@ -178,7 +178,7 @@ try {
       await page.locator("#guide-search").fill("zzznomatch");
       assert.equal(await page.locator("#no-results").isVisible(), true);
       await page.locator("#guide-search").fill("");
-      assert.equal(await page.locator(".resource:visible").count(), 12);
+      assert.equal(await page.locator(".resource:visible").count(), 13);
       await page.locator(".faq-section summary").first().click();
       assert.equal(await page.locator("details[open]").count(), 1);
       assert.ok(
@@ -196,7 +196,7 @@ try {
     await checkEmployerEntries(page, language, `${language || 'en'} without JavaScript`);
     await checkReflow(page, `${language || 'en'} without JavaScript`);
     assert.equal(await page.locator(".role-panel:visible").count(), 4);
-    assert.equal(await page.locator(".resource:visible").count(), 12);
+    assert.equal(await page.locator(".resource:visible").count(), 13);
     await page.locator('[data-employer-entry="hero"]').click();
     await page.waitForURL(base + language + 'employers/');
     assert.equal(await page.locator('html').getAttribute('lang'), language ? 'fr' : 'en');

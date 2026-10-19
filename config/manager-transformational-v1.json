@@ -483,7 +483,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "e6c2a95b6874770e51a055c1470ce86251d25b9b64b11a7b4ff8af0ea0785865"
+        "sha256": "ae15aedd0aac09c717b9ce403ee0165f21a9ade2ac79831630dc1ad8a508ad1c"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -499,7 +499,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "a4152537447b969be05a8802ad258b825c8db08379fff927898476417c9a87d6"
+        "sha256": "6ba0799db0f57e2540e038526fe520c32e292a6063c4f9c4ea7771d5c1ddf29f"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -540,6 +540,17 @@
         "sha256": "83cd337e8a699bcaf69c83b93055a6942f8f962066eca8f759178bcdbac64e62"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/site/browser-test.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "ef4146606eb6c35c596d6e0e0993b5f7192750582d3ee5cdaa62bd443a030c58"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "43ef339f5cb73e666b885a0103885fe96a5b73ab6ab9eaf87d8af7ed5fa24a4c"
+      },
+      "reason": "Change only the two exact resource-card counts from 12 to 13; preserve every other existing browser assertion through byte-exact normalization."
     },
     "scripts/site/check.mjs": {
       "before": {
