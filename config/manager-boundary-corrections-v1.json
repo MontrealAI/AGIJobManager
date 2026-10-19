@@ -311,7 +311,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "ceaa4280a7ac42b2199f1b24f93057041f1c29ee5608e89237b28cf5f3f2fdf3"
+        "sha256": "fdd39b89fca91a17745eed0f1a4fd9ad9ad9577d4cc25d2e918c22cb8c66a1cb"
       },
       "reason": "Add bounded, independently validated computer-receipt continuity with explicit new USDC6 pricing and disposable mock-token acceptance/rejection evidence; no live or independent-review claim."
     },
@@ -330,7 +330,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "9ef4aac06d8ba19a54f3762d8e7883b6bb1f82ef49890829ea3c9ef0dde1f81f"
+        "sha256": "8f9db6f51a5de1d04da41bb93e1a0412c2e148bac4764f99f59eb96124c2b51b"
       },
       "reason": "Regress the disposable signing boundary: exact local EDR chain31337 and public fixture accounts only; no HTTP, fork or additional network."
     },
@@ -371,7 +371,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "99308e3d25f9d5c7a3ff345c7d8d0eb02728f27cdd02777c32a07e090eded6bf"
+        "sha256": "786b47350b69900b06d234e202754d78efa9c17519322058b2e08468f3779ae7"
       },
       "reason": "Add bounded, independently validated computer-receipt continuity with explicit new USDC6 pricing and disposable mock-token acceptance/rejection evidence; no live or independent-review claim."
     },
@@ -517,7 +517,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "dcc59ded7d4fa0d77bfcfcf1fc847a4f2f29149a847f1fa2e7555c9f8ddce8d0"
+        "sha256": "81124b787122ed36476c5706c6b51722de9ea273a978583ba587dde83787647b"
       },
       "reason": "Keep strict transfer provenance while preserving original bytes and explicit bilingual previous-edition recovery; no silent history or approval migration."
     },

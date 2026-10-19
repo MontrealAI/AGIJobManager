@@ -15,6 +15,12 @@ function assertDisposableConfig(config){
   assert.equal(network.type,'edr-simulated');assert.equal(network.chainId,31337);assert.equal(network.forking,undefined);assert.equal(network.url,undefined);
   assert.equal(network.accounts?.mnemonic,'test test test test test test test test test test test junk','Only known disposable fixture accounts may sign');
 }
+// This disposable two-job demonstration is qualified only for 25..100 mock USDC.
+// The unsigned uint128 proposal API retains its broader independent limits.
+function assertFixtureAmount(value){
+  assert(typeof value==='string'&&/^[1-9][0-9]*$/.test(value),'Fixture amount must be canonical base units');
+  const amount=BigInt(value);assert(amount>=25_000_000n&&amount<=100_000_000n,'FIXTURE_BUDGET_RANGE_25_TO_100_MOCK_USDC');return amount;
+}
 async function main(){
   const input=process.env.FQR_DRAFT_FILE,alphaRoot=process.env.FQR_ALPHA_SOURCE,jobsRoot=process.env.FQR_JOBS_SOURCE,output=process.env.FQR_EVIDENCE_FILE;
   for(const file of [input,alphaRoot,jobsRoot,output])assert(path.isAbsolute(file??''),'Explicit absolute draft, reviewed source roots and absent evidence output required');
@@ -25,6 +31,7 @@ async function main(){
   const adapter=await load(ROOT,'scripts/integrations/four-repo-computer-receipt.mjs'),raw=bounded(input);
   const options={inspectAlphaReturn:alpha.inspectComputerReturn,inspectComputerEvidence:jobs.inspectComputerReceiptEvidence};
   const draft=await adapter.inspectComputerReceiptDraft(raw,options);
+  const payout=assertFixtureAmount(draft.planning.amountBaseUnits); // Before Hardhat import/provider/signer creation.
   const corrupted=JSON.parse(draft.original.returnRaw);corrupted.observedText+=' altered';
   await assert.rejects(adapter.createComputerReceiptDraft({...draft.original,returnRaw:JSON.stringify(corrupted)},{...options,budgetUSDC:draft.planning.budgetUSDC,createdAt:draft.createdAt}));
   const started=performance.now(),{createHardhatRuntimeEnvironment}=await import('hardhat/hre');
@@ -65,7 +72,7 @@ async function main(){
     await send(manager.addAdditionalAgent(agent.address));for(const reviewer of reviewers)await send(manager.addAdditionalValidator(reviewer.address));
     await send(manager.setCompletionReviewPeriod(60));await send(manager.setChallengePeriodAfterApproval(1));await send(manager.setDisputeReviewPeriod(60));await send(manager.unpauseIntake());
     for(const account of [employer,agent,...reviewers]){await send(token.mint(account.address,E.parseUnits('1000',6)));await send(token.connect(account).approve(manager.target,E.MaxUint256));}
-    const payout=BigInt(draft.planning.amountBaseUnits),specURI='ipfs://four-repo-spec/sha256-'+sha(Buffer.from(draft.jobSpecification.raw)),completionURI='ipfs://four-repo-result/sha256-'+sha(Buffer.from(draft.original.returnRaw));
+    const specURI='ipfs://four-repo-spec/sha256-'+sha(Buffer.from(draft.jobSpecification.raw)),completionURI='ipfs://four-repo-result/sha256-'+sha(Buffer.from(draft.original.returnRaw));
     const balances=async()=>Object.fromEntries(await Promise.all([employer,agent,...reviewers,wallet30,wallet10].map(async account=>[account.address,await token.balanceOf(account.address)])));
     const settlementTransfers=[];
     const record=(label,receipt)=>{receipts.push({label,transactionHash:receipt.hash,status:receipt.status,blockNumber:receipt.blockNumber,gasUsed:receipt.gasUsed.toString()});
@@ -93,5 +100,5 @@ async function main(){
     fs.writeFileSync(output,json(evidence),{flag:'wx',mode:0o600});console.log(json({schema:evidence.schema,chainId:31337,transactions:receipts.length,successfulMockPayoutObserved:true,rejectedWorkRefunded:true,realWallets:false,elapsedMilliseconds:evidence.elapsedMilliseconds,evidenceFile:output}));
   }finally{await chain.close();}
 }
-module.exports={assertDisposableConfig};
+module.exports={assertDisposableConfig,assertFixtureAmount};
 if(require.main===module)main().catch(error=>{console.error(error.message);process.exitCode=1;});

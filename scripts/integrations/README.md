@@ -23,3 +23,5 @@ Supply these public test settings directly to the fixture process. No `.env` fil
 | `FQR_ARTIFACTS_DIR` | Optional absolute compiled artifact directory; every source and optimizer input must still match |
 
 Run the signing-boundary regressions with `node --test hardhat/test/four-repo-computer-lifecycle.test.cjs`. Full lifecycle evidence records actual disposable receipts, mock token transfers and balances; it establishes no real-wallet operation, actual native browser run, independent economic review or production approval.
+
+The disposable `hardhat/scripts/four-repo-computer-lifecycle.cjs` demonstration accepts only 25 through 100 mock USDC (inclusive), checked before importing Hardhat or creating a provider/signer. Its five fixed 1000-mock-USDC balances cover both escrow jobs and the configured agent/validator bonds throughout that bounded range. This local fixture range does not restrict the separate unsigned uint128-budget draft API. The four-repository journey selects 25.00; 100.00 is the tested upper boundary. No real funds, public network or operator account are used.
