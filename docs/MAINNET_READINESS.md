@@ -1,4 +1,4 @@
-# v1.19.3 software qualification and operating boundaries
+# v1.19.4 software qualification and operating boundaries
 
 Latest deployment: see the [17 October Manager record](deployments/MAINNET_MANAGER_2026-10-17.md) for the reported nine finalized creations, mixed explorer-match results, governor/moderator and paused/unlocked configuration. This dated evidence does not establish current full readiness or paid-intake approval.
 

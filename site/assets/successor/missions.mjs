@@ -35,6 +35,7 @@ export function dataRows(raw) {
   else { const all = csvRows(raw); fail(canonical(all[0]) === canonical(['id', 'category', 'value']), 'CSV_HEADER'); rows = all.slice(1).map(cells => { fail(cells.length === 3, 'CSV_COLUMNS'); return { id: cells[0], category: cells[1], value: cells[2] }; }); }
   fail(Array.isArray(rows) && rows.length > 0 && rows.length <= LIMITS.rows, 'DATA_LIMIT');
   for (const row of rows) { keys(row, ['id', 'category', 'value'], 'DATA_FIELDS'); text(row.id, 80); text(row.category, 80); decimal(row.value); }
+  publicOnly(canonical(rows));
   return rows;
 }
 export function validateMission(mission) {
@@ -60,6 +61,7 @@ export function siteContent(raw) {
   publicOnly(raw); const content = parseStrict(raw, LIMITS.input); keys(content, ['title', 'intro', 'sections'], 'SITE_FIELDS'); text(content.title, 120); text(content.intro, 1500);
   fail(Array.isArray(content.sections) && content.sections.length > 0 && content.sections.length <= 12, 'SITE_SECTIONS');
   for (const section of content.sections) { keys(section, ['heading', 'body'], 'SITE_SECTION'); text(section.heading, 120); text(section.body, 3000); }
+  publicOnly(canonical(content));
   return content;
 }
 export const STYLE = 'html{font:112.5%/1.65 system-ui,sans-serif;color:#231d36;background:#faf8ff}body{margin:0}main,header,footer,nav{max-width:64rem;margin:auto;padding:1.5rem}h1,h2{line-height:1.2;overflow-wrap:anywhere}h1{font-size:clamp(2rem,6vw,4rem)}a{color:#562aa8}a:focus-visible{outline:3px solid #251042;outline-offset:4px}nav{display:flex;flex-wrap:wrap;gap:1rem}nav a,.skip{padding:.7rem}section{margin:2rem 0}p,td,th{overflow-wrap:anywhere}table{width:100%;border-collapse:collapse}.table-scroll{max-width:100%;overflow-x:auto;border:1px solid #a89eb6;border-radius:.5rem}.table-scroll:focus-visible{outline:3px solid #562aa8}.table-scroll table{min-width:32rem}.table-scroll th,.table-scroll td:not(:first-child){white-space:nowrap;overflow-wrap:normal;font-variant-numeric:tabular-nums}.table-scroll td:first-child{min-width:8rem;max-width:20rem}.report-scope{border-left:4px solid #562aa8;padding-left:1rem}th,td{text-align:left;padding:.6rem;border-bottom:1px solid #a89eb6}.skip{position:absolute;left:-9999px}.skip:focus{position:static}@media print{.table-scroll{overflow:visible;border:0}.table-scroll table{min-width:0}nav,.skip{display:none}html{font-size:12pt;background:white}}';

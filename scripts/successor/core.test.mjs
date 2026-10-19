@@ -111,6 +111,28 @@ test('recomputed improvement checksums cannot classify personal or invalid missi
   const { commitment, ...payload } = plan; plan.commitment = await sha256(payload);
   await assert.rejects(validateImprovement(plan), { code: 'PRIVATE_INPUT' });
 });
+test('rehashed JSON mission plans reject escaped personal and credential text after decoding', async () => {
+  for (const kind of ['analyst', 'website']) {
+    const original = await prepareImprovement(await selected(kind), { budget: '100' });
+    for (const encoded of [String.raw`person\u0040example.com`, String.raw`api\u005fkey=synthetic-secret`]) {
+      const plan = structuredClone(original), mission = JSON.parse(plan.immutableInputs[0].content);
+      mission.input = kind === 'analyst' ? `[{"id":"a","category":"${encoded}","value":"1"}]` : `{"title":"Public","intro":"${encoded}","sections":[{"heading":"A","body":"Public"}]}`;
+      plan.immutableInputs[0].content = canonical(mission);
+      plan.missionSha256 = plan.immutableInputs[0].sha256 = await sha256(plan.immutableInputs[0].content);
+      const { commitment, ...payload } = plan; plan.commitment = await sha256(payload);
+      const before = canonical(plan);
+      await assert.rejects(validateImprovement(plan), { code: 'PRIVATE_INPUT' });
+      await assert.rejects(compileComputerWork(plan, null, 1900000000), { code: 'PRIVATE_INPUT' });
+      assert.equal(canonical(plan), before, 'Inspection never rewrites original encoded input');
+    }
+    const mission = defaultMission(kind);
+    mission.input = kind === 'analyst' ? String.raw`[{"id":"a","category":"\u00c9nergie","value":"1"}]` : String.raw`{"title":"Public","intro":"\u00c9nergie","sections":[{"heading":"A","body":"Public"}]}`;
+    const state = await createSystem(mission), run = await runCandidate(state, 'baseline', hash);
+    const plan = await prepareImprovement(await chooseCandidate(run.state, run.candidate.id, 'keep'), { budget: '100' });
+    await validateImprovement(plan);
+    assert.equal(JSON.parse(plan.immutableInputs[0].content).input, mission.input);
+  }
+});
 test('acyclic plans require accepted downstream hashes and reserve all costs before receipts', () => {
   const a = { id: 'a', dependencies: [], costBaseUnits: '100', acceptedInputs: [] }, b = { id: 'b', dependencies: ['a'], costBaseUnits: '80', acceptedInputs: [{ stage: 'a', artifactSha256: hash, independentlyAccepted: true }] };
   assert.equal(validateGraph([a, b], '180').atomicSettlement, false); assert.throws(() => validateGraph([a, b], '179'), { code: 'PLAN_CAPITAL' });

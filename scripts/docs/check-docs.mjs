@@ -32,6 +32,8 @@ for (const file of requiredFiles) {
 const deploymentReference = fs.readFileSync(path.join(root, 'docs/DEPLOYMENT_CONFIGURATION.md'), 'utf8');
 const deploymentExample = fs.readFileSync(path.join(root, 'hardhat/.env.example'), 'utf8');
 const documentedVariables = new Set([...deploymentExample.matchAll(/^([A-Z][A-Z0-9_]*)=/gm)].map(match => match[1]));
+const fixtureVariables = new Set(['FQR_DRAFT_FILE', 'FQR_ALPHA_SOURCE', 'FQR_JOBS_SOURCE', 'FQR_EVIDENCE_FILE', 'FQR_ARTIFACTS_DIR']);
+const fixtureReference = fs.readFileSync(path.join(root, 'scripts/integrations/README.md'), 'utf8');
 for (const name of documentedVariables) {
   if (!deploymentReference.includes('`' + name + '`')) fail(`Deployment environment setting lacks documentation: ${name}`);
 }
@@ -40,6 +42,10 @@ for (const entry of fs.readdirSync(path.join(root, 'hardhat/scripts'))) {
   const source = fs.readFileSync(path.join(root, 'hardhat/scripts', entry), 'utf8');
   for (const match of source.matchAll(/process\.env\.([A-Z][A-Z0-9_]*)|\benv\(['"]([A-Z][A-Z0-9_]*)['"]/g)) {
     const name = match[1] || match[2];
+    if (entry === 'four-repo-computer-lifecycle.cjs') {
+      if (!fixtureVariables.has(name) || !fixtureReference.includes('`' + name + '`')) fail(`Undocumented disposable fixture setting: ${name}`);
+      continue;
+    }
     if (!documentedVariables.has(name)) fail(`Deployment script setting missing from .env.example: ${name}`);
   }
 }

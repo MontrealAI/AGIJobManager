@@ -1,0 +1,33 @@
+{
+  "schema": "agijobmanager/release-comparison-inputs/v1",
+  "status": "EXPECTED_ONLY_PENDING_FINAL_SOURCE_EXECUTION",
+  "baseCommit": "d0c2cbaf58b594e20d888c3fc744bada06172306",
+  "baseTree": "09de3f32ae89416f764b508e0147457ca8b54d9d",
+  "version": "1.19.4",
+  "executed": false,
+  "fork": {
+    "previousPath": "docs/qualification/mainnet-cutover-v1.19.3-expected.json",
+    "previousSha256": "ed50c043cc6cd291943d203be4cab4da3ed91fc06fbd1fec1fb0c141a6d78d24",
+    "expectedPath": "docs/qualification/mainnet-cutover-v1.19.4-expected.json",
+    "expectedSha256": "dad70c2308d4ff00ac8d05e6b1648df8791b20139e67a2e1dbf1efe55be9bd02",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "hardhat/package.json",
+      "package-lock.json",
+      "package.json"
+    ],
+    "observationsChanged": false
+  },
+  "staticAnalysis": {
+    "previousPath": "scripts/security/slither-reviewed-findings-v1.19.3.json",
+    "previousSha256": "92e41fdd29fa264108604e359c470289b25ce0474d51553c82a9cd5995a565be",
+    "expectedPath": "scripts/security/slither-reviewed-findings-v1.19.4.json",
+    "expectedSha256": "ff61228451fc054961c3842e3c24cf1d395271f10fdb763bc28e41f91b2eee7b",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "package-lock.json"
+    ],
+    "findingsOrDispositionsChanged": false
+  },
+  "scope": "Only package/lock software-version hashes change within these comparison input sets. The finite correction separately changes terminal input, public mission validation, recovery and computer-receipt continuity; none is promoted into chain or scanner evidence. Fresh exact-final-source hosted execution remains mandatory."
+}

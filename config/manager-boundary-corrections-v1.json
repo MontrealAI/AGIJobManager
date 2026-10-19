@@ -1,0 +1,668 @@
+{
+  "schema": "agijobmanager/source-corrections/v1",
+  "profile": "manager-boundary-corrections-v1",
+  "baseCommit": "d0c2cbaf58b594e20d888c3fc744bada06172306",
+  "baseTree": "09de3f32ae89416f764b508e0147457ca8b54d9d",
+  "version": "1.19.4",
+  "qualification": "PENDING_FINAL_SOURCE_MAIN_PUSH",
+  "changes": {
+    ".github/workflows/alpha-project-handoff.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "434615c2e15b1ca58d6fba3cacb657af60f04b134730c80cb452362cd653a33b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "4bfa171edb9b22a2fcad62b95e91bf560ce4cdb94737b7e5ed3be28fd293511c"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    ".github/workflows/current-state-release.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "508d46a8b21fbf202c68f619f6b8cee6ca7fbf8a6c9e9f4774981546abb5df8b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "bf58338a87cdd0f70cdc78997f01833dcb54da91e6cec5acb566f498084c87f7"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    ".github/workflows/mainnet-fork.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "c0dd75d23e11ef028ca0cf2d092d8603728e65f9c4304143c1bc5a9d57c42c18"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f5bdc2b0593b42bfcfe2897806efcedcf105eb6d651758e1cae9c05a993e3d2b"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    ".github/workflows/pages.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "3bb470612b33c3297b6bea4b2d9c8b31093318ec405c6f9a6a0d1463e63e0c28"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f34204e354c06d57cf2c801b2114108625589ffb9517c4399cee0ea40f906d4f"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    ".github/workflows/publish-v114.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "9f0325b36915c58a19c5d12c0cdbfd36092b75f5b145ea5fc76a39929a1723e4"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "0fd7fe697b7cccf6a0ac3bb9414ef3349596707eb442331a9f2bd2fe6b309016"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "README.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "b5cbca23db955e3c2b2dc4203e8af423bd6f7a7c7915634a7491fc7743dec206"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "29b128ba55c228414a9e77eef888b096829eed18825226ceb90e6036f7904d44"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "agijobmanager.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "7d974a2e13a28dca45f61cdebe931ddf367ca557661ef755cc939c3546869151"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "0d1f4484989685d1dc67305e056b9db25730124ec65b778c65a7b0741f82a4a4"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "config/companion-releases.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "b33580b939f08729021c4fbc501a074cf6d37df7261ea21794c954cb1e2cf6fb"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "fdf8bf3c20986e191b52b1e7082ff7030694e8a6c73c13ded29027fbf05727f0"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "config/successor-builder-source.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "7ebe51fe711da6fca33be310ddcaac9011c4dcb08cbd99044d87b0c1482a0afa"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ac24562f5c96c3368c58257a61ca47b4a16d44e42dd9bbdb2e045724c1f9a953"
+      },
+      "reason": "Select the published corrected Builder code checkpoint9d7bbcef with exact tree, complete source inventory digest and retained package version; no self-reference or inherited release qualification."
+    },
+    "config/usdc-deployment.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "f692cbf01fbeb26100597c46208e02dad0de060b8684ab73684772bc47b31ec6"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f4d91e26f55c7ead255e492d94726c63b34db00f3c5599e8934708742e7eb527"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/MAINNET_READINESS.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "6f3e07ea6b324afd56f0b2fa63f49e48621dd73da881b3f241eb51472c4f63b3"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "dcc081c1ce4c1af142d9eb7e1408b2116869d15090d78b5c9cfb4968135b6319"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/OPERATIONS/PRIVATE_FLEET.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "ee18bf54900e49d5302e84971e37d2f16e91b45942a470dc39423539f3ef6905"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "e38fa302e365dc4d2903e4b9f3ed96ffa95f3da2e69d8021454988416aa7ddb4"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/REFERENCE/VERSIONS.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "76cb06312921651294720595f889a52e6c1dcb8636ad76f22bc168067a9ae637"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "0275b6a65d543567acfcd05a653bfee1a8a1c3f0022a441a474d87bfac7acc38"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/RELEASE_GUIDE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "ff00c5112a9898fa2654ec74bb564fedf85d452cc43dbf2c202240d88608ac99"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "09ade22dc103aa9758e21d2e9135f25b549b43e92d3a03d115f9123f12a6ae8e"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/START_HERE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "5a00e80510e6950dbbb43936a91e45b670bf041c8898b0a14fb543ac2d75b959"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "8c708d4361846f7dca32f4e961dfab14884a642d9168d346acbf259d1bf58763"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/V1_RELEASE_SCOPE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "beea15dcd9142b1e88e18f2ffa114e9d97845d2cc6045edddb16fc48c9e2c00a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "295b6a0524ed5e5f7c307ea4c7b3e481247aa5238cf7d045e701bf1f1235af71"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/deployment/ubuntu-ephemeral-creator.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "58893fdedb9aba86e343ae3d43909facf0ad8f6706c10135e7e380df29652f6f"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "0c802dee7adcb60c8c52618ba5703f642635e8a8488a6dacca05eab66376485b"
+      },
+      "reason": "Keep malformed creator-key tails hidden until line end; disposable PTY regression and public operator guidance."
+    },
+    "docs/qualification/mainnet-cutover-v1.19.4-expected.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "dad70c2308d4ff00ac8d05e6b1648df8791b20139e67a2e1dbf1efe55be9bd02"
+      },
+      "reason": "New expected-only comparison inputs update version labels and preserve historical observations and all finding dispositions; fresh exact-source execution remains mandatory."
+    },
+    "docs/qualification/release-v1.19.4-provenance.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "4d4f2da9a4f5f00558a6b1fe37238e7ae5872d94c87f940575c9b3e5cc951eda"
+      },
+      "reason": "New expected-only comparison inputs update version labels and preserve historical observations and all finding dispositions; fresh exact-source execution remains mandatory."
+    },
+    "docs/releases/v1.19.4/RECOVERY_GUIDE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "0fd3939c0a834be3d79b3654581561687b8ba4f622ac4bfb0fd0d39d6f9fa186"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/releases/v1.19.4/RELEASE_NOTES.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "965fabfb1106cc93b00da7ed0a4eaa3cdde27526ebcfdb4722722cbf6acef492"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/releases/v1.19.4/START_HERE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "eb23d0bd972795ad8f9fd06fcab587f60ccc46fab6a99a44dc056ed253c4f3c6"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/releases/v1.19.4/VALIDATION.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "6d0654467f29220c1c27890607f8d03d975472d6de5f55510aa21edadcfe0ec0"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/successor/ALPHA_PROJECT_HANDOFF.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "2fe14f66cb3d5610063b446538fa2e2f9cc116976492db03431a9b19234f2fe4"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b936b835dda55d16a9ef12d7d08eb878025ff81ef5ce59c3fa3dc467fb0e9d94"
+      },
+      "reason": "Keep strict transfer provenance while preserving original bytes and explicit bilingual previous-edition recovery; no silent history or approval migration."
+    },
+    "docs/ui/DEPLOYMENT_MAINNET.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "86de1982e5f01a23d4677bcfe3f9ee9b4151492676d6ba878add468d7cc2f46a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "efbfdfe2fb91aa0489c191df3006904bce6eb4971b5381496923e73fd7ddfe0f"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "9975889c52ee6e11e1707d093465ca54b284b9d51a440229d7d2f908dc97151b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "e409a35dced71abbec1dd7c3942ca889afbe0443ede6b77ab0de9ae01a6d8f0b"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "hardhat/package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "824b85c81023a80a83ba7f5555406ca4f0d80be3bfc0a3fe74567809706c47b2"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "57e54d97d62e43fbfd56f31296027842bfa4fa07c6e9ffdaf26f0a43661cf13a"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "hardhat/package.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "5257ddc5d10da9fbe3116785627d132af608e44bb7e02d91f66c2466325c298a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "6f62c55fc6744030a51b31230b6e599bc02af18cbcf48f27b7240f9a6db12e34"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "hardhat/scripts/ephemeral-key.cjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "379b3c6709bd98eeb382de73d24ef3bc3c8d3610833a8b9b73ddf31d6191eb55"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "5c82b9a02d71084b29c06ca6315e0dc6a247757f13d85e967821f69a48e94fa9"
+      },
+      "reason": "Keep malformed creator-key tails hidden until line end; disposable PTY regression and public operator guidance."
+    },
+    "hardhat/scripts/four-repo-computer-lifecycle.cjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "ceaa4280a7ac42b2199f1b24f93057041f1c29ee5608e89237b28cf5f3f2fdf3"
+      },
+      "reason": "Add bounded, independently validated computer-receipt continuity with explicit new USDC6 pricing and disposable mock-token acceptance/rejection evidence; no live or independent-review claim."
+    },
+    "hardhat/test/ephemeral-key.test.cjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "098618ea3d221f46e2df9b8042a82765797b5df3659ca001a043bfc5faeec0f4"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ece88008f15b9c8285c62e79ec4bfd99ebf8c90dc6228d8a511ab87695e4a6a0"
+      },
+      "reason": "Keep malformed creator-key tails hidden until line end; disposable PTY regression and public operator guidance."
+    },
+    "hardhat/test/four-repo-computer-lifecycle.test.cjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "9ef4aac06d8ba19a54f3762d8e7883b6bb1f82ef49890829ea3c9ef0dde1f81f"
+      },
+      "reason": "Regress the disposable signing boundary: exact local EDR chain31337 and public fixture accounts only; no HTTP, fork or additional network."
+    },
+    "package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "b3c344a4adf3b093f247bb377c029b2fffb03178ce18de418c453e5b96fe39e1"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "8c4ae8f300d89dc559d99ef35075332fae2aaa2e5f015583286d6c37ea908223"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "package.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "b15aeb457fdcdf8a12721bfa0acfbfdb2c3f797cb0c0cee3f31769fa02ddb793"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "4a2665e1e4b26b2123e42b5e624f02faae783efed41d763f3bb89dea1b268f08"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "scripts/docs/check-docs.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "1687a2c27296f385891305aa6e328f1e6d8269fdd241ee1dfa23e6721a05d563"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ead0bb54300f35c1cb5c0c80d6f863587173a2783060e87beefd717822cc8669"
+      },
+      "reason": "Require the five exact public fixture settings in its integration guide; all other deployment-variable and dotenv documentation checks remain unchanged."
+    },
+    "scripts/integrations/README.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "99308e3d25f9d5c7a3ff345c7d8d0eb02728f27cdd02777c32a07e090eded6bf"
+      },
+      "reason": "Add bounded, independently validated computer-receipt continuity with explicit new USDC6 pricing and disposable mock-token acceptance/rejection evidence; no live or independent-review claim."
+    },
+    "scripts/integrations/four-repo-computer-receipt.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "39b7ca2f0eac57385cef22d5908ef181ea1636eae67bbea3f137847f6e515cae"
+      },
+      "reason": "Add bounded, independently validated computer-receipt continuity with explicit new USDC6 pricing and disposable mock-token acceptance/rejection evidence; no live or independent-review claim."
+    },
+    "scripts/integrations/four-repo-computer-receipt.test.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "f39beef05b99c622c1c854ce82d6cbe65289a14503689fdc67e9b24767d56dcf"
+      },
+      "reason": "Add bounded, independently validated computer-receipt continuity with explicit new USDC6 pricing and disposable mock-token acceptance/rejection evidence; no live or independent-review claim."
+    },
+    "scripts/release/collect-qualification.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "becc323b9b45bbdc1f91ec6a99af2662b0b8b998b668f4ae68341f18230448f6"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "00b0e5ace9f1515d0b8ffcd56ee3f10626d76ade8c57cd827b8d0b60d1c1897d"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/correction-profile.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "7b9008d280f7f1b79cb4aafdb1b0617ac21b14a894a34bd84b1f9ca321d2ad7b"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/package-policy.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "c092737360cbf4794730d5d2bc3ff748d62daaa79d57719c991dff732262d8b7"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ca6d9a904eef8299e54817603db08c1a00a0df9e0f7d090b0125f5a6716fc79b"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/publication-authorization.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "57eb5696e7927a1aadb5fd74eb3d61782bc733402e441d521605dda1105ba63e"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/publish-release.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "ae2eae94fd34d03244b337e61af2c157686c83192d06df48ae04309297c2c2a9"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "4710f3af4a4d2d9e6d4d539ee200897dd9883337fd3c1333bdc3db603502c2bc"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/run-correction-preservation.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "f29786f1885e39a147af83a61240460fb0bbd133a1f09bc2414e0f8da6e72e19"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/run-inherited-release-tests.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "4f958c23893ccdfe8494e94ceb13e80f48935b36ec6684934942783c4eb908bf"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/test-correction-profile.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "30aa9301ca544bf8f6d92947165a7fb4cccecf2a2be97d94ab4368f70735974d"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/test-publication-authorization.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "dc460963017a883bffc7b6fe0fc9cf41d3084cef740ea31816701df6bc18c9b5"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/test-release-gates.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "84fd10ae30d892cae79fb0b880bfa1fe5a7b86ebde208f31cf99d6422cf45867"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "65a280b1057e2b2900a998c17f8e02f039573b96af5847c30e8e8af400182c69"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/release/wait-qualification.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "1c99fff3157d17332f57dc030b191a947d6eee4026df46be844901c80d903822"
+      },
+      "reason": "Add a separately selected finite source-correction release profile, preserve historical policy tests, and qualify exact-source publication only after all eight workflows, artifact, rebuild and attestations pass."
+    },
+    "scripts/security/slither-reviewed-findings-v1.19.4.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "ff61228451fc054961c3842e3c24cf1d395271f10fdb763bc28e41f91b2eee7b"
+      },
+      "reason": "New expected-only comparison inputs update version labels and preserve historical observations and all finding dispositions; fresh exact-source execution remains mandatory."
+    },
+    "scripts/security/verify-slither-review.py": {
+      "before": {
+        "mode": "100755",
+        "sha256": "f726177f4ce1d56bfe90dd8367e165964db620654ead3a2d7941bd45db5795f0"
+      },
+      "after": {
+        "mode": "100755",
+        "sha256": "d67151764ae888169cdbaf1115f61f79dedd9898cfa25cf8b3e9ab6bc8d362e8"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "scripts/successor/alpha-project-browser-test.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "0134b76f6311971b1bed532bb774299ddec433584dcf47bf12cb78fca8f90d3a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "dcc59ded7d4fa0d77bfcfcf1fc847a4f2f29149a847f1fa2e7555c9f8ddce8d0"
+      },
+      "reason": "Keep strict transfer provenance while preserving original bytes and explicit bilingual previous-edition recovery; no silent history or approval migration."
+    },
+    "scripts/successor/core.test.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "e8896331c5e844e52faaa260d785404d21882dbd5a708e4104a7d7420204d16d"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "99a01262c0c05a5cea3c0721893490d3d8e89db13d3ba08526f4c2914dfd3d80"
+      },
+      "reason": "Revalidate public-only mission bytes, schema and operating limits despite recomputed unkeyed checksums; preserve exact token and authority boundaries."
+    },
+    "scripts/successor/portable.test.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "5e33b37a61016769afa9d8d5975836680c0c4ea5b987783488f704b0f4b670ac"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b6f57a271e779a606d694ca62029a21871a745bdf47c0e1b8d21651f042f2da5"
+      },
+      "reason": "Revalidate public-only mission bytes, schema and operating limits despite recomputed unkeyed checksums; preserve exact token and authority boundaries."
+    },
+    "site/assets/successor/app.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "4ac511032928ed1f419d8e2952953217d3fccc1a231e82b48640d15b30d97a4a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "6615f8c54c5e90c7c034cc7e6f4f25930eaa59b0c221260b5c21cd125a25ae64"
+      },
+      "reason": "Keep strict transfer provenance while preserving original bytes and explicit bilingual previous-edition recovery; no silent history or approval migration."
+    },
+    "site/assets/successor/jobs.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "f8c5bd8a483401851a86fe8a44855526909bce7fbf4bfd1e4a42a4dafad6488f"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "e550addca7dedb7cc7f70e227d31c43b26c480058d48b69383898c6d9ab63ee9"
+      },
+      "reason": "Revalidate public-only mission bytes, schema and operating limits despite recomputed unkeyed checksums; preserve exact token and authority boundaries."
+    },
+    "site/assets/successor/missions.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "ef0506af952344cdf562ef97e5d40a25a22c6c0e7f1889028e9b90cd617e5ed1"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "847ca30dd2ef4203e420571e6a461324e8cf646d70c64b59ab6175a85a189c98"
+      },
+      "reason": "Scan decoded JSON mission fields for known personal/secret input while preserving exact supplied bytes; escaped Unicode must not bypass the public-only boundary."
+    },
+    "site/successor.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "9c9894f36fe3ffb85a8d7e0aa0570bba082f08e229c3f9bc0ad04e5302facd31"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "8d3b61a53ded210f7e841b5c323cefeccb993cf9bb2741023dbf2008265950ca"
+      },
+      "reason": "Keep strict transfer provenance while preserving original bytes and explicit bilingual previous-edition recovery; no silent history or approval migration."
+    },
+    "ui/README.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "3086a5e7ed292be015ec917df30163d86b373fe539c0449ce898d6f1d4c4bc46"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "fead659275e5552e80a1e37cbceba865c7e83985e07ceb5cf500221e734d5b73"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "ui/agijobmanager-usdc.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "c3f94801e85fc3977e7b808b4418cb69373daa92cba85b253dd0e12b789c69a2"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "5c805162b34c4597a740eb1f88c577d5396f49e43d3305abf0f2d8e4583018d6"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "ui/dist-ipfs/agijobmanager.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "7d974a2e13a28dca45f61cdebe931ddf367ca557661ef755cc939c3546869151"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "0d1f4484989685d1dc67305e056b9db25730124ec65b778c65a7b0741f82a4a4"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "ui/package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "5533008893c2c15f5dd4f861c6f4736f5408fb80933ec16228cc9a87da3d967b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f8ffd3f551797224b7cb89a0de7903d9a65f57dfaf1a08f653d0f1b3644e7477"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "ui/package.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "c2e0fa0304fe2632eb70cc04919033e7a1d141ba677ad055dcb97e969b7c86d8"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "37544edc0ddb010c2e83463605773dca0b1486cc5c53bb7473c8b4b7e1c6c41b"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "ui/scripts/singlefile-template.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "682343ff78c30b4afa04ffa64ac7125d66fd05c47fe934035c9a9d6689b7262f"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "1add49dda56720eca551fffe7d7e748b9630c4c86496ed37a7ee6b81462a1546"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    },
+    "ui/src/generated/deployments.ts": {
+      "before": {
+        "mode": "100644",
+        "sha256": "256dff579b5daa220e3d9f8135c1bd7b9071e33df47bf2886dbb831c893ce365"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "4ad5bcf718f906886c1c2f2c90146ebfb7e41ec8a5e156ddfcc8fd5ea92fa59a"
+      },
+      "reason": "Align only current v1.19.4 software labels, generated guides and release preparation; preserve dependency resolutions, blank transaction defaults and dated deployment history."
+    }
+  }
+}

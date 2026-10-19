@@ -1,4 +1,4 @@
-"""Validate external final-source qualification and publish only on confirmed main dispatch."""
+"""Publish exact-source qualification after confirmed manual or bounded completion authorization."""
 import argparse
 import runpy
 import hashlib
@@ -183,8 +183,7 @@ with tempfile.TemporaryDirectory(prefix='v114-publication-rebuild-') as temp:
     require(config['artifactDigests'] == {n: d for n, d in actual.items() if n != 'SHA256SUMS.txt'}, 'Candidate bytes differ from deterministic exact-source rebuild')
 if not args.publish:
     raise SystemExit(0)
-require(os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' and os.environ.get('GITHUB_REF') == 'refs/heads/main', 'Publication requires an explicitly authorized main-branch dispatch')
-require(os.environ.get('RELEASE_PUBLISH_CONFIRMATION') == 'PUBLISH_' + TAG, 'Explicit current-version publication confirmation is required')
+runpy.run_path(str(pathlib.Path(__file__).with_name('publication-authorization.py')))['authorize'](os.environ, source, api)
 require(config.get('publicationAuthorized') is True, 'Publication authorization is missing')
 require(api('git/ref/heads/main')['object']['sha'] == source, 'Main advanced since qualification; requalify before publishing')
 matches = []

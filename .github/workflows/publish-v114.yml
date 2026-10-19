@@ -1,22 +1,28 @@
 name: Publish reviewed release after final-source qualification
 on:
+  workflow_run:
+    workflows: ['Release Candidate Preparation']
+    types: [completed]
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Enter PUBLISH_v1.19.3 after reviewing completed final-source qualification'
+        description: 'Enter PUBLISH_v1.19.4 after reviewing completed final-source qualification'
         required: true
         type: string
 permissions:
   contents: read
   actions: read
 concurrency:
-  group: publish-v1.19.3
+  group: publish-v1.19.4
   cancel-in-progress: false
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH_v1.19.3'
+    if: github.ref == 'refs/heads/main' && ((github.event_name == 'workflow_dispatch' && inputs.confirmation == 'PUBLISH_v1.19.4') || (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.conclusion == 'success'))
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 65
+    env:
+      SOURCE_COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
+      RELEASE_PUBLISH_CONFIRMATION: ${{ github.event_name == 'workflow_run' && 'PUBLISH_v1.19.4' || inputs.confirmation }}
     permissions:
       contents: write
       actions: read
@@ -25,33 +31,42 @@ jobs:
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 22.23.2
-      - name: Consume completed exact-source runs and immutable candidate artifact
+      - name: Verify publication source checkout
+        run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+      - name: Wait for all eight exact-source workflows
+        id: readiness
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_PUBLISH_CONFIRMATION: ${{ inputs.confirmation }}
-          SOURCE_COMMIT: ${{ github.sha }}
-        run: python3 scripts/release/collect-qualification.py --source "$SOURCE_COMMIT" --out build/release/v1.19.3 --profile manager-explicit-governor-release-v1 --manifest config/explicit-governor-release-v1.json --manifest-sha256 "$(sha256sum config/explicit-governor-release-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/release-profile.py | cut -d' ' -f1)"
+        run: python3 scripts/release/wait-qualification.py --source "$SOURCE_COMMIT"
+      - name: Consume completed exact-source runs and immutable candidate artifact
+        if: steps.readiness.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/release/collect-qualification.py --source "$SOURCE_COMMIT" --out build/release/v1.19.4 --profile manager-boundary-corrections-v1 --manifest config/manager-boundary-corrections-v1.json --manifest-sha256 "$(sha256sum config/manager-boundary-corrections-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/correction-profile.py | cut -d' ' -f1)"
       - name: Verify complete published download inventory
-        run: python3 scripts/release/verify-package.py build/release/v1.19.3 --published --profile manager-explicit-governor-release-v1 --manifest config/explicit-governor-release-v1.json --manifest-sha256 "$(sha256sum config/explicit-governor-release-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/release-profile.py | cut -d' ' -f1)"
+        if: steps.readiness.outputs.ready == 'true'
+        run: python3 scripts/release/verify-package.py build/release/v1.19.4 --published --profile manager-boundary-corrections-v1 --manifest config/manager-boundary-corrections-v1.json --manifest-sha256 "$(sha256sum config/manager-boundary-corrections-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/correction-profile.py | cut -d' ' -f1)"
       - name: Attest exact-source release assembly
+        if: steps.readiness.outputs.ready == 'true'
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
-          subject-path: build/release/v1.19.3/*
+          subject-path: build/release/v1.19.4/*
       - name: Verify artifact, repository, workflow and source attestation bindings
+        if: steps.readiness.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for asset in build/release/v1.19.3/*; do
-            gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY" --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/publish-v114.yml" --signer-digest "$GITHUB_SHA" --source-digest "$GITHUB_SHA" --source-ref refs/heads/main --deny-self-hosted-runners
+          for asset in build/release/v1.19.4/*; do
+            gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY" --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/publish-v114.yml" --signer-digest "$SOURCE_COMMIT" --source-digest "$SOURCE_COMMIT" --source-ref refs/heads/main --deny-self-hosted-runners
           done
       - name: Validate evidence, create draft, verify assets, then publish
+        if: steps.readiness.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_PUBLISH_CONFIRMATION: ${{ inputs.confirmation }}
-        run: python3 scripts/release/publish-release.py --qualification build/release/v1.19.3/QUALIFICATION.json --assets build/release/v1.19.3 --publish --profile manager-explicit-governor-release-v1 --manifest config/explicit-governor-release-v1.json --manifest-sha256 "$(sha256sum config/explicit-governor-release-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/release-profile.py | cut -d' ' -f1)"
+        run: python3 scripts/release/publish-release.py --qualification build/release/v1.19.4/QUALIFICATION.json --assets build/release/v1.19.4 --publish --profile manager-boundary-corrections-v1 --manifest config/manager-boundary-corrections-v1.json --manifest-sha256 "$(sha256sum config/manager-boundary-corrections-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/correction-profile.py | cut -d' ' -f1)"

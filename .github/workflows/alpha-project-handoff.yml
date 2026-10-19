@@ -35,4 +35,4 @@ jobs:
       - name: Exercise actual receiver validation, work and bilingual history
         env:
           SUCCESSOR_ALPHA_SOURCE: ${{ github.workspace }}/build/alpha-source
-        run: node --test scripts/successor/alpha-project.test.mjs scripts/successor/alpha-project-browser.test.mjs scripts/successor/source-identity.test.mjs
+        run: node --test scripts/successor/alpha-project.test.mjs scripts/successor/alpha-project-browser.test.mjs scripts/successor/source-identity.test.mjs scripts/integrations/four-repo-computer-receipt.test.mjs
