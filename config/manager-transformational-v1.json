@@ -13,7 +13,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "d88d74e239b943185781be87d5510340646e3598e1dcf7bf1c15d041a3c6cbc3"
+        "sha256": "6adc9142af1727376c1d537c1f4529714ed1c7f77feed7bb9d21f2e8d5ea5419"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -98,7 +98,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "6721a80e7ee7d13ad22c072e1531951a6862503e0b1fa8189a571a82dc064099"
+        "sha256": "3fa18b30324b3790e54ad8edaef08c24d011229dc6f20278a6a353e269a62dbd"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -334,11 +334,19 @@
       },
       "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
     },
+    "scripts/integrations/transformational-native-source.test.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "7a7e1acc590100e3571affc98719074702edc15cdcd2a17a5be37ac157431500"
+      },
+      "reason": "Exercise actual post-fstat growth, exact source limits and descriptor closure without unbounded reads; run in native CI and clean extraction"
+    },
     "scripts/integrations/transformational-native-test.mjs": {
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "51db7ec05216ae7d93c803e3fbd8f7134edb6e6ff0ad557698b85ea0f8a75944"
+        "sha256": "cc956dfe9237200741da0f9066b6afef20c2c31ab4592bef45b1f2afb2ba8518"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -443,7 +451,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "046457946c197e6589b609098237498b65c2e8e89729bd276a34db3f2bf58ab4"
+        "sha256": "46bc9d1c8b3e29a7c03b5c98c05052e59d7dfff8265a84b206fc81155ab4a66a"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -451,7 +459,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "48e38f557452773b657d7d37c1deeef2d97ac35e378522c59e108bf8260f74c2"
+        "sha256": "1fdfed174eadad4df60e2688791b85a74fc569bf703ab772dfd75e52776db528"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -459,7 +467,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "50b7e49f21f5c50d7b0edd42a3b938b52c9a7758f3ba748c1462c941b16226fe"
+        "sha256": "f0256e189a5b26a9907574780770c2c525132422bf82fa2772b469e1cfbf8711"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },
@@ -478,7 +486,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "4d0cd9ced68edfe8db2a4dc465d76dc1ed14957c8bcd6ae5d464ecdf1cdf1b63"
+        "sha256": "8c73e1e68c0983cc73a1ae40447f50c9ca636813e1766392dafa1e1e590308a9"
       },
       "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
     },

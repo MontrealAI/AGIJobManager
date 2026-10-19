@@ -116,7 +116,7 @@ class TransformationalProfile(unittest.TestCase):
     def test_rehashed_workflow_or_security_changes_cannot_remove_old_gates(self):
         mutations = {
             '.github/workflows/current-state-release.yml': ('npm run build', 'true'),
-            '.github/workflows/alpha-project-handoff.yml': ('124a3b636baa916fe6c4400e03e55198114dd212', '0' * 40),
+            '.github/workflows/alpha-project-handoff.yml': ('7283b4d4d2a51ff674e6078f5940691900aae5a1', '0' * 40),
             '.github/workflows/pages.yml': ('npm run successor:browser', 'true'),
             '.github/workflows/mainnet-fork.yml': ('npm run test:cutover', 'true'),
             '.github/workflows/publish-v114.yml': ('--deny-self-hosted-runners', ''),

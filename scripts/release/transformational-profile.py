@@ -59,6 +59,7 @@ ALLOWED = {
     'scripts/docs/templates/README.md.tpl',
     'scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl',
     'scripts/integrations/transformational-native-test.mjs',
+    'scripts/integrations/transformational-native-source.test.mjs',
     'scripts/integrations/transformational-work-request.mjs',
     'scripts/integrations/transformational-work-request.test.mjs',
     'scripts/release/collect-qualification.py',
@@ -172,12 +173,12 @@ def validate_plumbing(root, baseline):
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGI-Alpha-Agent-v0
-          ref: 124a3b636baa916fe6c4400e03e55198114dd212
+          ref: 7283b4d4d2a51ff674e6078f5940691900aae5a1
           path: build/alpha-ti-source
           persist-credentials: false
       - name: Validate native transformation campaign boundary
         run: |
-          node --test scripts/integrations/transformational-work-request.test.mjs
+          node --test scripts/integrations/transformational-work-request.test.mjs scripts/integrations/transformational-native-source.test.mjs
           node scripts/integrations/transformational-native-test.mjs "$GITHUB_WORKSPACE/build/alpha-ti-source"
 '''
     tests = '''      - name: Native transformation profile and inherited release tests
@@ -215,11 +216,11 @@ def validate_plumbing(root, baseline):
     source = strict_json(read(root, 'config/transformational-alpha-source.json')[1])
     require(source == {
         'schema': 'agijobmanager/transformational-alpha-source/v1', 'repository': 'MontrealAI/AGI-Alpha-Agent-v0',
-        'commit': '124a3b636baa916fe6c4400e03e55198114dd212', 'tree': 'dce26926d2a4282a1591dbce4bfd6c36ef4caaa9',
+        'commit': '7283b4d4d2a51ff674e6078f5940691900aae5a1', 'tree': '13fcbc6a0a7696036f9b590fc9b7048563e184d2',
         'fixturePath': 'examples/transformational-intelligence/campaign.json', 'files': {
             'docs/assets/successor/engine.mjs': '38c4f38978bf9fc29f207bae3adee0755bc6530d04502a36c491cc430787e488',
-            'examples/transformational-intelligence/campaign.json': 'a8a1e549d80c234e785fd4008f3b0e4f9f571c47cbb1e1cfef74414633cb4e19',
-            'examples/transformational-intelligence/inspector.mjs': 'e7b584f2c79a7c574e5be60bbec4205c95c07bbd0d842ce7b0766a92b24cd2ea'}}, 'Native source closure differs from reviewed free-only contract')
+            'examples/transformational-intelligence/campaign.json': 'fa5f570e89c20cffd0df844869047a7c0594c5460c3e95df5ada44592ea4fd20',
+            'examples/transformational-intelligence/inspector.mjs': 'b5f8e704aaab345f9d6503c854d38910ddfabbf98fe674c48b051097812b07f4'}}, 'Native source closure differs from reviewed free-only contract')
 
 
 def validate_comparison_inputs(root):

@@ -21,13 +21,13 @@ SOURCE = INHERITED['SOURCE']
 SOURCE_CONFIG = {
     'schema': m.SOURCE_SCHEMA,
     'repository': m.ALPHA_REPOSITORY,
-    'commit': '124a3b636baa916fe6c4400e03e55198114dd212',
-    'tree': 'dce26926d2a4282a1591dbce4bfd6c36ef4caaa9',
+    'commit': '7283b4d4d2a51ff674e6078f5940691900aae5a1',
+    'tree': '13fcbc6a0a7696036f9b590fc9b7048563e184d2',
     'fixturePath': m.FIXTURE_PATH,
     'files': {
         'docs/assets/successor/engine.mjs': '38c4f38978bf9fc29f207bae3adee0755bc6530d04502a36c491cc430787e488',
-        m.FIXTURE_PATH: 'a8a1e549d80c234e785fd4008f3b0e4f9f571c47cbb1e1cfef74414633cb4e19',
-        'examples/transformational-intelligence/inspector.mjs': 'e7b584f2c79a7c574e5be60bbec4205c95c07bbd0d842ce7b0766a92b24cd2ea',
+        m.FIXTURE_PATH: 'fa5f570e89c20cffd0df844869047a7c0594c5460c3e95df5ada44592ea4fd20',
+        'examples/transformational-intelligence/inspector.mjs': 'b5f8e704aaab345f9d6503c854d38910ddfabbf98fe674c48b051097812b07f4',
     },
 }
 
