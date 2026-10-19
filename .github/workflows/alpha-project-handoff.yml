@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGI-Alpha-Agent-v0
-          ref: c6459bdfb509b10f0d757eb332775902a4bb04b7
+          ref: 272b4de86bdc306ebf547750717983e467f5fcfd
           path: build/alpha-ti-source
           persist-credentials: false
       - name: Validate native transformation campaign boundary

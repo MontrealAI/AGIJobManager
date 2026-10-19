@@ -21,8 +21,8 @@ SOURCE = INHERITED['SOURCE']
 SOURCE_CONFIG = {
     'schema': m.SOURCE_SCHEMA,
     'repository': m.ALPHA_REPOSITORY,
-    'commit': 'c6459bdfb509b10f0d757eb332775902a4bb04b7',
-    'tree': 'c25ac996e27eb317c795809f923431f9e4ab4933',
+    'commit': '272b4de86bdc306ebf547750717983e467f5fcfd',
+    'tree': '7e3a171a3f4a256723d6b480c64104264021b456',
     'fixturePath': m.FIXTURE_PATH,
     'files': {
         'docs/assets/successor/engine.mjs': '38c4f38978bf9fc29f207bae3adee0755bc6530d04502a36c491cc430787e488',
