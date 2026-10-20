@@ -158,7 +158,7 @@ class PublicationIntegrationTests(ReleaseGateTests):
         directory=tempfile.TemporaryDirectory();self.addCleanup(directory.cleanup);self.root=Path(directory.name)
         self.script=self.root/'scripts/release/publish-release.py';self.script.parent.mkdir(parents=True);self.script.write_text(PUBLISHER.read_text())
         # Preserve the original mocked publication cases with the explicit policy dispatcher.
-        for name in ('package-policy.py', 'release-profile.py', 'candidate-profile.py'):
+        for name in ('package-policy.py', 'release-profile.py', 'candidate-profile.py', 'publication-authorization.py'):
             self.script.with_name(name).write_bytes(PUBLISHER.with_name(name).read_bytes())
         meta=self.root/'docs/releases'/TAG;meta.mkdir(parents=True);(meta/'RELEASE_NOTES.md').write_text('Reviewed release notes')
         self.out=self.root/'assets';self.out.mkdir()
@@ -854,6 +854,7 @@ class PackagedGuideTests(unittest.TestCase):
         guides = {f'docs/releases/{TAG}/{name}': name for name in ['START_HERE.md', 'RELEASE_NOTES.md', 'RECOVERY_GUIDE.md', 'VALIDATION.md']}
         available = {'source/' + str(p.relative_to(root)) for directory in ('docs', 'config') for p in (root / directory).rglob('*') if p.is_file()}
         available.add('source/hardhat/README.md')
+        available.add('source/scripts/integrations/README.md')
         for source_name in guides:
             original = (root / source_name).read_bytes()
             rendered = packaged_guide(original, source_name, available, guides)

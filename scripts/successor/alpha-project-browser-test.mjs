@@ -5,6 +5,10 @@ import { createServer } from 'node:http';
 import { builderArtifacts } from './build.mjs';
 import { fixture, capacityFixtures } from './alpha-project-fixture.mjs';
 import { validateBrowserAlpha } from '../../site/assets/successor/alpha-project.mjs';
+import { canonical, sha256 } from '../../site/assets/successor/safe.mjs';
+import { defaultMission } from '../../site/assets/successor/missions.mjs';
+import { createSystem, runCandidate, chooseCandidate, recordPlan, exportCapsule, inspectCapsule } from '../../site/assets/successor/model.mjs';
+import { prepareImprovement } from '../../site/assets/successor/jobs.mjs';
 const args = process.argv.slice(2);
 assert.ok(args.length === 0 || args.length === 2 && args[0] === '--bootstrap-source', 'Only explicit developer --bootstrap-source COMMIT is supported');
 const artifacts = builderArtifacts(args.length ? { bootstrap: { commit: args[1] } } : {});
@@ -39,6 +43,56 @@ async function checkPendingLanguage(page, raw, name) {
   assert.equal(await download(page, 'alpha-preview-download', name), raw);
   await page.locator('#language').click(); assert.equal(await page.locator('html').getAttribute('lang'), before);
 }
+async function decodedInputBrowserCheck(page, lang) {
+  for (const kind of ['analyst', 'website']) {
+    const mission = defaultMission(kind, lang);
+    mission.input = kind === 'analyst'
+      ? String.raw`[{"id":"a","category":"\u00c9nergie","value":"1"}]`
+      : String.raw`{"title":"Public","intro":"\u00c9nergie","sections":[{"heading":"A","body":"Public"}]}`;
+    const run = await runCandidate(await createSystem(mission), 'baseline', artifacts.sourceManifest.engineSha256);
+    const chosen = await chooseCandidate(run.state, run.candidate.id, 'keep');
+    const plan = await prepareImprovement(chosen, { budget: '100' });
+    const originalCapsule = JSON.parse(await exportCapsule(await recordPlan(chosen, plan), artifacts.sourceManifest));
+    await page.locator('#import-file').locator('..').evaluate(element => element.open = true);
+    await page.locator('#import-file').setInputFiles({ name: `${kind}-public-unicode.json`, mimeType: 'application/json', buffer: Buffer.from(canonical(originalCapsule)) });
+    await page.locator('#restore-preview').waitFor({ state: 'visible' });
+    await page.locator('#restore-consent').check(); await page.locator('#restore').click();
+    await page.locator('#restore-preview').waitFor({ state: 'hidden' });
+    await page.locator('#save').evaluate(element => element.closest('details').open = true); await page.locator('#save').click();
+    const before = await download(page, 'download-capsule', `before-decoded-rejection-${kind}-${lang}.json`);
+    const storedBefore = await page.evaluate(() => Object.fromEntries(Object.entries(localStorage)));
+    for (const encoded of [String.raw`person\u0040example.com`, String.raw`api\u005fkey=synthetic-secret`]) {
+      const capsule = structuredClone(originalCapsule), importedPlan = capsule.payload.state.plans[0];
+      const importedMission = JSON.parse(importedPlan.immutableInputs[0].content);
+      importedMission.input = kind === 'analyst'
+        ? `[{"id":"a","category":"${encoded}","value":"1"}]`
+        : `{"title":"Public","intro":"${encoded}","sections":[{"heading":"A","body":"Public"}]}`;
+      importedPlan.immutableInputs[0].content = canonical(importedMission);
+      importedPlan.missionSha256 = importedPlan.immutableInputs[0].sha256 = await sha256(importedPlan.immutableInputs[0].content);
+      const { commitment, ...payload } = importedPlan; importedPlan.commitment = await sha256(payload);
+      for (const event of capsule.payload.state.chronicle) {
+        if (event.action === 'plan-prepared') event.subject = importedPlan.commitment;
+        event.previous = event.sequence ? capsule.payload.state.chronicle[event.sequence - 1].sha256 : null;
+        const { sha256: oldHash, ...record } = event; event.sha256 = await sha256(record);
+      }
+      capsule.sha256 = await sha256(capsule.payload);
+      await assert.rejects(inspectCapsule(canonical(capsule)), { code: 'PRIVATE_INPUT' });
+      await page.locator('#import-file').setInputFiles({ name: `${kind}-escaped.json`, mimeType: 'application/json', buffer: Buffer.from(canonical(capsule)) });
+      await page.locator('#error').waitFor({ state: 'visible' });
+      assert.ok((await page.locator('#error').textContent()).includes('[PRIVATE_INPUT]'), `${kind}: decoded private text must be the rejection reason`);
+      assert.equal(await page.locator('#restore-preview').isVisible(), false);
+      assert.equal(await page.locator('#restore-consent').isChecked(), false);
+      assert.equal(await download(page, 'download-capsule', `after-decoded-rejection-${kind}-${lang}-${encoded.includes('person') ? 'email' : 'credential'}.json`), before, 'Rejected file must not replace the downloadable public workspace');
+      assert.deepEqual(await page.evaluate(() => Object.fromEntries(Object.entries(localStorage))), storedBefore, 'Rejected file must not change any saved browser history');
+    }
+    await page.locator('#improve-local').click();
+    await page.waitForFunction(() => document.querySelector('#comparison').textContent.length > 0);
+    const retained = JSON.parse(await download(page, 'download-capsule', `public-unicode-${kind}-${lang}.json`));
+    assert.equal(retained.payload.state.mission.input, mission.input, 'Browser replay must preserve original escaped public bytes');
+    assert.equal(retained.payload.state.authority, 'none');
+    await page.locator('#save').click();
+  }
+}
 try {
   for (const lang of ['en', 'fr']) {
     const context = await browser.newContext({ viewport: { width: 390, height: 1000 } }), page = await context.newPage(), errors = [], external = [];
@@ -47,6 +101,8 @@ try {
     await context.route('**/*', route => { const url = route.request().url(); if (/^https?:/.test(url) && new URL(url).origin !== origin) { external.push(url); return route.abort(); } return route.continue(); });
     const url = `${origin}/AGIJobManager/${lang === 'fr' ? 'fr/' : ''}successor/#alpha-project`;
     await page.goto(url);
+    await decodedInputBrowserCheck(page, lang);
+    await page.reload();
     const dirty = () => page.evaluate(() => { const event = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(event); return event.defaultPrevented; });
     await page.locator('#alpha-clear').click(); assert.equal(await dirty(), false, 'Clearing an empty workspace must not create unsaved work');
     for (const [name, buffer, code] of [['bom.json', Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(original)]), 'INPUT_BOM'], ['invalid-utf8.json', Buffer.from([0xff, 0xfe, 0x7b]), 'INPUT_UTF8']]) {
@@ -92,6 +148,19 @@ try {
     assert.equal(await page.evaluate(() => localStorage.getItem('agijobmanager_alpha_project_transfer_v1')), previousSaved);
     await page.evaluate(() => { Storage.prototype.setItem = window.__storageSetItem; });
     await page.locator('#alpha-save').click(); assert.equal(await dirty(), false, 'Confirmed successful browser save can clear leave-page protection');
+    const previousEdition = JSON.parse(raw); previousEdition.managerSource.engineSha256 = '0'.repeat(64); delete previousEdition.sha256; previousEdition.sha256 = await sha256(previousEdition);
+    const previousRaw = canonical(previousEdition);
+    await page.locator('#alpha-file').setInputFiles({ name: 'previous-edition.json', mimeType: 'application/json', buffer: Buffer.from(previousRaw) });
+    await page.locator('#alpha-recovery').waitFor({ state: 'visible' });
+    assert.equal(await download(page, 'alpha-recovery-download', `previous-edition-${lang}.json`), previousRaw);
+    assert.equal(await download(page, 'alpha-download', `after-source-mismatch-${lang}.json`), raw);
+    assert.equal(await page.evaluate(() => localStorage.getItem('agijobmanager_alpha_project_transfer_v1')), raw);
+    assert.equal(await page.locator('#alpha-clear').isDisabled(), true);
+    assert.equal(await page.locator('#alpha-recovery a').getAttribute('href'), 'https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.3');
+    await page.locator('#language').click();
+    assert.equal(await download(page, 'alpha-recovery-download', `previous-edition-language-${lang}.json`), previousRaw);
+    await page.locator('#language').click();
+    await page.locator('#alpha-recovery-dismiss').click(); await page.locator('#alpha-recovery').waitFor({ state: 'hidden' });
     await page.screenshot({ path: path.join(evidence, `manager-${lang}.png`), fullPage: true });
     await page.reload(); await page.locator('#alpha-load').click(); await page.locator('#alpha-preview').waitFor({ state: 'visible' }); assert.equal(await page.locator('#alpha-workspace').isVisible(), false);
     assert.equal(await page.locator('#alpha-clear').isDisabled(), true, 'The sole saved copy cannot be removed while its preview is pending');
@@ -156,7 +225,7 @@ try {
       }
     }
     assert.equal(await page.evaluate(() => window.__walletCalls), 0); assert.deepEqual(errors, []); assert.deepEqual(external, []);
-    results.push({ lang, originalBytesRetained: true, explicitImport: true, actualWork: true, unfundedUSDC: true, corruptionPreservesWorkspace: true, recovery: true, clearingSavedHistoryRearmsLeaveProtection: true, cancelledDownloadKeepsWarning: true, nativeLeaveWarning: true, failedSaveKeepsWarning: true, clearSavedCopyKeepsWarning: true, clearEmptyWorkspaceStaysClean: true, resaveAfterClearRecovers: true, pendingLanguageAndCancellation: true, pendingStoredCopyProtected: true, activeAndPendingRemainDistinct: true, otherTabStorageLossProtected: true, pendingAcceptanceRechecksStorage: true, allEightCapacityStates: true, finalCheckpointReservedForDraft: true, noWalletOrExternalNetwork: true, widths: [320, 390, 768, 1440] }); await context.close();
+    results.push({ lang, originalBytesRetained: true, decodedPrivateInputRejected: true, escapedPublicBytesRetained: true, explicitImport: true, actualWork: true, unfundedUSDC: true, corruptionPreservesWorkspace: true, recovery: true, clearingSavedHistoryRearmsLeaveProtection: true, cancelledDownloadKeepsWarning: true, nativeLeaveWarning: true, failedSaveKeepsWarning: true, clearSavedCopyKeepsWarning: true, clearEmptyWorkspaceStaysClean: true, resaveAfterClearRecovers: true, pendingLanguageAndCancellation: true, pendingStoredCopyProtected: true, activeAndPendingRemainDistinct: true, otherTabStorageLossProtected: true, pendingAcceptanceRechecksStorage: true, allEightCapacityStates: true, finalCheckpointReservedForDraft: true, noWalletOrExternalNetwork: true, widths: [320, 390, 768, 1440] }); await context.close();
   }
-  fs.writeFileSync(path.join(evidence, 'results.json'), JSON.stringify(results, null, 2)); console.log('Alpha project browser checks PASS: EN/FR, actual native replay, USDC draft, corruption, recovery, four widths, no network/wallet.');
+  fs.writeFileSync(path.join(evidence, 'results.json'), JSON.stringify(results, null, 2)); console.log('Alpha project browser checks PASS: EN/FR, decoded private-input rejection, escaped public bytes, actual native replay, USDC draft, corruption, recovery, four widths, no network/wallet.');
 } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

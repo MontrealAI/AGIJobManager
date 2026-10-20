@@ -184,6 +184,7 @@ for (const [name, data] of invalidCases) {
     const { input, output } = fixture(t);
     const promise = promptPrivateKey({ input, output });
     const bytes = input.send(data);
+    if (!/[\r\n]/.test(data)) input.send('\r');
     await assertSanitized(promise, 'EPHEMERAL_KEY_INVALID');
     assertClean(input);
     assert.equal(bytes.every((byte) => byte === 0), true);
@@ -191,6 +192,79 @@ for (const [name, data] of invalidCases) {
     assert.equal(output.writes.join('').includes(data), false);
   });
 }
+
+for (const invalid of ['0x11g', '0x' + '11'.repeat(33), '\x1b[200~', '0x\t']) {
+  test('malformed input remains hidden and discards its tail until Enter', async (t) => {
+    const streams = fixture(t);
+    let completed = false;
+    const promise = promptPrivateKey(streams);
+    promise.then(() => { completed = true; }, () => { completed = true; });
+    const first = streams.input.send(invalid);
+    await new Promise(setImmediate);
+    assert.equal(completed, false);
+    assert.equal(streams.input.isRaw, true);
+    const tail = streams.input.send('abcdef0123456789\b\x7f');
+    await new Promise(setImmediate);
+    assert.equal(completed, false);
+    assert.equal(streams.input.isRaw, true);
+    assert.equal(first.every(byte => byte === 0), true);
+    assert.equal(tail.every(byte => byte === 0), true);
+    assert.equal(streams.output.writes.length, 1);
+    streams.input.send('\r');
+    await assertSanitized(promise, 'EPHEMERAL_KEY_INVALID');
+    assertClean(streams.input);
+  });
+}
+
+test('an invalid line still accepts explicit cancellation without revealing its tail', async (t) => {
+  const streams = fixture(t);
+  const promise = promptPrivateKey(streams);
+  streams.input.send('0x11g');
+  assert.equal(streams.input.isRaw, true);
+  streams.input.send('\x03');
+  await assertSanitized(promise, 'EPHEMERAL_KEY_CANCELLED');
+  assertClean(streams.input);
+});
+
+test('real PTY keeps echo disabled after a typo until the operator ends the line', () => {
+  const script = String.raw`
+import json,os,pty,select,subprocess,sys,termios,time
+master,slave=pty.openpty()
+code="require(process.argv[1]).promptPrivateKey().catch(e=>console.error(e.code));"
+child=subprocess.Popen([sys.argv[1],'-e',code,sys.argv[2]],stdin=slave,stdout=slave,stderr=slave)
+output=b''
+def receive_until(marker,timeout):
+ global output
+ end=time.monotonic()+timeout
+ while marker not in output and time.monotonic()<end:
+  if select.select([master],[],[],min(.1,max(0,end-time.monotonic())))[0]:
+   try: output+=os.read(master,4096)
+   except OSError: break
+try:
+ receive_until(b'input hidden',3)
+ assert b'input hidden' in output
+ hidden_before=not bool(termios.tcgetattr(slave)[3]&termios.ECHO)
+ os.write(master,b'0x11g')
+ receive_until(b'EPHEMERAL_KEY_INVALID',.25)
+ hidden_after_typo=not bool(termios.tcgetattr(slave)[3]&termios.ECHO)
+ rejected_early=b'EPHEMERAL_KEY_INVALID' in output
+ os.write(master,b'DISPOSABLE_TAIL')
+ receive_until(b'DISPOSABLE_TAIL',.25)
+ tail_hidden=b'DISPOSABLE_TAIL' not in output
+ os.write(master,b'\r')
+ receive_until(b'EPHEMERAL_KEY_INVALID',3)
+ rejected_at_enter=b'EPHEMERAL_KEY_INVALID' in output
+ child.wait(timeout=3)
+ restored=bool(termios.tcgetattr(slave)[3]&termios.ECHO)
+ print(json.dumps(dict(hidden_before=hidden_before,hidden_after_typo=hidden_after_typo,rejected_early=rejected_early,tail_hidden=tail_hidden,rejected_at_enter=rejected_at_enter,restored=restored)))
+finally:
+ if child.poll() is None: child.terminate();child.wait(timeout=3)
+ os.close(master);os.close(slave)
+`;
+  const result = childProcess.spawnSync('python3', ['-c', script, process.execPath, require.resolve('../scripts/ephemeral-key.cjs')], { encoding: 'utf8', timeout: 10000, maxBuffer: 65536 });
+  assert.equal(result.status, 0, 'Disposable PTY regression must complete without exposing terminal input');
+  assert.deepEqual(JSON.parse(result.stdout), { hidden_before: true, hidden_after_typo: true, rejected_early: false, tail_hidden: true, rejected_at_enter: true, restored: true });
+});
 
 test('accepts order minus one, a valid disposable scalar boundary', async (t) => {
   const streams = fixture(t);
@@ -205,6 +279,7 @@ test('rejects overlong batches without allocating an input-sized candidate', asy
   const streams = fixture(t);
   const promise = promptPrivateKey(streams);
   const bytes = streams.input.send(Buffer.alloc(100_000, 49));
+  streams.input.send('\r');
   await assertSanitized(promise, 'EPHEMERAL_KEY_INVALID');
   assert.equal(bytes.every((byte) => byte === 0), true);
   assertClean(streams.input);
@@ -361,6 +436,7 @@ test('rejects decoded string events without reporting their contents', async (t)
   const streams = fixture(t);
   const promise = promptPrivateKey(streams);
   streams.input.emit('data', SECRET_SENTINEL);
+  streams.input.send('\r');
   await assertSanitized(promise, 'EPHEMERAL_KEY_INVALID');
   assertClean(streams.input);
 });

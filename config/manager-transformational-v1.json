@@ -1,0 +1,688 @@
+{
+  "schema": "agijobmanager/transformational-source/v1",
+  "profile": "manager-transformational-v1",
+  "baseCommit": "18da53cdf1cd67f6e4dc646e6b1fc0c7c33379dd",
+  "baseTree": "ce090d08fd53a335a56189087b40188c7a7f99de",
+  "version": "1.19.5",
+  "qualification": "PENDING_FINAL_SOURCE_MAIN_PUSH",
+  "changes": {
+    ".github/workflows/alpha-project-handoff.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "4bfa171edb9b22a2fcad62b95e91bf560ce4cdb94737b7e5ed3be28fd293511c"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "02e1c0421323fb2a362c72156262c0a9fde85f976c523ebd9876c9cdf4b722d0"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    ".github/workflows/current-state-release.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "65d22392c85a599094dbc33091fd956d55ddc9bc82bdb45034a18bc90c4da4cd"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "266c9f9af477bf9d8399ae7227db92232b28910210cddcefd96a88b4e999b5c2"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    ".github/workflows/mainnet-fork.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "f5bdc2b0593b42bfcfe2897806efcedcf105eb6d651758e1cae9c05a993e3d2b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "a78e854eb0d73983dca80b21433adb1b2803dbb03899018113bb997fbe9e36e7"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    ".github/workflows/pages.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "830135d8ec5a6cacbe03b0f9c34f50e539e6d7e9e04d27277cc549714bfacdc0"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "e46ac079514b9e23ac800b7a9b3a74ca119720ff2d9bb9dd5020ed83ca32073a"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    ".github/workflows/publish-v114.yml": {
+      "before": {
+        "mode": "100644",
+        "sha256": "0fd7fe697b7cccf6a0ac3bb9414ef3349596707eb442331a9f2bd2fe6b309016"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "27ba1fece5d699efde5d82d674f3accf9668f9fab61643a66711e54c06665a85"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "README.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "29b128ba55c228414a9e77eef888b096829eed18825226ceb90e6036f7904d44"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "9637aba23a9d4e33be37760845eaeff468f458234e06043e9fa56bd4522f6ff8"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "agijobmanager.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "0d1f4484989685d1dc67305e056b9db25730124ec65b778c65a7b0741f82a4a4"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "fa941979957adee21178c5a8f90aa06fdc05cd8bd310e314ded12e5bbe28ee83"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "config/companion-releases.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "fdf8bf3c20986e191b52b1e7082ff7030694e8a6c73c13ded29027fbf05727f0"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "4e0f1c816b0e5ff3e184395430e2c382c0a2b3d4cb2ef00a3673f8f781fd85ac"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "config/transformational-alpha-source.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "fa971eb2ce0c3779260bb57a9b22a30700e86451bdf2dcfe0dcba6264cff5cc9"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "config/usdc-deployment.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "f4d91e26f55c7ead255e492d94726c63b34db00f3c5599e8934708742e7eb527"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "7f8f3dc515a348dce40870cbf41ee33190e2648f105aefbe9e961aa724d8eec9"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "docs/MAINNET_READINESS.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "46d7c2c84af2fe8edbb258f0df4b1edea88cee07bdf52c05b8bf0506e778880c"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "89084977adc18f867b6292bfda393fe8df79b6a1c957c8b523bf1719269e316c"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/OPERATIONS/PRIVATE_FLEET.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "e38fa302e365dc4d2903e4b9f3ed96ffa95f3da2e69d8021454988416aa7ddb4"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "fe83fad67ef82b3573aeebaa416b8072ac44c1f5a7aac7890bf2c07c4eb7c7cd"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/REFERENCE/VERSIONS.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "0275b6a65d543567acfcd05a653bfee1a8a1c3f0022a441a474d87bfac7acc38"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "4dd056efd4f338cea75f224529834bd090ac83bb8380cb9caa8d72c11a0fd5de"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/RELEASE_GUIDE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "09ade22dc103aa9758e21d2e9135f25b549b43e92d3a03d115f9123f12a6ae8e"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "81158dc0ba67b2f905f9dd845c1b58f02b8dfe916c47d50bf9bf0ce0480b8593"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/START_HERE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "8c708d4361846f7dca32f4e961dfab14884a642d9168d346acbf259d1bf58763"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "edb059b66a2fa2a993d298a115346a29142ac326071614906ca1bfd04be5f880"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/V1_RELEASE_SCOPE.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "295b6a0524ed5e5f7c307ea4c7b3e481247aa5238cf7d045e701bf1f1235af71"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "db5c38113603976242d66eefab20da1c27ccff344b5063e410a5371073139589"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/deployments/ENS_CONFIGURATION_RETAINED_2026-10-19.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "b5ebdac6b696619ea913f592186b8749e60bdeadbc8e8b966a855380afafc6cc"
+      },
+      "reason": "Retain dated ENS configuration evidence with immutable original reports and separately verified historical block metadata"
+    },
+    "docs/deployments/evidence/ens-configuration-retained-2026-10-19/ens-configuration-closeout-original.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "10b252325897fe1b9c2134623d02ca8e139e850b7b72f91951ccc29f2b70a840"
+      },
+      "reason": "Retain dated ENS configuration evidence with immutable original reports and separately verified historical block metadata"
+    },
+    "docs/deployments/evidence/ens-configuration-retained-2026-10-19/ens-explorer-verification-original.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "385a2dc667897a1576bdb7957a0b09fcdd728ff4069ed71a43796bebeb550471"
+      },
+      "reason": "Retain dated ENS configuration evidence with immutable original reports and separately verified historical block metadata"
+    },
+    "docs/deployments/evidence/ens-configuration-retained-2026-10-19/historical-block-26227598.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "dd227211b95f93e6981f7208a50842a9bcaf80b360413cfecf88cd9212583acd"
+      },
+      "reason": "Retain dated ENS configuration evidence with immutable original reports and separately verified historical block metadata"
+    },
+    "docs/qualification/mainnet-cutover-v1.19.5-expected.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "d48cce34e7f20d836018d1619cf916475051b9c15908b5fc164568587ff1584d"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/qualification/release-v1.19.5-provenance.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "eb61d9c00372d2274e6962ff7357adc593a165c06dbc23aa0f6737ce9cfbbcd3"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/releases/v1.19.5/RECOVERY_GUIDE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "5cdd820c140a70afd87b5d5a6e464d511e3cbef6d7343a6cc61e48738521ac9f"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/releases/v1.19.5/RELEASE_NOTES.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "a78420bf660312ba77e64461bb0d2cf0f251e67b92931a3bc84868dbb59754fd"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/releases/v1.19.5/START_HERE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "961da160d85568e75d87c144dc263f4ed53dbe205c2306bbaa192816430491a5"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/releases/v1.19.5/VALIDATION.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "088a5ed6f475628ccbefa3786e9fb0cdec9cead375b48cea6e14274ceb7d72ce"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/successor/TRANSFORMATIONAL_WORK.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "1edc341c6b30ec4ae4220936cf5f78b910ce47c966c8e2502a43558f610bdb1e"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/ui/DEPLOYMENT_MAINNET.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "efbfdfe2fb91aa0489c191df3006904bce6eb4971b5381496923e73fd7ddfe0f"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "7a24c23bfeec3a9cb015fbb2b28bbe5e806a4b105ec140ebd006935b351d3dff"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "e409a35dced71abbec1dd7c3942ca889afbe0443ede6b77ab0de9ae01a6d8f0b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "e5211e633a6e82eb318705e0d6dad7c55e5fee1e60a3f97438bf5091b424101e"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "hardhat/package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "57e54d97d62e43fbfd56f31296027842bfa4fa07c6e9ffdaf26f0a43661cf13a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "34b5a16c0fe7ea253fff86abc10d204dc248faddb433df475169c20b01cbb09c"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "hardhat/package.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "6f62c55fc6744030a51b31230b6e599bc02af18cbcf48f27b7240f9a6db12e34"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "e406b3bf5a30c25a9516bcd2801872713f25888c32d97227c521f0d03fb29df9"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "8c4ae8f300d89dc559d99ef35075332fae2aaa2e5f015583286d6c37ea908223"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b6d9d125ecad09edde71dbe080e8eb0229c2ebbfd74dc9f46b091fb1da2f89c3"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "package.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "4a2665e1e4b26b2123e42b5e624f02faae783efed41d763f3bb89dea1b268f08"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b7dac568949fd4ffdaee3389a03192eaeb66458feb19918d696fff68e71866eb"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "scripts/docs/release-alignment.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "7b12af68b107d20d5eaaad622fe3d4be22ece629a883af651349938ddaebbd3a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "439413e66d4bbf7bfc21849ff45772129caa15e2c05531d99d6785d19e4aa085"
+      },
+      "reason": "Keep the generated release/Pages guide coherent with explicit confirmed software publication; all other generator bytes remain exact"
+    },
+    "scripts/docs/templates/PRIVATE_FLEET.md.tpl": {
+      "before": {
+        "mode": "100644",
+        "sha256": "b92a93feea8d9370151d10b3e42678d5cc4f1f1ce34acb246ceb89bd010b78e7"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "9ab4776919d2a48322bb6dc7914b211a900c73e158c01ed05ad4377a5e216d55"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "scripts/docs/templates/README.md.tpl": {
+      "before": {
+        "mode": "100644",
+        "sha256": "aaba99df1e96d20c94cd8ce3e128ea861b54a78351ff246bbd9831097c70d44f"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "8a19fea980f0e7c8097d81a6886fecae2902acf1545fdc2e326a11acf7704ae7"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl": {
+      "before": {
+        "mode": "100644",
+        "sha256": "0c9e52b68d4faf323ac0e94467039cbd519ddde3e2b28e8e17b5b11cb9987a9b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b76a28f8c5a5c27571283d4e6161a4d38aa9388d6c3550860393936c18ede809"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "scripts/integrations/transformational-native-source.test.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "7a7e1acc590100e3571affc98719074702edc15cdcd2a17a5be37ac157431500"
+      },
+      "reason": "Exercise actual post-fstat growth, exact source limits and descriptor closure without unbounded reads; run in native CI and clean extraction"
+    },
+    "scripts/integrations/transformational-native-test.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "cc956dfe9237200741da0f9066b6afef20c2c31ab4592bef45b1f2afb2ba8518"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/integrations/transformational-work-request.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "eb57a7831a733ffae8a7047cbf54b4216d81ae12a4aeb13ff6907298dee1c7dc"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/integrations/transformational-work-request.test.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "6170161e5dd843d4ddf80c8197b22e0ee961e0cfb61578e4a881dc073490a15b"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/collect-qualification.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "00b0e5ace9f1515d0b8ffcd56ee3f10626d76ade8c57cd827b8d0b60d1c1897d"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "cfeab6d9b99317bb216b8bc56cdf00bb54e6081c9a706ef84e5d1a22cfb404d9"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/package-policy.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "ca6d9a904eef8299e54817603db08c1a00a0df9e0f7d090b0125f5a6716fc79b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "0dd087ea425f4c107f99940b1b4d1a375b8dbd9b194a8b4f8cbb5b25839a0396"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/pages-publication-ti.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "fd1658fb0207a9dc3d14519a1d58bec75fa02bcc443b4d325e6122e109328573"
+      },
+      "reason": "Add exact v1.19.5 Pages authorization with normalized inherited publisher, event, attempt, current-main, asset and attestation gates plus live native qualification"
+    },
+    "scripts/release/publication-authorization-ti.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "5b21e0b63c8e83c3f8d9f611cb6323c418ff63781cf61141f5147e59ca60a867"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/publish-release.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "4710f3af4a4d2d9e6d4d539ee200897dd9883337fd3c1333bdc3db603502c2bc"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "dc7d67009fa0cc90fcb11e5dfb865b5276a6c4c1718c77b1e24f7c879a9cf643"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/run-transformational-inherited-tests.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "641432d9479ed9519e7e975a4523f5f71ab03c195267311e64de35c181425cdd"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/run-transformational-preservation.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "e35724885b2a28ba257963991dd39ffdf8b62430694a01c4167ddbe6626665b2"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/test-pages-publication-ti.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "4beb0e91e43b94071859e0f852fe21ac8ee2dd2c8deb6e2a1a0e930e0d66c4fe"
+      },
+      "reason": "Retain every original Pages negative at v1.19.5 and test synthetic orchestration policy, assets, native binding, publisher completeness and attestations"
+    },
+    "scripts/release/test-publication-authorization-ti.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "2ed93266e8add32bd65f3bd87571fadda3b8a8597ff716397968b489525e18e6"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/test-transformational-profile.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "6be3a320c40a550962e4020279ad1290a56752bace8dae8836e988d5bc5f4bb5"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/test-transformational-qualification.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "7cb1d49577510c6f1d5e59c6bfe51dda173a52e972b9f90def26cff434bde65f"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/transformational-profile.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "1e9f62e4b1ea1fdac3f6aeaeeaf400af04655b4fb3b90b23d55ebcded2356727"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/transformational-qualification.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "8c50e09186f39ff073641d04b45a3b4d7e3229b9ce06a6fbb9fc0da0f6275e01"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/release/verify-package.py": {
+      "before": {
+        "mode": "100644",
+        "sha256": "87dbf766d61eb104614d8c69debcb8cf2af13f15aa2b9f032335bb107fa5594b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "8c73e1e68c0983cc73a1ae40447f50c9ca636813e1766392dafa1e1e590308a9"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/security/slither-reviewed-findings-v1.19.5.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "12a981f1c4ae8241c1e9702796647eb42bbaf3761897adce810a2f294725a7d6"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/security/verify-slither-review.py": {
+      "before": {
+        "mode": "100755",
+        "sha256": "d67151764ae888169cdbaf1115f61f79dedd9898cfa25cf8b3e9ab6bc8d362e8"
+      },
+      "after": {
+        "mode": "100755",
+        "sha256": "83cd337e8a699bcaf69c83b93055a6942f8f962066eca8f759178bcdbac64e62"
+      },
+      "reason": "Add exact free-native transformation boundary, regression evidence and explicit finite release qualification"
+    },
+    "scripts/site/browser-test.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "de14a271fc73d515aeeb0b21b940dd006e1b90567fe68d0f8bd6152e43960098"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "4c80b5ac1d5338d89300ff463d725e32b9b91572acd87a70c1aaea93e18dbeed"
+      },
+      "reason": "Change only the two exact resource-card counts from 12 to 13; preserve every other existing browser assertion through byte-exact normalization."
+    },
+    "scripts/site/check.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "cfa05f8f484c5b8c06229bceb0bacf144962e7acfcf8a191819c48ff56e087c1"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f2d69e777756ff67a72889e07ce861576ec9aa5b05ebafbe1859bdc61e7a1b56"
+      },
+      "reason": "Change only the exact resource-card expected count from 12 to 13; preserve all other site-check assertions through byte-exact normalization."
+    },
+    "site/content/en.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "83d3062d0b5e2aceea1d860f7cfc20f34e1187652ec3885e110f9a03627bd434"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "aa0d1d8f6368651ba09473a34699ed1d624742ea148137c63c1ce8682230a8ab"
+      },
+      "reason": "Insert one exact reviewed bilingual TI source-preview resource at the second position; preserve all surrounding website bytes."
+    },
+    "site/content/fr.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "2d2c0445240377f399a3a3f848324b7fb033d90ef74d06f396872c18ef437f05"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b35eb3197247345e75b9504424a2fd3caa2a71e4c8928bcf8adb76b1a4047a7f"
+      },
+      "reason": "Insert one exact reviewed bilingual TI source-preview resource at the second position; preserve all surrounding website bytes."
+    },
+    "ui/README.md": {
+      "before": {
+        "mode": "100644",
+        "sha256": "fead659275e5552e80a1e37cbceba865c7e83985e07ceb5cf500221e734d5b73"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "30388e2fa6a84c4388d6be833b27363d73ea0b1b574ddd7168fc120dc69f9684"
+      },
+      "reason": "Document free-only transformation scope, recovery and pending final-source qualification"
+    },
+    "ui/agijobmanager-usdc.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "5c805162b34c4597a740eb1f88c577d5396f49e43d3305abf0f2d8e4583018d6"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "544a4cc7990d4c5032db460f8c6e611a66a21b7720bf8b8ba406d05bf550e28b"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "ui/dist-ipfs/agijobmanager.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "0d1f4484989685d1dc67305e056b9db25730124ec65b778c65a7b0741f82a4a4"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "fa941979957adee21178c5a8f90aa06fdc05cd8bd310e314ded12e5bbe28ee83"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "ui/package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "f8ffd3f551797224b7cb89a0de7903d9a65f57dfaf1a08f653d0f1b3644e7477"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "9852f80adbaccf3b01f9ec065204b3b1cd7f249c7cb31ae9a31d14ab2f5753cc"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "ui/package.json": {
+      "before": {
+        "mode": "100644",
+        "sha256": "37544edc0ddb010c2e83463605773dca0b1486cc5c53bb7473c8b4b7e1c6c41b"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "d320776de97369132287a2224c16b5bffc485749d300ddb13fb7819511deceb1"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "ui/scripts/generate-deployment-docs.mjs": {
+      "before": {
+        "mode": "100644",
+        "sha256": "3bf519ff1fcfe07472fe40a5fc0814e0a53725d83f34dc6546f3e0fff88fe465"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "755f3d183cd3e83d3fbeac922ccf90e5084f5276788751921084c9613c60e46e"
+      },
+      "reason": "Preserve the exact committed free-only TI paragraph in deployment-doc generation; all other generator bytes remain the predecessor."
+    },
+    "ui/scripts/singlefile-template.html": {
+      "before": {
+        "mode": "100644",
+        "sha256": "1add49dda56720eca551fffe7d7e748b9630c4c86496ed37a7ee6b81462a1546"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ce6b7cca7e854835df009d557b8f1dbc883eb0763a5eb6dd2271f19e1ca93cd4"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    },
+    "ui/src/generated/deployments.ts": {
+      "before": {
+        "mode": "100644",
+        "sha256": "4ad5bcf718f906886c1c2f2c90146ebfb7e41ec8a5e156ddfcc8fd5ea92fa59a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "d84de11f22694a68ef16327ec2c6024b412fb2cf6be57a7e104d95ed2d97abe9"
+      },
+      "reason": "Update software version labels only; preserve dependency resolution, transaction defaults and executable UI"
+    }
+  }
+}

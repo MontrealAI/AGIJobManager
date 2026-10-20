@@ -1,0 +1,10 @@
+{
+  "provider": "Ethereum Blockscout",
+  "url": "https://eth.blockscout.com/api/v2/blocks/26227598",
+  "retrieved_at": "2026-10-19T16:51:52.425781+00:00",
+  "requested_height": 26227598,
+  "height": 26227598,
+  "hash": "0x280b9d8f09ce5b7dc47783d00e8b036e2b4fbe94c241d589a48b8a25184a0cc7",
+  "timestamp": "2026-10-19T15:44:23.000000Z",
+  "retained_hash_match": true
+}

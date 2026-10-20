@@ -1,0 +1,12 @@
+{
+  "schema": "agijobmanager/transformational-alpha-source/v1",
+  "repository": "MontrealAI/AGI-Alpha-Agent-v0",
+  "commit": "272b4de86bdc306ebf547750717983e467f5fcfd",
+  "tree": "7e3a171a3f4a256723d6b480c64104264021b456",
+  "fixturePath": "examples/transformational-intelligence/campaign.json",
+  "files": {
+    "docs/assets/successor/engine.mjs": "38c4f38978bf9fc29f207bae3adee0755bc6530d04502a36c491cc430787e488",
+    "examples/transformational-intelligence/campaign.json": "fa5f570e89c20cffd0df844869047a7c0594c5460c3e95df5ada44592ea4fd20",
+    "examples/transformational-intelligence/inspector.mjs": "b5f8e704aaab345f9d6503c854d38910ddfabbf98fe674c48b051097812b07f4"
+  }
+}

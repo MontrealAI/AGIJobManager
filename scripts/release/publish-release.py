@@ -1,4 +1,4 @@
-"""Validate external final-source qualification and publish only on confirmed main dispatch."""
+"""Publish exact-source qualification after confirmed manual or bounded completion authorization."""
 import argparse
 import runpy
 import hashlib
@@ -164,6 +164,9 @@ def upload_asset(release, file, digest):
 
 require(os.environ.get('GITHUB_REPOSITORY') == repo, 'Repository identity mismatch')
 validate_qualification(config, api, lambda job_id: gh('api', f'repos/{repo}/actions/jobs/{job_id}/logs', '--method', 'GET', '--allow-escape-sequences'), publication=True)
+if source_policy and source_policy.get('releaseProfile') == 'manager-transformational-v1':
+    ti_qualification = runpy.run_path(str(pathlib.Path(__file__).with_name('transformational-qualification.py')))
+    require(config.get('transformationQualification') == ti_qualification['validate'](config, api, lambda job: gh('api', f'repos/{repo}/actions/jobs/{job}/logs', '--method', 'GET', '--allow-escape-sequences')), 'Native transformation qualification binding differs')
 out = args.assets.resolve()
 require((out / 'QUALIFICATION.json').read_bytes() == args.qualification.read_bytes(), 'Asset qualification differs')
 expected = verify_assets(out, config)
@@ -183,8 +186,7 @@ with tempfile.TemporaryDirectory(prefix='v114-publication-rebuild-') as temp:
     require(config['artifactDigests'] == {n: d for n, d in actual.items() if n != 'SHA256SUMS.txt'}, 'Candidate bytes differ from deterministic exact-source rebuild')
 if not args.publish:
     raise SystemExit(0)
-require(os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' and os.environ.get('GITHUB_REF') == 'refs/heads/main', 'Publication requires an explicitly authorized main-branch dispatch')
-require(os.environ.get('RELEASE_PUBLISH_CONFIRMATION') == 'PUBLISH_' + TAG, 'Explicit current-version publication confirmation is required')
+runpy.run_path(str(pathlib.Path(__file__).with_name('publication-authorization-ti.py' if source_policy and source_policy.get('releaseProfile') == 'manager-transformational-v1' else 'publication-authorization.py')))['authorize'](os.environ, source, api)
 require(config.get('publicationAuthorized') is True, 'Publication authorization is missing')
 require(api('git/ref/heads/main')['object']['sha'] == source, 'Main advanced since qualification; requalify before publishing')
 matches = []
@@ -240,6 +242,9 @@ fresh_assets = release_assets(release['id'])
 require(len(fresh_assets) == len(wanted) and {a['name']: a.get('digest') for a in fresh_assets} == wanted, 'Draft assets changed before publication')
 require(api('git/ref/heads/main')['object']['sha'] == source, 'Main advanced during publication')
 validate_qualification(config, api, lambda job_id: gh('api', f'repos/{repo}/actions/jobs/{job_id}/logs', '--method', 'GET', '--allow-escape-sequences'), publication=True)
+if source_policy and source_policy.get('releaseProfile') == 'manager-transformational-v1':
+    ti_qualification = runpy.run_path(str(pathlib.Path(__file__).with_name('transformational-qualification.py')))
+    require(config.get('transformationQualification') == ti_qualification['validate'](config, api, lambda job: gh('api', f'repos/{repo}/actions/jobs/{job}/logs', '--method', 'GET', '--allow-escape-sequences')), 'Native transformation qualification binding differs')
 api(release_endpoint, 'PATCH', {'draft': False, 'prerelease': False, 'make_latest': 'true'})
 release = wait_for(release_endpoint, lambda r: not r['draft'] and not r['prerelease'])
 if not (tag_target(api(f'git/ref/tags/{tag}')) == source): raise AssertionError('Release invariant failed')

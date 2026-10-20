@@ -100,6 +100,7 @@ async function promptPrivateKey(options = {}) {
     let outputListening = false;
     let rawAttempted = false;
     let submission = null;
+    let invalid = false;
     const signals = ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGQUIT'];
 
     function restoreRaw() {
@@ -169,48 +170,47 @@ async function promptPrivateKey(options = {}) {
 
     function onCancel() { finish('EPHEMERAL_KEY_CANCELLED'); }
     function onError() { ioFailed = true; finish('EPHEMERAL_KEY_IO'); }
+    function invalidate() {
+      invalid = true;
+      candidate.fill(0);
+      length = 0;
+    }
 
     function onData(chunk) {
       try {
         if (settled) return;
         if (!Buffer.isBuffer(chunk) || chunk.length === 0 || submission !== null) {
-          finish('EPHEMERAL_KEY_INVALID');
+          invalidate();
           return;
         }
-        // Inspect the entire batch before accepting any terminator. This rejects
-        // multiline paste, CRLF, escape/bracketed-paste sequences, and trailing
-        // data. Raw bytes cannot identify the origin of arbitrarily fragmented
-        // input, so this does not claim universal paste-origin detection.
+        // Once invalid, discard the rest of the line with echo still disabled.
+        // Restoring canonical mode at the first typo would expose a key's tail
+        // as the operator continues typing. Raw bytes cannot identify the origin
+        // of arbitrarily fragmented input; this is not paste-origin detection.
         for (let index = 0; index < chunk.length; index += 1) {
           const byte = chunk[index];
-          if ((byte === 13 || byte === 10) && index !== chunk.length - 1) {
-            finish('EPHEMERAL_KEY_INVALID');
-            return;
-          }
-          if (byte !== 3 && byte !== 4 && byte !== 8 && byte !== 127
-            && byte !== 13 && byte !== 10 && byte !== 120 && nibble(byte) < 0) {
-            finish('EPHEMERAL_KEY_INVALID');
-            return;
-          }
-        }
-        for (const byte of chunk) {
           if (byte === 3 || byte === 4) { onCancel(); return; }
-          if (byte === 8 || byte === 127) {
-            if (length > 0) candidate[--length] = 0;
-          } else if (byte === 13 || byte === 10) {
+          if (byte === 13 || byte === 10) {
+            if (index !== chunk.length - 1) invalidate();
             // Reject any additional data observed before the deferred commit,
             // including split CRLF and synchronously fragmented paste.
             submission = setImmediate(() => {
               let key;
+              if (invalid) { finish('EPHEMERAL_KEY_INVALID'); return; }
               try { key = canonicalKey(candidate, length); } catch { onError(); return; }
               if (key === null) finish('EPHEMERAL_KEY_INVALID');
               else finish(null, key);
             });
+            return;
+          }
+          if (invalid) continue;
+          if (byte === 8 || byte === 127) {
+            if (length > 0) candidate[--length] = 0;
           } else {
             if (length >= WIDTH || (length === 0 && byte !== 48)
               || (length === 1 && byte !== 120) || (length >= 2 && nibble(byte) < 0)) {
-              finish('EPHEMERAL_KEY_INVALID');
-              return;
+              invalidate();
+              continue;
             }
             candidate[length++] = byte;
           }

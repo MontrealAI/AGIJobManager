@@ -1,0 +1,275 @@
+"""Finite source corrections over immutable v1.19.3; qualification is separate."""
+import argparse
+import hashlib
+import json
+import os
+import pathlib
+import re
+import runpy
+import subprocess
+
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+PROFILE = 'manager-boundary-corrections-v1'
+MANIFEST = 'config/manager-boundary-corrections-v1.json'
+VERIFIER = 'scripts/release/correction-profile.py'
+BASE = 'd0c2cbaf58b594e20d888c3fc744bada06172306'
+TREE = '09de3f32ae89416f764b508e0147457ca8b54d9d'
+VERSION = '1.19.4'
+PREVIOUS_PINS = {
+    'scripts/release/release-profile.py': 'e9cf1587c0862b848af5c866ae0254be237461967ce3b9ac5513f59a1fa0d82f',
+    'config/explicit-governor-release-v1.json': '8aeecb2c45338ed1a3fd79a8030974ffe2462b038de215b84e2c406ded48d4fa',
+    'scripts/release/release_common.py': 'e4ba17be0398e47e2165f76be7ebe650190dc9f93f0807c0d6435485656f2440',
+}
+for name, digest in PREVIOUS_PINS.items():
+    if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+        raise ValueError('Immutable previous policy input differs: ' + name)
+from release_common import require, sha, strict_json, REPOSITORY, TITLE, valid_sha
+PREVIOUS = runpy.run_path(str(ROOT / 'scripts/release/release-profile.py'))
+read = PREVIOUS['read']
+git = PREVIOUS['git']
+# This is the complete reviewed delta over v1.19.3, not the previous
+# policy's broader historical exception list. Every other input stays exact.
+ALLOWED = {
+    '.github/workflows/alpha-project-handoff.yml',
+    '.github/workflows/current-state-release.yml',
+    '.github/workflows/mainnet-fork.yml',
+    '.github/workflows/pages.yml',
+    '.github/workflows/publish-v114.yml',
+    'README.md',
+    'agijobmanager.html',
+    'config/companion-releases.json',
+    'config/successor-builder-source.json',
+    'config/usdc-deployment.json',
+    'docs/MAINNET_READINESS.md',
+    'docs/OPERATIONS/PRIVATE_FLEET.md',
+    'docs/REFERENCE/VERSIONS.md',
+    'docs/RELEASE_GUIDE.md',
+    'docs/START_HERE.md',
+    'docs/V1_RELEASE_SCOPE.md',
+    'docs/deployment/ubuntu-ephemeral-creator.md',
+    'docs/qualification/mainnet-cutover-v1.19.4-expected.json',
+    'docs/qualification/release-v1.19.4-provenance.json',
+    'docs/releases/v1.19.4/RECOVERY_GUIDE.md',
+    'docs/releases/v1.19.4/RELEASE_NOTES.md',
+    'docs/releases/v1.19.4/START_HERE.md',
+    'docs/releases/v1.19.4/VALIDATION.md',
+    'docs/successor/ALPHA_PROJECT_HANDOFF.md',
+    'docs/ui/DEPLOYMENT_MAINNET.md',
+    'docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md',
+    'hardhat/package-lock.json',
+    'hardhat/package.json',
+    'hardhat/scripts/ephemeral-key.cjs',
+    'hardhat/scripts/four-repo-computer-lifecycle.cjs',
+    'hardhat/test/ephemeral-key.test.cjs',
+    'hardhat/test/four-repo-computer-lifecycle.test.cjs',
+    'package-lock.json',
+    'package.json',
+    'scripts/docs/check-docs.mjs',
+    'scripts/integrations/README.md',
+    'scripts/integrations/four-repo-computer-receipt.mjs',
+    'scripts/integrations/four-repo-computer-receipt.test.mjs',
+    'scripts/release/collect-qualification.py',
+    'scripts/release/correction-profile.py',
+    'scripts/release/package-policy.py',
+    'scripts/release/pages-publication.py',
+    'scripts/release/publication-authorization.py',
+    'scripts/release/publish-release.py',
+    'scripts/release/run-correction-preservation.py',
+    'scripts/release/run-inherited-release-tests.py',
+    'scripts/release/test-correction-profile.py',
+    'scripts/release/test-pages-publication.py',
+    'scripts/release/test-publication-authorization.py',
+    'scripts/release/test-release-gates.py',
+    'scripts/release/wait-qualification.py',
+    'scripts/security/slither-reviewed-findings-v1.19.4.json',
+    'scripts/security/verify-slither-review.py',
+    'scripts/site/build.mjs',
+    'scripts/site/browser-test.mjs',
+    'scripts/site/computer-receipt-browser-test.mjs',
+    'scripts/site/computer-receipt-fixture.mjs',
+    'scripts/site/computer-receipt.test.mjs',
+    'scripts/site/fixtures/README.md',
+    'scripts/site/fixtures/alpha-learning-archive-three-protocol.json',
+    'scripts/site/generate-computer-receipt-source.mjs',
+    'scripts/site/workflows.test.mjs',
+    'scripts/successor/alpha-project-browser-test.mjs',
+    'scripts/successor/core.test.mjs',
+    'scripts/successor/portable.test.mjs',
+    'site/assets/computer-receipt/adapter.mjs',
+    'site/assets/computer-receipt/app.mjs',
+    'site/assets/computer-receipt/copy.mjs',
+    'site/assets/computer-receipt/history.mjs',
+    'site/assets/computer-receipt/inspectors.mjs',
+    'site/assets/computer-receipt/sources.json',
+    'site/assets/computer-receipt/style.css',
+    'site/assets/computer-receipt/vendor/alpha-computer/LICENSE',
+    'site/assets/computer-receipt/vendor/alpha-computer/docs/assets/successor/engine.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/build-successor/model.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/build-successor/vendor/agijobs/compiler.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/build-successor/vendor/agijobs/domain.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/build-successor/vendor/agijobs/integrity.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/build-successor/vendor/agijobs/templates.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/computer.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/continuity.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/engine.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/learning.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/project.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/successor-alpha/research.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/examples/successor-workbench/engine.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/source-identity.mjs',
+    'site/assets/computer-receipt/vendor/alpha-computer/source-manifest.json',
+    'site/assets/computer-receipt/vendor/jobs-computer/LICENSE',
+    'site/assets/computer-receipt/vendor/jobs-computer/integrations/alpha-agent/four-repo-computer-receipt.mjs',
+    'site/assets/computer-receipt/vendor/jobs-computer/packages/successor-core/src/compiler.mjs',
+    'site/assets/computer-receipt/vendor/jobs-computer/packages/successor-core/src/computer-mission.mjs',
+    'site/assets/computer-receipt/vendor/jobs-computer/packages/successor-core/src/domain.mjs',
+    'site/assets/computer-receipt/vendor/jobs-computer/packages/successor-core/src/integrity.mjs',
+    'site/assets/computer-receipt/vendor/jobs-computer/packages/successor-core/src/templates.mjs',
+    'site/assets/computer-receipt/vendor/jobs-computer/scripts/pages/computer-mission.mjs',
+    'site/assets/computer-receipt/vendor/jobs-computer/scripts/pages/computer-receipt.mjs',
+    'site/assets/computer-receipt/vendor/jobs-computer/source-manifest.json',
+    'site/assets/computer-receipt/vendor/jobs-computer/website/assets/computer-desk-runtime-source.mjs',
+    'site/assets/computer-receipt/vendor/jobs-computer/website/assets/computer-desk.mjs',
+    'site/assets/computer-receipt/vendor/jobs-computer/website/assets/computer-mission-copy.mjs',
+    'site/assets/computer-receipt/vendor/jobs-computer/website/assets/computer-receipt-copy.mjs',
+    'site/assets/successor/app.mjs',
+    'site/assets/successor/jobs.mjs',
+    'site/assets/successor/missions.mjs',
+    'site/computer-receipt.mjs',
+    'site/successor.mjs',
+    'site/template.mjs',
+    'site/workflow-sources.json',
+    'site/workflows.mjs',
+    'ui/README.md',
+    'ui/agijobmanager-usdc.html',
+    'ui/dist-ipfs/agijobmanager.html',
+    'ui/package-lock.json',
+    'ui/package.json',
+    'ui/scripts/singlefile-template.html',
+    'ui/src/generated/deployments.ts',
+}
+VERSION_ONLY = PREVIOUS['VERSION_ONLY']
+UI_LABEL_ONLY = {'agijobmanager.html', 'ui/dist-ipfs/agijobmanager.html',
+    'ui/agijobmanager-usdc.html', 'ui/src/generated/deployments.ts', 'ui/scripts/singlefile-template.html'}
+
+
+def previous_selection():
+    return PREVIOUS['select'](manifest=PREVIOUS['MANIFEST'],
+        manifest_sha256=PREVIOUS_PINS[PREVIOUS['MANIFEST']],
+        verifier_sha256=PREVIOUS_PINS[PREVIOUS['VERIFIER']])
+
+
+def select(profile=PROFILE, *, manifest=None, manifest_sha256=None, verifier_sha256=None, schema_sha256=None, published=False):
+    require(profile == PROFILE and manifest == MANIFEST and schema_sha256 is None, 'Correction policy selection differs')
+    require(all(isinstance(value, str) and re.fullmatch('[0-9a-f]{64}', value) for value in (manifest_sha256, verifier_sha256)), 'Correction manifest and verifier pins are mandatory')
+    return {'releaseProfile': PROFILE, 'manifestPath': MANIFEST,
+        'manifestSha256': manifest_sha256, 'verifierSha256': verifier_sha256}
+
+
+def metadata(selection):
+    return {'releaseProfile': PROFILE, 'releasePolicy': dict(selection),
+        'qualification': 'Finite reviewed source-correction identity only. Exact-final-source qualification and publication must be verified in external QUALIFICATION.json.'}
+
+
+def validate_metadata(manifest, selection):
+    require(set(manifest) == {'schemaVersion', 'repository', 'tag', 'name', 'sourceCommit', 'sourceTree', 'builderSource', 'stage', 'qualification', 'archiveLimitBytes', 'toolchain', 'exclusions', 'files', 'releaseProfile', 'releasePolicy'}, 'Correction release manifest fields differ')
+    require(type(manifest['schemaVersion']) is int and manifest['schemaVersion'] == 2 and manifest['repository'] == REPOSITORY and manifest['name'] == TITLE, 'Correction release schema/repository/title differs')
+    require(valid_sha(manifest['sourceCommit']) and valid_sha(manifest['sourceTree']), 'Correction release identity differs')
+    require(manifest['tag'] == 'v' + VERSION and manifest['stage'] == 'source-package', 'Correction release version/stage differs')
+    for key, value in metadata(selection).items():
+        require(manifest[key] == value, 'Correction release policy metadata differs: ' + key)
+
+
+def inventory(root, selection):
+    require(sha(read(root, VERIFIER)[1]) == selection['verifierSha256'], 'Correction verifier pin differs')
+    require(sha(read(root, MANIFEST)[1]) == selection['manifestSha256'], 'Correction manifest pin differs')
+    for name, digest in PREVIOUS_PINS.items():
+        require(sha(read(root, name)[1]) == digest, 'Immutable previous release policy differs: ' + name)
+    baseline, _ = PREVIOUS['inventory'](root, previous_selection())
+    manifest = strict_json(read(root, MANIFEST)[1])
+    require(set(manifest) == {'schema', 'profile', 'baseCommit', 'baseTree', 'version', 'qualification', 'changes'}, 'Correction source inventory fields differ')
+    require(manifest['schema'] == 'agijobmanager/source-corrections/v1' and manifest['profile'] == PROFILE and manifest['baseCommit'] == BASE and manifest['baseTree'] == TREE and manifest['version'] == VERSION, 'Correction source baseline differs')
+    require(manifest['qualification'] == 'PENDING_FINAL_SOURCE_MAIN_PUSH', 'Correction inventory cannot claim qualification')
+    changes = manifest['changes']
+    require(isinstance(changes, dict) and changes and set(changes) == ALLOWED, 'Correction source differs from finite reviewed paths')
+    result = dict(baseline)
+    for name, change in changes.items():
+        require(set(change) == {'before', 'after', 'reason'} and isinstance(change['reason'], str) and change['reason'].strip(), 'Correction change attribution is missing')
+        require(change['before'] == baseline.get(name), 'Correction predecessor bytes differ: ' + name)
+        after = change['after']
+        require(isinstance(after, dict) and set(after) == {'mode', 'sha256'} and after['mode'] in ('100644', '100755') and re.fullmatch('[0-9a-f]{64}', after['sha256']), 'Correction source mode/hash differs')
+        require(after != change['before'], 'Unchanged correction entry')
+        result[name] = after
+    result[MANIFEST] = {'mode': '100644', 'sha256': selection['manifestSha256']}
+    return result, baseline
+
+
+def validate_source(root, selection, paths=None):
+    root = pathlib.Path(root).resolve()
+    expected, baseline = inventory(root, selection)
+    actual = set(paths) if paths is not None else {p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file() or p.is_symlink()}
+    require(actual == set(expected), 'Correction source inventory has missing or extra inputs')
+    for name, item in expected.items():
+        mode, data = read(root, name)
+        require(mode == item['mode'] and sha(data) == item['sha256'], 'Correction source bytes/mode differ: ' + name)
+        if name in VERSION_ONLY:
+            value = strict_json(data)
+            require(value['version'] == VERSION, 'Correction software version differs')
+            value['version'] = '1.19.3'
+            if name.endswith('package-lock.json'):
+                require(value['packages']['']['version'] == VERSION, 'Correction lock version differs')
+                value['packages']['']['version'] = '1.19.3'
+            require(sha((json.dumps(value, indent=2, ensure_ascii=False) + '\n').encode()) == baseline[name]['sha256'], 'Correction changed dependency resolution or transaction configuration: ' + name)
+        if name in UI_LABEL_ONLY:
+            normalized = data.replace(b'v1.19.4', b'v1.19.3').replace(b'"version":"1.19.4"', b'"version":"1.19.3"').replace(b'"version": "1.19.4"', b'"version": "1.19.3"')
+            require(sha(normalized) == baseline[name]['sha256'], 'Correction changed the advanced console beyond version labels: ' + name)
+    return {'profile': PROFILE, 'sourceInputs': len(expected), 'qualification': 'PENDING_FINAL_SOURCE_MAIN_PUSH'}
+
+
+def checkout(root, selection, object_store, dependency_root, source, tree):
+    require(git(root, 'rev-parse', '--is-shallow-repository').strip() == b'false', 'Shallow correction history is prohibited')
+    grafts = pathlib.Path(git(root, 'rev-parse', '--git-path', 'info/grafts').decode().strip())
+    if not grafts.is_absolute(): grafts = pathlib.Path(root) / grafts
+    require(not grafts.exists() and not git(root, 'for-each-ref', '--format=%(refname)', 'refs/replace').strip(), 'Replaced or grafted correction history is prohibited')
+    require(git(root, 'rev-parse', 'HEAD').decode().strip() == source and git(root, 'rev-parse', 'HEAD^{tree}').decode().strip() == tree, 'Correction checkout identity differs')
+    require(not git(root, 'status', '--porcelain', '--untracked-files=no').strip(), 'Correction tracked checkout is dirty')
+    require(git(root, 'rev-parse', BASE + '^{tree}').decode().strip() == TREE, 'Previous release tree differs')
+    git(root, 'merge-base', '--is-ancestor', BASE, source)
+    entries = {}
+    for entry in git(root, 'ls-tree', '-rz', source).split(b'\0'):
+        if not entry: continue
+        meta, name = entry.split(b'\t', 1)
+        mode, kind, oid = meta.decode().split()
+        require(kind == 'blob', 'Unexpected correction Git object')
+        entries[name.decode()] = (mode, oid)
+    index = {}
+    for entry in git(root, 'ls-files', '--stage', '-z').split(b'\0'):
+        if not entry: continue
+        meta, name = entry.split(b'\t', 1)
+        mode, oid, stage = meta.decode().split()
+        require(stage == '0' and name.decode() not in index, 'Unmerged correction index')
+        index[name.decode()] = (mode, oid)
+    require(index == entries, 'Correction index differs from source tree')
+    require(all(not entry or entry.startswith(b'H ') for entry in git(root, 'ls-files', '-v', '-z').split(b'\0')), 'Hidden correction index flags are prohibited')
+    for name, (mode, oid) in entries.items():
+        actual_mode, data = read(root, name)
+        actual_oid = hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+        require(mode == actual_mode and oid == actual_oid, 'Correction raw source differs from Git: ' + name)
+    result = validate_source(root, selection, entries)
+    if dependency_root is not None:
+        verifier = runpy.run_path(str(pathlib.Path(root) / 'scripts/release/check-explicit-governor-boundaries.py'))
+        result['compilerSourceUnits'] = verifier['compiler_closure'](pathlib.Path(root), strict_json(read(root, PREVIOUS['BASE_MANIFEST'])[1]), dependency_root)
+    return {**result, 'sourceCommit': source, 'sourceTree': tree}
+
+
+def arguments(root):
+    return ['--profile', PROFILE, '--manifest', MANIFEST, '--manifest-sha256', sha(read(root, MANIFEST)[1]), '--verifier-sha256', sha(read(root, VERIFIER)[1])]
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--dependency-root', required=True)
+    args = parser.parse_args()
+    opts = arguments(ROOT)
+    chosen = select(manifest=MANIFEST, manifest_sha256=opts[5], verifier_sha256=opts[7])
+    print(json.dumps(checkout(ROOT, chosen, None, args.dependency_root, git(ROOT, 'rev-parse', 'HEAD').decode().strip(), git(ROOT, 'rev-parse', 'HEAD^{tree}').decode().strip())))

@@ -5,6 +5,8 @@ const c = JSON.parse(fs.readFileSync('../config/usdc-deployment.json', 'utf8'));
 const { record: latest, recordPath, guidePath } = loadLatestReportedDeployment(path.resolve('..'));
 fs.writeFileSync('../docs/ui/DEPLOYMENT_MAINNET.md', `# USDC deployment registry
 
+The [v${c.version} transformation adapter](../successor/TRANSFORMATIONAL_WORK.md) is free inspection only for the current native zero-currency pilot. It creates no deployment, transaction or new intake authority. Existing deployment records and recovery inputs retain their original source identities.
+
 ## Software version
 
 AGIJobManager v${c.version}. Status: **${c.status}**.

@@ -1,6 +1,6 @@
 # AGIJobManager release scope
 
-**Current edition: v1.19.3.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
+**Current edition: v1.19.5.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
 
 ## Inherited contract hardening and second-deployment checks
 
@@ -9,6 +9,7 @@ The ENS membership correction introduced in v1.17.0 rejects unowned-name and sta
 ## Included in this edition
 
 - Public source and a versioned USDC console with participant, owner and recovery guidance.
+- Inert full-campaign inspection through the installed Alpha native inspector, with independently supplied runtime bindings. The current native zero-currency pilot supports free inspection only; positive paid proposals are unsupported.
 - Eight fixed library links, USDC accounting, buyer protections and reserved payment claims, including the inherited ENS authorization correction described above.
 - Hardhat setup, explicit read-only plans, guarded deployment, source verification, transaction journals, recovery and instance-readiness checks.
 - Lifecycle economics, signed action-bound qualification, pre-funding offer/capacity checks and canonical state/closure observations.
@@ -18,13 +19,14 @@ The public archive contains no private Fleet/Agent/Node application, production 
 
 ## Published download versus current source
 
-**v1.19.3 aligns operator instructions with atomic-governor creation and separate ENS configuration, and strengthens the checks binding displayed deployment facts to their dated evidence.** The latest reported Manager remains primary across the English/French website and read-only deployment panels, with older instances clearly separated as history. The [integrated candidate](qualification/INTEGRATED_CANDIDATE_20261017.md) includes creator/preflight recovery and the selected compiler optimizer mitigation. The wrapper itself changes no Solidity, compiler behavior or dependency resolutions from its selected integrated source. Check the matching release page and external qualification for publication evidence. Earlier source runs do not qualify later wrappers. Original Alpha dossiers, complete history, immutable Builder source contexts and separately priced unfunded USDC drafts are retained. Private Fleet 1.10.0, Agent 1.16.0 and Node 2.17.0 remain separate unchanged companion editions; this release does not qualify their hardware or live execution.
+**v1.19.5 adds a bounded transformation-campaign inspection adapter and its finite source/qualification policy.** Read the [current entry guide](releases/v1.19.5/START_HERE.md), [validation boundary](releases/v1.19.5/VALIDATION.md) and [native adapter contract](successor/TRANSFORMATIONAL_WORK.md). The native Alpha pilot permits zero currency allowances; no positive paid proposal, campaign execution or new authority is supported. The inherited Builder remains at its immutable v1.19.4 code pin. Atomic-governor creation, separate ENS configuration and dated deployment evidence remain preserved. The latest reported Manager remains primary across the English/French website and read-only deployment panels, with older instances clearly separated as history. The [integrated candidate](qualification/INTEGRATED_CANDIDATE_20261017.md) includes creator/preflight recovery and the selected compiler optimizer mitigation. The wrapper itself changes no Solidity, compiler behavior or dependency resolutions from its selected integrated source. Check the matching release page and external qualification for publication evidence. Earlier source runs do not qualify later wrappers. Original Alpha dossiers, complete history, immutable Builder source contexts and separately priced unfunded USDC drafts are retained. Private Fleet 1.10.0, Agent 1.16.0 and Node 2.17.0 remain separate unchanged companion editions; this release does not qualify their hardware or live execution.
 
 Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md` and `RELEASE_MANIFEST.json`, plus the published external `QUALIFICATION.json`, identify the qualified source and publication evidence. Main may contain later work; never combine its scripts with an older release's instructions or attestations. Current guides apply to their checkout. Historical releases, dated qualification records and legal notices retain their original versions.
 
 | Edition | Change introduced |
 | --- | --- |
-| v1.19.3 | Current operator guidance, reviewed deployment evidence and authority checks, stronger embedded-content validation and consistent French navigation |
+| v1.19.5 | Free native transformation-campaign inspection, retained original campaign bytes, runtime-binding checks and a separate finite source/qualification policy; no positive native paid proposal |
+| [v1.19.4](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.4) | Operator guidance, reviewed deployment evidence and authority checks, stronger embedded-content validation and consistent French navigation |
 | [v1.19.2](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.2) | Current deployment records across the website and consoles, explicit historical instance routes and regression checks for stale primary addresses |
 | [v1.19.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.1) | Current-version release/download guidance and synchronized software labels, with runtime and historical evidence preserved |
 | [v1.19.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.0) | Explicit-governor deployment, source-bound creator/preflight recovery, selected compiler optimizer mitigation and preserved historical evidence |

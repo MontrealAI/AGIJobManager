@@ -26,7 +26,6 @@ for option in ('manifest', 'manifest_sha256', 'verifier_sha256', 'schema_sha256'
         profile_args.extend(['--' + option.replace('_', '-'), value])
 require(valid_sha(args.source), 'Source must be a full commit SHA')
 require(os.environ.get('GITHUB_REPOSITORY') == REPOSITORY, 'Repository identity differs')
-require(os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' and os.environ.get('GITHUB_REF') == 'refs/heads/main' and os.environ.get('RELEASE_PUBLISH_CONFIRMATION') == 'PUBLISH_' + TAG, 'An authorized main publication dispatch is required')
 
 def gh(*command):
     result = subprocess.run(['gh', *command], cwd=root, text=True, capture_output=True, timeout=180)
@@ -36,6 +35,7 @@ def gh(*command):
 def api(endpoint):
     return json.loads(gh('api', f'repos/{REPOSITORY}/{endpoint}', '--method', 'GET'))
 
+runpy.run_path(str(pathlib.Path(__file__).with_name('publication-authorization-ti.py' if source_policy and source_policy.get('releaseProfile') == 'manager-transformational-v1' else 'publication-authorization.py')))['authorize'](os.environ, args.source, api)
 require(api('git/ref/heads/main')['object']['sha'] == args.source, 'Source must be current main')
 config = {'repository': REPOSITORY, 'tag': TAG, 'name': TITLE, 'status': 'qualified', 'publicationAuthorized': True,
     'sourceCommit': args.source, 'sourceTree': api(f'git/commits/{args.source}')['tree']['sha'], 'checkoutCommit': args.source,
@@ -51,6 +51,8 @@ for workflow in WORKFLOWS:
     run = candidates[0]
     config['requiredSourceRuns'][workflow] = {'id': run['id'], 'workflow': workflow, 'workflowId': identity['id'], 'attempt': run['run_attempt'], 'event': run['event'], 'headBranch': run['head_branch']}
 validate_qualification(config, api, lambda job: gh('api', f'repos/{REPOSITORY}/actions/jobs/{job}/logs', '--method', 'GET', '--allow-escape-sequences'), publication=True)
+if source_policy and source_policy.get('releaseProfile') == 'manager-transformational-v1':
+    config['transformationQualification'] = runpy.run_path(str(pathlib.Path(__file__).with_name('transformational-qualification.py')))['validate'](config, api, lambda job: gh('api', f'repos/{REPOSITORY}/actions/jobs/{job}/logs', '--method', 'GET', '--allow-escape-sequences'))
 run_id = config['requiredSourceRuns']['current-state-release.yml']['id']
 artifacts, page = [], 1
 while True:

@@ -27,6 +27,8 @@ def package_inventory(assets, *, published=False, profile='legacy-v114', manifes
         require(config.get('repository') == REPOSITORY and config.get('tag') == TAG and config.get('name') == TITLE and config.get('status') == 'qualified', 'Published qualification identity differs')
         require(valid_sha(config.get('sourceCommit')) and valid_sha(config.get('sourceTree')) and config.get('checkoutCommit') == config['sourceCommit'], 'Published source binding differs')
         require(set(config.get('requiredSourceRuns', {})) == set(WORKFLOWS), f'Published qualification must record all {len(WORKFLOWS)} workflows')
+    if published and selection and selection.get('releaseProfile') == 'manager-transformational-v1':
+        runpy.run_path(str(pathlib.Path(__file__).with_name('transformational-qualification.py')))['verify_record'](config)
     verify_assets(assets, config)
     manifest_bytes = (assets / 'RELEASE_MANIFEST.json').read_bytes()
     manifest = strict_json(manifest_bytes)
@@ -93,6 +95,10 @@ def verify_package(assets, *, published=False, profile='legacy-v114', manifest=N
             subprocess.run(['node', '--test', 'scripts/successor/portable.test.mjs'], cwd=source_dir, check=True)
         subprocess.run(['node', 'scripts/release/verify-usdc-ui.mjs', '.'], cwd=source_dir, check=True)
         subprocess.run(['python3', 'scripts/release/test-release-gates.py'], cwd=source_dir, check=True)
+        if selection is not None and selection.get('releaseProfile') == 'manager-transformational-v1':
+            subprocess.run(['node', '--test', 'scripts/integrations/transformational-work-request.test.mjs', 'scripts/integrations/transformational-native-source.test.mjs'], cwd=source_dir, check=True)
+            subprocess.run(['python3', 'scripts/release/test-transformational-qualification.py'], cwd=source_dir, check=True)
+            subprocess.run(['python3', 'scripts/release/test-publication-authorization-ti.py'], cwd=source_dir, check=True)
     print('Verified complete inventory and clean-extraction offline smoke checks. No wallet, credentials or network required.')
     if selection is not None and 'releaseProfile' not in selection:
         print('Candidate source package only: input identity is bound; release identity is unselected and release qualification is false.')

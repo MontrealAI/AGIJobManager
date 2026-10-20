@@ -47,7 +47,7 @@ Check [release and download availability for ${tag}](https://github.com/Montreal
 
 Checksums bind content; they do not establish GitHub-enforced immutability. Maintainers should [enable release immutability](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes) before future releases and verify \`immutable: true\` in the published release metadata. Existing releases are not retroactively protected.
 
-Merging runs website validation but does not publish Pages. After reviewing the applicable checks on the exact main revision, a maintainer must separately dispatch the GitHub Pages workflow with \`publish: true\` and \`source_commit\` equal to that revision's full SHA. A mismatched SHA stops the workflow. Release publication and intake activation remain separate decisions.
+Merging runs website validation but does not publish Pages. Software release publication requires a separate \`workflow_dispatch\` of the reviewed release publisher on the exact qualified main revision with confirmation \`PUBLISH_${tag}\`. Pages has two separate routes: the authenticated completion of that software publisher, or a maintainer dispatch after reviewing the applicable website checks with \`publish: true\` and \`source_commit\` equal to the reviewed main revision's full SHA. A mismatched or superseded SHA stops publication. Software publication does not authorize on-chain deployment or intake activation.
 
 ## Choose the creation route
 

@@ -8,6 +8,7 @@ import { loadLatestReportedDeployment } from "../../site/deployments.mjs";
 import { renderWorkflows } from "../../site/workflows.mjs";
 import { renderEmployer } from "../../site/employers.mjs";
 import { buildSuccessor } from "../successor/build.mjs";
+import { renderComputerReceipt } from '../../site/computer-receipt.mjs';
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -52,6 +53,9 @@ if (
 fs.rmSync(output, { recursive: true, force: true });
 fs.mkdirSync(path.join(output, "assets"), { recursive: true });
 const successor = buildSuccessor(path.join(output, 'successor/downloads'));
+fs.cpSync(path.join(root,'site/assets/computer-receipt'),path.join(output,'assets/computer-receipt'),{recursive:true,dereference:false});
+fs.mkdirSync(path.join(output,'assets/successor'),{recursive:true});
+fs.copyFileSync(path.join(root,'site/assets/successor/safe.mjs'),path.join(output,'assets/successor/safe.mjs'));
 for (const name of ["app.mjs", "payments.mjs", "style.css", "home.css", "mark.svg", "employer.mjs", "employer-model.mjs", "employer.css", "workflows.css"])
   fs.copyFileSync(
     path.join(root, "site/assets", name),
@@ -82,6 +86,9 @@ for (const lang of ["en", "fr"]) {
   const successorDirectory = path.join(directory, 'successor');
   fs.mkdirSync(successorDirectory, { recursive: true });
   fs.writeFileSync(path.join(successorDirectory, 'index.html'), successor.pages[lang]);
+  const computerDirectory=path.join(directory,'computer-receipt');
+  fs.mkdirSync(computerDirectory,{recursive:true});
+  fs.writeFileSync(path.join(computerDirectory,'index.html'),renderComputerReceipt(lang,{commit,version:pkg.version}));
 }
 const consoleHtml = read("ui/agijobmanager-usdc.html");
 for (const name of ["agijobmanager-usdc.html", "agijobmanagerv0.html"])

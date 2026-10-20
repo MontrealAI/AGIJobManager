@@ -30,6 +30,33 @@ for (const kind of ['analyst', 'website']) test(`portable ${kind}: work, gap, dr
   assert.equal(state.active, original.id);
 });
 
+test('portable plan validation rechecks public-only mission bytes after recomputed checksums', async () => {
+  const { canonical, sha256 } = await import('../../site/assets/successor/safe.mjs');
+  const run = await runCandidate(await createSystem(defaultMission()), 'baseline', '0'.repeat(64));
+  const state = await chooseCandidate(run.state, run.candidate.id, 'keep');
+  const plan = await prepareImprovement(state, { budget: '100' });
+  const mission = JSON.parse(plan.immutableInputs[0].content);
+  mission.input = 'id,category,value\na,person@example.com,1';
+  plan.immutableInputs[0].content = canonical(mission);
+  plan.missionSha256 = plan.immutableInputs[0].sha256 = await sha256(plan.immutableInputs[0].content);
+  const { commitment, ...payload } = plan; plan.commitment = await sha256(payload);
+  await assert.rejects(validateImprovement(plan), { code: 'PRIVATE_INPUT' });
+});
+
+test('portable JSON mission policy scans decoded text while preserving original bytes', async () => {
+  const { canonical, sha256 } = await import('../../site/assets/successor/safe.mjs');
+  for (const kind of ['analyst', 'website']) for (const encoded of [String.raw`person\u0040example.com`, String.raw`api\u005fkey=synthetic-secret`]) {
+    const run = await runCandidate(await createSystem(defaultMission(kind)), 'baseline', '0'.repeat(64));
+    const plan = await prepareImprovement(await chooseCandidate(run.state, run.candidate.id, 'keep'), { budget: '100' });
+    const mission = JSON.parse(plan.immutableInputs[0].content);
+    mission.input = kind === 'analyst' ? `[{"id":"a","category":"${encoded}","value":"1"}]` : `{"title":"Public","intro":"${encoded}","sections":[{"heading":"A","body":"Public"}]}`;
+    plan.immutableInputs[0].content = canonical(mission);
+    plan.missionSha256 = plan.immutableInputs[0].sha256 = await sha256(plan.immutableInputs[0].content);
+    const { commitment, ...payload } = plan; plan.commitment = await sha256(payload);
+    const before = canonical(plan); await assert.rejects(validateImprovement(plan), { code: 'PRIVATE_INPUT' }); assert.equal(canonical(plan), before);
+  }
+});
+
 test('report row associations, exact columns, completeness and closed visible presentation reject planted defects', async () => {
   const {executeMission}=await import('../../site/assets/successor/missions.mjs');
   const {checkArtifacts}=await import('../../site/assets/successor/checker.mjs');

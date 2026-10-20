@@ -158,7 +158,7 @@ for (const file of ["index.html", "fr/index.html", "employers/index.html", "fr/e
     assert.match(languageCopy.evidenceState, file.startsWith('fr/') ? /rapport du propriétaire.*ni une lecture en direct/ : /owner-reported evidence, not a live chain query/);
     assert.match(languageCopy.historicalTitle, file.startsWith('fr/') ? /historiques/ : /Historical/);
     assert.match(languageCopy.ensText, file.startsWith('fr/') ? /ne démontre aucun rattachement/ : /establishes no ENS helper attachment/);
-    assert.equal((html.match(/class="resource"/g) || []).length, 12);
+    assert.equal((html.match(/class="resource"/g) || []).length, 13);
     for (const placement of ['header', 'hero', 'welcome', 'footer']) {
       const entries = [...html.matchAll(new RegExp(`<a\\b[^>]*\\bdata-employer-entry="${placement}"[^>]*>`, 'g'))];
       assert.equal(entries.length, 1, `${file}: one ${placement} employer entry`);

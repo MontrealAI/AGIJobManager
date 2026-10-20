@@ -178,7 +178,7 @@ try {
       await page.locator("#guide-search").fill("zzznomatch");
       assert.equal(await page.locator("#no-results").isVisible(), true);
       await page.locator("#guide-search").fill("");
-      assert.equal(await page.locator(".resource:visible").count(), 12);
+      assert.equal(await page.locator(".resource:visible").count(), 13);
       await page.locator(".faq-section summary").first().click();
       assert.equal(await page.locator("details[open]").count(), 1);
       assert.ok(
@@ -196,7 +196,7 @@ try {
     await checkEmployerEntries(page, language, `${language || 'en'} without JavaScript`);
     await checkReflow(page, `${language || 'en'} without JavaScript`);
     assert.equal(await page.locator(".role-panel:visible").count(), 4);
-    assert.equal(await page.locator(".resource:visible").count(), 12);
+    assert.equal(await page.locator(".resource:visible").count(), 13);
     await page.locator('[data-employer-entry="hero"]').click();
     await page.waitForURL(base + language + 'employers/');
     assert.equal(await page.locator('html').getAttribute('lang'), language ? 'fr' : 'en');
@@ -312,10 +312,11 @@ try {
     await switchLink.click();
     await page.waitForURL(base + otherLanguage + 'workflows/');
     assert.equal(await page.locator('html').getAttribute('lang'), language ? 'en' : 'fr', 'The workflow language switch opens the equivalent translated page');
-    assert.equal(await page.locator('article').count(), 8);
+    assert.deepEqual(await page.locator('article').evaluateAll(nodes => nodes.map(node => node.id)), ['successor', 'employer', 'roles', 'workforce', 'economics', 'genesis', 'erc8004', 'specifications', 'computer-receipt']);
     await page.goBack();
     await page.waitForURL(base + language + 'workflows/');
-    assert.equal(await page.locator('article').count(), 8);
+    assert.equal(await page.locator('article').count(), 9);
+    assert.equal(new URL(await page.locator('#computer-receipt .button').getAttribute('href'), page.url()).href, base + language + 'computer-receipt/', 'The evidence inspector preserves the selected language');
     for (const width of [320, 390, 768, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       for (const scale of [100, 200]) {
@@ -339,7 +340,7 @@ try {
     const noJS = await browser.newContext({ javaScriptEnabled: false });
     const staticPage = await noJS.newPage();
     await staticPage.goto(base + language + 'workflows/');
-    assert.equal(await staticPage.locator('article').count(), 8);
+    assert.equal(await staticPage.locator('article').count(), 9);
     await noJS.close();
   }
   console.log(

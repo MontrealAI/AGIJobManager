@@ -1,0 +1,260 @@
+{
+  "schema": "ens-configuration-closeout-v1",
+  "status": "REVIEW_REQUIRED",
+  "helper": "0xBaC826CF5f169EA168A23173F3DbBdA7Ed953400",
+  "snapshot": {
+    "number": "0x190338e",
+    "hash": "0x280b9d8f09ce5b7dc47783d00e8b036e2b4fbe94c241d589a48b8a25184a0cc7"
+  },
+  "transactions": [
+    {
+      "operation": 1,
+      "transactionHash": "0xdfa1b4b9668ddfb5c1e805a6d2da2128822560edd5d27e797985f41083562bbc",
+      "from": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+      "to": "0xBaC826CF5f169EA168A23173F3DbBdA7Ed953400",
+      "signature": "function setJobManager(address)",
+      "args": [
+        "0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8"
+      ],
+      "data": "0x1ef9176a0000000000000000000000003a9b3a0712e066de4265404fa5ff4171fe29a3f8",
+      "blockNumber": "0x190312e",
+      "blockHash": "0x1381f14c3f6988dcf64ca450e48887a9fa46b3499c116bbec11a515634a5c025",
+      "transactionIndex": "0x12",
+      "gasUsed": "50507",
+      "effectiveGasPriceWei": "2229206897",
+      "actualGasCostWei": "112590552746779",
+      "transactionMaximumGasCostWei": "179248332601107"
+    },
+    {
+      "operation": 2,
+      "transactionHash": "0x99397edab4a44eee2103eec477bd0fc22bbda00ebfe78562d7aa1ea05f486fd7",
+      "from": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+      "to": "0xBaC826CF5f169EA168A23173F3DbBdA7Ed953400",
+      "signature": "function setJobLabelPrefix(string)",
+      "args": [
+        "job-v2-"
+      ],
+      "data": "0x18e5ca7f000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000076a6f622d76322d00000000000000000000000000000000000000000000000000",
+      "blockNumber": "0x1903137",
+      "blockHash": "0x231fd1ad90849070cd0d581b10df9383af24931dc3c6cb831a1fa98782a33816",
+      "transactionIndex": "0x41",
+      "gasUsed": "38455",
+      "effectiveGasPriceWei": "2263203993",
+      "actualGasCostWei": "87031509550815",
+      "transactionMaximumGasCostWei": "138010247897298"
+    },
+    {
+      "operation": 3,
+      "transactionHash": "0x8589bb74cab9782412897e0f0e130527dd54ed6831bf202b976466590ffeb7b1",
+      "from": "0xd57243B80FBc5CFB2560E5a644651FEcd7Dc2512",
+      "to": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+      "signature": "function setApprovalForAll(address,bool)",
+      "args": [
+        "0xBaC826CF5f169EA168A23173F3DbBdA7Ed953400",
+        true
+      ],
+      "data": "0xa22cb465000000000000000000000000bac826cf5f169ea168a23173f3dbbda7ed9534000000000000000000000000000000000000000000000000000000000000000001",
+      "blockNumber": "0x1903344",
+      "blockHash": "0x6ac3579230292899c6582298db86b66b74cb9ed64d899bb441bdbb433cacd8c5",
+      "transactionIndex": "0xd",
+      "gasUsed": "46176",
+      "effectiveGasPriceWei": "2222375990",
+      "actualGasCostWei": "102620433714240",
+      "transactionMaximumGasCostWei": "162276773543496"
+    },
+    {
+      "operation": 4,
+      "transactionHash": "0xdd9a3edf982defb02ee439cc3e01f23730fd757639eaceb85b1f35181ca053ea",
+      "from": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+      "to": "0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8",
+      "signature": "function setEnsJobPages(address)",
+      "args": [
+        "0xBaC826CF5f169EA168A23173F3DbBdA7Ed953400"
+      ],
+      "data": "0xab460c15000000000000000000000000bac826cf5f169ea168a23173f3dbbda7ed953400",
+      "blockNumber": "0x190334f",
+      "blockHash": "0x56a689401efc7b27a8024bf477f4fef59c2e5eb4ec986e2da63c39a1e1cf48a5",
+      "transactionIndex": "0x57",
+      "gasUsed": "52384",
+      "effectiveGasPriceWei": "2246051600",
+      "actualGasCostWei": "117657167014400",
+      "transactionMaximumGasCostWei": "186390506049610"
+    }
+  ],
+  "checks": [
+    {
+      "label": "helper.owner",
+      "expected": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+      "observed": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+      "pass": true
+    },
+    {
+      "label": "helper.jobManager",
+      "expected": "0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8",
+      "observed": "0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8",
+      "pass": true
+    },
+    {
+      "label": "helper.jobLabelPrefix",
+      "expected": "job-v2-",
+      "observed": "job-v2-",
+      "pass": true
+    },
+    {
+      "label": "helper.ens",
+      "expected": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "observed": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "pass": true
+    },
+    {
+      "label": "helper.nameWrapper",
+      "expected": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+      "observed": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+      "pass": true
+    },
+    {
+      "label": "helper.publicResolver",
+      "expected": "0xF29100983E058B709F3D539b0c765937B804AC15",
+      "observed": "0xF29100983E058B709F3D539b0c765937B804AC15",
+      "pass": true
+    },
+    {
+      "label": "helper.jobsRootNode",
+      "expected": "0x22a145a61e88901e934c12ecdf9cd0601884940492d9c8dbb60cb3abc0bab455",
+      "observed": "0x22a145a61e88901e934c12ecdf9cd0601884940492d9c8dbb60cb3abc0bab455",
+      "pass": true
+    },
+    {
+      "label": "helper.jobsRootName",
+      "expected": "usdc.jobs.agi.eth",
+      "observed": "usdc.jobs.agi.eth",
+      "pass": true
+    },
+    {
+      "label": "helper.configLocked",
+      "expected": false,
+      "observed": false,
+      "pass": true
+    },
+    {
+      "label": "helper.useEnsJobTokenURI",
+      "expected": false,
+      "observed": false,
+      "pass": true
+    },
+    {
+      "label": "manager.owner",
+      "expected": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+      "observed": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+      "pass": true
+    },
+    {
+      "label": "manager.pendingOwner",
+      "expected": "0x0000000000000000000000000000000000000000",
+      "observed": "0x0000000000000000000000000000000000000000",
+      "pass": true
+    },
+    {
+      "label": "manager.ensJobPages",
+      "expected": "0xBaC826CF5f169EA168A23173F3DbBdA7Ed953400",
+      "observed": "0xBaC826CF5f169EA168A23173F3DbBdA7Ed953400",
+      "pass": true
+    },
+    {
+      "label": "manager.paused",
+      "expected": true,
+      "observed": true,
+      "pass": true
+    },
+    {
+      "label": "manager.lockIdentityConfig",
+      "expected": false,
+      "observed": false,
+      "pass": true
+    },
+    {
+      "label": "manager.nextJobId",
+      "expected": "0",
+      "observed": "0",
+      "pass": true
+    },
+    {
+      "label": "oldHelper.owner",
+      "expected": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+      "observed": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+      "pass": true
+    },
+    {
+      "label": "oldHelper.jobManager",
+      "expected": "0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7",
+      "observed": "0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7",
+      "pass": true
+    },
+    {
+      "label": "oldHelper.jobLabelPrefix",
+      "expected": "job-",
+      "observed": "job-",
+      "pass": true
+    },
+    {
+      "label": "oldHelper.jobsRootNode",
+      "expected": "0x22a145a61e88901e934c12ecdf9cd0601884940492d9c8dbb60cb3abc0bab455",
+      "observed": "0x22a145a61e88901e934c12ecdf9cd0601884940492d9c8dbb60cb3abc0bab455",
+      "pass": true
+    },
+    {
+      "label": "newHelper.operatorGrant",
+      "expected": true,
+      "observed": true,
+      "pass": true
+    },
+    {
+      "label": "oldHelper.operatorGrant",
+      "expected": true,
+      "observed": true,
+      "pass": true
+    },
+    {
+      "label": "root.registryOwner",
+      "observed": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+      "expected": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+      "pass": true
+    },
+    {
+      "label": "root.holder",
+      "observed": "0xd57243B80FBc5CFB2560E5a644651FEcd7Dc2512",
+      "expected": "0xd57243B80FBc5CFB2560E5a644651FEcd7Dc2512",
+      "pass": true
+    },
+    {
+      "label": "manager.USDCBalance",
+      "observed": "0",
+      "expected": "0",
+      "pass": true
+    },
+    {
+      "label": "helper.runtimeHash",
+      "observed": "0x28a4bae189d1c9719b26b2b2e1d5a10bcc02429e385952ca71dffcd652a4dcf7",
+      "expected": "0x28a4bae189d1c9719b26b2b2e1d5a10bcc02429e385952ca71dffcd652a4dcf7",
+      "pass": true
+    },
+    {
+      "label": "manager.runtimeHash",
+      "observed": "0x3c4b8c2260bc542a66d82ea291906c27da299c2abca845d70f110ca915d626db",
+      "expected": "0x3c4b8c2260bc542a66d82ea291906c27da299c2abca845d70f110ca915d626db",
+      "pass": true
+    }
+  ],
+  "managerAttachedLast": true,
+  "actualGasCostWei": "419899663026234",
+  "transactionMaximumGasCostWei": "665925860091511",
+  "approvedCeilingWei": "40000000000000",
+  "withinApprovedMaximum": false,
+  "publicTransactionsBroadcast": 0,
+  "sourceExplorerAcceptance": "NOT_CHECKED_BY_THIS_SCRIPT",
+  "activationAuthorized": false,
+  "limitations": [
+    "Verifies the specific new and old helper grants; does not enumerate every other operator.",
+    "No jobs, names, grants, signatures or transactions are created by this checker."
+  ]
+}
