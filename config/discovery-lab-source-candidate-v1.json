@@ -1,0 +1,72 @@
+{
+  "schema": "successor/discovery-lab-source-candidate/v1",
+  "repository": "MontrealAI/AGIJobManager",
+  "profile": "discovery-lab-source-candidate-v1",
+  "baseCommit": "4d4c32685eebf23b0aa35dbb45abe23ac8a261cb",
+  "baseTree": "3676cb41be9c5c5110cc266e0ff6f7c20bfbec86",
+  "claims": {
+    "sourcePackageOnly": true,
+    "releaseQualified": false,
+    "releaseIdentity": null,
+    "publicationApproved": false,
+    "executionApproved": false
+  },
+  "changes": {
+    ".github/workflows/discovery-lab-receiver.yml": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "baa7af439da0876feb4e8e17e55e902f9e388ddee2d179c4c0e9d2255e8963d7"
+      },
+      "reason": "Explicit additive six-stage Discovery Lab receiver, strict shared contract, transport-policy verification and public source evidence; no old path exemption or publication qualification."
+    },
+    "docs/successor/DISCOVERY_LAB.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "3c40f4c8fcc53532c1b66a97fca94993d79a1ad616509bd9907f82b04ea42854"
+      },
+      "reason": "Explicit additive six-stage Discovery Lab receiver, strict shared contract, transport-policy verification and public source evidence; no old path exemption or publication qualification."
+    },
+    "scripts/integrations/discovery-lab-contract.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "bfa38a9312a90730f7f35eaed3d5d5dcca2b1c0cc7e51657413670145d2da2e3"
+      },
+      "reason": "Explicit additive six-stage Discovery Lab receiver, strict shared contract, transport-policy verification and public source evidence; no old path exemption or publication qualification."
+    },
+    "scripts/integrations/discovery-lab-work-request.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "417d61f5f2c22c311bbb0277c7c01c2398d97f0d86715ee7ca106637711f8a72"
+      },
+      "reason": "Explicit additive six-stage Discovery Lab receiver, strict shared contract, transport-policy verification and public source evidence; no old path exemption or publication qualification."
+    },
+    "scripts/integrations/discovery-lab-work-request.test.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "c3ea7d9077a12f7f6e9c1d3ae989c1c865879678c6310855ba43e98440f68411"
+      },
+      "reason": "Explicit additive six-stage Discovery Lab receiver, strict shared contract, transport-policy verification and public source evidence; no old path exemption or publication qualification."
+    },
+    "scripts/integrations/fixtures/discovery-lab-request.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "891e11f3fed142db55e36934b4f1b5869200973216bfdd9257789fd66fb0a82f"
+      },
+      "reason": "Explicit additive six-stage Discovery Lab receiver, strict shared contract, transport-policy verification and public source evidence; no old path exemption or publication qualification."
+    },
+    "scripts/release/test-discovery-lab-profile.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "38b3fdd45d3b08b6315cdf2fb71b89649392de7b001134fb57d5445ee00e70e0"
+      },
+      "reason": "Explicit additive six-stage Discovery Lab receiver, strict shared contract, transport-policy verification and public source evidence; no old path exemption or publication qualification."
+    }
+  }
+}
