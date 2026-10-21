@@ -63,7 +63,7 @@ jobs:
         if: github.event_name == 'workflow_run'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/release/pages-publication-ti.py --source '${{ github.event.workflow_run.head_sha }}'
+        run: python3 scripts/release/pages-publication-maintenance.py --source '${{ github.event.workflow_run.head_sha }}'
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 22.23.2
@@ -82,7 +82,7 @@ jobs:
         run: |
           npm run successor:test
           node --test scripts/successor/source-identity.test.mjs
-          python3 scripts/release/run-transformational-preservation.py
+          python3 scripts/release/run-maintenance-preservation.py
       - name: Install browser test dependencies
         run: |
           npm ci

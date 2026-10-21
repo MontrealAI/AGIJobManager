@@ -1,0 +1,35 @@
+{
+  "schema": "agijobmanager/maintenance-comparison-inputs/v1",
+  "version": "1.19.6",
+  "baseCommit": "4d4c32685eebf23b0aa35dbb45abe23ac8a261cb",
+  "baseTree": "3676cb41be9c5c5110cc266e0ff6f7c20bfbec86",
+  "status": "EXPECTED_ONLY_PENDING_FINAL_SOURCE_EXECUTION",
+  "executed": false,
+  "fork": {
+    "previousPath": "docs/qualification/mainnet-cutover-v1.19.5-expected.json",
+    "previousSha256": "d48cce34e7f20d836018d1619cf916475051b9c15908b5fc164568587ff1584d",
+    "expectedPath": "docs/qualification/mainnet-cutover-v1.19.6-expected.json",
+    "expectedSha256": "801abf1a278b91ceab8e69dcf5e3f927c31aea30137d09386924cae693869966",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "hardhat/package.json",
+      "package-lock.json",
+      "package.json"
+    ],
+    "observationsOrFindingsChanged": false,
+    "executed": false
+  },
+  "staticAnalysis": {
+    "previousPath": "scripts/security/slither-reviewed-findings-v1.19.5.json",
+    "previousSha256": "12a981f1c4ae8241c1e9702796647eb42bbaf3761897adce810a2f294725a7d6",
+    "expectedPath": "scripts/security/slither-reviewed-findings-v1.19.6.json",
+    "expectedSha256": "5728f37e6bc3ee9b86f47f955404cc5ccda90e27401972d5c2aa6c283e3992cb",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "package-lock.json"
+    ],
+    "observationsOrFindingsChanged": false,
+    "executed": false
+  },
+  "scope": "Expected comparison inputs only. Fresh configured hosted fork and Slither gates must execute against the exact final source. Original receipts, historical observations, finding dispositions and evidence retain their original identities; no copied record counts as a fresh pass."
+}

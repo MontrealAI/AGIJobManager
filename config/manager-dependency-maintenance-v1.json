@@ -1,0 +1,505 @@
+{
+  "schema": "agijobmanager/dependency-maintenance-profile/v1",
+  "repository": "MontrealAI/AGIJobManager",
+  "profile": "manager-dependency-maintenance-v1",
+  "version": "1.19.6",
+  "baseCommit": "4d4c32685eebf23b0aa35dbb45abe23ac8a261cb",
+  "baseTree": "3676cb41be9c5c5110cc266e0ff6f7c20bfbec86",
+  "qualification": "PENDING_EXACT_FINAL_SOURCE_HOSTED_EXECUTION",
+  "changes": {
+    ".github/workflows/current-state-release.yml": {
+      "before": {
+        "mode": "100644",
+        "blob": "3a3dd4714dd96d242f36b62872bf827966ef9244"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "811a69cbe4d63ab7fa807ac286dd4ecc19251e1525a29d3939b6cc0b4746ebbb"
+      },
+      "reason": "Exact reversible maintenance selection/addition; preserve every predecessor qualification, native TI, manual confirmation, readiness and attestation gate."
+    },
+    ".github/workflows/mainnet-fork.yml": {
+      "before": {
+        "mode": "100644",
+        "blob": "e4a22ac5f93ad112d1a66eb2ed6ff3abf2b6c4f0"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "444ee4ae1d1090d69f327b98fa0d549f3d0f21fc692c514a883aca890ffd754a"
+      },
+      "reason": "Exact reversible maintenance selection/addition; preserve every predecessor qualification, native TI, manual confirmation, readiness and attestation gate."
+    },
+    ".github/workflows/pages.yml": {
+      "before": {
+        "mode": "100644",
+        "blob": "48ade283758a518a3d9744a1ae4ea6072cec3361"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "bb9c46fe84ed42365834db094bc7064a137b48d19100b02157367d186d9e39b8"
+      },
+      "reason": "Exact reversible maintenance selection/addition; preserve every predecessor qualification, native TI, manual confirmation, readiness and attestation gate."
+    },
+    ".github/workflows/publish-v114.yml": {
+      "before": {
+        "mode": "100644",
+        "blob": "b630df3464d1a3580bdf9ab500b61ffbe5da9424"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "cd634de8605033fb378073c78e7ea3abeb99f8c1594a45b9af29cc9fcde802a6"
+      },
+      "reason": "Exact reversible maintenance selection/addition; preserve every predecessor qualification, native TI, manual confirmation, readiness and attestation gate."
+    },
+    "README.md": {
+      "before": {
+        "mode": "100644",
+        "blob": "a3471524fc7dd9e5a5ca33f8c50f167ee3ed1f57"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "46387078ae9b4cad8c929e03cddf73c48f3acab9cb2900bf5ca393328ea9d68b"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "agijobmanager.html": {
+      "before": {
+        "mode": "100644",
+        "blob": "078b288de18b7fd69c58b0f4000bb6602334cf2d"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ef9269b71e8af047b7f5ebe9b70b4b2b34f88aff89692e805dc6ee177e212979"
+      },
+      "reason": "Regenerate software labels and dashboard source inventories without changing retained transaction defaults or runtime source."
+    },
+    "config/companion-releases.json": {
+      "before": {
+        "mode": "100644",
+        "blob": "4ba33c8ef40a63a6fc363f0c7adeb9d3767c6a59"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "73bd57527908a457c29ebac54038c1a989b862f10731d8f463d1ed3643f1245b"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "config/usdc-deployment.json": {
+      "before": {
+        "mode": "100644",
+        "blob": "c89d7e934a3e077e862073a287d51fc103a80865"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f306a0665e7741d8a6a301264dda1dad800ba29f83f0c87e1471b674e29a03a4"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "docs/MAINNET_READINESS.md": {
+      "before": {
+        "mode": "100644",
+        "blob": "5212fd371a3afffdc27ab5fb15d7967d0dadd22e"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ffe0764ef89e296302424039a89a2cdf2ab0ca6f226b8ec53c493086aec18f9a"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "docs/OPERATIONS/PRIVATE_FLEET.md": {
+      "before": {
+        "mode": "100644",
+        "blob": "68c67cba4579c82b791dcc8d896ddbe4a43a4a66"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "d486515ee52ab9d07664c35964cc814817297f1a6127adfb1886b8c5658d4759"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "docs/REFERENCE/VERSIONS.md": {
+      "before": {
+        "mode": "100644",
+        "blob": "12a8706a98388ddf66fea8d0e1a4db3473392435"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f0a4f6d21704459da73c6ab2889375d29e01949a08fb2435fcefe3754d3b6bf1"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "docs/RELEASE_GUIDE.md": {
+      "before": {
+        "mode": "100644",
+        "blob": "41b08995ef1059587aa74eb3cb175e9ffc60d48a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "d8aace22bab7abeee888ff44db25d9746fed318354e6057becb6ab6b19cd2a4f"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "docs/START_HERE.md": {
+      "before": {
+        "mode": "100644",
+        "blob": "695fa8eec90812eb92e3f60311790bf7743a3a3c"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "5fcd220a20d45193fba79dc0a9b7df1ab30804f0a9e725b7f0f7e9eaf983f32c"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "docs/V1_RELEASE_SCOPE.md": {
+      "before": {
+        "mode": "100644",
+        "blob": "be78b36a4cd7128b9c7403866ee9557ae91278ac"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "5328f3aa663cef90e3339aa38ba6ee0a0e38e516d06ac69009ff3943f67cbc54"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "docs/ui/DEPLOYMENT_MAINNET.md": {
+      "before": {
+        "mode": "100644",
+        "blob": "04de37f79cf670b6cc879987ee3a00708428c3fa"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "e15507c07b197e0aafb423929d97a6afd05fdfb3f6c9cef92b585115ff6aa87a"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md": {
+      "before": {
+        "mode": "100644",
+        "blob": "fe7cacbb2bda90044a7d354ffce979376d2ea0d1"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "29a4a44c588ff8c7566f20eac7a2553d372d3ac18a8de5701a019da6384d244d"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "hardhat/package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "blob": "9b81f4f6ca98fa61a68acc1055c19e23643b6d4f"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "15efa1c467c5c222186fc626b10a756cf6e54c5a50ca87a893349dd2b6055475"
+      },
+      "reason": "Only reviewed dependency records and synchronized software version metadata; all other package settings and resolutions are preserved."
+    },
+    "hardhat/package.json": {
+      "before": {
+        "mode": "100644",
+        "blob": "a7eea45581417e05dc0f1165495b9860eb530abb"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "45176599865ef1c625714e5929b60ab62c4d8a2e8731282a57526f3ee4a61b17"
+      },
+      "reason": "Only reviewed dependency records and synchronized software version metadata; all other package settings and resolutions are preserved."
+    },
+    "package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "blob": "af54735e13ff74fe2afc8c31acd76772f4f6beb7"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "6ccc35925c6019431e987b71e7b09ee08e23eaa16af32d62fb08c9088066682e"
+      },
+      "reason": "Only reviewed dependency records and synchronized software version metadata; all other package settings and resolutions are preserved."
+    },
+    "package.json": {
+      "before": {
+        "mode": "100644",
+        "blob": "b55a4a8d76513837faaec273837b8450c689dfe7"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "46c9136b7fe45bae4253ea9ddb1800429c6cd9ffaafc02c44d0bdcec326310ea"
+      },
+      "reason": "Only reviewed dependency records and synchronized software version metadata; all other package settings and resolutions are preserved."
+    },
+    "scripts/docs/templates/README.md.tpl": {
+      "before": {
+        "mode": "100644",
+        "blob": "8ddf8523e95bdfb13e5b658d7750bed8ba6801fe"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "3c95d656134ba9267cd3cb1747ce448a118bae30d0f6c8b7e236a72dafa0018c"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl": {
+      "before": {
+        "mode": "100644",
+        "blob": "c6369ca7bc4be6c4636efccf152aee0550f9cc08"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "4fbea937c03558ac8c44782c6be89b6c30a751cef82edcc36c21cc9d156c3fd1"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "scripts/release/collect-qualification.py": {
+      "before": {
+        "mode": "100644",
+        "blob": "1ae1be7b13250b32e46816ce2407035e0aed61c9"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "dbaa6d1d5f0328e38c5160fe810f5b90236959cf8ab4300b0cf499e1ef00db0b"
+      },
+      "reason": "Exact reversible maintenance selection/addition; preserve every predecessor qualification, native TI, manual confirmation, readiness and attestation gate."
+    },
+    "scripts/release/package-policy.py": {
+      "before": {
+        "mode": "100644",
+        "blob": "b5d0ebbd9a54b971a3073bd8bca770e54447f451"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "75639e987aca2b84399763b71b8814eed832bc99778dc3368c5cfc4bdad2f7e8"
+      },
+      "reason": "Exact reversible maintenance selection/addition; preserve every predecessor qualification, native TI, manual confirmation, readiness and attestation gate."
+    },
+    "scripts/release/publish-release.py": {
+      "before": {
+        "mode": "100644",
+        "blob": "3868df8fcbf1a6d22d9c48e87d2ead7c073d50d1"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "9574531a96193cf6740a289c12594430740bf5b86a022ee99f234fa1ddbcb4d1"
+      },
+      "reason": "Exact reversible maintenance selection/addition; preserve every predecessor qualification, native TI, manual confirmation, readiness and attestation gate."
+    },
+    "scripts/release/verify-package.py": {
+      "before": {
+        "mode": "100644",
+        "blob": "7f76cba395aa1c41ba75258143c7a0103a72ec11"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "5d2dda6df18e85af68a052db1620907a8b9b995d032a860ad46178d06cca6c19"
+      },
+      "reason": "Exact reversible maintenance selection/addition; preserve every predecessor qualification, native TI, manual confirmation, readiness and attestation gate."
+    },
+    "scripts/security/verify-slither-review.py": {
+      "before": {
+        "mode": "100755",
+        "blob": "31f51864bae0b7c57ffaa9bae52c711a10a8a7ab"
+      },
+      "after": {
+        "mode": "100755",
+        "sha256": "5bb9d061a9e58ce33a07d33ed91188a574773e1a98c1bbee6ee5303e245fe2fb"
+      },
+      "reason": "Exact reversible maintenance selection/addition; preserve every predecessor qualification, native TI, manual confirmation, readiness and attestation gate."
+    },
+    "ui/README.md": {
+      "before": {
+        "mode": "100644",
+        "blob": "a9f129839d11e0600dbb638b01ed05123bab870a"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "78816005ac878b9b0c73def3c2bf8711d38130fafe2ef6a3cb23b5c66db4fb1d"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "ui/agijobmanager-usdc.html": {
+      "before": {
+        "mode": "100644",
+        "blob": "81c25c6f78eadb2250ea99b3757188dc2b965383"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "f6bde452b9b432849475d9e97c9445c48a465bf246a99d0995bd93e6eb690727"
+      },
+      "reason": "Regenerate software labels and dashboard source inventories without changing retained transaction defaults or runtime source."
+    },
+    "ui/dist-ipfs/agijobmanager.html": {
+      "before": {
+        "mode": "100644",
+        "blob": "078b288de18b7fd69c58b0f4000bb6602334cf2d"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ef9269b71e8af047b7f5ebe9b70b4b2b34f88aff89692e805dc6ee177e212979"
+      },
+      "reason": "Regenerate software labels and dashboard source inventories without changing retained transaction defaults or runtime source."
+    },
+    "ui/package-lock.json": {
+      "before": {
+        "mode": "100644",
+        "blob": "3d7657cd548884d9b00ad99cf40b2a2f1b62cde7"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "650c834edc6d0b5fdcfd2c9e3c8ab54bdc7beb9afef65dd8ef38f4d0850b8c2a"
+      },
+      "reason": "Only reviewed dependency records and synchronized software version metadata; all other package settings and resolutions are preserved."
+    },
+    "ui/package.json": {
+      "before": {
+        "mode": "100644",
+        "blob": "67efaca3a4c828f08b30fd07f6213765d192e34d"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "d863a5d84ffb914f3eea0812f39d939de988bc0ca67fb6631b91aa4d2768410b"
+      },
+      "reason": "Only reviewed dependency records and synchronized software version metadata; all other package settings and resolutions are preserved."
+    },
+    "ui/scripts/singlefile-template.html": {
+      "before": {
+        "mode": "100644",
+        "blob": "12078b718246dc52da82d24ad39e069d9fe0c269"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "b9248ceaeaee112cf3b3add20ac1c416d7eb6afd13e250d2d8bf365624db719f"
+      },
+      "reason": "Regenerate software labels and dashboard source inventories without changing retained transaction defaults or runtime source."
+    },
+    "ui/src/generated/deployments.ts": {
+      "before": {
+        "mode": "100644",
+        "blob": "ddf0e9037817dab07e0a7222ae12b3df85c11acb"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "79380e05c8228d47455f36de7b96f53ffdb5c9c7479fcd308cfd26d8732d36b9"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "docs/qualification/mainnet-cutover-v1.19.6-expected.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "801abf1a278b91ceab8e69dcf5e3f927c31aea30137d09386924cae693869966"
+      },
+      "reason": "Expected-only source comparison/provenance; retain original observations and finding dispositions; require fresh configured exact-source execution."
+    },
+    "docs/qualification/release-v1.19.6-provenance.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "3f526bc1521e04d3fac1745f84e58fc60417a5821a59134aead36fd0178a3224"
+      },
+      "reason": "Expected-only source comparison/provenance; retain original observations and finding dispositions; require fresh configured exact-source execution."
+    },
+    "docs/releases/v1.19.6/RECOVERY_GUIDE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "3c8d20637557a5cab6fb81024865246d36f5121f5e0f448601157d84e12f6185"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "docs/releases/v1.19.6/RELEASE_NOTES.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "e3699f104bd1d9bb693cf04cdf19b5627e8fc523bb8eb648203024d9ad17edc0"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "docs/releases/v1.19.6/START_HERE.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "6d38c71a06b3cbc5a325bdb89c5b95da7d71b2da5ab35d6cafd239a07d6fc0c0"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "docs/releases/v1.19.6/VALIDATION.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "68e39ca852f37d6278a3b7edc5ce8867cbfe8e45437db0986013ef0fa7dab9f1"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "scripts/release/maintenance-qualification.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "29198ae6cc626cfeb9f0d66f6d5dc7a578848c017198f48f701988aefb9c8c2f"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "scripts/release/pages-publication-maintenance.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "61ec8c5ea9ef738dac3fe7acd7b0c972ea3877cc238541417c100771521e2e25"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "scripts/release/run-maintenance-inherited-tests.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "5d1477f43102b739c6c09fcbe895002d36a521b59a2eb4ae7e61ec31176eeec4"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "scripts/release/run-maintenance-preservation.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "bc3780dba7bbfe224c88ee7779cadb0d32ee119c1bec60335907c2a03c0582d1"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "scripts/release/test-maintenance-plumbing.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "11d173f7aa44520f1d09dc3d7a490927f9ed2bcc427746cc10bb92e17124e337"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "scripts/release/test-maintenance-profile.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "1d871e191888dd5cc567738e23e12eedc34c09d8bf9ac94b9fe11e75b99a4e17"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "scripts/release/test-maintenance-qualification.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "07f8ec422cb6b74870c2c319f88279256efd67c7fda3f72e796b603cd21d7fae"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "scripts/release/test-pages-publication-maintenance.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "4a3371fcf80a681c69fb35221f04ba34545d86e7716b5b906d18d78ef57c035d"
+      },
+      "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
+    },
+    "scripts/security/slither-reviewed-findings-v1.19.6.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "5728f37e6bc3ee9b86f47f955404cc5ccda90e27401972d5c2aa6c283e3992cb"
+      },
+      "reason": "Expected-only source comparison/provenance; retain original observations and finding dispositions; require fresh configured exact-source execution."
+    }
+  }
+}
