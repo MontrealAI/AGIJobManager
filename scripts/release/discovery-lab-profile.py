@@ -16,6 +16,7 @@ PROFILE = 'discovery-lab-source-candidate-v1'
 SOURCE_VERSION = '1.19.5'
 MANIFEST = 'config/discovery-lab-source-candidate-v1.json'
 BASELINE = 'config/discovery-lab-source-baseline-v1.json'
+BASELINE_SHA256 = 'ceeca49019f418637dcec1b3586699d382ecdaee23790fef50ae177a360ba74a'
 VERIFIER = 'scripts/release/discovery-lab-profile.py'
 ALLOWED = {'scripts/integrations/discovery-lab-native-test.mjs', 'scripts/integrations/discovery-lab-contract.mjs', 'scripts/integrations/discovery-lab-work-request.test.mjs', '.github/workflows/discovery-lab-receiver.yml', 'docs/successor/DISCOVERY_LAB.md', 'scripts/integrations/discovery-lab-work-request.mjs', 'scripts/release/test-discovery-lab-profile.py', 'scripts/integrations/fixtures/discovery-lab-request.json', 'config/discovery-lab-alpha-source.json'}
 MODIFIED = {'scripts/release/package-policy.py'}
@@ -86,7 +87,9 @@ def inventory(root, selection):
             and manifest['repository'] == REPOSITORY and manifest['profile'] == PROFILE
             and manifest['baseCommit'] == BASE_COMMIT and manifest['baseTree'] == BASE_TREE
             and same(manifest['claims'], CLAIMS), 'Candidate baseline or claims differ')
-    baseline = strict_json(read(root, BASELINE)[1])
+    baseline_raw = read(root, BASELINE)[1]
+    require(sha(baseline_raw) == BASELINE_SHA256, 'Immutable baseline inventory bytes differ')
+    baseline = strict_json(baseline_raw)
     require(set(baseline) == {'repository', 'commit', 'tree', 'entries'} and baseline['repository'] == REPOSITORY
             and baseline['commit'] == BASE_COMMIT and baseline['tree'] == BASE_TREE
             and tree_digest(baseline['entries']) == BASE_TREE, 'Immutable baseline inventory differs')
@@ -102,7 +105,7 @@ def inventory(root, selection):
         expected[name] = dict(after)
     expected[MANIFEST] = {'mode': '100644', 'sha256': selection['manifestSha256']}
     expected[VERIFIER] = {'mode': '100644', 'sha256': selection['verifierSha256']}
-    expected[BASELINE] = {'mode': '100644', 'sha256': sha(read(root, BASELINE)[1])}
+    expected[BASELINE] = {'mode': '100644', 'sha256': BASELINE_SHA256}
     return expected
 def validate_source(root, selection, paths=None):
     root = pathlib.Path(root).resolve(); expected = inventory(root, selection)
