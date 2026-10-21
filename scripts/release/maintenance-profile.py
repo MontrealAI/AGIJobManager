@@ -36,7 +36,7 @@ MODIFIED = {'.github/workflows/current-state-release.yml': '811a69cbe4d63ab7fa80
  'docs/V1_RELEASE_SCOPE.md': '5328f3aa663cef90e3339aa38ba6ee0a0e38e516d06ac69009ff3943f67cbc54',
  'docs/ui/DEPLOYMENT_MAINNET.md': 'e15507c07b197e0aafb423929d97a6afd05fdfb3f6c9cef92b585115ff6aa87a',
  'docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md': '29a4a44c588ff8c7566f20eac7a2553d372d3ac18a8de5701a019da6384d244d',
- 'docs/ui/VERSIONS.md': '811db822fcb3c442bb3b3e46833f14ad52b662a75e47faf6078a89a4212e78f2',
+ 'docs/ui/VERSIONS.md': 'd5a95805c63584dd55f73e9ddca953a7323821ebcd9a7c408ede2ac0eb43ca2a',
  'hardhat/package-lock.json': '15efa1c467c5c222186fc626b10a756cf6e54c5a50ca87a893349dd2b6055475',
  'hardhat/package.json': '45176599865ef1c625714e5929b60ab62c4d8a2e8731282a57526f3ee4a61b17',
  'package-lock.json': '6ccc35925c6019431e987b71e7b09ee08e23eaa16af32d62fb08c9088066682e',
