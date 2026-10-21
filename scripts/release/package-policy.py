@@ -7,23 +7,27 @@ CANDIDATE = runpy.run_path(str(BASE / 'candidate-profile.py'))
 RELEASE = runpy.run_path(str(BASE / 'release-profile.py'))
 CORRECTION_PROFILE = 'manager-boundary-corrections-v1'
 TRANSFORMATIONAL_PROFILE = 'manager-transformational-v1'
+DISCOVERY_PROFILE = 'discovery-lab-source-candidate-v1'
 
 def transformational():
     return runpy.run_path(str(BASE / 'transformational-profile.py'))
+
+def discovery():
+    return runpy.run_path(str(BASE / 'discovery-lab-profile.py'))
 
 def correction():
     return runpy.run_path(str(BASE / 'correction-profile.py'))
 
 def add_selection_arguments(parser):
-    parser.add_argument('--profile', choices=(CANDIDATE['LEGACY'], CANDIDATE['PROFILE'], RELEASE['PROFILE'], CORRECTION_PROFILE, TRANSFORMATIONAL_PROFILE), default=CANDIDATE['LEGACY'])
+    parser.add_argument('--profile', choices=(CANDIDATE['LEGACY'], CANDIDATE['PROFILE'], RELEASE['PROFILE'], CORRECTION_PROFILE, TRANSFORMATIONAL_PROFILE, DISCOVERY_PROFILE), default=CANDIDATE['LEGACY'])
     for name in ('manifest', 'manifest-sha256', 'verifier-sha256', 'schema-sha256'):
         parser.add_argument('--' + name)
 
 def select(profile=CANDIDATE['LEGACY'], **kwargs):
-    return (transformational() if profile == TRANSFORMATIONAL_PROFILE else correction() if profile == CORRECTION_PROFILE else RELEASE if profile == RELEASE['PROFILE'] else CANDIDATE)['select'](profile, **kwargs)
+    return (discovery() if profile == DISCOVERY_PROFILE else transformational() if profile == TRANSFORMATIONAL_PROFILE else correction() if profile == CORRECTION_PROFILE else RELEASE if profile == RELEASE['PROFILE'] else CANDIDATE)['select'](profile, **kwargs)
 
 def policy(selection):
-    return transformational() if selection is not None and selection.get('releaseProfile') == TRANSFORMATIONAL_PROFILE else correction() if selection is not None and selection.get('releaseProfile') == CORRECTION_PROFILE else RELEASE if selection is not None and selection.get('releaseProfile') == RELEASE['PROFILE'] else CANDIDATE
+    return discovery() if selection is not None and selection.get('profile') == DISCOVERY_PROFILE else transformational() if selection is not None and selection.get('releaseProfile') == TRANSFORMATIONAL_PROFILE else correction() if selection is not None and selection.get('releaseProfile') == CORRECTION_PROFILE else RELEASE if selection is not None and selection.get('releaseProfile') == RELEASE['PROFILE'] else CANDIDATE
 
 def metadata(selection):
     return policy(selection)['metadata'](selection)

@@ -4,6 +4,7 @@ import hashlib
 import json
 import pathlib
 import runpy
+import tempfile
 import unittest
 from unittest.mock import patch
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -78,5 +79,45 @@ class DiscoverySourceProfile(unittest.TestCase):
         for name in ['../outside','/absolute','a/../b','a\\b']:
             with self.assertRaises(ValueError):P['read'](ROOT,name)
         with self.assertRaises(ValueError):P['tree_digest']({'a':{'mode':'100644','blob':'1'*40},'a/b':{'mode':'100644','blob':'2'*40}})
+
+    def test_real_staged_directory_enumeration_refuses_a_rogue_file(self):
+        with tempfile.TemporaryDirectory(prefix='discovery-inventory-probe-') as folder:
+            root=pathlib.Path(folder);(root/'retained.txt').write_bytes(b'retained')
+            fixture={'retained.txt':{'mode':'100644','sha256':sha(b'retained')}}
+            with patch.dict(G,{'inventory':lambda root,selection:fixture}):
+                P['validate_source'](root,self.selection)
+                (root/'rogue-runtime.mjs').write_text('unreviewed extra source')
+                with self.assertRaisesRegex(ValueError,'unexpected inputs'):
+                    P['validate_source'](root,self.selection)
+
+    def test_supported_package_dispatch_selects_only_the_nonpublishing_profile(self):
+        dispatch=runpy.run_path(str(ROOT/'scripts/release/package-policy.py'))
+        selected=dispatch['select'](P['PROFILE'],manifest=P['MANIFEST'],
+            manifest_sha256=self.selection['manifestSha256'],verifier_sha256=self.selection['verifierSha256'])
+        self.assertEqual(selected,self.selection)
+        self.assertEqual(dispatch['policy'](selected)['PROFILE'],P['PROFILE'])
+        self.assertFalse(dispatch['metadata'](selected)['releaseQualified'])
+        with self.assertRaises(ValueError):
+            dispatch['select'](P['PROFILE'],manifest=P['MANIFEST'],published=True,
+                manifest_sha256=self.selection['manifestSha256'],verifier_sha256=self.selection['verifierSha256'])
+    def test_legacy_selector_edits_cannot_be_rehashed_into_the_candidate(self):
+        name='scripts/release/package-policy.py'
+        raw=(ROOT/name).read_bytes().replace(b"CORRECTION_PROFILE = 'manager-boundary-corrections-v1'",b"CORRECTION_PROFILE = 'unreviewed-profile'")
+        manifest=json.loads((ROOT/P['MANIFEST']).read_bytes());manifest['changes'][name]['after']['sha256']=sha(raw)
+        data=(json.dumps(manifest)+'\n').encode()
+        def outer(options): self.replaced(name,raw,lambda ignored:self.rejection(options))
+        self.replaced(P['MANIFEST'],data,outer,repin=True)
+    def test_selector_requires_the_exact_existing_baseline_attribution(self):
+        self.changed_manifest(lambda m:m['changes']['scripts/release/package-policy.py'].update({'before':None}))
+
+    def test_candidate_metadata_cannot_claim_a_different_release_or_approval(self):
+        manifest={key:None for key in ['schemaVersion','repository','tag','name','sourceCommit','sourceTree','builderSource','stage','qualification','archiveLimitBytes','toolchain','exclusions','files']}
+        manifest.update({'schemaVersion':2,'repository':P['REPOSITORY'],'tag':'v'+P['SOURCE_VERSION'],
+            'name':'v'+P['SOURCE_VERSION']+' — Operator guidance and deployment evidence',
+            'sourceCommit':'1'*40,'sourceTree':'2'*40,'stage':'source-package',**P['metadata'](self.selection)})
+        P['validate_metadata'](manifest,self.selection)
+        for field,value in [('tag','v9.9.9'),('name','approved production release'),('releaseQualified',True),('publicationApproved',True)]:
+            changed={**manifest,field:value}
+            with self.assertRaises(ValueError):P['validate_metadata'](changed,self.selection)
 
 if __name__=='__main__':unittest.main()
