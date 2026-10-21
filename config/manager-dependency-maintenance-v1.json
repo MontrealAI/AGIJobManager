@@ -124,7 +124,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "f0a4f6d21704459da73c6ab2889375d29e01949a08fb2435fcefe3754d3b6bf1"
+        "sha256": "797ba86ff37c5bbf06420c330e874a95ccf3e98eb7666b3e023f41a38c661137"
       },
       "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
     },
@@ -180,6 +180,17 @@
       "after": {
         "mode": "100644",
         "sha256": "29a4a44c588ff8c7566f20eac7a2553d372d3ac18a8de5701a019da6384d244d"
+      },
+      "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
+    },
+    "docs/ui/VERSIONS.md": {
+      "before": {
+        "mode": "100644",
+        "blob": "bd0168a9eb1537654901de18724d696630fa82c3"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "811db822fcb3c442bb3b3e46833f14ad52b662a75e47faf6078a89a4212e78f2"
       },
       "reason": "Synchronize current maintenance software guidance and generated metadata; historical records retain their identities."
     },
@@ -344,7 +355,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "650c834edc6d0b5fdcfd2c9e3c8ab54bdc7beb9afef65dd8ef38f4d0850b8c2a"
+        "sha256": "f12a33c0135afa6487cc6b7d247e885c154e7058de2230803f3e3cc314756b2c"
       },
       "reason": "Only reviewed dependency records and synchronized software version metadata; all other package settings and resolutions are preserved."
     },
@@ -355,7 +366,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "d863a5d84ffb914f3eea0812f39d939de988bc0ca67fb6631b91aa4d2768410b"
+        "sha256": "733f32d36e894adcdbf2d3da2ed12a1ef77d06622dfef3302c89dd23ea4cfd49"
       },
       "reason": "Only reviewed dependency records and synchronized software version metadata; all other package settings and resolutions are preserved."
     },
@@ -409,7 +420,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "e3699f104bd1d9bb693cf04cdf19b5627e8fc523bb8eb648203024d9ad17edc0"
+        "sha256": "949e65ced29c9cde4429f3d062c6f1bad7a4bc6941d9911f7284fc7841f53eb2"
       },
       "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
     },
@@ -473,7 +484,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "1d871e191888dd5cc567738e23e12eedc34c09d8bf9ac94b9fe11e75b99a4e17"
+        "sha256": "4d6673c869368e58849d03c5ca53b090efa704ef2354174fc31eefa1b0f7a8c5"
       },
       "reason": "Bounded maintenance policy, adversarial qualification/preservation tests or candidate documentation; no release or deployment approval."
     },

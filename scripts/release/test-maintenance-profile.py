@@ -58,7 +58,7 @@ class MaintenanceProfile(unittest.TestCase):
             raw=(self.root/name).read_bytes()+b'\n# broadened scope\n'
             with self.subTest(name=name):self.mutate(name,raw,lambda:self.repin(name,raw))
     def test_other_dependency_pin_integrity_engine_command_and_record_changes_reject(self):
-        cases=[('package.json',lambda v:v['devDependencies'].__setitem__('solc','0.8.38')),('hardhat/package-lock.json',lambda v:v['packages']['node_modules/ethers'].__setitem__('version','6.17.1')),('ui/package.json',lambda v:v['dependencies'].__setitem__('next','15.5.28')),('ui/package.json',lambda v:v['scripts'].__setitem__('test','true')),('package-lock.json',lambda v:v['packages']['node_modules/follow-redirects'].__setitem__('integrity','sha512-forged')),('ui/package-lock.json',lambda v:v['packages']['node_modules/hono'].__setitem__('version','4.13.13'))]
+        cases=[('package.json',lambda v:v['devDependencies'].__setitem__('solc','0.8.38')),('hardhat/package-lock.json',lambda v:v['packages']['node_modules/ethers'].__setitem__('version','6.17.1')),('ui/package.json',lambda v:v['dependencies'].__setitem__('next','15.5.28')),('ui/package.json',lambda v:v['scripts'].__setitem__('test','true')),('package-lock.json',lambda v:v['packages']['node_modules/follow-redirects'].__setitem__('integrity','sha512-forged')),('ui/package-lock.json',lambda v:v['packages']['node_modules/hono'].__setitem__('version','4.13.13')),('ui/package.json',lambda v:v['devDependencies'].__setitem__('vitest','4.1.11')),('ui/package-lock.json',lambda v:v['packages']['']['devDependencies'].__setitem__('vitest','4.1.11')),('ui/package-lock.json',lambda v:v['packages']['node_modules/@vitest/mocker'].__setitem__('version','4.1.11')),('ui/package-lock.json',lambda v:v['packages']['node_modules/vitest']['dependencies'].__setitem__('@vitest/mocker','4.1.11')),('ui/package-lock.json',lambda v:v['packages']['node_modules/chai'].__setitem__('version','6.3.0')),('ui/package-lock.json',lambda v:v['packages']['node_modules/tinyrainbow'].__setitem__('version','3.2.0'))]
         for name,change in cases:
             value=json.loads((self.root/name).read_bytes());change(value);raw=(json.dumps(value,indent=2)+'\n').encode()
             with self.subTest(name=name):self.mutate(name,raw,lambda:self.repin(name,raw))
@@ -66,6 +66,14 @@ class MaintenanceProfile(unittest.TestCase):
         for version in ['1.19.5','1.19.7','1.20.0']:
             name='package.json';raw=(self.root/name).read_bytes().replace(b'"version": "1.19.6"',('"version": "'+version+'"').encode())
             self.mutate(name,raw,lambda:self.repin(name,raw))
+    def test_vitest_patch_closure_restores_exact_predecessor_and_rejects_mixed_or_extra_updates(self):
+        P['validate_packages'](self.root,self.old)
+        cases=[('ui/package.json',lambda v:v['devDependencies'].__setitem__('vitest','4.1.11')),('ui/package-lock.json',lambda v:v['packages']['']['devDependencies'].__setitem__('vitest','4.1.11')),('ui/package-lock.json',lambda v:v['packages']['node_modules/@vitest/mocker'].__setitem__('version','4.1.11')),('ui/package-lock.json',lambda v:v['packages']['node_modules/vitest']['dependencies'].__setitem__('@vitest/mocker','4.1.11')),('ui/package-lock.json',lambda v:v['packages']['node_modules/chai'].__setitem__('version','6.3.0')),('ui/package-lock.json',lambda v:v['packages']['node_modules/tinyrainbow'].__setitem__('version','3.2.0'))]
+        def reject():
+            with self.assertRaises(ValueError):P['validate_packages'](self.root,self.old)
+        for name,change in cases:
+            value=json.loads((self.root/name).read_bytes());change(value)
+            with self.subTest(name=name):self.mutate(name,(json.dumps(value,indent=2)+'\n').encode(),reject)
     def test_copied_observations_findings_and_execution_claims_cannot_be_repinned(self):
         for name in ['docs/qualification/mainnet-cutover-v1.19.6-expected.json','scripts/security/slither-reviewed-findings-v1.19.6.json','docs/qualification/release-v1.19.6-provenance.json']:
             value=json.loads((self.root/name).read_bytes());value['executed']=True;raw=(json.dumps(value,indent=2)+'\n').encode()
