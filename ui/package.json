@@ -69,7 +69,7 @@
     "postcss": "8.5.28",
     "tailwindcss": "3.4.13",
     "typescript": "5.6.2",
-    "vite": "7.3.6",
+    "vite": "7.3.7",
     "vitest": "4.1.11",
     "braces": "file:vendor/braces"
   },
