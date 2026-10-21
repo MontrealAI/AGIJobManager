@@ -40,7 +40,7 @@ Two bounded local engines produce real editable artifacts: a public-data report 
 
 ## Inspect a transformation campaign
 
-The v1.19.5 developer adapter inspects a complete Alpha transformation campaign with an installed, compatible native inspector and independently supplied runtime bindings. The current native pilot has zero currency allowances: **inspection is free; a positive paid proposal is unsupported**. Inspection does not execute work, grant permissions or sign a transaction. The existing local Builder and its pinned runtime remain unchanged. Start with the [v1.19.5 guide](docs/releases/v1.19.5/START_HERE.md) and [adapter contract and recovery](docs/successor/TRANSFORMATIONAL_WORK.md). This is a developer API, not a new console action.
+The retained v1.19.5 developer adapter inspects a complete Alpha transformation campaign with an installed, compatible native inspector and independently supplied runtime bindings. The current native pilot has zero currency allowances: **inspection is free; a positive paid proposal is unsupported**. Inspection does not execute work, grant permissions or sign a transaction. The existing local Builder and its pinned runtime remain unchanged. Start with the [v1.19.6 guide](docs/releases/v1.19.6/START_HERE.md) and [adapter contract and recovery](docs/successor/TRANSFORMATIONAL_WORK.md). This is a developer API, not a new console action.
 
 **En français :** l’inspection d’une campagne Alpha reste gratuite, sans permission d’exécution ni paiement. Le pilote natif à plafond zéro ne permet aucune proposition payante. Le Créateur local existant reste inchangé.
 
@@ -60,12 +60,12 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Current software version: v1.19.5 — Free transformation-campaign inspection.**
+**Current software version: v1.19.6 — Scoped dependency maintenance candidate.**
 [Latest deployment and instance-specific operations](docs/OPERATIONS/COMMISSIONING.md) ·
-[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Release notes](docs/releases/v1.19.5/RELEASE_NOTES.md).
+[Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Release notes](docs/releases/v1.19.6/RELEASE_NOTES.md).
 
-**[previously published v1.19.3 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.3/AGIJobManager-v1.19.3-COMPLETE.zip)** · [previously published v1.19.3 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.3/QUALIFICATION.json).
-Check [release and download availability for v1.19.5](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.5). Published assets identify their exact source; later main-branch work requires separate qualification.
+**[previously published v1.19.5 COMPLETE ZIP](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.5/AGIJobManager-v1.19.5-COMPLETE.zip)** · [previously published v1.19.5 qualification](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.19.5/QUALIFICATION.json).
+Check [release and download availability for v1.19.6](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.6). Published assets identify their exact source; later main-branch work requires separate qualification.
 Software publication and intake activation are separate decisions.
 
 AGI Jobs covers work a person or team can do using a keyboard, mouse and screen. Employers define the result and acceptance criteria; AGI Agents perform the work; AGI Nodes independently validate the delivered result. AGIJobManager provides the on-chain job lifecycle, USDC escrow, bonded voting, dispute outcomes and payment recovery. Computer execution and judging the work happen outside the contract.
@@ -140,7 +140,7 @@ npm run docs:check
 
 For deployment, first run `npm --prefix hardhat run setup`, review the private configuration, then use the [Hardhat procedure](hardhat/README.md). New managers start with intake paused. The [default configuration](config/usdc-deployment.json) still auto-selects **no live manager**. The [October 17 Manager record](config/mainnet/manager-8815-2026-10-17.json) and [historical October 10 instance](config/mainnet/agi-jobs-usdc.json) identify separate deployments; neither is a replacement default or an activation grant. Publishing this software does not deploy contracts or open intake.
 
-The current manager uses eight fixed linked libraries. The [integrated source](docs/qualification/INTEGRATED_CANDIDATE_20261017.md) includes explicit-governor constructors, bounded creator preflight recovery and a source-pinned compiler optimizer mitigation. The v1.19.5 wrapper requires fresh exact-final-source qualification. Earlier [ENS membership hardening](docs/qualification/ENS_MEMBERSHIP_REVOCATION.md), payout rules and historical deployment records remain preserved. Existing immutable managers are not upgraded by this software release; preserve their original source, jobs and recovery paths. Use the [second-deployment checklist](docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md) and [compatibility guide](docs/V1_RELEASE_SCOPE.md#compatibility).
+The current manager uses eight fixed linked libraries. The [integrated source](docs/qualification/INTEGRATED_CANDIDATE_20261017.md) includes explicit-governor constructors, bounded creator preflight recovery and a source-pinned compiler optimizer mitigation. The v1.19.6 wrapper requires fresh exact-final-source qualification. Earlier [ENS membership hardening](docs/qualification/ENS_MEMBERSHIP_REVOCATION.md), payout rules and historical deployment records remain preserved. Existing immutable managers are not upgraded by this software release; preserve their original source, jobs and recovery paths. Use the [second-deployment checklist](docs/DEPLOYMENT/SECOND_MAINNET_RELEASE.md) and [compatibility guide](docs/V1_RELEASE_SCOPE.md#compatibility).
 
 ## Release evidence and production use
 

@@ -1,6 +1,6 @@
 {
   "name": "agi-job-manager-ui",
-  "version": "1.19.5",
+  "version": "1.19.6",
   "private": true,
   "engines": {
     "node": ">=22.23.2"
@@ -69,8 +69,8 @@
     "postcss": "8.5.28",
     "tailwindcss": "3.4.13",
     "typescript": "5.6.2",
-    "vite": "7.3.6",
-    "vitest": "4.1.11",
+    "vite": "7.3.7",
+    "vitest": "4.1.12",
     "braces": "file:vendor/braces"
   },
   "overrides": {

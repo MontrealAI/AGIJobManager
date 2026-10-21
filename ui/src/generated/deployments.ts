@@ -1,6 +1,6 @@
 // Generated from config/usdc-deployment.json and the dated deployment records. Never infer transaction defaults from these records.
 export const OFFICIAL_DEPLOYMENTS = {
-  "version": "1.19.5",
+  "version": "1.19.6",
   "status": "deployment-required",
   "chainId": 1,
   "explorerBaseUrl": "https://etherscan.io",
