@@ -1,0 +1,79 @@
+{
+  "schema": "agijobmanager/publication-input-evidence-custody/v1",
+  "state": "HOSTED_MAIN_QUALIFIED_PUBLICATION_AND_PUBLIC_BYTE_ACCEPTANCE_PENDING",
+  "repository": "MontrealAI/AGIJobManager",
+  "branch": "evidence/preparation-helper-checkpoint-20261022",
+  "soleParentCommit": "a7dacd67935c91e7479f20914df99255bda2db06",
+  "baseTree": "37b29e52379781ed45dd7d8fb236e37073c13b58",
+  "sourceCommit": "3153ac394d37eeecb03e825ecce37559427bc6c3",
+  "sourceTree": "4a08ce51d68ea57bbb7193275870053b79943c25",
+  "newPrefix": "evidence/manager-publication-inputs-v1/2026-10-22-main3153-hosted",
+  "expectedNewLeaves": 5,
+  "priorEvidenceLeaves": 1838,
+  "entries": [
+    {
+      "path": "evidence/manager-publication-inputs-v1/2026-10-22-main3153-hosted/PUBLICATION_INPUTS.json",
+      "mode": "100644",
+      "bytes": 34310,
+      "sha256": "1d7373b663962b3a23abac0358a23e3c82e37ee6637f35400c92220b3ebe710e",
+      "gitBlob": "09e76c6b1c6c4d0c404d942ca76c298fe4729ffb"
+    },
+    {
+      "path": "evidence/manager-publication-inputs-v1/2026-10-22-main3153-hosted/ACTUAL_MAIN_WORKFLOW_METADATA.json",
+      "mode": "100644",
+      "bytes": 345356,
+      "sha256": "cd5ada73471070bc58c6ae62abd855e15b19a213cbbc3fec2e7b84dd0a962607",
+      "gitBlob": "4f0eea4ccf2246420a61421194700ce963e23993"
+    },
+    {
+      "path": "evidence/manager-publication-inputs-v1/2026-10-22-main3153-hosted/UPSTREAM_ALPHA_PUBLIC_METADATA.json",
+      "mode": "100644",
+      "bytes": 406792,
+      "sha256": "b671c3e47fa978d1a8209415226df196ab032073449ef5e36d98df0513eec838",
+      "gitBlob": "b7c39e1ddc4c0844710cb496082dce3609a48f54"
+    },
+    {
+      "path": "evidence/manager-publication-inputs-v1/2026-10-22-main3153-hosted/INDEPENDENT_HOSTED_LOG_REVIEW.json",
+      "mode": "100644",
+      "bytes": 5343,
+      "sha256": "02985570b1319f638ace3ff911f8332d26aee3e606086499492f3283b9f1beda",
+      "gitBlob": "260b18a9f21e0b631d78f000c18b0504118915de"
+    }
+  ],
+  "hashMethod": "UTF-8 byte SHA-256 computed within the data-only JavaScript coordinator; empty-string and abc standard vectors passed. Git blob IDs supplied by GitHub. All public bodies are subject to exact readback equality.",
+  "selfDigest": "Excluded from entries to avoid self-reference; the final report records this CUSTODY.json identity separately.",
+  "scope": {
+    "allNineActualMainHostedGroupsSuccess": true,
+    "requiredJobsSuccess": 13,
+    "normalPushPagesDeploySkipped": true,
+    "publisherDispatched": false,
+    "releaseCreated": false,
+    "publicAssetBytesReceived": false,
+    "actualCleanInstallOrLiveAcceptancePerformed": false,
+    "generatedVerifierExecuted": false,
+    "sourceOrPreparedPacketFlagsChanged": false,
+    "globalFourRepositoryReleaseGateIntroduced": false,
+    "restrictedProbesRun": false
+  },
+  "preservation": {
+    "all1838ExistingLeavesModesAndGitObjectsRequiredUnchanged": true,
+    "originalPreparedPacketAndHelperEvidenceUnchanged": true,
+    "oldFailuresReviewsAndObserverCorrectionsRetained": true,
+    "historicalManagerV1196Unchanged": true,
+    "latestStandaloneAlphaBrowserAttempt1StillRequired": true
+  },
+  "accessBoundary": {
+    "kind": "EXECUTION_BROWSER_AND_PUBLIC_ASSET_TRANSPORT_UNAVAILABLE",
+    "rootObserved": "exec-server transport disconnected; browser unavailable; public GitHub asset proxy CONNECT403 before first byte.",
+    "approvalDenial": false,
+    "credentialOrAccessExpansionAttempted": false
+  },
+  "existingPublicationInput": {
+    "ref": "main",
+    "expectedSource": "3153ac394d37eeecb03e825ecce37559427bc6c3",
+    "workflow": ".github/workflows/publish-discovery-v1.yml",
+    "confirmation": "PUBLISH_v1.20.0"
+  },
+  "compatibleSubsetDisposition": "User-facing Manager+Alpha experimental handoff only. New Jobs/Fleet release fields may remain pending. Existing exact source/profile/candidate/native/attestation gates remain unchanged.",
+  "proposedMetadataAnnotation": "Prepared in PUBLICATION_INPUTS.json; no release body, asset, tag, version, channel or main mutation performed."
+}

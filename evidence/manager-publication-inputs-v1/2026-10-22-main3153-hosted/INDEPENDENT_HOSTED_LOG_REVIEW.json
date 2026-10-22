@@ -1,0 +1,126 @@
+{
+  "schema": "agijobmanager/independent-hosted-log-observation/v1",
+  "reviewer": "/root/manager/manager_receiver_review",
+  "state": "ALL_NINE_GROUPS_THIRTEEN_REQUIRED_JOBS_SUCCESS_WITH_EXPLICIT_BYTE_CUSTODY_LIMITS",
+  "source": "3153ac394d37eeecb03e825ecce37559427bc6c3",
+  "tree": "4a08ce51d68ea57bbb7193275870053b79943c25",
+  "observedAt": "2026-10-22T21:49:01.124Z",
+  "requiredWorkflowGroups": 9,
+  "requiredSuccessfulJobs": 13,
+  "expectedPushPagesSkip": {
+    "job": 120107525201,
+    "name": "Publish GitHub Pages"
+  },
+  "candidate": {
+    "run": 39858325153,
+    "job": 120102207340,
+    "decodedLogChars": 1571043,
+    "artifact": {
+      "id": 12461331617,
+      "name": "AGIJobManager-v1.20.0-candidate-3153ac394d37eeecb03e825ecce37559427bc6c3",
+      "sizeInBytes": 34877572,
+      "digest": "sha256:b8b1ba85db897ac1fc4c7d739a82a3c52fcc707abbe85e7105db4b8dd1da16fb",
+      "expired": false,
+      "producerRun": 39858325153,
+      "source": "3153ac394d37eeecb03e825ecce37559427bc6c3"
+    },
+    "uploadDigestMatchesAPIMetadata": true,
+    "exactManifestSha256": "1d05d472f9c2ac01329b9d1ebc0940bfdca45eb3bcbbc078198984c92a8ed76f",
+    "exactVerifierSha256": "1c505a29559d235c248707e36d1bf89d41e982ab25e6ff0287f9e97781abc0cf",
+    "completedProducerChecks": [
+      "Exact source and dependency boundaries",
+      "Inherited native transformation and release tests",
+      "Authenticated original Alpha browser capture",
+      "Dual package build and independent diff",
+      "Clean extraction and offline smoke",
+      "Retained source-pinned candidate artifact"
+    ],
+    "suitePassCounts": {
+      "Discovery source-profile": 42,
+      "qualification": 52,
+      "transformational": 14,
+      "publication authorization": 10,
+      "Pages": 16,
+      "plumbing": 43,
+      "saved candidate": 8
+    }
+  },
+  "nativeCommon": {
+    "alphaCommit": "61532fb82621a065e668fd11e57289dcfb65c67b",
+    "alphaTree": "7814d1bd9dcd3845b349590e0bcac57ba93b3167",
+    "sourceHash": "644258ac21cc938aff861d02ad728e8f3c9716f6ea78700acc35e4d7400eebf2",
+    "adapterSha256": "da307c2d0621a2f323d60c56dfec01d2fda2b72b753939657ea303d619d68e43",
+    "contractSha256": "98c8de8ce2774b7650bf4ee11eeedfb0a69b75fa6d1b080ef823637d77d0ab47",
+    "runnerSha256": "091a5c9ceafbf0a3f1dd63433c946a3e49ae612a2aa555746053e6ccc85f38bb",
+    "qualificationSource": "3153ac394d37eeecb03e825ecce37559427bc6c3",
+    "actualSavedCandidateInvocationObserved": true,
+    "waitForOriginalSavedCandidateObserved": true,
+    "tapPassCounts": [
+      56,
+      8,
+      6
+    ],
+    "tapFailures": 0,
+    "sourceProfileTestsPassed": 42,
+    "actualNativeEvidenceBasis": "Eight actual native identity/evidence markers, separately from the TAP counts."
+  },
+  "native": [
+    {
+      "node": "v22.23.2",
+      "job": 120102207105,
+      "decodedLogChars": 1171192,
+      "markerLines": [
+        7708,
+        7715
+      ],
+      "markerTimeStart": "2026-10-22T21:45:52.6114260Z",
+      "markerTimeEnd": "2026-10-22T21:45:52.6123739Z",
+      "evidenceSha256": "b550780d92496e016e81db9a7fe9b3aca96d959388c7fafded4c5d1962382acb",
+      "artifact": {
+        "id": 12460238495,
+        "name": "discovery-lab-policy-22.23.2-3153ac394d37eeecb03e825ecce37559427bc6c3-39858324989-1",
+        "sizeInBytes": 568937,
+        "digest": "sha256:1bec8a1747ca9d39a349635781f7879ea7b0f7f42e028ad6dee4983693429fba",
+        "expired": false,
+        "producerRun": 39858324989,
+        "source": "3153ac394d37eeecb03e825ecce37559427bc6c3"
+      },
+      "uploadDigestMatchesAPIMetadata": true
+    },
+    {
+      "node": "v24.21.0",
+      "job": 120102207364,
+      "decodedLogChars": 1173033,
+      "markerLines": [
+        7730,
+        7737
+      ],
+      "markerTimeStart": "2026-10-22T21:48:11.2036614Z",
+      "markerTimeEnd": "2026-10-22T21:48:11.2039216Z",
+      "evidenceSha256": "fc7febd398eeb2cada86695133364299baf5c248f8bbadcb938dcc106593c910",
+      "artifact": {
+        "id": 12460624964,
+        "name": "discovery-lab-policy-24.21.0-3153ac394d37eeecb03e825ecce37559427bc6c3-39858324989-1",
+        "sizeInBytes": 568814,
+        "digest": "sha256:9b5144beb33b427488a3d943f8ee49c319b654bd8b9630dba94a0b59eb4755b7",
+        "expired": false,
+        "producerRun": 39858324989,
+        "source": "3153ac394d37eeecb03e825ecce37559427bc6c3"
+      },
+      "uploadDigestMatchesAPIMetadata": true
+    }
+  ],
+  "limitations": {
+    "innerCandidateArchiveSha256Printed": false,
+    "innerCandidateArchiveSha256VerifiedByObserver": false,
+    "nativeArchiveBodiesDownloadedByObserver": false,
+    "candidateArchiveDownloadedByObserver": false,
+    "publicAlphaAssetsReceived": false,
+    "publicManagerAssetsReceived": false,
+    "cleanReleasedInstallationPerformed": false,
+    "liveUIAcceptancePerformed": false,
+    "publisherDispatched": false,
+    "explanation": "Neither native decoded log prints candidateArchiveSha256/CANDIDATE_ARCHIVE_SHA256. The fields are inside undownloaded native receipt archives. The unchanged publisher must download and validate those actual bodies; log/API upload-digest equality is narrower evidence."
+  },
+  "sourceAndExecutionBoundary": "Connector-only public metadata and authenticated hosted text logs. No local commands, generated-verifier execution, binary download, restricted probe, source mutation, dispatch or acceptance transfer."
+}
