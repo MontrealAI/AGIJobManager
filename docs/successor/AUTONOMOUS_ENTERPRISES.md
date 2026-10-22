@@ -21,7 +21,11 @@ Autonomous Enterprises is a paper companion within that hierarchy.
 
 ## This repository’s entry point
 
-The additive receiver is `scripts/integrations/enterprise-work-request.mjs` on the existing owner source basis `68d1d3cae2e6f2d46c21e8e73311d309b2b307fd`.
+The additive receiver is `scripts/integrations/enterprise-work-request.mjs` on the original native owner basis `68d1d3cae2e6f2d46c21e8e73311d309b2b307fd`.
+The enterprise child normally reconciles installed-owner candidate #1616 (`fc25d03f689dd2ed6a9afcd92e6f380ece11a23c`),
+whose c655 parent already incorporates maintenance main `900bb4b4`. The latest owner source also retains its
+qualified-rebuild, complete metadata-binding and exact scope-template corrections. Its final-source/profile/browser bindings remain UNSET;
+this source contract does not set or relax those owner gates.
 `manager-usdc`: Ethereum chain 1, USDC6, six decimals, token `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, cap `0`, `DRAFT_NOT_SUBMITTED`.
 Manager and Jobs are alternative commission routes. Their balances, approvals and work identifiers are distinct;
 Fleet performs execution review. Following a website link commissions no work.

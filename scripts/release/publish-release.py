@@ -10,7 +10,7 @@ import subprocess
 import time
 import tempfile
 from urllib.parse import quote
-from release_common import REPOSITORY, TAG, TITLE, require, validate_qualification, verify_assets, github_release_notes
+from release_common import REPOSITORY, TAG, TITLE, DISCOVERY_PROFILE, require, validate_qualification, verify_assets, github_release_notes
 
 root = pathlib.Path(__file__).resolve().parents[2]
 meta = root / 'docs/releases' / TAG
@@ -20,16 +20,32 @@ parser.add_argument('--assets', type=pathlib.Path, required=True)
 parser.add_argument('--publish', action='store_true')
 policy = runpy.run_path(str(pathlib.Path(__file__).with_name('package-policy.py')))
 policy['add_selection_arguments'](parser)
+parser.add_argument('--native-source-root')
+parser.add_argument('--dependency-root')
 args = parser.parse_args()
 source_policy = policy['select'](args.profile, manifest=args.manifest, manifest_sha256=args.manifest_sha256, verifier_sha256=args.verifier_sha256, schema_sha256=args.schema_sha256, published=True)
 profile_args = ['--profile', args.profile]
+if args.native_source_root is not None:
+    require(args.profile == DISCOVERY_PROFILE and pathlib.Path(args.native_source_root).is_absolute(), 'Native source root requires explicit Discovery selection')
+    profile_args.extend(['--native-source-root', args.native_source_root])
+if args.dependency_root is not None:
+    profile_args.extend(['--dependency-root', args.dependency_root])
 for option in ('manifest', 'manifest_sha256', 'verifier_sha256', 'schema_sha256'):
     value = getattr(args, option)
     if value is not None:
         profile_args.extend(['--' + option.replace('_', '-'), value])
+if args.profile == DISCOVERY_PROFILE:
+    require(args.qualification.is_file() and not args.qualification.is_symlink()
+            and args.qualification.stat().st_size <= 64 * 1024 * 1024, 'Bounded complete Discovery qualification is required')
 config = json.loads(args.qualification.read_text())
 repo, tag, source = REPOSITORY, TAG, config['sourceCommit']
 require(config.get('sourcePolicy') == source_policy, 'Publisher release policy differs from qualification')
+if args.profile == DISCOVERY_PROFILE:
+    require(args.native_source_root is not None and args.dependency_root is not None,
+            'Discovery publication requires installed Alpha and compiler closures')
+    # Reject executable Git configuration before any status or remote work.
+    policy['checkout'](root, source_policy, None, args.dependency_root, source,
+                       config['sourceTree'], alpha_root=args.native_source_root)
 
 def gh(*command, data=None, timeout=180):
     try:
@@ -79,6 +95,23 @@ def tag_target(ref):
         if not (obj['type'] == 'tag'): raise AssertionError('Unexpected tag object type.')
         obj = api(f'git/tags/{obj["sha"]}')['object']
     raise RuntimeError('Unexpected nested tag depth.')
+
+
+def verify_discovery_publication_identity(api, resolve_tag, list_assets, *, tag, source, release, notes, wanted):
+    """Recheck mutable identities after final evidence downloads; read current main last."""
+    require(resolve_tag(api(f'git/ref/tags/{tag}')) == source,
+            'Tag changed during final qualification; refusing publication')
+    fresh = api(f'releases/{release["id"]}')
+    require(fresh['id'] == release['id'] and fresh['draft'] is True and fresh['prerelease'] is False
+            and fresh['tag_name'] == tag and fresh['target_commitish'] == source
+            and fresh['name'] == TITLE and fresh['body'].strip() == notes.strip(),
+            'Draft changed during final qualification; refusing publication')
+    assets = list_assets(release['id'])
+    require(len(assets) == len(wanted) and {item['name']: item.get('digest') for item in assets} == wanted
+            and all(item.get('state') == 'uploaded' for item in assets),
+            'Draft assets changed during final qualification; refusing publication')
+    require(api('git/ref/heads/main')['object']['sha'] == source,
+            'Main advanced during final qualification; refusing publication')
 
 
 def release_assets(release_id):
@@ -164,15 +197,23 @@ def upload_asset(release, file, digest):
 
 require(os.environ.get('GITHUB_REPOSITORY') == repo, 'Repository identity mismatch')
 validate_qualification(config, api, lambda job_id: gh('api', f'repos/{repo}/actions/jobs/{job_id}/logs', '--method', 'GET', '--allow-escape-sequences'), publication=True)
-if source_policy and source_policy.get('releaseProfile') == 'manager-transformational-v1':
+if source_policy and source_policy.get('releaseProfile') in ('manager-transformational-v1', 'manager-dependency-maintenance-v1', DISCOVERY_PROFILE):
     ti_qualification = runpy.run_path(str(pathlib.Path(__file__).with_name('transformational-qualification.py')))
     require(config.get('transformationQualification') == ti_qualification['validate'](config, api, lambda job: gh('api', f'repos/{repo}/actions/jobs/{job}/logs', '--method', 'GET', '--allow-escape-sequences')), 'Native transformation qualification binding differs')
+if source_policy and source_policy.get('releaseProfile') == 'manager-dependency-maintenance-v1':
+    maintenance = runpy.run_path(str(pathlib.Path(__file__).with_name('maintenance-qualification.py')))
+    require(config.get('maintenanceQualification') == maintenance['validate'](config, api, lambda job: gh('api', f'repos/{repo}/actions/jobs/{job}/logs', '--method', 'GET', '--allow-escape-sequences')), 'Maintenance qualification binding differs')
+if args.profile == DISCOVERY_PROFILE:
+    require(args.native_source_root is not None and args.dependency_root is not None, 'Discovery publication requires installed Alpha and compiler closures')
+    discovery = runpy.run_path(str(pathlib.Path(__file__).with_name('discovery-qualification.py')))
+    require(config.get('discoveryQualification') == discovery['validate'](config, api, lambda job: gh('api', f'repos/{repo}/actions/jobs/{job}/logs', '--method', 'GET', '--allow-escape-sequences'), discovery['download_native_artifact'], alpha_api=lambda endpoint: discovery['github_read_api'](discovery['ALPHA_REPOSITORY'], endpoint)), 'Discovery native qualification binding differs')
 out = args.assets.resolve()
 require((out / 'QUALIFICATION.json').read_bytes() == args.qualification.read_bytes(), 'Asset qualification differs')
 expected = verify_assets(out, config)
-require(subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip() == source, 'Publisher must execute exact qualified source')
-require(subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], cwd=root, text=True).strip() == config['sourceTree'], 'Publisher tree differs')
-require(not subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=root).strip(), 'Publisher tracked source is dirty')
+if args.profile != DISCOVERY_PROFILE:
+    require(subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip() == source, 'Publisher must execute exact qualified source')
+    require(subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], cwd=root, text=True).strip() == config['sourceTree'], 'Publisher tree differs')
+    require(not subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=root).strip(), 'Publisher tracked source is dirty')
 candidate = config.get('candidateArtifact', {})
 require(type(candidate.get('id')) is int and candidate['id'] > 0, 'Missing candidate artifact identity')
 artifact = api(f'actions/artifacts/{candidate["id"]}')
@@ -181,12 +222,18 @@ require(not artifact['expired'] and artifact['name'] == f'AGIJobManager-{tag}-ca
 require(artifact['workflow_run']['id'] == config['requiredSourceRuns']['current-state-release.yml']['id'] and artifact['workflow_run']['head_sha'] == source, 'Candidate artifact is from another run/source')
 with tempfile.TemporaryDirectory(prefix='v114-publication-rebuild-') as temp:
     rebuilt = pathlib.Path(temp) / 'assets'
-    subprocess.run(['python3', 'scripts/release/package-release.py', '--out', str(rebuilt), *profile_args], cwd=root, check=True)
+    rebuild_args = list(profile_args)
+    if args.profile == DISCOVERY_PROFILE:
+        verifier = runpy.run_path(str(pathlib.Path(__file__).with_name('verify-package.py')))
+        browser_input = verifier['extract_browser_capsule'](out, pathlib.Path(temp) / 'browser-input', source_policy,
+            qualification=config)
+        rebuild_args.extend(['--browser-input-root', str(browser_input)])
+    subprocess.run(['python3', 'scripts/release/package-release.py', '--out', str(rebuilt), *rebuild_args], cwd=root, check=True)
     actual = verify_assets(rebuilt)
     require(config['artifactDigests'] == {n: d for n, d in actual.items() if n != 'SHA256SUMS.txt'}, 'Candidate bytes differ from deterministic exact-source rebuild')
 if not args.publish:
     raise SystemExit(0)
-runpy.run_path(str(pathlib.Path(__file__).with_name('publication-authorization-ti.py' if source_policy and source_policy.get('releaseProfile') == 'manager-transformational-v1' else 'publication-authorization.py')))['authorize'](os.environ, source, api)
+runpy.run_path(str(pathlib.Path(__file__).with_name('publication-authorization-discovery.py' if args.profile == DISCOVERY_PROFILE else 'publication-authorization-ti.py' if source_policy and source_policy.get('releaseProfile') in ('manager-transformational-v1', 'manager-dependency-maintenance-v1') else 'publication-authorization.py')))['authorize'](os.environ, source, api)
 require(config.get('publicationAuthorized') is True, 'Publication authorization is missing')
 require(api('git/ref/heads/main')['object']['sha'] == source, 'Main advanced since qualification; requalify before publishing')
 matches = []
@@ -242,9 +289,16 @@ fresh_assets = release_assets(release['id'])
 require(len(fresh_assets) == len(wanted) and {a['name']: a.get('digest') for a in fresh_assets} == wanted, 'Draft assets changed before publication')
 require(api('git/ref/heads/main')['object']['sha'] == source, 'Main advanced during publication')
 validate_qualification(config, api, lambda job_id: gh('api', f'repos/{repo}/actions/jobs/{job_id}/logs', '--method', 'GET', '--allow-escape-sequences'), publication=True)
-if source_policy and source_policy.get('releaseProfile') == 'manager-transformational-v1':
+if source_policy and source_policy.get('releaseProfile') in ('manager-transformational-v1', 'manager-dependency-maintenance-v1', DISCOVERY_PROFILE):
     ti_qualification = runpy.run_path(str(pathlib.Path(__file__).with_name('transformational-qualification.py')))
     require(config.get('transformationQualification') == ti_qualification['validate'](config, api, lambda job: gh('api', f'repos/{repo}/actions/jobs/{job}/logs', '--method', 'GET', '--allow-escape-sequences')), 'Native transformation qualification binding differs')
+if source_policy and source_policy.get('releaseProfile') == 'manager-dependency-maintenance-v1':
+    maintenance = runpy.run_path(str(pathlib.Path(__file__).with_name('maintenance-qualification.py')))
+    require(config.get('maintenanceQualification') == maintenance['validate'](config, api, lambda job: gh('api', f'repos/{repo}/actions/jobs/{job}/logs', '--method', 'GET', '--allow-escape-sequences')), 'Maintenance qualification binding differs')
+if args.profile == DISCOVERY_PROFILE:
+    require(config.get('discoveryQualification') == discovery['validate'](config, api, lambda job: gh('api', f'repos/{repo}/actions/jobs/{job}/logs', '--method', 'GET', '--allow-escape-sequences'), discovery['download_native_artifact'], alpha_api=lambda endpoint: discovery['github_read_api'](discovery['ALPHA_REPOSITORY'], endpoint)), 'Discovery native qualification changed during publication')
+    verify_discovery_publication_identity(api, tag_target, release_assets,
+        tag=tag, source=source, release=release, notes=notes, wanted=wanted)
 api(release_endpoint, 'PATCH', {'draft': False, 'prerelease': False, 'make_latest': 'true'})
 release = wait_for(release_endpoint, lambda r: not r['draft'] and not r['prerelease'])
 if not (tag_target(api(f'git/ref/tags/{tag}')) == source): raise AssertionError('Release invariant failed')

@@ -1,6 +1,8 @@
-# v1.19.5 software qualification and operating boundaries
+# v1.20.0 Discovery qualification and operating boundaries
 
-Version 1.19.5 adds [free native transformation-campaign inspection](successor/TRANSFORMATIONAL_WORK.md) and a separate finite source policy. The native pilot has zero currency allowances; positive paid proposals remain unsupported. Its [validation record](releases/v1.19.5/VALIDATION.md) distinguishes local checks from pending exact-final-source qualification. This adapter changes no deployed contract, intake setting, Builder code pin, compiler behavior or dependency resolution. It does not establish independent review or live readiness.
+The v1.20.0 Discovery candidate adds source-pinned synthetic campaign admission under a new versioned release profile. It retains the published v1.19.6 dependency repairs and historical guards. Final-source hosted qualification and publication remain pending for this candidate; neither authorizes deployment or intake. Candidate building and source authentication require the exact pinned external Alpha checkout. Installed native inspection uses the Alpha source capsule included in the complete Manager archive.
+
+The retained v1.19.5 source adds [free native transformation-campaign inspection](successor/TRANSFORMATIONAL_WORK.md) and a separate finite source policy. The native pilot has zero currency allowances; positive paid proposals remain unsupported. Its [validation record](releases/v1.19.5/VALIDATION.md) distinguishes local checks from pending exact-final-source qualification. This adapter changes no deployed contract, intake setting, Builder code pin, compiler behavior or dependency resolution. It does not establish independent review or live readiness.
 
 Latest deployment: see the [17 October Manager record](deployments/MAINNET_MANAGER_2026-10-17.md) for the reported nine finalized creations, mixed explorer-match results, governor/moderator and paused/unlocked configuration. This dated evidence does not establish current full readiness or paid-intake approval.
 
