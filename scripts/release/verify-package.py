@@ -62,14 +62,28 @@ def archive_inventory(archive, manifest):
     return prefix
 
 
-def extract_browser_capsule(assets, destination, selection):
-    """Reuse exact candidate-owned original bytes for a deterministic publisher rebuild."""
+def extract_browser_capsule(assets, destination, selection, *, qualification=None):
+    """Reuse saved original bytes; bind an explicit caller-validated qualification when present."""
     assets, destination = pathlib.Path(assets), pathlib.Path(destination)
     require(selection is not None and selection.get('releaseProfile') == DISCOVERY_PROFILE,
             'Saved browser extraction requires explicit Discovery profile')
     require(destination.is_absolute() and not destination.exists() and destination.parent.resolve() == destination.parent,
             'Saved browser extraction output must be absent and absolute')
-    verify_assets(assets)
+    if qualification is not None:
+        require(isinstance(qualification, dict) and qualification.get('repository') == REPOSITORY
+                and qualification.get('tag') == TAG and qualification.get('name') == TITLE
+                and qualification.get('status') == 'qualified' and qualification.get('sourcePolicy') == selection
+                and valid_sha(qualification.get('sourceCommit')) and valid_sha(qualification.get('sourceTree'))
+                and qualification.get('checkoutCommit') == qualification['sourceCommit'],
+                'Saved browser extraction qualification context differs')
+        retained = assets / 'QUALIFICATION.json'
+        require(retained.is_file() and not retained.is_symlink()
+                and retained.stat().st_size <= 64 * 1024 * 1024,
+                'Saved browser extraction qualification is missing or unbounded')
+        require(json.dumps(strict_json(retained.read_bytes()), sort_keys=True, allow_nan=False)
+                == json.dumps(qualification, sort_keys=True, allow_nan=False),
+                'Saved browser extraction differs from the trusted qualification')
+    verify_assets(assets, qualification)
     manifest_raw = (assets / 'RELEASE_MANIFEST.json').read_bytes()
     manifest = strict_json(manifest_raw)
     candidate_policy['validate_metadata'](manifest, selection)

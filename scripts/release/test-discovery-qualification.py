@@ -674,7 +674,7 @@ def browser_artifact_fixture(*, source_count=1):
             'head_branch': producer['headBranch'], 'event': 'pull_request', 'path': m.BROWSER_WORKFLOW,
             'status': 'completed', 'conclusion': 'success', 'repository': {'full_name': m.ALPHA_REPOSITORY},
             'head_repository': {'full_name': m.ALPHA_REPOSITORY}},
-        'actions/runs/71/attempts/2/jobs?per_page=100&page=1': {'jobs': [{'id': 74, 'name': 'capability',
+        'actions/runs/71/attempts/2/jobs?per_page=100&page=1': {'total_count': 1, 'jobs': [{'id': 74, 'name': 'capability',
             'status': 'completed', 'conclusion': 'success', 'head_sha': producer['headCommit'],
             'steps': [{'name': name, 'status': 'completed', 'conclusion': 'success'} for name in (
                 'Bind retained evidence to exact source', 'Saved future-task protocol, docket and real-task boundary acceptance',
@@ -721,8 +721,25 @@ def public_packet_fixture(*, served_catalog_prefix=b'', source_count=1):
     responses['git/commits/' + producer['checkoutCommit']] = checkout
     responses['actions/artifacts/73'].update(name=pin['artifact']['name'], digest=pin['artifact']['digest'], size_in_bytes=len(raw))
     job = responses['actions/runs/71/attempts/2/jobs?per_page=100&page=1']['jobs'][0]; job['run_id'] = 71
-    metadata = {'run': responses['actions/runs/71'], 'jobs': {'total_count': 1, 'jobs': [job]},
-        'artifacts': {'total_count': 1, 'artifacts': [responses['actions/artifacts/73']]},
+    responses['actions/runs/71/artifacts?per_page=100&page=1'] = {
+        'total_count': 1, 'artifacts': [responses['actions/artifacts/73']]}
+    responses['actions/runs/71'].update(display_title='Recorded exact-source journey', run_number=1,
+        actor={'login': 'recorded-actor'}, triggering_actor={'login': 'recorded-trigger'})
+    for index, step in enumerate(job['steps'], 1): step['number'] = index
+    jobs_response = responses['actions/runs/71/attempts/2/jobs?per_page=100&page=1']
+    jobs_response['jobs'].append({'id': 75, 'name': 'paper-scope', 'run_id': 71,
+        'head_sha': producer['headCommit'], 'status': 'completed', 'conclusion': 'success',
+        'labels': ['ubuntu-latest'], 'steps': [{'name': 'Scope', 'number': 1, 'status': 'completed', 'conclusion': 'success'}]})
+    jobs_response['total_count'] = 2
+    artifacts_response = responses['actions/runs/71/artifacts?per_page=100&page=1']
+    artifacts_response['artifacts'].append({'id': 76, 'name': 'ancillary-evidence',
+        'created_at': '2026-10-01T00:00:00Z', 'size_in_bytes': 1})
+    artifacts_response['total_count'] = 2
+    checkout.update(message='Recorded source commit', author={'name': 'Recorded Author'},
+        committer={'name': 'Recorded Committer'}, verification={'verified': False, 'reason': 'unsigned'})
+    metadata = {'run': responses['actions/runs/71'],
+        'jobs': responses['actions/runs/71/attempts/2/jobs?per_page=100&page=1'],
+        'artifacts': responses['actions/runs/71/artifacts?per_page=100&page=1'],
         'checkout-commit': checkout, 'public-commit': checkout}
     custody = {'schema': 'successor/discovery-browser-artifact-custody/v1',
         **{key: pin[key] for key in ('repository', 'workflowPath', 'producer', 'artifact',
@@ -767,6 +784,35 @@ class AlphaBrowserArtifactTests(unittest.TestCase):
             return base64.b64decode(self.responses['git/blobs/' + entry['sha']]['content'])
         return m.authenticate_browser_input(self.pin, api, self.expected, raw_body=raw_body or fixture_raw)
 
+    def rehash_metadata_sidecar(self, name, change, *, alternate_format=False):
+        """Model a newly pinned public packet with valid Git hashes but changed retained metadata."""
+        import base64
+        import hashlib
+        transport = self.pin['transport']
+        old_commit, old_tree = transport['commit'], transport['tree']
+        tree = copy.deepcopy(self.responses['git/trees/' + old_tree + '?recursive=1'])
+        entry = next(item for item in tree['tree']
+            if item['path'] == transport['path'] + '/metadata/' + name + '.json')
+        original_raw = base64.b64decode(self.responses['git/blobs/' + entry['sha']]['content'])
+        original = json.loads(original_raw)
+        value = copy.deepcopy(original); changed = change(value)
+        if changed is not None: value = changed
+        raw = (json.dumps(value, indent=1) + '\n\n').encode() if alternate_format else encode(value)
+        digest = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+        entry.update(sha=digest, size=len(raw))
+        self.responses['git/blobs/' + digest] = {'sha': digest, 'size': len(raw), 'encoding': 'base64',
+            'content': base64.b64encode(raw).decode()}
+        # The in-memory API fixture models the newly reviewed immutable packet tree and commit identities.
+        tree_sha = hashlib.sha1(m.canonical(tree['tree'])).hexdigest()
+        commit_sha = hashlib.sha1(m.canonical({'tree': tree_sha, 'previous': old_commit})).hexdigest()
+        tree['sha'] = tree_sha
+        commit = copy.deepcopy(self.responses['git/commits/' + old_commit])
+        commit.update(sha=commit_sha, tree={'sha': tree_sha})
+        self.responses['git/trees/' + tree_sha + '?recursive=1'] = tree
+        self.responses['git/commits/' + commit_sha] = commit
+        transport.update(commit=commit_sha, tree=tree_sha)
+        return original, value, original_raw, raw
+
     def rebind_files(self):
         self.raw = zip_fixture(self.files)
         self.pin['members'] = {name: {'bytes': len(raw), 'sha256': m.sha(raw)} for name, raw in self.files.items()}
@@ -781,6 +827,8 @@ class AlphaBrowserArtifactTests(unittest.TestCase):
         self.assertEqual(result['request'], self.files[m.BROWSER_PREFIX + 'fleet-browser-request.json'])
         self.assertFalse(any('/zip' in key for key in self.downloads))
         self.assertIn('git/commits/' + self.pin['transport']['commit'], self.downloads)
+        self.assertIn('actions/runs/71/artifacts?per_page=100&page=1', self.downloads)
+        self.assertNotIn('actions/artifacts/73', self.downloads)
         self.assertEqual(result['rawTransport']['restReads'], 8)
         self.assertEqual(len(self.downloads), 8)
         self.assertEqual(result['rawTransport']['immutableObjects'], len(self.raw_downloads))
@@ -810,6 +858,63 @@ class AlphaBrowserArtifactTests(unittest.TestCase):
         self.assertEqual(self.downloads.count('actions/runs/71'), 3)
         self.assertEqual(len(self.raw_downloads), 2 * reads)
 
+    def test_all_five_rehashed_metadata_sidecars_must_match_the_complete_fresh_snapshots(self):
+        changes = {
+            'run': lambda value: value['actor'].update(login='substituted-actor'),
+            'jobs': lambda value: value['jobs'][1]['labels'].append('substituted-label'),
+            'artifacts': lambda value: value['artifacts'][1].update(created_at='2026-10-02T00:00:00Z'),
+            'checkout-commit': lambda value: value.update(message='Substituted source message'),
+            'public-commit': lambda value: value['verification'].update(reason='substituted-reason')}
+        for name, change in changes.items():
+            self.pin, self.files, self.raw, self.responses = public_packet_fixture()
+            self.downloads, self.raw_downloads = [], []
+            original, changed, _, _ = self.rehash_metadata_sidecar(name, change)
+            self.assertNotEqual(m.canonical(original), m.canonical(changed))
+            with self.subTest(sidecar=name), self.assertRaisesRegex(ValueError, 'complete metadata snapshot differs: ' + name):
+                self.live()
+            self.assertLessEqual(len(self.downloads), 12)
+
+    def test_metadata_semantics_preserve_json_types_but_ignore_object_order_and_raw_framing(self):
+        for name, change in [
+            ('run', lambda value: value.update(run_number=True)),
+            ('run', lambda value: value.update(run_number=1.0)),
+            ('public-commit', lambda value: value['verification'].update(verified=0))]:
+            self.pin, self.files, self.raw, self.responses = public_packet_fixture()
+            original, changed, _, _ = self.rehash_metadata_sidecar(name, change)
+            self.assertEqual(original, changed)  # Python equality alone would incorrectly accept these rewrites.
+            with self.subTest(sidecar=name), self.assertRaisesRegex(ValueError, 'complete metadata snapshot differs: ' + name):
+                self.live()
+        self.pin, self.files, self.raw, self.responses = public_packet_fixture()
+        original, changed, original_raw, raw = self.rehash_metadata_sidecar('run',
+            lambda value: dict(reversed(list(value.items()))), alternate_format=True)
+        self.assertEqual(m.canonical(original), m.canonical(changed))
+        self.assertNotEqual(original_raw, raw)
+        self.downloads, self.raw_downloads = [], []
+        self.assertEqual(self.live()['rawTransport']['restReads'], 8)
+
+    def test_fresh_mutable_ancillary_observations_are_not_cached_between_authentications(self):
+        self.live()
+        self.responses['actions/runs/71']['display_title'] = 'Changed live ancillary title'
+        with self.assertRaisesRegex(ValueError, 'complete metadata snapshot differs: run'): self.live()
+        self.assertEqual(self.downloads.count('actions/runs/71'), 2)
+        self.assertEqual(self.downloads.count('actions/runs/71/attempts/2/jobs?per_page=100&page=1'), 2)
+        self.assertEqual(self.downloads.count('actions/runs/71/artifacts?per_page=100&page=1'), 2)
+        self.assertEqual(len(self.downloads), 15)  # Second authentication refuses before its final source-tree read.
+
+    def test_both_full_live_collection_envelopes_are_complete_unique_and_bounded(self):
+        for field, endpoint in [('jobs', 'actions/runs/71/attempts/2/jobs?per_page=100&page=1'),
+                                ('artifacts', 'actions/runs/71/artifacts?per_page=100&page=1')]:
+            for change in [lambda value: value.update(total_count=3),
+                    lambda value: value.update(total_count=101),
+                    lambda value: value.update(total_count=True),
+                    lambda value: value[field][1].update(id=value[field][0]['id'])]:
+                self.pin, self.files, self.raw, self.responses = public_packet_fixture()
+                self.downloads, self.raw_downloads = [], []
+                change(self.responses[endpoint])
+                with self.subTest(collection=field), self.assertRaisesRegex(ValueError, 'inventory.*' + field): self.live()
+                self.assertEqual(self.raw_downloads, [])
+                self.assertLessEqual(len(self.downloads), 12)
+
     def test_raw_permission_or_rate_failure_has_one_attempt_without_api_body_fallback(self):
         for status in (403, 429):
             reader = unittest.mock.Mock(side_effect=ValueError('Immutable public raw body refused: HTTP ' + str(status)))
@@ -818,17 +923,18 @@ class AlphaBrowserArtifactTests(unittest.TestCase):
             self.assertEqual(reader.call_count, 1)
         self.assertFalse(any(route.startswith(('git/blobs/', 'contents/')) or route.endswith('/zip') for route in self.downloads))
 
-    def test_metadata_pagination_stops_at_twelve_rest_reads_without_any_raw_fallback(self):
+    def test_incomplete_metadata_collection_is_refused_without_pagination_or_raw_fallback(self):
         calls = []
         def api(endpoint):
             calls.append(endpoint)
             if endpoint.startswith('actions/runs/71/attempts/2/jobs?'):
-                return {'jobs': [{'id': index, 'name': 'inert-page'} for index in range(100)]}
+                return {'total_count': 101, 'jobs': [{'id': index + 1, 'name': 'inert-page'} for index in range(100)]}
             return copy.deepcopy(self.responses[endpoint])
         reader = unittest.mock.Mock(side_effect=AssertionError('No body before metadata qualification'))
-        with self.assertRaisesRegex(ValueError, 'twelve reads'):
+        with self.assertRaisesRegex(ValueError, 'inventory.*jobs'):
             m.authenticate_browser_input(self.pin, api, self.expected, raw_body=reader)
-        self.assertEqual(len(calls), 12)
+        self.assertEqual(len(calls), 3)
+        self.assertLessEqual(len(calls), 12)
         reader.assert_not_called()
 
     def test_full_tree_raw_entry_type_mode_size_and_git_identity_are_required(self):

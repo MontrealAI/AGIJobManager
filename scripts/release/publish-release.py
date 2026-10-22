@@ -225,7 +225,8 @@ with tempfile.TemporaryDirectory(prefix='v114-publication-rebuild-') as temp:
     rebuild_args = list(profile_args)
     if args.profile == DISCOVERY_PROFILE:
         verifier = runpy.run_path(str(pathlib.Path(__file__).with_name('verify-package.py')))
-        browser_input = verifier['extract_browser_capsule'](out, pathlib.Path(temp) / 'browser-input', source_policy)
+        browser_input = verifier['extract_browser_capsule'](out, pathlib.Path(temp) / 'browser-input', source_policy,
+            qualification=config)
         rebuild_args.extend(['--browser-input-root', str(browser_input)])
     subprocess.run(['python3', 'scripts/release/package-release.py', '--out', str(rebuilt), *rebuild_args], cwd=root, check=True)
     actual = verify_assets(rebuilt)

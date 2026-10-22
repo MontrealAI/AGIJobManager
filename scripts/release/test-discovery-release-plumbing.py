@@ -2,6 +2,8 @@
 import argparse
 import ast
 import copy
+import contextlib
+import io
 import json
 import pathlib
 import re
@@ -11,8 +13,10 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
-from release_common import sha, source_path, require, TITLE, DISCOVERY_PROFILE
+from release_common import (sha, source_path, require, TITLE, TAG, REPOSITORY,
+                            DISCOVERY_PROFILE, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, verify_assets)
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 PRESERVATION = runpy.run_path(str(ROOT / 'scripts/release/run-discovery-preservation.py'))
@@ -202,6 +206,156 @@ class DiscoveryPlumbing(unittest.TestCase):
         self.assertIn('publication-authorization-discovery.py', publisher)
         self.assertIn("['extract_browser_capsule']", publisher)
         self.assertIn("rebuild_args.extend(['--browser-input-root'", publisher)
+
+
+class QualifiedDiscoveryRebuild(unittest.TestCase):
+    """Real ZIP/package/collector/extractor phases with inert source and Builder outputs.
+
+    Source authentication and the external Builder process use trusted fixtures;
+    this establishes phase plumbing, never final-source/native qualification.
+    """
+
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix='manager-qualified-rebuild-')
+        self.addCleanup(temporary.cleanup)
+        self.folder = pathlib.Path(temporary.name)
+        self.root = self.folder / 'source'; self.root.mkdir()
+        fixture = runpy.run_path(str(ROOT / 'scripts/release/test-discovery-qualification.py'))
+        pin, files, _, _ = fixture['browser_artifact_fixture']()
+        for name, raw in {
+                'config/discovery-release-browser-artifact-v1.json': (json.dumps(pin) + '\n').encode(),
+                'scripts/release/discovery-qualification.py': (ROOT / 'scripts/release/discovery-qualification.py').read_bytes(),
+                'LICENSE': b'MIT fixture\n', 'ui/agijobmanager-usdc.html': b'<!doctype html><title>fixture</title>',
+                **{'docs/releases/' + TAG + '/' + name: b'Inert phase fixture.\n'
+                    for name in ('START_HERE.md', 'RELEASE_NOTES.md', 'RECOVERY_GUIDE.md', 'VALIDATION.md')},
+                }.items():
+            target = self.root / name; target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(raw)
+        binding = PROFILE['browser_policy'](self.root)['verify_browser_files'](self.root, files)
+        self.browser_bytes = {**files, PROFILE['BROWSER_MANIFEST']: (json.dumps(binding) + '\n').encode()}
+        self.browser = self.folder / 'original-input'; self.browser.mkdir()
+        for name, raw in self.browser_bytes.items():
+            target = self.browser / name; target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(raw)
+        for command in (['init', '-q'], ['add', '.'], ['-c', 'user.name=Inert phase fixture',
+                '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'Trusted inert phase inputs']):
+            subprocess.run(['git', '-C', str(self.root), *command], check=True)
+        self.source = subprocess.check_output(['git', '-C', str(self.root), 'rev-parse', 'HEAD']).decode().strip()
+        self.tree = subprocess.check_output(['git', '-C', str(self.root), 'rev-parse', 'HEAD^{tree}']).decode().strip()
+        self.selection = PROFILE['select'](manifest=PROFILE['MANIFEST'],
+            manifest_sha256='1' * 64, verifier_sha256='2' * 64)
+        self.verifier = runpy.run_path(str(ROOT / 'scripts/release/verify-package.py'))
+        self.packager = runpy.run_path(str(ROOT / 'scripts/release/package-release.py'), run_name='phase_fixture')
+        self.package_calls = []
+        self.assets = self.folder / 'candidate'
+        self.package(self.assets, self.browser)
+        self.config = {'repository': REPOSITORY, 'tag': TAG, 'name': TITLE, 'status': 'qualified',
+            'sourceCommit': self.source, 'sourceTree': self.tree, 'checkoutCommit': self.source,
+            'sourcePolicy': self.selection,
+            'artifactDigests': {name: digest for name, digest in verify_assets(self.assets).items()
+                if name != 'SHA256SUMS.txt'}}
+
+    def package(self, output, browser):
+        self.assertEqual(PROFILE['validate_browser_capsule'](self.root, browser, return_files=True)['files'],
+            self.browser_bytes)
+        self.package_calls.append(pathlib.Path(browser))
+        context = {'sourceManifest': {'scope': 'inert phase fixture'}}
+        def builder(command, **options):
+            self.assertEqual(command[:2], ['node', 'scripts/successor/build.mjs'])
+            generated = pathlib.Path(command[3]); generated.mkdir()
+            for name in BUILDER_ASSETS | BUILDER_ARCHIVE_ONLY_ASSETS:
+                value = context['sourceManifest'] if name == 'SOURCE_MANIFEST.json' else {
+                    'sourceManifest': context['sourceManifest'], 'managerSource': {}} if name == 'MANAGER_CONTEXT.json' else None
+                (generated / name).write_bytes((json.dumps(value) + '\n').encode() if value is not None
+                    else ('Trusted inert Builder fixture ' + name).encode())
+        discovery = {**PROFILE, 'capture_alpha_capsule': lambda *args: {
+            'inert-source.mjs': ('100644', b'// inert; never imported\n')}}
+        policy = {**POLICY, 'select': lambda *args, **kwargs: self.selection,
+            'discovery_release': lambda: {'git_identity': lambda root: {'commit': self.source, 'tree': self.tree}},
+            'checkout': lambda *args, **kwargs: None, 'validate_source': lambda *args: None,
+            'policy': lambda selection: discovery}
+        with patch.dict(self.packager['package'].__globals__, {'root': self.root, 'candidate_policy': policy,
+                'subprocess': SimpleNamespace(run=builder, check_output=subprocess.check_output),
+                'verified_builder_context': lambda *args: (context, b'{"version":"fixture"}\n'),
+                'builder_reconstruction': lambda *args: contextlib.nullcontext()}), \
+                contextlib.redirect_stdout(io.StringIO()):
+            self.packager['package'](output, profile=DISCOVERY_PROFILE, browser_input_root=browser,
+                native_source_root=self.folder / 'inert-alpha', dependency_root=self.folder / 'inert-compiler')
+
+    def qualify(self):
+        tree = ast.parse((ROOT / 'scripts/release/collect-qualification.py').read_text())
+        start = next(index for index, node in enumerate(tree.body) if isinstance(node, ast.Assign)
+            and any(isinstance(target, ast.Name) and target.id == 'qualification_raw' for target in node.targets))
+        # Execute the actual collector's file write, checksum regeneration and qualified verification.
+        block = ast.Module(body=tree.body[start:-1], type_ignores=[])
+        exec(compile(ast.fix_missing_locations(block), '<inert-collector-qualified-phase>', 'exec'),
+            {'json': json, 'config': self.config, 'args': SimpleNamespace(out=self.assets, profile=DISCOVERY_PROFILE),
+             'DISCOVERY_PROFILE': DISCOVERY_PROFILE, 'discovery': {'MAX_QUALIFICATION_BYTES': 64 * 1024 * 1024},
+             'require': require, 'sha': sha, 'verify_assets': verify_assets})
+
+    def extraction(self, destination, qualification=None):
+        with patch.dict(self.verifier['extract_browser_capsule'].__globals__,
+                {'__file__': str(self.root / 'scripts/release/verify-package.py')}):
+            return self.verifier['extract_browser_capsule'](self.assets, destination, self.selection,
+                qualification=qualification)
+
+    def test_actual_publisher_rebuild_uses_the_collected_qualified_phase_and_original_capsule(self):
+        self.qualify()
+        with self.assertRaisesRegex(ValueError, 'Unexpected or missing assets'):
+            verify_assets(self.assets)  # The former candidate-only call rejects this real qualified inventory.
+        publisher = ast.parse((ROOT / 'scripts/release/publish-release.py').read_text())
+        block = next(node for node in publisher.body if isinstance(node, ast.With) and any(
+            isinstance(value, ast.Constant) and value.value == 'v114-publication-rebuild-'
+            for value in ast.walk(node)))
+        def build(command, **options):
+            self.assertEqual(command[:2], ['python3', 'scripts/release/package-release.py'])
+            self.assertEqual(options, {'cwd': self.root, 'check': True})
+            self.package(pathlib.Path(command[command.index('--out') + 1]),
+                pathlib.Path(command[command.index('--browser-input-root') + 1]))
+        scope = {'tempfile': tempfile, 'pathlib': pathlib, 'profile_args': ['--profile', DISCOVERY_PROFILE],
+            'args': SimpleNamespace(profile=DISCOVERY_PROFILE), 'DISCOVERY_PROFILE': DISCOVERY_PROFILE,
+            'runpy': SimpleNamespace(run_path=lambda path: self.verifier), '__file__': str(ROOT / 'scripts/release/publish-release.py'),
+            'out': self.assets, 'source_policy': self.selection, 'config': self.config,
+            'subprocess': SimpleNamespace(run=build), 'root': self.root, 'verify_assets': verify_assets, 'require': require}
+        with patch.dict(self.verifier['extract_browser_capsule'].__globals__,
+                {'__file__': str(self.root / 'scripts/release/verify-package.py')}):
+            old = ast.parse(previous('scripts/release/publish-release.py',
+                '1ca9ab4c0064d7f53d00e661c675fc0dda87c6f1').decode())
+            old_block = next(node for node in old.body if isinstance(node, ast.With) and any(
+                isinstance(value, ast.Constant) and value.value == 'v114-publication-rebuild-'
+                for value in ast.walk(node)))
+            with self.assertRaisesRegex(ValueError, 'Unexpected or missing assets'):
+                exec(compile(ast.fix_missing_locations(ast.Module(body=[old_block], type_ignores=[])),
+                    '<retained-1ca-publisher-phase-failure>', 'exec'), scope)
+            self.assertEqual(len(self.package_calls), 1)
+            exec(compile(ast.fix_missing_locations(ast.Module(body=[block], type_ignores=[])),
+                '<actual-publisher-qualified-rebuild>', 'exec'), scope)
+        self.assertEqual(len(self.package_calls), 2)
+        self.assertEqual({name: digest for name, digest in scope['actual'].items() if name != 'SHA256SUMS.txt'},
+            self.config['artifactDigests'])
+
+    def test_candidate_and_qualified_extraction_require_their_explicit_inventory_context(self):
+        self.extraction(self.folder / 'candidate-extracted')
+        self.qualify()
+        with self.assertRaisesRegex(ValueError, 'Unexpected or missing assets'):
+            self.extraction(self.folder / 'unqualified-extracted')
+        self.extraction(self.folder / 'qualified-extracted', self.config)
+        with self.assertRaisesRegex(ValueError, 'qualification context'):
+            self.extraction(self.folder / 'wrong-policy', {**self.config, 'sourcePolicy': {}})
+
+    def test_rehashed_qualification_or_assets_cannot_replace_the_callers_trusted_bindings(self):
+        self.qualify()
+        retained = self.assets / 'QUALIFICATION.json'; original = retained.read_bytes()
+        retained.write_text(json.dumps({**self.config, 'ancillary': 'substituted'}))
+        (self.assets / 'SHA256SUMS.txt').write_text(''.join(sha(p.read_bytes()) + '  ' + p.name + '\n'
+            for p in sorted(self.assets.iterdir()) if p.name != 'SHA256SUMS.txt'))
+        with self.assertRaisesRegex(ValueError, 'trusted qualification'):
+            self.extraction(self.folder / 'changed-qualification', self.config)
+        retained.write_bytes(original)
+        (self.assets / 'agijobmanager-usdc.html').write_bytes(b'changed but rehashed standalone output')
+        (self.assets / 'SHA256SUMS.txt').write_text(''.join(sha(p.read_bytes()) + '  ' + p.name + '\n'
+            for p in sorted(self.assets.iterdir()) if p.name != 'SHA256SUMS.txt'))
+        with self.assertRaisesRegex(ValueError, 'Qualification asset binding'):
+            self.extraction(self.folder / 'changed-candidate', self.config)
+        self.assertEqual(len(self.package_calls), 1)
 
 
 class FinalDiscoveryPublicationIdentity(unittest.TestCase):

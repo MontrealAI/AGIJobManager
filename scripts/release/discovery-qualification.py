@@ -334,7 +334,7 @@ def verified_raw_blob(raw_body, entry, *, commit, name, maximum, modes=('100644'
     return raw
 
 
-def public_browser_packet(binding, api, raw_body):
+def public_browser_packet(binding, api, raw_body, *, snapshots):
     """Read the root-authenticated immutable public packet; never fetch a private Actions ZIP."""
     transport = binding['transport']
     commit = api(f'git/commits/{transport["commit"]}')
@@ -377,6 +377,10 @@ def public_browser_packet(binding, api, raw_body):
         'Public browser packet complete original ZIP inventory differs')
     metadata = {name: captured_json(packet_raw('metadata/' + name + '.json'))
         for name in ('run', 'jobs', 'artifacts', 'checkout-commit', 'public-commit')}
+    require(exact(snapshots, metadata), 'Complete live browser metadata snapshots are required')
+    for name, captured in metadata.items():
+        require(canonical(captured) == canonical(snapshots[name]),
+                'Public browser complete metadata snapshot differs: ' + name)
     producer = binding['producer']
     require(all(metadata['run'].get(key) == value for key, value in {'id': producer['runId'],
         'run_attempt': producer['runAttempt'], 'workflow_id': producer['workflowId'],
@@ -385,7 +389,7 @@ def public_browser_packet(binding, api, raw_body):
         'Public browser captured run metadata differs')
     for name in ('checkout-commit', 'public-commit'):
         record = metadata[name]
-        tree_record = record.get('tree', record.get('commit', {}).get('tree', {}))
+        tree_record = record.get('tree', {})
         require(record.get('sha') == producer['headCommit'] and tree_record.get('sha') == producer['checkoutTree']
             and [item.get('sha') for item in record.get('parents', [])] == producer['checkoutParents'],
             'Public browser captured source commit metadata differs')
@@ -413,6 +417,18 @@ def public_browser_packet(binding, api, raw_body):
         'Public browser captured artifact metadata differs')
     files = {name: packet_raw(name) for name in sorted(BROWSER_MEMBERS)}
     return _validate_browser_files(files, binding)
+
+
+def complete_browser_metadata_inventory(record, field):
+    """One bounded complete original collection response; preserve every field for comparison."""
+    require(isinstance(record, dict) and isinstance(record.get(field), list)
+        and type(record.get('total_count')) is int and 0 < record['total_count'] <= 100
+        and record['total_count'] == len(record[field])
+        and all(isinstance(item, dict) and type(item.get('id')) is int and item['id'] > 0
+            for item in record[field])
+        and len({item['id'] for item in record[field]}) == len(record[field]),
+        'Live browser metadata inventory is incomplete, duplicated or oversized: ' + field)
+    return record[field]
 
 
 def authenticate_browser_input(binding, api, expected, *, raw_body=None):
@@ -460,7 +476,8 @@ def authenticate_browser_input(binding, api, expected, *, raw_body=None):
         and run.get('repository', {}).get('full_name') == ALPHA_REPOSITORY
         and run.get('head_repository', {}).get('full_name') == ALPHA_REPOSITORY,
         'Alpha browser producer workflow/run/source is unqualified')
-    jobs = run_jobs(api, producer['runId'], producer['runAttempt'])
+    jobs_response = api(f'actions/runs/{producer["runId"]}/attempts/{producer["runAttempt"]}/jobs?per_page=100&page=1')
+    jobs = complete_browser_metadata_inventory(jobs_response, 'jobs')
     capability = [job for job in jobs if job.get('name') == 'capability']
     require(len(capability) == 1 and capability[0].get('status') == 'completed'
         and capability[0].get('conclusion') == 'success' and capability[0].get('head_sha') == producer['headCommit'],
@@ -474,13 +491,19 @@ def authenticate_browser_input(binding, api, expected, *, raw_body=None):
     require(commit.get('sha') == producer['checkoutCommit'] and commit.get('tree', {}).get('sha') == producer['checkoutTree']
         and [item.get('sha') for item in commit.get('parents', [])] == producer['checkoutParents'],
         'Alpha browser synthetic/main checkout commit tree or parents differ')
-    artifact = api(f'actions/artifacts/{binding["artifact"]["id"]}')
+    artifacts_response = api(f'actions/runs/{producer["runId"]}/artifacts?per_page=100&page=1')
+    artifacts = complete_browser_metadata_inventory(artifacts_response, 'artifacts')
+    matches = [item for item in artifacts if item.get('id') == binding['artifact']['id']]
+    require(len(matches) == 1, 'Alpha browser selected artifact is missing or duplicated')
+    artifact = matches[0]
     require(all(artifact.get(key) == binding['artifact'][field] for key, field in
         (('id', 'id'), ('name', 'name'), ('digest', 'digest'), ('size_in_bytes', 'sizeInBytes')))
         and artifact.get('expired') is False and artifact.get('workflow_run', {}).get('id') == producer['runId']
         and artifact.get('workflow_run', {}).get('head_sha') == producer['headCommit'],
         'Alpha browser artifact API identity differs')
-    result = public_browser_packet(binding, api, owned_raw)
+    snapshots = {'run': run, 'jobs': jobs_response, 'artifacts': artifacts_response,
+        'checkout-commit': commit, 'public-commit': commit}
+    result = public_browser_packet(binding, api, owned_raw, snapshots=snapshots)
     tree = api(f'git/trees/{producer["checkoutTree"]}?recursive=1')
     entries = tree.get('tree')
     require(tree.get('sha') == producer['checkoutTree'] and tree.get('truncated') is False and isinstance(entries, list)
