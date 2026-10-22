@@ -1,0 +1,116 @@
+--- before-plumbing-policy/prepare.py
++++ prepare.py
+@@ -571,6 +571,7 @@
+ PAGES_CORRECTION_PATHS = frozenset((
+     "scripts/release/pages-publication-discovery.py", "scripts/release/test-pages-publication-discovery.py",
+ ))
++PLUMBING_CORRECTION_PATH = "scripts/release/test-discovery-release-plumbing.py"
+ FIXED_REVIEWED_OVERLAYS = {
+     "scripts/release/pages-publication-discovery.py": {"mode": "100644", "blob": "53cd6199077772d801b373cecae392a30bdf8eb6", "bytes": 10929, "sha256": "cb7dfc7cd8c4f59599bec1d3de0050994c45738ec111e3aefceed6677fa8f9bb"},
+     "scripts/release/test-pages-publication-discovery.py": {"mode": "100644", "blob": "f3bad6931050742f60cbe255e855dff904b762ae", "bytes": 16782, "sha256": "280fd9e7976a001473f92a6b1f7b916126940cdab1d8e086bc061abc7928a0df"},
+@@ -580,7 +581,7 @@
+     "scripts/release/package-release.py": {"mode": "100644", "blob": "f4131a0a905d63daa76e69040be93e0a963d9b37", "bytes": 10855, "sha256": "1a98938756b49453c308ce04236058a1c69896c45f90f299c1b0a0a5388724d4"},
+     "scripts/release/verify-package.py": {"mode": "100644", "blob": "fd8685ed9bb0fc4a3e4b6729dc2c7cbecedefed5", "bytes": 14275, "sha256": "b1536ebef5679091ca3b41ad3a192dd56aa09763a0595ddb99a43ec1ed756eca"},
+     "scripts/release/collect-qualification.py": {"mode": "100644", "blob": "8e393a049a2953a35955ada8c664054d8fb51012", "bytes": 11347, "sha256": "004c4b8fe7088f9f141300f02a05580a6f7621933ea36c213c67a93f4d126538"},
+-    "scripts/release/test-discovery-release-plumbing.py": {"mode": "100644", "blob": "f5123723938915e2152cc944a3acd7cf7a043fe1", "bytes": 74322, "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"},
++    "scripts/release/test-discovery-release-plumbing.py": {"mode": "100644", "blob": "16e0dec1840d4786cc1a2667f2f703370e7b134c", "bytes": 74777, "sha256": "c321cc9de4d0e223522b94a016a9d6725cb2821addc23fd6d7df2c7fcb2783b5"},
+     "scripts/release/test-discovery-release-profile.py": {"mode": "100644", "blob": "b17138095b4680aa719b7b2b6198a5e50abb2c5d", "bytes": 38782, "sha256": "724a8ddebf6d948b2c73211993d91536d1fbeff11a12981f2623ef5596c7e2d7"},
+     "ui/package.json": {"mode": "100644", "blob": "3019b3a9df311e2a2638aaa063e9367ed1fe5048", "bytes": 3414, "sha256": "b9fcc3da62e16dfe4e02d70190001f183d41586148f40b942ae8c2d5f05b7cad"},
+     "ui/package-lock.json": {"mode": "100644", "blob": "39415b6c2f132fae7343a298b3ae348223216eec", "bytes": 530005, "sha256": "91c98066fa0d4f0c11c75a7a88fa3d3fab51632c4079e273ce59bde82156584b"},
+@@ -595,7 +596,7 @@
+ FIXED_CORRECTION_PROVENANCE[BOUNDARY_PATH] = "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710"
+ FIXED_CORRECTION_PROVENANCE["docs/ui/VERSIONS.md"] = "88b14a5b2b7c474e4c16bac8af79650adf709ab7"
+ FIXED_CORRECTION_PROVENANCE["scripts/release/verify-package.py"] = "0d790835a4b2346034533f4e63d70e18b2f1570f"
+-FIXED_CORRECTION_PROVENANCE["scripts/release/test-discovery-release-plumbing.py"] = "0d790835a4b2346034533f4e63d70e18b2f1570f"
++FIXED_CORRECTION_PROVENANCE[PLUMBING_CORRECTION_PATH] = "392db1da9c0a08c13b40009217727028f4d7ecf9"
+ for _endpoint_path in ENDPOINT_CORRECTION_PATHS:
+     FIXED_CORRECTION_PROVENANCE[_endpoint_path] = "4d14d0a043074d8ca02828e247a2715ce3f50dc5"
+ for _pages_path in PAGES_CORRECTION_PATHS:
+--- before-plumbing-policy/test_prepare.py
++++ test_prepare.py
+@@ -533,7 +533,8 @@
+         P.reviewed_overlay_records(overlays)
+         for path in P.FIXED_REVIEWED_OVERLAYS:
+             self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[path],
+-                "b195d30ba766120f369d8587ec4d0daa68604ee4" if path in P.PAGES_CORRECTION_PATHS
++                "392db1da9c0a08c13b40009217727028f4d7ecf9" if path == P.PLUMBING_CORRECTION_PATH
++                else "b195d30ba766120f369d8587ec4d0daa68604ee4" if path in P.PAGES_CORRECTION_PATHS
+                 else "4d14d0a043074d8ca02828e247a2715ce3f50dc5" if path in P.ENDPOINT_CORRECTION_PATHS
+                 else "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710" if path == P.BOUNDARY_PATH
+                 else "0d790835a4b2346034533f4e63d70e18b2f1570f" if path in {"scripts/release/verify-package.py",
+@@ -734,7 +735,7 @@
+         expected[P.BOUNDARY_PATH] = expected.pop("BOUNDARY_PATH")
+         # Later reviewed browser-capture corrections remain exact frozen records.
+         expected["scripts/release/verify-package.py"] = {"mode": "100644", "blob": "fd8685ed9bb0fc4a3e4b6729dc2c7cbecedefed5", "bytes": 14275, "sha256": "b1536ebef5679091ca3b41ad3a192dd56aa09763a0595ddb99a43ec1ed756eca"}
+-        expected["scripts/release/test-discovery-release-plumbing.py"] = {"mode": "100644", "blob": "f5123723938915e2152cc944a3acd7cf7a043fe1", "bytes": 74322, "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"}
++        expected["scripts/release/test-discovery-release-plumbing.py"] = {"mode": "100644", "blob": "16e0dec1840d4786cc1a2667f2f703370e7b134c", "bytes": 74777, "sha256": "c321cc9de4d0e223522b94a016a9d6725cb2821addc23fd6d7df2c7fcb2783b5"}
+         self.assertEqual({name: value for name, value in P.FIXED_REVIEWED_OVERLAYS.items()
+                           if name != path and name not in P.ENDPOINT_CORRECTION_PATHS | P.PAGES_CORRECTION_PATHS}, expected)
+         current_ast = ast.parse(MODULE_PATH.read_text())
+@@ -757,7 +758,9 @@
+                                   "scripts/release/test-discovery-release-plumbing.py"})
+         self.assertEqual(set(prior), set(P.FIXED_REVIEWED_OVERLAYS) - P.ENDPOINT_CORRECTION_PATHS - P.PAGES_CORRECTION_PATHS)
+         for path in changed:
+-            self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[path], "0d790835a4b2346034533f4e63d70e18b2f1570f")
++            self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[path],
++                "392db1da9c0a08c13b40009217727028f4d7ecf9" if path == P.PLUMBING_CORRECTION_PATH
++                else "0d790835a4b2346034533f4e63d70e18b2f1570f")
+         for name in ("TEMPLATE_SHA256", "TEMPLATE_BYTES", "BASE_COMMIT", "CURRENT_COMMIT",
+                      "API_ROLE_FACTS", "FALSE_FLAGS"):
+             self.assertEqual(ast.dump(assignment(name, previous), include_attributes=False),
+@@ -850,7 +853,8 @@
+         previous = {(P.BOUNDARY_PATH if isinstance(k, ast.Name) else ast.literal_eval(k)): ast.literal_eval(v)
+                     for k, v in zip(node.keys, node.values)}
+         self.assertEqual(set(P.FIXED_REVIEWED_OVERLAYS) - set(previous), P.PAGES_CORRECTION_PATHS)
+-        self.assertEqual({p: P.FIXED_REVIEWED_OVERLAYS[p] for p in previous}, previous)
++        self.assertEqual({p: P.FIXED_REVIEWED_OVERLAYS[p] for p in previous if p != P.PLUMBING_CORRECTION_PATH},
++                         {p: v for p, v in previous.items() if p != P.PLUMBING_CORRECTION_PATH})
+         for p in P.PAGES_CORRECTION_PATHS:
+             self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[p], "b195d30ba766120f369d8587ec4d0daa68604ee4")
+         def functions(tree):
+@@ -873,5 +877,45 @@
+         self.assertEqual((len(before), len(basis["finalFinite"]), len(basis["protected"])), (38, 85, 1589))
+ 
+ 
++    def test_37_only_reviewed_plumbing_record_changes_with_all_policy_functions_retained(self):
++        old = ast.parse((MODULE_PATH.parent / "before-plumbing-policy/prepare.py").read_bytes())
++        new = ast.parse(MODULE_PATH.read_bytes())
++        node = next(n.value for n in old.body if isinstance(n, ast.Assign)
++                    and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name)
++                    and n.targets[0].id == "FIXED_REVIEWED_OVERLAYS")
++        previous = {(P.BOUNDARY_PATH if isinstance(k, ast.Name) else ast.literal_eval(k)): ast.literal_eval(v)
++                    for k, v in zip(node.keys, node.values)}
++        self.assertEqual(set(previous), set(P.FIXED_REVIEWED_OVERLAYS))
++        self.assertEqual({p for p in previous if previous[p] != P.FIXED_REVIEWED_OVERLAYS[p]},
++                         {P.PLUMBING_CORRECTION_PATH})
++        self.assertEqual(previous[P.PLUMBING_CORRECTION_PATH], {
++            "mode": "100644", "blob": "f5123723938915e2152cc944a3acd7cf7a043fe1", "bytes": 74322,
++            "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"})
++        self.assertEqual(P.FIXED_REVIEWED_OVERLAYS[P.PLUMBING_CORRECTION_PATH], {
++            "mode": "100644", "blob": "16e0dec1840d4786cc1a2667f2f703370e7b134c", "bytes": 74777,
++            "sha256": "c321cc9de4d0e223522b94a016a9d6725cb2821addc23fd6d7df2c7fcb2783b5"})
++        self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[P.PLUMBING_CORRECTION_PATH],
++                         "392db1da9c0a08c13b40009217727028f4d7ecf9")
++        def functions(tree):
++            return {n.name: ast.dump(n, include_attributes=False) for n in tree.body
++                    if isinstance(n, ast.FunctionDef)}
++        self.assertEqual(functions(old), functions(new))
++        for name in ("API_ROLE_FACTS", "TEMPLATE_BYTES", "TEMPLATE_SHA256", "CEILINGS", "FALSE_FLAGS",
++                     "SIDECARS", "FRESH_SNAPSHOT_ROLES", "COMMON_SEVENTEEN"):
++            def value(tree):
++                return next(n.value for n in tree.body if isinstance(n, ast.Assign)
++                    and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name) and n.targets[0].id == name)
++            self.assertEqual(ast.dump(value(old), include_attributes=False),
++                             ast.dump(value(new), include_attributes=False))
++        basis, current, before, overlays, trees = self.scope_fixture()
++        P.source_basis_metadata(basis, current, before, overlays, trees)
++        self.assertEqual(basis["currentFinite"][P.PLUMBING_CORRECTION_PATH]["status"], "A")
++        self.assertEqual(basis["finalFinite"][P.PLUMBING_CORRECTION_PATH]["status"], "A")
++        self.assertNotIn(P.PLUMBING_CORRECTION_PATH, basis["protected"])
++        self.assertEqual((len(P.FIXED_REVIEWED_OVERLAYS), len(P.CONTEXTUAL_OVERLAYS), len(P.OVERLAY_PATHS)),
++                         (15, 5, 20))
++        self.assertEqual((len(before), len(basis["finalFinite"]), len(basis["protected"])), (38, 85, 1589))
++
++
+ if __name__ == "__main__":
+     unittest.main(verbosity=2)

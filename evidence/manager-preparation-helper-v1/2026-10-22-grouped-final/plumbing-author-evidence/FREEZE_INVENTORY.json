@@ -1,0 +1,59 @@
+{
+  "files": [
+    {
+      "path": "AFTER_RESULT.log",
+      "bytes": 1048,
+      "sha256": "e5a2291b6692a6ca0c3d91652397379f519faa55aabf03ed873e81940b1c1b72"
+    },
+    {
+      "path": "AST_COMPARISON.json",
+      "bytes": 4637,
+      "sha256": "1393100a9751e69e4d41777b28fa77ccc0c49ad47ab04a59b767f6356a3437bb"
+    },
+    {
+      "path": "AUTHOR_REPORT.json",
+      "bytes": 4065,
+      "sha256": "f65ddaed69087563dbee9d8403d511f20f7f70e00c58faac1e717fbbc2ae25b5"
+    },
+    {
+      "path": "BEFORE_RESULT.log",
+      "bytes": 4087,
+      "sha256": "1f15d8d7ea771698bdf723a5d89bcc150e0c6f6f35aa3457e89f585445d6bb04"
+    },
+    {
+      "path": "IDENTITIES.json",
+      "bytes": 398,
+      "sha256": "7295dc89d343aa027a39932d85e22a68c49eef41506c43bec2b9ddb54c1f8823"
+    },
+    {
+      "path": "INITIAL_AFTER_RESULT.log",
+      "bytes": 904,
+      "sha256": "cd08ff9fe310e32abd35c6e943dd5ba053bee06165e2b166592650353a6e3155"
+    },
+    {
+      "path": "INITIAL_BEFORE_RESULT.log",
+      "bytes": 4087,
+      "sha256": "152bf0c0e29c7fb99175684497de2876d78d5d0188b1add01259819c544b823c"
+    },
+    {
+      "path": "after/scripts/release/test-discovery-release-plumbing.py",
+      "bytes": 74777,
+      "sha256": "c321cc9de4d0e223522b94a016a9d6725cb2821addc23fd6d7df2c7fcb2783b5"
+    },
+    {
+      "path": "before/scripts/release/test-discovery-release-plumbing.py",
+      "bytes": 74322,
+      "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"
+    },
+    {
+      "path": "correction.patch",
+      "bytes": 2836,
+      "sha256": "ae20095a968770895200495400b351865d5612d99e012c13e749bdbe7a948ac3"
+    },
+    {
+      "path": "run_owned_fixture.py",
+      "bytes": 5798,
+      "sha256": "2ad4d249bcd4ae98c33bf8cbe3d02b2625489cfaa825f6d172cfbf6e6c3cd6ab"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+--- a/prepare.py
++++ b/prepare.py
+@@ -568,9 +568,9 @@
+ FIXED_REVIEWED_OVERLAYS = {
+     "scripts/release/release_common.py": {"mode": "100644", "blob": "baddc9e4eb38f8efdfc2613e33513869513f6285", "bytes": 26690, "sha256": "3e605f02401825d01858a3e7241f8fd890c71804ebba1c1db42cfbc572c76f2a"},
+     "scripts/release/package-release.py": {"mode": "100644", "blob": "f4131a0a905d63daa76e69040be93e0a963d9b37", "bytes": 10855, "sha256": "1a98938756b49453c308ce04236058a1c69896c45f90f299c1b0a0a5388724d4"},
+-    "scripts/release/verify-package.py": {"mode": "100644", "blob": "1db9e41427b297d37f09e348e0fc95703a8931a8", "bytes": 14248, "sha256": "b0d9d2058549e3ee12dbfa6fbf6c6975ce442fa7b68e6a6e227efa86e08e502d"},
++    "scripts/release/verify-package.py": {"mode": "100644", "blob": "fd8685ed9bb0fc4a3e4b6729dc2c7cbecedefed5", "bytes": 14275, "sha256": "b1536ebef5679091ca3b41ad3a192dd56aa09763a0595ddb99a43ec1ed756eca"},
+     "scripts/release/collect-qualification.py": {"mode": "100644", "blob": "8e393a049a2953a35955ada8c664054d8fb51012", "bytes": 11347, "sha256": "004c4b8fe7088f9f141300f02a05580a6f7621933ea36c213c67a93f4d126538"},
+-    "scripts/release/test-discovery-release-plumbing.py": {"mode": "100644", "blob": "befa53c064025bbdb4bfbe98535198103c1c699e", "bytes": 72705, "sha256": "2dcbda151f7da7eb5085c7066ccf18a6c4e69597e0b3f23a10fc276b7d9a3074"},
++    "scripts/release/test-discovery-release-plumbing.py": {"mode": "100644", "blob": "f5123723938915e2152cc944a3acd7cf7a043fe1", "bytes": 74322, "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"},
+     "scripts/release/test-discovery-release-profile.py": {"mode": "100644", "blob": "b17138095b4680aa719b7b2b6198a5e50abb2c5d", "bytes": 38782, "sha256": "724a8ddebf6d948b2c73211993d91536d1fbeff11a12981f2623ef5596c7e2d7"},
+     "ui/package.json": {"mode": "100644", "blob": "3019b3a9df311e2a2638aaa063e9367ed1fe5048", "bytes": 3414, "sha256": "b9fcc3da62e16dfe4e02d70190001f183d41586148f40b942ae8c2d5f05b7cad"},
+     "ui/package-lock.json": {"mode": "100644", "blob": "39415b6c2f132fae7343a298b3ae348223216eec", "bytes": 530005, "sha256": "91c98066fa0d4f0c11c75a7a88fa3d3fab51632c4079e273ce59bde82156584b"},
+@@ -584,6 +584,8 @@
+ }
+ FIXED_CORRECTION_PROVENANCE[BOUNDARY_PATH] = "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710"
+ FIXED_CORRECTION_PROVENANCE["docs/ui/VERSIONS.md"] = "88b14a5b2b7c474e4c16bac8af79650adf709ab7"
++FIXED_CORRECTION_PROVENANCE["scripts/release/verify-package.py"] = "0d790835a4b2346034533f4e63d70e18b2f1570f"
++FIXED_CORRECTION_PROVENANCE["scripts/release/test-discovery-release-plumbing.py"] = "0d790835a4b2346034533f4e63d70e18b2f1570f"
+ UI_BASE_RECORDS = {
+     "ui/package.json": {"mode": "100644", "blob": "9af0360c06b4ffec9c474056901ab269c0f31d9a", "bytes": 3414, "sha256": "733f32d36e894adcdbf2d3da2ed12a1ef77d06622dfef3302c89dd23ea4cfd49"},
+     "ui/package-lock.json": {"mode": "100644", "blob": "dc4e014f4572c6f5e555c7c16265391e1418ac53", "bytes": 530005, "sha256": "f12a33c0135afa6487cc6b7d247e885c154e7058de2230803f3e3cc314756b2c"},
+--- a/test_prepare.py
++++ b/test_prepare.py
+@@ -533,6 +533,8 @@
+         for path in P.FIXED_REVIEWED_OVERLAYS:
+             self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[path],
+                 "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710" if path == P.BOUNDARY_PATH
++                else "0d790835a4b2346034533f4e63d70e18b2f1570f" if path in {"scripts/release/verify-package.py",
++                    "scripts/release/test-discovery-release-plumbing.py"}
+                 else "88b14a5b2b7c474e4c16bac8af79650adf709ab7" if path == "docs/ui/VERSIONS.md"
+                 else "b8ff0a7df7195a0b1f132b43114422d3dfb64add")
+             for key, value in (("mode", "100755"), ("blob", "0" * 40),
+@@ -727,6 +729,9 @@
+         expected = {key.id if isinstance(key, ast.Name) else ast.literal_eval(key): ast.literal_eval(value)
+                     for key, value in zip(previous_dict.keys, previous_dict.values)}
+         expected[P.BOUNDARY_PATH] = expected.pop("BOUNDARY_PATH")
++        # Later reviewed browser-capture corrections remain exact frozen records.
++        expected["scripts/release/verify-package.py"] = {"mode": "100644", "blob": "fd8685ed9bb0fc4a3e4b6729dc2c7cbecedefed5", "bytes": 14275, "sha256": "b1536ebef5679091ca3b41ad3a192dd56aa09763a0595ddb99a43ec1ed756eca"}
++        expected["scripts/release/test-discovery-release-plumbing.py"] = {"mode": "100644", "blob": "f5123723938915e2152cc944a3acd7cf7a043fe1", "bytes": 74322, "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"}
+         self.assertEqual({name: value for name, value in P.FIXED_REVIEWED_OVERLAYS.items() if name != path}, expected)
+         current_ast = ast.parse(MODULE_PATH.read_text())
+         for name in ("TEMPLATE_SHA256", "TEMPLATE_BYTES", "BASE_COMMIT", "CURRENT_COMMIT", "API_ROLE_FACTS"):
+@@ -734,5 +739,33 @@
+                              ast.dump(assignment(name, current_ast), include_attributes=False))
+ 
+ 
++    def test_33_only_two_reviewed_capture_records_change_with_policy_gates_preserved(self):
++        previous = ast.parse((MODULE_PATH.parent / "before-browser-capture-policy/prepare.py").read_text())
++        current_ast = ast.parse(MODULE_PATH.read_text())
++        def assignment(name, tree):
++            return next(n.value for n in tree.body if isinstance(n, ast.Assign)
++                and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name) and n.targets[0].id == name)
++        node = assignment("FIXED_REVIEWED_OVERLAYS", previous)
++        prior = {(P.BOUNDARY_PATH if isinstance(key, ast.Name) else ast.literal_eval(key)): ast.literal_eval(value)
++                 for key, value in zip(node.keys, node.values)}
++        changed = {path for path in prior if prior[path] != P.FIXED_REVIEWED_OVERLAYS[path]}
++        self.assertEqual(changed, {"scripts/release/verify-package.py",
++                                  "scripts/release/test-discovery-release-plumbing.py"})
++        self.assertEqual(set(prior), set(P.FIXED_REVIEWED_OVERLAYS))
++        for path in changed:
++            self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[path], "0d790835a4b2346034533f4e63d70e18b2f1570f")
++        for name in ("TEMPLATE_SHA256", "TEMPLATE_BYTES", "BASE_COMMIT", "CURRENT_COMMIT",
++                     "API_ROLE_FACTS", "FALSE_FLAGS"):
++            self.assertEqual(ast.dump(assignment(name, previous), include_attributes=False),
++                             ast.dump(assignment(name, current_ast), include_attributes=False))
++        for name in ("source_basis_metadata", "verify_corpus_bytes", "validate_package_invariants", "make_packet"):
++            old = next(n for n in previous.body if isinstance(n, ast.FunctionDef) and n.name == name)
++            new = next(n for n in current_ast.body if isinstance(n, ast.FunctionDef) and n.name == name)
++            self.assertEqual(ast.dump(old, include_attributes=False), ast.dump(new, include_attributes=False))
++        basis, current, before, overlays, trees = self.scope_fixture()
++        P.source_basis_metadata(basis, current, before, overlays, trees)
++        self.assertEqual((len(before), len(basis["finalFinite"]), len(basis["protected"])), (38, 85, 1589))
++
++
+ if __name__ == "__main__":
+     unittest.main(verbosity=2)

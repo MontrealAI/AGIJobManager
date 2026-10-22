@@ -1,0 +1,12 @@
+test_package_and_deployment_changes_are_version_metadata_only (owned_plumbing_fixture.DiscoveryPlumbing.test_package_and_deployment_changes_are_version_metadata_only) ... ok
+test_actual_publisher_rebuild_uses_the_collected_qualified_phase_and_original_capsule (owned_plumbing_fixture.QualifiedDiscoveryRebuild.test_actual_publisher_rebuild_uses_the_collected_qualified_phase_and_original_capsule) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.291s
+
+OK
+OWNED_UNRELATED_PACKAGE_MUTATION_REFUSED=unrelated-ui-dependency
+OWNED_UNRELATED_PACKAGE_MUTATION_REFUSED=unrelated-ui-override
+OWNED_UNRELATED_PACKAGE_MUTATION_REFUSED=unrelated-root-command
+OWNED_UNRELATED_PACKAGE_MUTATION_REFUSED=locked-next-integrity
+{"errors": 0, "failures": 0, "localInertGitCommands": 9, "networkNativeGeneratedVerifierExecuted": false, "profile": "reviewed-empty-template-only", "profileSha256": "91dff54f2dbd7f6644c6a3b93540c584a964af03eadfa8170e1491d2ececa213", "selectedTests": 2, "success": true, "variant": "after"}

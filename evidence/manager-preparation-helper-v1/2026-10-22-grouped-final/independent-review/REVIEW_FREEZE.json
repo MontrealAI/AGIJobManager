@@ -1,0 +1,30 @@
+{
+  "files": [
+    {
+      "path": "CHECKS.json",
+      "bytes": 8992,
+      "sha256": "8d67d56d4fa130a40ed97afaad8abf76daff0e666dabc0f084ef363d966e63eb"
+    },
+    {
+      "path": "INDEPENDENT_REVIEW.json",
+      "bytes": 2724,
+      "sha256": "0fbca59355013994c3854c267f199fc2b4b48741acb03e482c7b94da98ed0825"
+    },
+    {
+      "path": "OWNED37.stderr.txt",
+      "bytes": 5206,
+      "sha256": "b81958c67ec2588c87f3eb78dde84809a6e4efe68504a721c8a146ec12bc206c"
+    },
+    {
+      "path": "OWNED37.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "PUBLIC_SOURCE_READBACK.json",
+      "bytes": 77937,
+      "sha256": "28189a9932ad1d8662c01246e457bf6bcb8e24c0678652705ba0ed5aab3b6763"
+    }
+  ],
+  "exactCopyAuthorFreeze": "df2b8a032025261dafcfa5d6723dc0c39ae00e9568cdecb24e9360722f7c68fa"
+}

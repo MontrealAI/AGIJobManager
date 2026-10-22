@@ -1,0 +1,81 @@
+{
+  "change": [
+    "Existing version preservation test first reverses version labels, then calls exact reviewed PROFILE.restore_next_security_patch; full entire-document equality remains.",
+    "Existing publisher phase test deep-copies current real publisher rebuild block, removes only exact qualification=config keyword on its single extract_browser_capsule call, asserts mutationcount1, and exercises candidate-only refusal before executing original untouched actual phase block."
+  ],
+  "findingsClosed": [
+    "Configured4353302391: version-only fixture rejects exact reviewed Next15.5.28 security patch.",
+    "Configured4353302397: historical1ca9 source does not provide the publisher path used by fixture."
+  ],
+  "notRun": [
+    "generated verifier import/execution",
+    "actual Alpha/browser/native/custody/restricted probes",
+    "network/public Git requests or source historical object probes in fixture driver",
+    "full product/heavy suite",
+    "source application/merge/publication"
+  ],
+  "ownedDriver": {
+    "after": "Selected2fixtures pass; actual log retains elapsed. Four negative mutation cases also refused.",
+    "baselinePackages": "Exact original900 rawpackage6/deployment records from independently reviewed before38 CAS map; current owned copies use reviewed security afterimages.",
+    "before": "Selected2fixtures reproduce2UIpreservation subtest failures plus1unavailablehistorical lookup error; log explicitly marks owned lookup refusal, not a fresh historical Git probe. Actual configured/hosted missing-path result retained by parent.",
+    "executionBoundary": "Inert own temporary Git/package/Builder source fixture only. Actual external builder subprocess mocked; process guard permits local Git only and forbids network Git. Exact current publisher AST runs under inert mocked namespace, not actual publication.",
+    "logs": [
+      "BEFORE_RESULT.log",
+      "AFTER_RESULT.log",
+      "INITIAL_BEFORE_RESULT.log",
+      "INITIAL_AFTER_RESULT.log"
+    ],
+    "negativeCases": [
+      "unrelated-ui-dependency react",
+      "unrelated-ui-override sharp",
+      "unrelated-root-command build",
+      "locked-next-integrity exact guard"
+    ],
+    "path": "run_owned_fixture.py",
+    "profile": "Only reviewed40,085B emptytemplate SHA91dff54f2dbd7f6644c6a3b93540c584a964af03eadfa8170e1491d2ececa213; generatedV never loaded."
+  },
+  "preservation": {
+    "changedMethods": [
+      "DiscoveryPlumbing.test_package_and_deployment_changes_are_version_metadata_only",
+      "QualifiedDiscoveryRebuild.test_actual_publisher_rebuild_uses_the_collected_qualified_phase_and_original_capsule"
+    ],
+    "entireModuleASTOutside2MethodsExact": true,
+    "negativeRefusalAndActualRebuildDigestAssertionsRetained": true,
+    "noHistorical1caReferenceInAfter": true,
+    "totalMethods": 43,
+    "unchangedOtherMethodASTs": 41
+  },
+  "schema": "manager/plumbing-fixture-correction/v1",
+  "scope": {
+    "countsUnchanged": {
+      "beforeAndProjections": 38,
+      "currentFinite": 83,
+      "finalFinite": 85,
+      "protected": 1589
+    },
+    "fixedRecords": "Replace the already-selected plumbing fixed record only; no pathset extension.",
+    "pathAlreadyCurrentAndFinalFinite": true,
+    "statusRelative900": "A"
+  },
+  "sourceBase": {
+    "exactBeforeCommit": "0a1ba49a33f1abfc934875ad7965ad0998739c0b",
+    "exactBeforeTree": "406637589a8c1e933aa9e7e9a07f4fb15012ea87",
+    "identity": {
+      "after": {
+        "blob": "16e0dec1840d4786cc1a2667f2f703370e7b134c",
+        "bytes": 74777,
+        "mode": "100644",
+        "sha256": "c321cc9de4d0e223522b94a016a9d6725cb2821addc23fd6d7df2c7fcb2783b5"
+      },
+      "before": {
+        "blob": "f5123723938915e2152cc944a3acd7cf7a043fe1",
+        "bytes": 74322,
+        "mode": "100644",
+        "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"
+      }
+    },
+    "parentForProposedPublicChild": "b195d30ba766120f369d8587ec4d0daa68604ee4",
+    "path": "scripts/release/test-discovery-release-plumbing.py"
+  },
+  "state": "READY_FOR_INDEPENDENT_REVIEW"
+}

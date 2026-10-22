@@ -1,0 +1,67 @@
+{
+  "checks": 128,
+  "flags": {
+    "executionApproved": false,
+    "nativeExecutionQualified": false,
+    "publicationApproved": false,
+    "releaseQualified": false,
+    "sourceReviewed": false
+  },
+  "limitations": [
+    "Review applies to owned helper amendment only; no current integration/publication qualification inferred.",
+    "Pages product correction was authored by this reviewer and separately independently reviewed by parent; this task checks helper policy/data binding to public reviewed bytes.",
+    "Subsequent0a configured/hosted plumbing-fixture late findings are separate pending corrections; this helper review does not close them.",
+    "No capturedsource/generatedverifier import or execution, render/native/product/custody/restricted probes, source apply or publication."
+  ],
+  "publicSource": {
+    "afterimages": [
+      {
+        "blob": "53cd6199077772d801b373cecae392a30bdf8eb6",
+        "bytes": 10929,
+        "mode": "100644",
+        "path": "scripts/release/pages-publication-discovery.py",
+        "sha256": "cb7dfc7cd8c4f59599bec1d3de0050994c45738ec111e3aefceed6677fa8f9bb"
+      },
+      {
+        "blob": "f3bad6931050742f60cbe255e855dff904b762ae",
+        "bytes": 16782,
+        "mode": "100644",
+        "path": "scripts/release/test-pages-publication-discovery.py",
+        "sha256": "280fd9e7976a001473f92a6b1f7b916126940cdab1d8e086bc061abc7928a0df"
+      }
+    ],
+    "commit": "b195d30ba766120f369d8587ec4d0daa68604ee4",
+    "parent": "0a1ba49a33f1abfc934875ad7965ad0998739c0b",
+    "tree": "1abd8565ee0d5d4bf45ac9e964a2246a107761ec"
+  },
+  "schema": "manager/independent-pages-helper-policy-review/v1",
+  "scope": {
+    "all69FunctionASTsIdentical": true,
+    "beforeAndProjections": 38,
+    "contextual": 5,
+    "currentFinite": 83,
+    "finalFinite": 85,
+    "fixed": 15,
+    "latestRunAndAttemptRules": "Exact prior function AST; all latestattempt/refusal tests retained",
+    "protected": 1589,
+    "totalOverlays": 20
+  },
+  "source": {
+    "bytes": 92675,
+    "sha256": "57e16c771075b7cb98e4d8be35dd3766a97a91b23cce07fe1918956bd6a72708"
+  },
+  "state": "NO_CONCRETE_FINDING",
+  "tests": {
+    "adapted": [
+      "OwnedDataTests.test_27_fixed_reviewed_overlay_identities_and_exact_paths",
+      "OwnedDataTests.test_32_exact_UI_guide_overlay_already_within_modified_scope",
+      "OwnedDataTests.test_33_only_two_reviewed_capture_records_change_with_policy_gates_preserved"
+    ],
+    "bytes": 53770,
+    "independentRun": "36/36 owned-data tests pass from exact copy; elapsed retained in OWNED36.stderr.txt",
+    "newTest": "test_36_only_two_pages_records_extend_existing_finite_scope",
+    "originalASTUnchanged": 32,
+    "originalMethods": 35,
+    "sha256": "0d4a7593c89fedf840a669f9710b93ab7fa2654a4a73419dcedfbfe5c19b20da"
+  }
+}

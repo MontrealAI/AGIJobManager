@@ -1,0 +1,35 @@
+{
+  "sha": "b195d30ba766120f369d8587ec4d0daa68604ee4",
+  "node_id": "C_kwDORCBDDNoAKGIxOTVkMzBiYTc2NjEyMGYzNjlkODU4N2VjNGQwZGFhNjg2MDRlZTQ",
+  "url": "https://api.github.com/repos/MontrealAI/AGIJobManager/git/commits/b195d30ba766120f369d8587ec4d0daa68604ee4",
+  "html_url": "https://github.com/MontrealAI/AGIJobManager/commit/b195d30ba766120f369d8587ec4d0daa68604ee4",
+  "author": {
+    "name": "MONTREAL.AI",
+    "email": "info@montreal.ai",
+    "date": "2026-10-22T20:41:09Z"
+  },
+  "committer": {
+    "name": "MONTREAL.AI",
+    "email": "info@montreal.ai",
+    "date": "2026-10-22T20:41:09Z"
+  },
+  "tree": {
+    "sha": "1abd8565ee0d5d4bf45ac9e964a2246a107761ec",
+    "url": "https://api.github.com/repos/MontrealAI/AGIJobManager/git/trees/1abd8565ee0d5d4bf45ac9e964a2246a107761ec"
+  },
+  "message": "fix: retain qualified Discovery Pages without extra host release policies",
+  "parents": [
+    {
+      "sha": "0a1ba49a33f1abfc934875ad7965ad0998739c0b",
+      "url": "https://api.github.com/repos/MontrealAI/AGIJobManager/git/commits/0a1ba49a33f1abfc934875ad7965ad0998739c0b",
+      "html_url": "https://github.com/MontrealAI/AGIJobManager/commit/0a1ba49a33f1abfc934875ad7965ad0998739c0b"
+    }
+  ],
+  "verification": {
+    "verified": false,
+    "reason": "unsigned",
+    "signature": null,
+    "payload": null,
+    "verified_at": null
+  }
+}

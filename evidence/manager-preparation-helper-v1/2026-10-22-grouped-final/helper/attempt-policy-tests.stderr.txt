@@ -1,0 +1,40 @@
+test_01_blob_and_tree_wire_vectors (__main__.OwnedDataTests.test_01_blob_and_tree_wire_vectors) ... ok
+test_02_strict_json_duplicates_and_nonfinite (__main__.OwnedDataTests.test_02_strict_json_duplicates_and_nonfinite) ... ok
+test_03_json_budgets_types_unicode (__main__.OwnedDataTests.test_03_json_budgets_types_unicode) ... ok
+test_04_unsafe_paths_and_file_ancestor (__main__.OwnedDataTests.test_04_unsafe_paths_and_file_ancestor) ... ok
+test_05_historical_groups_and_fixed_identities (__main__.OwnedDataTests.test_05_historical_groups_and_fixed_identities) ... ok
+test_06_codepoint_projections_unicode_crlf_repetition (__main__.OwnedDataTests.test_06_codepoint_projections_unicode_crlf_repetition) ... ok
+test_07_projection_type_order_offset_failures (__main__.OwnedDataTests.test_07_projection_type_order_offset_failures) ... ok
+test_08_one_frozen_block_and_outside_bytes (__main__.OwnedDataTests.test_08_one_frozen_block_and_outside_bytes) ... ok
+test_09_full_template_hash_and_duplicate_block (__main__.OwnedDataTests.test_09_full_template_hash_and_duplicate_block) ... ok
+test_10_last_bad_original_refuses_before_any_read (__main__.OwnedDataTests.test_10_last_bad_original_refuses_before_any_read) ... ok
+test_11_missing_final_inputs_refuse_before_reads (__main__.OwnedDataTests.test_11_missing_final_inputs_refuse_before_reads) ... ok
+test_12_raw_cas_exact_types_and_complete_last_record (__main__.OwnedDataTests.test_12_raw_cas_exact_types_and_complete_last_record) ... ok
+test_13_full_public_tree_subtree_root_and_mode (__main__.OwnedDataTests.test_13_full_public_tree_subtree_root_and_mode) ... ok
+test_14_owned_binary_capture_and_digest_size (__main__.OwnedDataTests.test_14_owned_binary_capture_and_digest_size) ... ok
+test_15_nofollow_owned_leaf_and_ancestor (__main__.OwnedDataTests.test_15_nofollow_owned_leaf_and_ancestor) ... ok
+test_16_closure_rejects_empty_directory_extra_and_fifo (__main__.OwnedDataTests.test_16_closure_rejects_empty_directory_extra_and_fifo) ... ok
+test_17_bounded_growth_and_late_snapshot (__main__.OwnedDataTests.test_17_bounded_growth_and_late_snapshot) ... ok
+test_18_version_only_package_and_deployment_invariants (__main__.OwnedDataTests.test_18_version_only_package_and_deployment_invariants) ... ok
+test_19_output_boundary_existing_objects_and_overlap (__main__.OwnedDataTests.test_19_output_boundary_existing_objects_and_overlap) ... ok
+test_20_fresh_atomic_commit_exact_bytes (__main__.OwnedDataTests.test_20_fresh_atomic_commit_exact_bytes) ... ok
+test_21_late_final_collision_is_not_overwritten (__main__.OwnedDataTests.test_21_late_final_collision_is_not_overwritten) ... ok
+test_22_precommit_write_and_stage_fsync_cleanup (__main__.OwnedDataTests.test_22_precommit_write_and_stage_fsync_cleanup) ... ok
+test_23_postlink_failure_uncertain_retains_final (__main__.OwnedDataTests.test_23_postlink_failure_uncertain_retains_final) ... ok
+test_24_replaced_cleanup_name_preserves_other_inode (__main__.OwnedDataTests.test_24_replaced_cleanup_name_preserves_other_inode) ... ok
+test_25_acyclic_packet_flags_determinism_and_virtual_link_data (__main__.OwnedDataTests.test_25_acyclic_packet_flags_determinism_and_virtual_link_data) ... ok
+test_26_late_nested_closure_refuses_before_stage_or_link (__main__.OwnedDataTests.test_26_late_nested_closure_refuses_before_stage_or_link) ... ok
+test_27_fixed_reviewed_overlay_identities_and_exact_paths (__main__.OwnedDataTests.test_27_fixed_reviewed_overlay_identities_and_exact_paths) ... ok
+test_28_only_boundary_moves_to_final_scope_with_original38 (__main__.OwnedDataTests.test_28_only_boundary_moves_to_final_scope_with_original38) ... ok
+test_29_all_other_protected_bytes_and_anchors_are_retained (__main__.OwnedDataTests.test_29_all_other_protected_bytes_and_anchors_are_retained) ... ok
+test_30_only_exact_UI_bytes_and_other_package_authority_remain (__main__.OwnedDataTests.test_30_only_exact_UI_bytes_and_other_package_authority_remain) ... ok
+test_31_new_template_pin_and_original_fixed_facts_remain (__main__.OwnedDataTests.test_31_new_template_pin_and_original_fixed_facts_remain) ... ok
+test_32_exact_UI_guide_overlay_already_within_modified_scope (__main__.OwnedDataTests.test_32_exact_UI_guide_overlay_already_within_modified_scope) ... ok
+test_33_only_two_reviewed_capture_records_change_with_policy_gates_preserved (__main__.OwnedDataTests.test_33_only_two_reviewed_capture_records_change_with_policy_gates_preserved) ... ok
+test_34_latest_rerun_refuses_even_when_original_attempt_matches (__main__.OwnedDataTests.test_34_latest_rerun_refuses_even_when_original_attempt_matches) ... ok
+test_35_exact_attempt_endpoints_and_only_reviewed_function_changes (__main__.OwnedDataTests.test_35_exact_attempt_endpoints_and_only_reviewed_function_changes) ... ok
+
+----------------------------------------------------------------------
+Ran 35 tests in 0.953s
+
+OK

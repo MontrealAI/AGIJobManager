@@ -1,0 +1,35 @@
+{
+  "state": "CLEAR",
+  "files": [
+    {
+      "path": "INDEPENDENT_REVIEW.json",
+      "bytes": 1332,
+      "sha256": "d8a1d8dd6eb5647c4464c69309f2644dbc8cecf01e01bbb1279ca2901ef166da"
+    },
+    {
+      "path": "INDEPENDENT_TESTS.stderr.txt",
+      "bytes": 502,
+      "sha256": "fe089efaf24442ed83a8f4bb403f201f73ccd17a41e01988f6f1b5a9b3027719"
+    },
+    {
+      "path": "INDEPENDENT_TESTS.stdout.txt",
+      "bytes": 546,
+      "sha256": "9dc9f626988a94167de7a9bf55543c93820af6d931251baa6ddea512ccb4d7eb"
+    },
+    {
+      "path": "after/scripts/release/test-discovery-release-plumbing.py",
+      "bytes": 74777,
+      "sha256": "c321cc9de4d0e223522b94a016a9d6725cb2821addc23fd6d7df2c7fcb2783b5"
+    },
+    {
+      "path": "before/scripts/release/test-discovery-release-plumbing.py",
+      "bytes": 74322,
+      "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"
+    },
+    {
+      "path": "run_owned_fixture.py",
+      "bytes": 5798,
+      "sha256": "2ad4d249bcd4ae98c33bf8cbe3d02b2625489cfaa825f6d172cfbf6e6c3cd6ab"
+    }
+  ]
+}

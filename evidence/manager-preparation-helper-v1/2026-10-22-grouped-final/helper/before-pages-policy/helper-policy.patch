@@ -1,0 +1,246 @@
+--- a/prepare.py
++++ b/prepare.py
+@@ -565,7 +565,12 @@
+     ".github/workflows/publish-discovery-v1.yml",
+ ))
+ BOUNDARY_PATH = "test/buyerProtection.v095.test.js"
++ENDPOINT_CORRECTION_PATHS = frozenset((
++    "scripts/release/discovery-qualification.py", "scripts/release/test-discovery-qualification.py",
++))
+ FIXED_REVIEWED_OVERLAYS = {
++    "scripts/release/discovery-qualification.py": {"mode": "100644", "blob": "3608ce1e69dac5aa645071a1c0d4cabdace02f4b", "bytes": 73143, "sha256": "ecc0ba7529df30288bf370ce016f71fa5c00e25f897116fa09997b91fc19036b"},
++    "scripts/release/test-discovery-qualification.py": {"mode": "100644", "blob": "bfe73cf64aaa79b8404b096adc1f46ed9c69ea13", "bytes": 84618, "sha256": "bfb41059130d8dc4fdad8d861733109f3068c8cb99aec1111e7a9c190712fb20"},
+     "scripts/release/release_common.py": {"mode": "100644", "blob": "baddc9e4eb38f8efdfc2613e33513869513f6285", "bytes": 26690, "sha256": "3e605f02401825d01858a3e7241f8fd890c71804ebba1c1db42cfbc572c76f2a"},
+     "scripts/release/package-release.py": {"mode": "100644", "blob": "f4131a0a905d63daa76e69040be93e0a963d9b37", "bytes": 10855, "sha256": "1a98938756b49453c308ce04236058a1c69896c45f90f299c1b0a0a5388724d4"},
+     "scripts/release/verify-package.py": {"mode": "100644", "blob": "fd8685ed9bb0fc4a3e4b6729dc2c7cbecedefed5", "bytes": 14275, "sha256": "b1536ebef5679091ca3b41ad3a192dd56aa09763a0595ddb99a43ec1ed756eca"},
+@@ -586,6 +591,8 @@
+ FIXED_CORRECTION_PROVENANCE["docs/ui/VERSIONS.md"] = "88b14a5b2b7c474e4c16bac8af79650adf709ab7"
+ FIXED_CORRECTION_PROVENANCE["scripts/release/verify-package.py"] = "0d790835a4b2346034533f4e63d70e18b2f1570f"
+ FIXED_CORRECTION_PROVENANCE["scripts/release/test-discovery-release-plumbing.py"] = "0d790835a4b2346034533f4e63d70e18b2f1570f"
++for _endpoint_path in ENDPOINT_CORRECTION_PATHS:
++    FIXED_CORRECTION_PROVENANCE[_endpoint_path] = "4d14d0a043074d8ca02828e247a2715ce3f50dc5"
+ UI_BASE_RECORDS = {
+     "ui/package.json": {"mode": "100644", "blob": "9af0360c06b4ffec9c474056901ab269c0f31d9a", "bytes": 3414, "sha256": "733f32d36e894adcdbf2d3da2ed12a1ef77d06622dfef3302c89dd23ea4cfd49"},
+     "ui/package-lock.json": {"mode": "100644", "blob": "dc4e014f4572c6f5e555c7c16265391e1418ac53", "bytes": 530005, "sha256": "f12a33c0135afa6487cc6b7d247e885c154e7058de2230803f3e3cc314756b2c"},
+@@ -914,6 +921,7 @@
+         "fleet-native/native-proof.json",
+     ))
+ SIDECARS = frozenset(("run", "jobs", "artifacts", "checkout-commit", "public-commit"))
++FRESH_SNAPSHOT_ROLES = SIDECARS | frozenset(("latest-run",))
+ COMMON_SEVENTEEN = BROWSER_MEMBERS | {"CUSTODY.json"} | {
+     "metadata/" + name + ".json" for name in SIDECARS}
+ BROWSER_WORKFLOW = ".github/workflows/successor-capability.yml"
+@@ -1028,6 +1036,35 @@
+          "Workflow edit is not the fixed Alpha checkout ref")
+     need(apply_projection(original, edits) == after, "Workflow changed beyond selected Alpha ref")
+ 
++def fresh_snapshot_urls(producer, accepted):
++    positive(producer["runId"])
++    need(type(producer["runAttempt"]) is int and producer["runAttempt"] == 1,
++         "Original attempt1 browser producer is mandatory")
++    hex_string(accepted, 40)
++    need(producer["headCommit"] == producer["checkoutCommit"] == accepted,
++         "Fresh snapshot source selection differs")
++    prefix = "https://api.github.com/repos/" + ALPHA_REPOSITORY
++    run = prefix + "/actions/runs/" + str(producer["runId"])
++    return {
++        "run": run + "/attempts/1",
++        "latest-run": run,
++        "jobs": run + "/attempts/1/jobs?per_page=100&page=1",
++        "artifacts": run + "/artifacts?per_page=100&page=1",
++        "checkout-commit": prefix + "/git/commits/" + accepted,
++        "public-commit": prefix + "/git/commits/" + accepted,
++    }
++
++
++def validate_run_identity(value, producer, message):
++    require_values(value, {"id": producer["runId"], "run_attempt": producer["runAttempt"],
++                          "workflow_id": producer["workflowId"], "head_sha": producer["headCommit"],
++                          "head_branch": "main", "event": "push", "path": BROWSER_WORKFLOW,
++                          "status": "completed", "conclusion": "success"}, message)
++    need(type(value.get("repository")) is dict and type(value.get("head_repository")) is dict
++         and value["repository"].get("full_name") == ALPHA_REPOSITORY
++         and value["head_repository"].get("full_name") == ALPHA_REPOSITORY, message)
++
++
+ def final_metadata(capture, final, current, *, metadata_budget_remaining=None):
+     """All records, budgets and sidecar schemas precede the first CAS payload read."""
+     exact(final, ("schema", "acceptedAlphaCommit", "alpha", "packet", "shipping", "browser",
+@@ -1064,7 +1101,7 @@
+                  for item in packet["files"].values())
+          and sum(item["bytes"] for item in packet["files"].values()) <= 32000000,
+          "Exact common17 metadata or byte bound differs")
+-    exact(final["snapshots"], SIDECARS)
++    exact(final["snapshots"], FRESH_SNAPSHOT_ROLES)
+     for role, reference in final["snapshots"].items():
+         file_reference(reference, locator="meta/fresh-" + role + ".json", maximum=2000000)
+     exact(final["workflowEdits"], WORKFLOW_THREE)
+@@ -1072,15 +1109,7 @@
+         workflow_ref_metadata(edits, current[path]["bytes"], accepted)
+     producer = final["browser"]["producer"]
+     api_prefix = "https://api.github.com/repos/" + ALPHA_REPOSITORY
+-    expected_fresh_urls = {
+-        "run": api_prefix + "/actions/runs/" + str(producer["runId"]),
+-        "jobs": api_prefix + "/actions/runs/" + str(producer["runId"]) + "/attempts/"
+-                + str(producer["runAttempt"]) + "/jobs?per_page=100&page=1",
+-        "artifacts": api_prefix + "/actions/runs/" + str(producer["runId"])
+-                     + "/artifacts?per_page=100&page=1",
+-        "checkout-commit": api_prefix + "/git/commits/" + accepted,
+-        "public-commit": api_prefix + "/git/commits/" + accepted,
+-    }
++    expected_fresh_urls = fresh_snapshot_urls(producer, accepted)
+     for role, reference in final["snapshots"].items():
+         file_reference(reference, locator="meta/fresh-" + role + ".json", maximum=2000000,
+                        expected_url=expected_fresh_urls[role])
+@@ -1149,19 +1178,15 @@
+ def verify_packet_metadata(final, files, snapshots):
+     pin = final["browser"]
+     producer = pin["producer"]
++    exact(snapshots, FRESH_SNAPSHOT_ROLES)
++    validate_run_identity(snapshots["latest-run"], producer, "Latest browser producer run differs")
+     captured = {role: strict_json(files["metadata/" + role + ".json"]) for role in SIDECARS}
+     for role in SIDECARS:
+         need(same_json(captured[role], snapshots[role]), "Full type-strict fresh API snapshot differs")
+     need(files["metadata/checkout-commit.json"] == files["metadata/public-commit.json"],
+          "The two full source GitData originals are not byte-identical")
+     run = captured["run"]
+-    require_values(run, {"id": producer["runId"], "run_attempt": producer["runAttempt"],
+-                        "workflow_id": producer["workflowId"], "head_sha": producer["headCommit"],
+-                        "head_branch": "main", "event": "push", "path": BROWSER_WORKFLOW,
+-                        "status": "completed", "conclusion": "success"}, "Full producer run differs")
+-    need(run.get("repository", {}).get("full_name") == ALPHA_REPOSITORY
+-         and run.get("head_repository", {}).get("full_name") == ALPHA_REPOSITORY,
+-         "Producer repository differs")
++    validate_run_identity(run, producer, "Full producer run differs")
+     for role in ("checkout-commit", "public-commit"):
+         commit_facts(captured[role], ALPHA_REPOSITORY, producer["headCommit"],
+                      producer["checkoutTree"], producer["checkoutParents"])
+--- a/test_prepare.py
++++ b/test_prepare.py
+@@ -523,16 +523,18 @@
+ 
+     def test_27_fixed_reviewed_overlay_identities_and_exact_paths(self):
+         self.assertEqual(set(P.FIXED_REVIEWED_OVERLAYS), P.SIX_IO | set(P.UI_BASE_RECORDS)
+-                         | {"docs/REFERENCE/VERSIONS.md", "docs/ui/VERSIONS.md", P.BOUNDARY_PATH})
+-        self.assertEqual(len(P.FIXED_REVIEWED_OVERLAYS), 11)
++                         | {"docs/REFERENCE/VERSIONS.md", "docs/ui/VERSIONS.md", P.BOUNDARY_PATH}
++                         | P.ENDPOINT_CORRECTION_PATHS)
++        self.assertEqual(len(P.FIXED_REVIEWED_OVERLAYS), 13)
+         self.assertEqual(len(P.CONTEXTUAL_OVERLAYS), 5)
+-        self.assertEqual(len(P.OVERLAY_PATHS), 16)
++        self.assertEqual(len(P.OVERLAY_PATHS), 18)
+         overlays = {**P.FIXED_REVIEWED_OVERLAYS,
+                     **{path: P.identify(b"owned contextual data") for path in P.CONTEXTUAL_OVERLAYS}}
+         P.reviewed_overlay_records(overlays)
+         for path in P.FIXED_REVIEWED_OVERLAYS:
+             self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[path],
+-                "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710" if path == P.BOUNDARY_PATH
++                "4d14d0a043074d8ca02828e247a2715ce3f50dc5" if path in P.ENDPOINT_CORRECTION_PATHS
++                else "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710" if path == P.BOUNDARY_PATH
+                 else "0d790835a4b2346034533f4e63d70e18b2f1570f" if path in {"scripts/release/verify-package.py",
+                     "scripts/release/test-discovery-release-plumbing.py"}
+                 else "88b14a5b2b7c474e4c16bac8af79650adf709ab7" if path == "docs/ui/VERSIONS.md"
+@@ -566,7 +568,7 @@
+         current.update({path: P.identify(("owned current " + path).encode()) for path in modified})
+         added = P.NATIVE_TEN | P.V2_FOUR | {P.V_PATH, P.BROWSER_PATH,
+             ".github/workflows/discovery-lab-receiver.yml", ".github/workflows/publish-discovery-v1.yml",
+-            "scripts/release/test-discovery-release-plumbing.py", "scripts/release/test-discovery-release-profile.py"}
++            "scripts/release/test-discovery-release-plumbing.py", "scripts/release/test-discovery-release-profile.py"} | P.ENDPOINT_CORRECTION_PATHS
+         added = set(added) | {"owned-added/path-" + str(index) + ".txt" for index in range(47 - len(added))}
+         current.update({path: P.identify(("owned addition " + path).encode()) for path in added})
+         overlays = {**P.FIXED_REVIEWED_OVERLAYS,
+@@ -732,7 +734,8 @@
+         # Later reviewed browser-capture corrections remain exact frozen records.
+         expected["scripts/release/verify-package.py"] = {"mode": "100644", "blob": "fd8685ed9bb0fc4a3e4b6729dc2c7cbecedefed5", "bytes": 14275, "sha256": "b1536ebef5679091ca3b41ad3a192dd56aa09763a0595ddb99a43ec1ed756eca"}
+         expected["scripts/release/test-discovery-release-plumbing.py"] = {"mode": "100644", "blob": "f5123723938915e2152cc944a3acd7cf7a043fe1", "bytes": 74322, "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"}
+-        self.assertEqual({name: value for name, value in P.FIXED_REVIEWED_OVERLAYS.items() if name != path}, expected)
++        self.assertEqual({name: value for name, value in P.FIXED_REVIEWED_OVERLAYS.items()
++                          if name != path and name not in P.ENDPOINT_CORRECTION_PATHS}, expected)
+         current_ast = ast.parse(MODULE_PATH.read_text())
+         for name in ("TEMPLATE_SHA256", "TEMPLATE_BYTES", "BASE_COMMIT", "CURRENT_COMMIT", "API_ROLE_FACTS"):
+             self.assertEqual(ast.dump(assignment(name, previous), include_attributes=False),
+@@ -751,7 +754,7 @@
+         changed = {path for path in prior if prior[path] != P.FIXED_REVIEWED_OVERLAYS[path]}
+         self.assertEqual(changed, {"scripts/release/verify-package.py",
+                                   "scripts/release/test-discovery-release-plumbing.py"})
+-        self.assertEqual(set(prior), set(P.FIXED_REVIEWED_OVERLAYS))
++        self.assertEqual(set(prior), set(P.FIXED_REVIEWED_OVERLAYS) - P.ENDPOINT_CORRECTION_PATHS)
+         for path in changed:
+             self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[path], "0d790835a4b2346034533f4e63d70e18b2f1570f")
+         for name in ("TEMPLATE_SHA256", "TEMPLATE_BYTES", "BASE_COMMIT", "CURRENT_COMMIT",
+@@ -767,5 +770,75 @@
+         self.assertEqual((len(before), len(basis["finalFinite"]), len(basis["protected"])), (38, 85, 1589))
+ 
+ 
++    def test_34_latest_rerun_refuses_even_when_original_attempt_matches(self):
++        producer = {"runId": 17, "runAttempt": 1, "workflowId": 23, "headCommit": "a" * 40,
++                    "checkoutCommit": "a" * 40}
++        attempt = {"id": 17, "run_attempt": 1, "workflow_id": 23, "head_sha": "a" * 40,
++                   "head_branch": "main", "event": "push", "path": P.BROWSER_WORKFLOW,
++                   "status": "completed", "conclusion": "success",
++                   "repository": {"full_name": P.ALPHA_REPOSITORY},
++                   "head_repository": {"full_name": P.ALPHA_REPOSITORY},
++                   "jobs_url": "owned/attempts/1/jobs", "logs_url": "owned/attempts/1/logs"}
++        latest = json.loads(json.dumps(attempt))
++        latest.update(jobs_url="owned/jobs", logs_url="owned/logs")
++        P.validate_run_identity(latest, producer, "latest")
++        P.validate_run_identity(attempt, producer, "attempt")
++        self.assertNotEqual(latest, attempt)
++        for key, bad in (("run_attempt", 2), ("run_attempt", True), ("run_attempt", 1.0),
++                         ("head_sha", "b" * 40), ("head_branch", "other"), ("event", "pull_request"),
++                         ("status", "in_progress"), ("conclusion", "failure"),
++                         ("repository", []), ("head_repository", {"full_name": "other/repository"})):
++            broken = {**latest, key: bad}
++            with self.subTest(field=key, value=bad), self.assertRaises(P.Refusal):
++                P.validate_run_identity(broken, producer, "latest")
++        class NoPacketRead(dict):
++            def __getitem__(self, key):
++                raise AssertionError("A newer attempt must refuse before reading packet bodies")
++        snapshots = {role: {} for role in P.FRESH_SNAPSHOT_ROLES}
++        snapshots.update(run=attempt, **{"latest-run": {**latest, "run_attempt": 2}})
++        with self.assertRaisesRegex(P.Refusal, "Latest browser producer"):
++            P.verify_packet_metadata({"browser": {"producer": producer}}, NoPacketRead(), snapshots)
++        self.assertEqual(attempt["run_attempt"], 1)
++        with self.assertRaises(P.Refusal):
++            P.verify_packet_metadata({"browser": {"producer": producer}}, NoPacketRead(),
++                                     {name: value for name, value in snapshots.items() if name != "latest-run"})
++
++    def test_35_exact_attempt_endpoints_and_only_reviewed_function_changes(self):
++        producer = {"runId": 17, "runAttempt": 1, "headCommit": "a" * 40, "checkoutCommit": "a" * 40}
++        prefix = "https://api.github.com/repos/" + P.ALPHA_REPOSITORY
++        run = prefix + "/actions/runs/17"
++        expected = {"run": run + "/attempts/1", "latest-run": run,
++                    "jobs": run + "/attempts/1/jobs?per_page=100&page=1",
++                    "artifacts": run + "/artifacts?per_page=100&page=1",
++                    "checkout-commit": prefix + "/git/commits/" + "a" * 40,
++                    "public-commit": prefix + "/git/commits/" + "a" * 40}
++        self.assertEqual(P.fresh_snapshot_urls(producer, "a" * 40), expected)
++        self.assertEqual(set(expected), P.FRESH_SNAPSHOT_ROLES)
++        self.assertEqual(len(P.SIDECARS), 5)
++        self.assertEqual(len(P.COMMON_SEVENTEEN), 17)
++        self.assertEqual(len(P.FRESH_SNAPSHOT_ROLES), 6)
++        for wrong in (2, True, 1.0):
++            with self.assertRaises(P.Refusal):
++                P.fresh_snapshot_urls({**producer, "runAttempt": wrong}, "a" * 40)
++        for bad_url in (run, run + "/attempts/2", run + "/attempts/1?extra=1", "https://other.invalid/run"):
++            reference = {"path": "meta/fresh-run.json", "bytes": 2,
++                         "sha256": P.sha256(b"{}"), "url": bad_url}
++            with self.assertRaises(P.Refusal):
++                P.file_reference(reference, locator="meta/fresh-run.json", expected_url=expected["run"])
++        previous = ast.parse((MODULE_PATH.parent / "before-attempt-snapshot-policy/prepare.py").read_text())
++        current = ast.parse(MODULE_PATH.read_text())
++        def functions(tree):
++            return {node.name: ast.dump(node, include_attributes=False) for node in tree.body
++                    if isinstance(node, ast.FunctionDef)}
++        old, new = functions(previous), functions(current)
++        self.assertEqual({name for name in old if old[name] != new.get(name)},
++                         {"final_metadata", "verify_packet_metadata"})
++        self.assertEqual(set(new) - set(old), {"fresh_snapshot_urls", "validate_run_identity"})
++        basis, source, before, overlays, trees = self.scope_fixture()
++        P.source_basis_metadata(basis, source, before, overlays, trees)
++        self.assertEqual((len(before), len(basis["finalFinite"]), len(basis["protected"])), (38, 85, 1589))
++        self.assertTrue(all(value is False for value in P.FALSE_FLAGS.values()))
++
++
+ if __name__ == "__main__":
+     unittest.main(verbosity=2)

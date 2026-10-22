@@ -1,0 +1,113 @@
+--- before-pages-policy/prepare.py
++++ prepare.py
+@@ -568,7 +568,12 @@
+ ENDPOINT_CORRECTION_PATHS = frozenset((
+     "scripts/release/discovery-qualification.py", "scripts/release/test-discovery-qualification.py",
+ ))
++PAGES_CORRECTION_PATHS = frozenset((
++    "scripts/release/pages-publication-discovery.py", "scripts/release/test-pages-publication-discovery.py",
++))
+ FIXED_REVIEWED_OVERLAYS = {
++    "scripts/release/pages-publication-discovery.py": {"mode": "100644", "blob": "53cd6199077772d801b373cecae392a30bdf8eb6", "bytes": 10929, "sha256": "cb7dfc7cd8c4f59599bec1d3de0050994c45738ec111e3aefceed6677fa8f9bb"},
++    "scripts/release/test-pages-publication-discovery.py": {"mode": "100644", "blob": "f3bad6931050742f60cbe255e855dff904b762ae", "bytes": 16782, "sha256": "280fd9e7976a001473f92a6b1f7b916126940cdab1d8e086bc061abc7928a0df"},
+     "scripts/release/discovery-qualification.py": {"mode": "100644", "blob": "3608ce1e69dac5aa645071a1c0d4cabdace02f4b", "bytes": 73143, "sha256": "ecc0ba7529df30288bf370ce016f71fa5c00e25f897116fa09997b91fc19036b"},
+     "scripts/release/test-discovery-qualification.py": {"mode": "100644", "blob": "bfe73cf64aaa79b8404b096adc1f46ed9c69ea13", "bytes": 84618, "sha256": "bfb41059130d8dc4fdad8d861733109f3068c8cb99aec1111e7a9c190712fb20"},
+     "scripts/release/release_common.py": {"mode": "100644", "blob": "baddc9e4eb38f8efdfc2613e33513869513f6285", "bytes": 26690, "sha256": "3e605f02401825d01858a3e7241f8fd890c71804ebba1c1db42cfbc572c76f2a"},
+@@ -593,6 +598,8 @@
+ FIXED_CORRECTION_PROVENANCE["scripts/release/test-discovery-release-plumbing.py"] = "0d790835a4b2346034533f4e63d70e18b2f1570f"
+ for _endpoint_path in ENDPOINT_CORRECTION_PATHS:
+     FIXED_CORRECTION_PROVENANCE[_endpoint_path] = "4d14d0a043074d8ca02828e247a2715ce3f50dc5"
++for _pages_path in PAGES_CORRECTION_PATHS:
++    FIXED_CORRECTION_PROVENANCE[_pages_path] = "b195d30ba766120f369d8587ec4d0daa68604ee4"
+ UI_BASE_RECORDS = {
+     "ui/package.json": {"mode": "100644", "blob": "9af0360c06b4ffec9c474056901ab269c0f31d9a", "bytes": 3414, "sha256": "733f32d36e894adcdbf2d3da2ed12a1ef77d06622dfef3302c89dd23ea4cfd49"},
+     "ui/package-lock.json": {"mode": "100644", "blob": "dc4e014f4572c6f5e555c7c16265391e1418ac53", "bytes": 530005, "sha256": "f12a33c0135afa6487cc6b7d247e885c154e7058de2230803f3e3cc314756b2c"},
+--- before-pages-policy/test_prepare.py
++++ test_prepare.py
+@@ -524,16 +524,17 @@
+     def test_27_fixed_reviewed_overlay_identities_and_exact_paths(self):
+         self.assertEqual(set(P.FIXED_REVIEWED_OVERLAYS), P.SIX_IO | set(P.UI_BASE_RECORDS)
+                          | {"docs/REFERENCE/VERSIONS.md", "docs/ui/VERSIONS.md", P.BOUNDARY_PATH}
+-                         | P.ENDPOINT_CORRECTION_PATHS)
+-        self.assertEqual(len(P.FIXED_REVIEWED_OVERLAYS), 13)
++                         | P.ENDPOINT_CORRECTION_PATHS | P.PAGES_CORRECTION_PATHS)
++        self.assertEqual(len(P.FIXED_REVIEWED_OVERLAYS), 15)
+         self.assertEqual(len(P.CONTEXTUAL_OVERLAYS), 5)
+-        self.assertEqual(len(P.OVERLAY_PATHS), 18)
++        self.assertEqual(len(P.OVERLAY_PATHS), 20)
+         overlays = {**P.FIXED_REVIEWED_OVERLAYS,
+                     **{path: P.identify(b"owned contextual data") for path in P.CONTEXTUAL_OVERLAYS}}
+         P.reviewed_overlay_records(overlays)
+         for path in P.FIXED_REVIEWED_OVERLAYS:
+             self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[path],
+-                "4d14d0a043074d8ca02828e247a2715ce3f50dc5" if path in P.ENDPOINT_CORRECTION_PATHS
++                "b195d30ba766120f369d8587ec4d0daa68604ee4" if path in P.PAGES_CORRECTION_PATHS
++                else "4d14d0a043074d8ca02828e247a2715ce3f50dc5" if path in P.ENDPOINT_CORRECTION_PATHS
+                 else "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710" if path == P.BOUNDARY_PATH
+                 else "0d790835a4b2346034533f4e63d70e18b2f1570f" if path in {"scripts/release/verify-package.py",
+                     "scripts/release/test-discovery-release-plumbing.py"}
+@@ -568,7 +569,7 @@
+         current.update({path: P.identify(("owned current " + path).encode()) for path in modified})
+         added = P.NATIVE_TEN | P.V2_FOUR | {P.V_PATH, P.BROWSER_PATH,
+             ".github/workflows/discovery-lab-receiver.yml", ".github/workflows/publish-discovery-v1.yml",
+-            "scripts/release/test-discovery-release-plumbing.py", "scripts/release/test-discovery-release-profile.py"} | P.ENDPOINT_CORRECTION_PATHS
++            "scripts/release/test-discovery-release-plumbing.py", "scripts/release/test-discovery-release-profile.py"} | P.ENDPOINT_CORRECTION_PATHS | P.PAGES_CORRECTION_PATHS
+         added = set(added) | {"owned-added/path-" + str(index) + ".txt" for index in range(47 - len(added))}
+         current.update({path: P.identify(("owned addition " + path).encode()) for path in added})
+         overlays = {**P.FIXED_REVIEWED_OVERLAYS,
+@@ -735,7 +736,7 @@
+         expected["scripts/release/verify-package.py"] = {"mode": "100644", "blob": "fd8685ed9bb0fc4a3e4b6729dc2c7cbecedefed5", "bytes": 14275, "sha256": "b1536ebef5679091ca3b41ad3a192dd56aa09763a0595ddb99a43ec1ed756eca"}
+         expected["scripts/release/test-discovery-release-plumbing.py"] = {"mode": "100644", "blob": "f5123723938915e2152cc944a3acd7cf7a043fe1", "bytes": 74322, "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"}
+         self.assertEqual({name: value for name, value in P.FIXED_REVIEWED_OVERLAYS.items()
+-                          if name != path and name not in P.ENDPOINT_CORRECTION_PATHS}, expected)
++                          if name != path and name not in P.ENDPOINT_CORRECTION_PATHS | P.PAGES_CORRECTION_PATHS}, expected)
+         current_ast = ast.parse(MODULE_PATH.read_text())
+         for name in ("TEMPLATE_SHA256", "TEMPLATE_BYTES", "BASE_COMMIT", "CURRENT_COMMIT", "API_ROLE_FACTS"):
+             self.assertEqual(ast.dump(assignment(name, previous), include_attributes=False),
+@@ -754,7 +755,7 @@
+         changed = {path for path in prior if prior[path] != P.FIXED_REVIEWED_OVERLAYS[path]}
+         self.assertEqual(changed, {"scripts/release/verify-package.py",
+                                   "scripts/release/test-discovery-release-plumbing.py"})
+-        self.assertEqual(set(prior), set(P.FIXED_REVIEWED_OVERLAYS) - P.ENDPOINT_CORRECTION_PATHS)
++        self.assertEqual(set(prior), set(P.FIXED_REVIEWED_OVERLAYS) - P.ENDPOINT_CORRECTION_PATHS - P.PAGES_CORRECTION_PATHS)
+         for path in changed:
+             self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[path], "0d790835a4b2346034533f4e63d70e18b2f1570f")
+         for name in ("TEMPLATE_SHA256", "TEMPLATE_BYTES", "BASE_COMMIT", "CURRENT_COMMIT",
+@@ -840,5 +841,37 @@
+         self.assertTrue(all(value is False for value in P.FALSE_FLAGS.values()))
+ 
+ 
++    def test_36_only_two_pages_records_extend_existing_finite_scope(self):
++        old = ast.parse((MODULE_PATH.parent / "before-pages-policy/prepare.py").read_bytes())
++        new = ast.parse(MODULE_PATH.read_bytes())
++        node = next(n.value for n in old.body if isinstance(n, ast.Assign)
++                    and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name)
++                    and n.targets[0].id == "FIXED_REVIEWED_OVERLAYS")
++        previous = {(P.BOUNDARY_PATH if isinstance(k, ast.Name) else ast.literal_eval(k)): ast.literal_eval(v)
++                    for k, v in zip(node.keys, node.values)}
++        self.assertEqual(set(P.FIXED_REVIEWED_OVERLAYS) - set(previous), P.PAGES_CORRECTION_PATHS)
++        self.assertEqual({p: P.FIXED_REVIEWED_OVERLAYS[p] for p in previous}, previous)
++        for p in P.PAGES_CORRECTION_PATHS:
++            self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[p], "b195d30ba766120f369d8587ec4d0daa68604ee4")
++        def functions(tree):
++            return {n.name: ast.dump(n, include_attributes=False) for n in tree.body
++                    if isinstance(n, ast.FunctionDef)}
++        self.assertEqual(functions(old), functions(new))
++        for name in ("API_ROLE_FACTS", "TEMPLATE_BYTES", "TEMPLATE_SHA256", "CEILINGS", "FALSE_FLAGS",
++                     "SIDECARS", "FRESH_SNAPSHOT_ROLES", "COMMON_SEVENTEEN"):
++            def value(tree):
++                return next(n.value for n in tree.body if isinstance(n, ast.Assign)
++                    and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name) and n.targets[0].id == name)
++            self.assertEqual(ast.dump(value(old), include_attributes=False),
++                             ast.dump(value(new), include_attributes=False))
++        basis, current, before, overlays, trees = self.scope_fixture()
++        P.source_basis_metadata(basis, current, before, overlays, trees)
++        for p in P.PAGES_CORRECTION_PATHS:
++            self.assertEqual(basis["currentFinite"][p]["status"], "A")
++            self.assertEqual(basis["finalFinite"][p]["status"], "A")
++            self.assertNotIn(p, basis["protected"])
++        self.assertEqual((len(before), len(basis["finalFinite"]), len(basis["protected"])), (38, 85, 1589))
++
++
+ if __name__ == "__main__":
+     unittest.main(verbosity=2)

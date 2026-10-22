@@ -1,0 +1,373 @@
+{
+  "schema": "manager/helper-policy-contract/v2",
+  "state": "IMPLEMENTED_OWNED_DATA_TESTS_PASSED_INDEPENDENT_REVIEW_PENDING",
+  "currentAnchor": {
+    "commit": "fc25d03f689dd2ed6a9afcd92e6f380ece11a23c",
+    "tree": "4466eb1766169b212a7e860b9371bad41d626873"
+  },
+  "originalNinePublicFactsUnchanged": {
+    "base_commit": [
+      3005,
+      "fcb98aa31e890d2669730ee00a3b0bae45477c2dd77ccdbc293010ad7163e21f",
+      "commits",
+      "900bb4b46cb7de7f6f69f553a5687866f978a413"
+    ],
+    "base_tree": [
+      466673,
+      "3ff5f217123df61943324ac9b80b7de301bdd9c8396560d38c5c5842cdf65a54",
+      "trees",
+      "bc42f0b295a649900667dcb1c487122726df7a02"
+    ],
+    "feature_commit": [
+      1173,
+      "cfa4bab1f6921c698ebb8a8fc9eaa0af0614f0fd472e9649d42ad85b137417ea",
+      "commits",
+      "68d1d3cae2e6f2d46c21e8e73311d309b2b307fd"
+    ],
+    "feature_tree": [
+      465109,
+      "f03085fa76964fa6323454afaed1821aadcfa8942433a47b5c1359cb8d140ef2",
+      "trees",
+      "c96140e3e0db9e47a68cab5883bb900ce9670912"
+    ],
+    "reconciliation_commit": [
+      1632,
+      "65adadbf752f30b7ac96d2829788976c3061699b3db5a4210401bdf886bee440",
+      "commits",
+      "3b7e7e8a7592ff1140ec2a6d161b13156926365f"
+    ],
+    "reconciliation_tree": [
+      471363,
+      "b33c8bfddd21928430cea86960cd0f5e6dad81c77e0f8ec87fbe4ae62e634dcb",
+      "trees",
+      "bbd10c991be3d2d3936789e991e4f21550659580"
+    ],
+    "current_commit": [
+      1788,
+      "11a5346b3d89f2e3a33080db6eda8634d59f5cc92634864077236b53bd6209ae",
+      "commits",
+      "fc25d03f689dd2ed6a9afcd92e6f380ece11a23c"
+    ],
+    "current_tree": [
+      479736,
+      "0562b3b829453f6ccf8fcda273da425aea616f3cfa3e56c3db26438aa19b20a3",
+      "trees",
+      "4466eb1766169b212a7e860b9371bad41d626873"
+    ],
+    "ancestry_commit": [
+      1484,
+      "ecf2edcefbaffeb426542755455c52269271b0c3da5a61789b9555eea13b8fbf",
+      "commits",
+      "c6552fcd16011284e8e811aebe3e969b2cd16365"
+    ]
+  },
+  "template": {
+    "repository": "MontrealAI/AGIJobManager",
+    "commit": "b8ff0a7df7195a0b1f132b43114422d3dfb64add",
+    "path": "scripts/release/discovery-release-profile.py",
+    "mode": "100644",
+    "bytes": 40085,
+    "blob": "ae0fd95636225d39133bd85da103e388b9debeb6",
+    "sha256": "91dff54f2dbd7f6644c6a3b93540c584a964af03eadfa8170e1491d2ececa213",
+    "frozenBlock": "EXACT_EMPTY_FROZEN_BLOCK_ONLY"
+  },
+  "fixedReviewedOverlays": {
+    "scripts/release/release_common.py": {
+      "mode": "100644",
+      "blob": "baddc9e4eb38f8efdfc2613e33513869513f6285",
+      "bytes": 26690,
+      "sha256": "3e605f02401825d01858a3e7241f8fd890c71804ebba1c1db42cfbc572c76f2a",
+      "repository": "MontrealAI/AGIJobManager",
+      "commit": "b8ff0a7df7195a0b1f132b43114422d3dfb64add",
+      "rawUrl": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/b8ff0a7df7195a0b1f132b43114422d3dfb64add/scripts/release/release_common.py"
+    },
+    "scripts/release/package-release.py": {
+      "mode": "100644",
+      "blob": "f4131a0a905d63daa76e69040be93e0a963d9b37",
+      "bytes": 10855,
+      "sha256": "1a98938756b49453c308ce04236058a1c69896c45f90f299c1b0a0a5388724d4",
+      "repository": "MontrealAI/AGIJobManager",
+      "commit": "b8ff0a7df7195a0b1f132b43114422d3dfb64add",
+      "rawUrl": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/b8ff0a7df7195a0b1f132b43114422d3dfb64add/scripts/release/package-release.py"
+    },
+    "scripts/release/verify-package.py": {
+      "mode": "100644",
+      "blob": "1db9e41427b297d37f09e348e0fc95703a8931a8",
+      "bytes": 14248,
+      "sha256": "b0d9d2058549e3ee12dbfa6fbf6c6975ce442fa7b68e6a6e227efa86e08e502d",
+      "repository": "MontrealAI/AGIJobManager",
+      "commit": "b8ff0a7df7195a0b1f132b43114422d3dfb64add",
+      "rawUrl": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/b8ff0a7df7195a0b1f132b43114422d3dfb64add/scripts/release/verify-package.py"
+    },
+    "scripts/release/collect-qualification.py": {
+      "mode": "100644",
+      "blob": "8e393a049a2953a35955ada8c664054d8fb51012",
+      "bytes": 11347,
+      "sha256": "004c4b8fe7088f9f141300f02a05580a6f7621933ea36c213c67a93f4d126538",
+      "repository": "MontrealAI/AGIJobManager",
+      "commit": "b8ff0a7df7195a0b1f132b43114422d3dfb64add",
+      "rawUrl": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/b8ff0a7df7195a0b1f132b43114422d3dfb64add/scripts/release/collect-qualification.py"
+    },
+    "scripts/release/test-discovery-release-plumbing.py": {
+      "mode": "100644",
+      "blob": "befa53c064025bbdb4bfbe98535198103c1c699e",
+      "bytes": 72705,
+      "sha256": "2dcbda151f7da7eb5085c7066ccf18a6c4e69597e0b3f23a10fc276b7d9a3074",
+      "repository": "MontrealAI/AGIJobManager",
+      "commit": "b8ff0a7df7195a0b1f132b43114422d3dfb64add",
+      "rawUrl": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/b8ff0a7df7195a0b1f132b43114422d3dfb64add/scripts/release/test-discovery-release-plumbing.py"
+    },
+    "scripts/release/test-discovery-release-profile.py": {
+      "mode": "100644",
+      "blob": "b17138095b4680aa719b7b2b6198a5e50abb2c5d",
+      "bytes": 38782,
+      "sha256": "724a8ddebf6d948b2c73211993d91536d1fbeff11a12981f2623ef5596c7e2d7",
+      "repository": "MontrealAI/AGIJobManager",
+      "commit": "b8ff0a7df7195a0b1f132b43114422d3dfb64add",
+      "rawUrl": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/b8ff0a7df7195a0b1f132b43114422d3dfb64add/scripts/release/test-discovery-release-profile.py"
+    },
+    "ui/package.json": {
+      "mode": "100644",
+      "blob": "3019b3a9df311e2a2638aaa063e9367ed1fe5048",
+      "bytes": 3414,
+      "sha256": "b9fcc3da62e16dfe4e02d70190001f183d41586148f40b942ae8c2d5f05b7cad",
+      "repository": "MontrealAI/AGIJobManager",
+      "commit": "b8ff0a7df7195a0b1f132b43114422d3dfb64add",
+      "rawUrl": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/b8ff0a7df7195a0b1f132b43114422d3dfb64add/ui/package.json"
+    },
+    "ui/package-lock.json": {
+      "mode": "100644",
+      "blob": "39415b6c2f132fae7343a298b3ae348223216eec",
+      "bytes": 530005,
+      "sha256": "91c98066fa0d4f0c11c75a7a88fa3d3fab51632c4079e273ce59bde82156584b",
+      "repository": "MontrealAI/AGIJobManager",
+      "commit": "b8ff0a7df7195a0b1f132b43114422d3dfb64add",
+      "rawUrl": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/b8ff0a7df7195a0b1f132b43114422d3dfb64add/ui/package-lock.json"
+    },
+    "docs/REFERENCE/VERSIONS.md": {
+      "mode": "100644",
+      "blob": "d736ba418c23e68c512c0a05c5ec6677f8005894",
+      "bytes": 1072,
+      "sha256": "d26f3303a4ab17eda1cfcffe179c8a97b5f5b4d888de2b7d95dd79ff962fa890",
+      "repository": "MontrealAI/AGIJobManager",
+      "commit": "b8ff0a7df7195a0b1f132b43114422d3dfb64add",
+      "rawUrl": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/b8ff0a7df7195a0b1f132b43114422d3dfb64add/docs/REFERENCE/VERSIONS.md"
+    },
+    "test/buyerProtection.v095.test.js": {
+      "mode": "100644",
+      "blob": "193d372831dcc88259bff04cb9ab03e2ef6b5051",
+      "bytes": 19212,
+      "sha256": "a775e9100d28f73bc7259d079f0d62a0e51ee08d9bc011146724610120417a6f",
+      "repository": "MontrealAI/AGIJobManager",
+      "commit": "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710",
+      "rawUrl": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710/test/buyerProtection.v095.test.js"
+    }
+  },
+  "contextualOverlayPaths": [
+    ".github/workflows/current-state-release.yml",
+    ".github/workflows/discovery-lab-receiver.yml",
+    ".github/workflows/publish-discovery-v1.yml",
+    "config/discovery-release-alpha-source-v1.json",
+    "config/discovery-release-browser-artifact-v1.json"
+  ],
+  "contextualPolicy": "Three workflow edits, browser and shipping retain existing final-input selection rules; no accepted values selected here.",
+  "currentScope": {
+    "modified": 37,
+    "addedIncludingVerifier": 47,
+    "finite": 83,
+    "leaves": 1660
+  },
+  "finalScope": {
+    "modified": 38,
+    "finiteAddedExcludingVerifier": 47,
+    "finite": 85,
+    "separateBMVControls": 3,
+    "leaves": 1663
+  },
+  "onlyNewModifiedPath": "test/buyerProtection.v095.test.js",
+  "originalBeforeImages": {
+    "count": 38,
+    "commit": "900bb4b46cb7de7f6f69f553a5687866f978a413",
+    "tree": "bc42f0b295a649900667dcb1c487122726df7a02",
+    "allRequireExactModeBlobSizeAndForwardInverseProjection": true
+  },
+  "protected": {
+    "count": 1589,
+    "baseUnchanged": {
+      "count": 1575,
+      "commit": "900bb4b46cb7de7f6f69f553a5687866f978a413"
+    },
+    "nativeTen": {
+      "count": 10,
+      "commit": "68d1d3cae2e6f2d46c21e8e73311d309b2b307fd"
+    },
+    "v2Four": {
+      "count": 4,
+      "commit": "3b7e7e8a7592ff1140ec2a6d161b13156926365f"
+    },
+    "allOtherIdentitiesUnchanged": true
+  },
+  "uiBaselineRecords": {
+    "ui/package.json": {
+      "mode": "100644",
+      "blob": "9af0360c06b4ffec9c474056901ab269c0f31d9a",
+      "bytes": 3414,
+      "sha256": "733f32d36e894adcdbf2d3da2ed12a1ef77d06622dfef3302c89dd23ea4cfd49"
+    },
+    "ui/package-lock.json": {
+      "mode": "100644",
+      "blob": "dc4e014f4572c6f5e555c7c16265391e1418ac53",
+      "bytes": 530005,
+      "sha256": "f12a33c0135afa6487cc6b7d247e885c154e7058de2230803f3e3cc314756b2c"
+    }
+  },
+  "uiAdmission": "Only exact old900 raw records and exact reviewed new UI records are admitted; all other packages/deployment remain version-only plus original semantic comparison.",
+  "tests": {
+    "beforeMethods": 26,
+    "afterMethods": 31,
+    "unchangedOriginalMethodASTs": 24,
+    "adaptedOriginalMethods": [
+      "test_18_version_only_package_and_deployment_invariants",
+      "test_25_acyclic_packet_flags_determinism_and_virtual_link_data"
+    ],
+    "newMethods": [
+      "test_27_fixed_reviewed_overlay_identities_and_exact_paths",
+      "test_28_only_boundary_moves_to_final_scope_with_original38",
+      "test_29_all_other_protected_bytes_and_anchors_are_retained",
+      "test_30_only_exact_UI_bytes_and_other_package_authority_remain",
+      "test_31_new_template_pin_and_original_fixed_facts_remain"
+    ],
+    "initialOldFixtureRun": "26 methods; two expected fixture errors retained (synthetic UI bytes and old count guard)",
+    "finalOwnedDataRun": "31 methods PASS; full original stderr retained",
+    "scope": "Only own helper and inert JSON/template/metadata fixtures. No captured/generated code executed. Synthetic BMV text in inherited unit fixtures is not actual final generation."
+  },
+  "history": {
+    "before/prepare.py": "Previous late-closure-repaired helper, preserved exactly",
+    "before/test_prepare.py": "Previous26-method suite, preserved exactly",
+    "before/historical/ORIGINAL_INPUT_CONTRACT.json": "Historical superseded contract, not active policy",
+    "before/historical/ORIGINAL_OPEN_SELF_REVIEW_FINDING.json": "Historical before-state finding; not current disposition"
+  },
+  "flags": {
+    "sourceReviewed": false,
+    "releaseQualified": false,
+    "publicationApproved": false,
+    "executionApproved": false,
+    "nativeExecutionQualified": false
+  },
+  "notRun": [
+    "Actual final inputs",
+    "Accepted Alpha/common17 selection",
+    "Real source-corpus/BMV generation",
+    "Generated verifier execution",
+    "Git/native/source/custody/product probes",
+    "Source application",
+    "Public commit/merge/release/pins/publication"
+  ],
+  "files": {
+    "test_prepare.py": {
+      "bytes": 40598,
+      "sha256": "d69f3670c5f1d0260b7b703085780b61ad7b71a423c771c651f16b2ba7183e7e",
+      "gitBlob": "97e402ea18e55f0d43006c92e5f8a0e0b87972ef"
+    },
+    "initial-old-fixtures.exit-code.txt": {
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "gitBlob": "d00491fd7e5bb6fa28c517a0bb32b8b506539d4d"
+    },
+    "prepare.py": {
+      "bytes": 89957,
+      "sha256": "fa2c09aed4162d37c4d0a6abe0ac70f0630f11547a9eac37351b53f1a4a13eaf",
+      "gitBlob": "940ab6af0d3fdc0c68e935935ec9ed3eb6a3fcee"
+    },
+    "policy-tests-final.stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gitBlob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    "initial-old-fixtures.stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gitBlob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    "policy-tests.stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gitBlob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    "policy-tests-final.stderr.txt": {
+      "bytes": 4312,
+      "sha256": "aaa557e16882076dd29deed147c9db0017d65d8be5a733735aa6c63215083d89",
+      "gitBlob": "c6b2a5516da87f09167f69241bfe97fcc17ab382"
+    },
+    "policy-tests-final.exit-code.txt": {
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "gitBlob": "573541ac9702dd3969c9bc859d2b91ec1f7e6e56"
+    },
+    "policy-tests.exit-code.txt": {
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "gitBlob": "573541ac9702dd3969c9bc859d2b91ec1f7e6e56"
+    },
+    "helper-policy.patch": {
+      "bytes": 27475,
+      "sha256": "a1996c70b59f304a93f34cb355144577aa2c8879151a8518296e91128adf7b4b",
+      "gitBlob": "700c7cbace3de4856dc09c6f9e8103c9700b8d5a"
+    },
+    "policy-tests.stderr.txt": {
+      "bytes": 4312,
+      "sha256": "93baa9770b26401b457fd9a4c53b0e1bcf2d0c32d2b42465a5fc1fb036ba6c20",
+      "gitBlob": "6dc83d78da39396e701edd0e9f3a85edfab43ee7"
+    },
+    "initial-old-fixtures.stderr.txt": {
+      "bytes": 5604,
+      "sha256": "ce55f84d5fe09610332aabb74c1727152eae7601f90fc78ad98745ba5da85e88",
+      "gitBlob": "9a86acc5afb02e442d22567fe01516c7ef1def2d"
+    },
+    "before/test_prepare.py": {
+      "bytes": 27716,
+      "sha256": "0a49bbc30d7a214b75411a1ed884ad298d452a53c8ed8f593e2e43279d3b49a9",
+      "gitBlob": "d7327824f8e898b0d4494004e48a0bfca25a5b15"
+    },
+    "before/prepare.py": {
+      "bytes": 86414,
+      "sha256": "744b841484444321ef98ed99e9ddd7c95a3a6cc7ff03a513c09a104e3005a432",
+      "gitBlob": "4830c26fb45e00cec8d88a11251b696ebf28e9c3"
+    },
+    "fixtures/reviewed-template.py.txt": {
+      "bytes": 40085,
+      "sha256": "91dff54f2dbd7f6644c6a3b93540c584a964af03eadfa8170e1491d2ececa213",
+      "gitBlob": "ae0fd95636225d39133bd85da103e388b9debeb6"
+    },
+    "before/historical/ORIGINAL_INPUT_CONTRACT.json": {
+      "bytes": 6437,
+      "sha256": "e771318a557389336fcbb2f0ee31de6fd6cfeaff36c0d893e71dcc149bfc022a",
+      "gitBlob": "788558e6f2bccec60a166f45b1b3526eb39ab7a0"
+    },
+    "before/historical/ORIGINAL_OPEN_SELF_REVIEW_FINDING.json": {
+      "bytes": 1111,
+      "sha256": "18cbdb8747339a036a1aa9cea80f3d9b408c1a30d4519d975cd974eb45570b3b",
+      "gitBlob": "251af6a5737df97a189887cec32b87b35f0863b3"
+    },
+    "fixtures/base/ui/package-lock.json": {
+      "bytes": 530005,
+      "sha256": "f12a33c0135afa6487cc6b7d247e885c154e7058de2230803f3e3cc314756b2c",
+      "gitBlob": "dc4e014f4572c6f5e555c7c16265391e1418ac53"
+    },
+    "fixtures/base/ui/package.json": {
+      "bytes": 3414,
+      "sha256": "733f32d36e894adcdbf2d3da2ed12a1ef77d06622dfef3302c89dd23ea4cfd49",
+      "gitBlob": "9af0360c06b4ffec9c474056901ab269c0f31d9a"
+    },
+    "fixtures/after/ui/package-lock.json": {
+      "bytes": 530005,
+      "sha256": "91c98066fa0d4f0c11c75a7a88fa3d3fab51632c4079e273ce59bde82156584b",
+      "gitBlob": "39415b6c2f132fae7343a298b3ae348223216eec"
+    },
+    "fixtures/after/ui/package.json": {
+      "bytes": 3414,
+      "sha256": "b9fcc3da62e16dfe4e02d70190001f183d41586148f40b942ae8c2d5f05b7cad",
+      "gitBlob": "3019b3a9df311e2a2638aaa063e9367ed1fe5048"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+OWNED_UNRELATED_PACKAGE_MUTATION_REFUSED=unrelated-ui-dependency
+OWNED_UNRELATED_PACKAGE_MUTATION_REFUSED=unrelated-ui-override
+OWNED_UNRELATED_PACKAGE_MUTATION_REFUSED=unrelated-root-command
+OWNED_UNRELATED_PACKAGE_MUTATION_REFUSED=locked-next-integrity
+{"errors": 0, "failures": 0, "localInertGitCommands": 9, "networkNativeGeneratedVerifierExecuted": false, "profile": "reviewed-empty-template-only", "profileSha256": "91dff54f2dbd7f6644c6a3b93540c584a964af03eadfa8170e1491d2ececa213", "selectedTests": 2, "success": true, "variant": "after"}

@@ -1,0 +1,39 @@
+test_package_and_deployment_changes_are_version_metadata_only (owned_plumbing_fixture.DiscoveryPlumbing.test_package_and_deployment_changes_are_version_metadata_only) ... 
+  test_package_and_deployment_changes_are_version_metadata_only (owned_plumbing_fixture.DiscoveryPlumbing.test_package_and_deployment_changes_are_version_metadata_only) (path='ui/package.json') ... FAIL
+  test_package_and_deployment_changes_are_version_metadata_only (owned_plumbing_fixture.DiscoveryPlumbing.test_package_and_deployment_changes_are_version_metadata_only) (path='ui/package-lock.json') ... FAIL
+test_actual_publisher_rebuild_uses_the_collected_qualified_phase_and_original_capsule (owned_plumbing_fixture.QualifiedDiscoveryRebuild.test_actual_publisher_rebuild_uses_the_collected_qualified_phase_and_original_capsule) ... ERROR
+
+======================================================================
+ERROR: test_actual_publisher_rebuild_uses_the_collected_qualified_phase_and_original_capsule (owned_plumbing_fixture.QualifiedDiscoveryRebuild.test_actual_publisher_rebuild_uses_the_collected_qualified_phase_and_original_capsule)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/manager-owned-plumbing-fixture-f6qw3m1t/source/scripts/release/test-discovery-release-plumbing.py", line 326, in test_actual_publisher_rebuild_uses_the_collected_qualified_phase_and_original_capsule
+    old = ast.parse(previous('scripts/release/publish-release.py',
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/475a997acac1/manager-plumbing-fixture-correction-20261022/run_owned_fixture.py", line 47, in previous
+    raise LookupError('Owned original900 data has no unavailable historical publisher reference: '+source)
+LookupError: Owned original900 data has no unavailable historical publisher reference: 1ca9ab4c0064d7f53d00e661c675fc0dda87c6f1
+
+======================================================================
+FAIL: test_package_and_deployment_changes_are_version_metadata_only (owned_plumbing_fixture.DiscoveryPlumbing.test_package_and_deployment_changes_are_version_metadata_only) (path='ui/package.json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/manager-owned-plumbing-fixture-f6qw3m1t/source/scripts/release/test-discovery-release-plumbing.py", line 61, in test_package_and_deployment_changes_are_version_metadata_only
+    self.assertEqual(version_only(current, old), old)
+AssertionError: {'nam[2037 chars]5.5.28', 'next-themes': '0.3.0', 'react': '18.[990 chars]es'}} != {'nam[2037 chars]5.5.27', 'next-themes': '0.3.0', 'react': '18.[990 chars]es'}}
+Diff is 5040 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_package_and_deployment_changes_are_version_metadata_only (owned_plumbing_fixture.DiscoveryPlumbing.test_package_and_deployment_changes_are_version_metadata_only) (path='ui/package-lock.json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/manager-owned-plumbing-fixture-f6qw3m1t/source/scripts/release/test-discovery-release-plumbing.py", line 61, in test_package_and_deployment_changes_are_version_metadata_only
+    self.assertEqual(version_only(current, old), old)
+AssertionError: {'nam[572 chars]5.5.28', 'next-themes': '0.3.0', 'react': '18.[427728 chars]'}}}} != {'nam[572 chars]5.5.27', 'next-themes': '0.3.0', 'react': '18.[427728 chars]'}}}}
+Diff is 972691 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.370s
+
+FAILED (failures=2, errors=1)
+{"errors": 1, "failures": 2, "localInertGitCommands": 7, "networkNativeGeneratedVerifierExecuted": false, "profile": "reviewed-empty-template-only", "profileSha256": "91dff54f2dbd7f6644c6a3b93540c584a964af03eadfa8170e1491d2ececa213", "selectedTests": 2, "success": false, "variant": "before"}

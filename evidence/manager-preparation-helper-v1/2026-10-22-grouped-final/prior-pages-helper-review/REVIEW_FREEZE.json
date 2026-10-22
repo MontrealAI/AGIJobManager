@@ -1,0 +1,35 @@
+{
+  "files": [
+    {
+      "path": "CHECKS.json",
+      "bytes": 7591,
+      "sha256": "53ac77d94eddcb0d88ec70e184b3d871ba0f0f9253c81044492dade6cdd9e6ac"
+    },
+    {
+      "path": "INDEPENDENT_REVIEW.json",
+      "bytes": 2788,
+      "sha256": "0ba2874134da9c59f1cb2f4441aff2f3a361ac7c1f39a9b71757a0b935159363"
+    },
+    {
+      "path": "OWNED36.stderr.txt",
+      "bytes": 5011,
+      "sha256": "7014320616c250fe2d49d2ce3d6ef60a774e752aee5f435c83c85770abc0e655"
+    },
+    {
+      "path": "OWNED36.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "PUBLIC_COMMIT_READBACK.json",
+      "bytes": 1347,
+      "sha256": "e4cd1d70ea96e396956e270548465d659019afebb0fb001face355d3e138b28c"
+    },
+    {
+      "path": "PUBLIC_SOURCE_READBACK.json",
+      "bytes": 29027,
+      "sha256": "3076f9a260b52ffab12425a3ea490588482d7e145e51b56eac47a97dca8e9dc0"
+    }
+  ],
+  "exactCopyAuthorFreeze": "444bad7fbab3b3aba7d9ef4cd4bc5b3d7ddbdbf61a1053b55a1beddb47cc9912"
+}
