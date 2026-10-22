@@ -1,5 +1,11 @@
 """Cross-file Discovery release invariants; no hosted qualification or publication."""
 import argparse
+import hashlib
+import os
+import tarfile
+import zipfile
+import datetime
+import itertools
 import ast
 import copy
 import contextlib
@@ -16,7 +22,7 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
 from release_common import (sha, source_path, require, TITLE, TAG, REPOSITORY,
-                            DISCOVERY_PROFILE, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, verify_assets)
+                            DISCOVERY_PROFILE, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, verify_assets, file_sha)
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 PRESERVATION = runpy.run_path(str(ROOT / 'scripts/release/run-discovery-preservation.py'))
@@ -289,7 +295,7 @@ class QualifiedDiscoveryRebuild(unittest.TestCase):
         exec(compile(ast.fix_missing_locations(block), '<inert-collector-qualified-phase>', 'exec'),
             {'json': json, 'config': self.config, 'args': SimpleNamespace(out=self.assets, profile=DISCOVERY_PROFILE),
              'DISCOVERY_PROFILE': DISCOVERY_PROFILE, 'discovery': {'MAX_QUALIFICATION_BYTES': 64 * 1024 * 1024},
-             'require': require, 'sha': sha, 'verify_assets': verify_assets})
+             'require': require, 'sha': sha, 'verify_assets': verify_assets, 'file_sha': file_sha})
 
     def extraction(self, destination, qualification=None):
         with patch.dict(self.verifier['extract_browser_capsule'].__globals__,
@@ -619,6 +625,475 @@ class CurrentPagesPreservation(unittest.TestCase):
         name = next(iter(self.files)); path = self.pages / name; path.unlink()
         path.symlink_to(self.pages / '.nojekyll')
         with self.assertRaisesRegex(ValueError, 'indirect'): self.validate()
+
+
+
+class ReleaseAssetBoundedIO(unittest.TestCase):
+    """Owned tiny data fixtures only; Git, native and hosted proofs are mocked."""
+
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix='manager-cap-unit-')
+        self.addCleanup(self.temporary.cleanup)
+        self.folder = pathlib.Path(self.temporary.name)
+        self.common = self.load_functions('release_common.py', {
+            'require', 'sha', 'strict_json', 'valid_sha', '_file_snapshot', '_open_bounded_file', '_file_chunks',
+            'file_sha', 'read_bounded', 'files_equal', 'require_builder_outputs',
+            'verify_builder_context_outputs', 'verify_builder_rebuild', 'source_path', 'verify_assets'})
+        self.asset_names = {f'AGIJobManager-{TAG}-COMPLETE.zip',
+            'agijobmanager-usdc.html', 'RELEASE_MANIFEST.json'} | BUILDER_ASSETS
+
+    def load_functions(self, filename, names, extra=None):
+        path = ROOT / 'scripts/release' / filename
+        tree = ast.parse(path.read_text())
+        scope = {'pathlib': pathlib, 'hashlib': hashlib, 'json': json, 'stat': stat,
+            'os': os, 'io': io, 'zipfile': zipfile, 'tarfile': tarfile,
+            'tempfile': tempfile, 'datetime': datetime, 'contextlib': contextlib,
+            'itertools': itertools, 're': re, 'TAG': TAG, 'TITLE': TITLE,
+            'REPOSITORY': REPOSITORY, '__file__': str(path)}
+        if hasattr(self, 'common'):
+            scope.update(self.common)
+            scope['__file__'] = str(path)
+        def literal(node):
+            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mult):
+                return literal(node.left) * literal(node.right)
+            return ast.literal_eval(node)
+        for node in tree.body:
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id in {
+                            'LIMIT', 'RELEASE_ASSET_MAX_BYTES', '_READ_CHUNK_BYTES',
+                            'BUILDER_ASSETS', 'BUILDER_ARCHIVE_ONLY_ASSETS', 'ROOT_FILES',
+                            'ROOT_DIRS', 'FORBIDDEN', 'DISCOVERY_PROFILE', 'WORKFLOWS'}:
+                        scope[target.id] = literal(node.value)
+        nodes = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
+        self.assertEqual({node.name for node in nodes}, names)
+        if extra:
+            scope.update(extra)
+        exec(compile(ast.fix_missing_locations(ast.Module(body=nodes, type_ignores=[])),
+            '<owned-bounded-io-functions>', 'exec'), scope)
+        return scope
+
+    def assets(self, name='assets', manifest=None):
+        out = self.folder / name; out.mkdir()
+        values = {item: ('owned fixture ' + item).encode() for item in self.asset_names}
+        values['RELEASE_MANIFEST.json'] = json.dumps(manifest or {
+            'sourceCommit': 'a' * 40, 'sourceTree': 'b' * 40}).encode()
+        for item, raw in values.items():
+            (out / item).write_bytes(raw)
+        self.checksums(out)
+        return out
+
+    def checksums(self, out):
+        raw = ''.join(hashlib.sha256(path.read_bytes()).hexdigest() + '  ' + path.name + '\n'
+            for path in sorted(out.iterdir()) if path.name != 'SHA256SUMS.txt')
+        (out / 'SHA256SUMS.txt').write_text(raw)
+
+    @contextlib.contextmanager
+    def read_spy(self, path, *, short=False, mutate=None):
+        original = os.fdopen
+        selected = path.stat()
+        calls = []
+        def opened(descriptor, *args, **kwargs):
+            stream = original(descriptor, *args, **kwargs)
+            mode = args[0] if args else kwargs.get('mode', 'r')
+            details = os.fstat(descriptor)
+            if mode != 'rb' or (details.st_dev, details.st_ino) != (selected.st_dev, selected.st_ino):
+                return stream
+            class Reader:
+                def __enter__(inner): return inner
+                def __exit__(inner, *error): return stream.__exit__(*error)
+                def fileno(inner): return stream.fileno()
+                def read(inner, count=-1):
+                    self.assertGreater(count, 0)
+                    self.assertLessEqual(count, 1024 * 1024)
+                    calls.append(count)
+                    raw = stream.read(min(count, 3) if short else count)
+                    if mutate is not None and len(calls) == 1:
+                        mutate()
+                    return raw
+            return Reader()
+        with patch.object(os, 'fdopen', opened):
+            yield calls
+
+    def test_full_streaming_hash_empty_short_reads_and_tail(self):
+        self.assertEqual(self.common['RELEASE_ASSET_MAX_BYTES'], 2_147_483_647)
+        path = self.folder / 'payload'
+        for raw in (b'', b'ordinary short fixture', b'x' * (1024 * 1024 + 5) + b'tail'):
+            path.write_bytes(raw)
+            with self.read_spy(path, short=len(raw) < 100) as calls:
+                self.assertEqual(self.common['file_sha'](path), hashlib.sha256(raw).hexdigest())
+            self.assertTrue(calls)
+        first = self.common['file_sha'](path)
+        path.write_bytes(path.read_bytes()[:-1] + b'!')
+        self.assertNotEqual(self.common['file_sha'](path), first)
+
+    def test_hash_and_metadata_refuse_size_and_drift_with_bounded_reads(self):
+        path = self.folder / 'payload'; path.write_bytes(b'abcdefghijk')
+        with patch.object(os, 'open', side_effect=AssertionError('must preflight size')):
+            with self.assertRaises(ValueError):
+                self.common['file_sha'](path, maximum=10)
+        for changed in (b'a', b'abcdefghijklmnop', b'ABCDEFGHIJK'):
+            path.write_bytes(b'abcdefghijk')
+            with self.read_spy(path, mutate=lambda: path.write_bytes(changed)):
+                with self.assertRaises(ValueError):
+                    self.common['file_sha'](path)
+        with patch.dict(self.common, {'LIMIT': 12}):
+            path.write_bytes(b' ' * 9 + b'{}')
+            self.assertEqual(self.common['read_bounded'](path), path.read_bytes())
+            path.write_bytes(b' ' * 10 + b'{}')
+            with patch.object(os, 'open', side_effect=AssertionError('metadata cap first')):
+                with self.assertRaises(ValueError): self.common['read_bounded'](path)
+
+        original_open = os.open
+        other = self.folder / 'other'; other.write_bytes(b'unchanged other')
+        for kind in ('link', 'fifo'):
+            path.unlink(); path.write_bytes(b'ordinary')
+            def swapped(target, flags, *args, **kwargs):
+                if pathlib.Path(target) == path:
+                    self.assertTrue(flags & os.O_NOFOLLOW)
+                    self.assertTrue(flags & os.O_NONBLOCK)
+                    path.unlink()
+                    if kind == 'link': path.symlink_to(other)
+                    else: os.mkfifo(path)
+                return original_open(target, flags, *args, **kwargs)
+            with patch.object(os, 'open', swapped), \
+                    patch.object(os, 'fdopen', side_effect=AssertionError('swapped type before payload reads')):
+                with self.assertRaises((OSError, ValueError)):
+                    self.common['file_sha'](path)
+        path.unlink()
+        self.assertEqual(other.read_bytes(), b'unchanged other')
+
+    def test_host_cap_inclusive_and_oversize_refuses_before_asset_hashes(self):
+        out = self.assets()
+        target = out / 'agijobmanager-usdc.html'
+        original = pathlib.Path.stat
+        for size in (450_000_000, 450_000_001, 2_147_483_647, 2_147_483_648):
+            def metadata(path, *args, **kwargs):
+                value = original(path, *args, **kwargs)
+                if path == target:
+                    fields = list(value); fields[6] = size
+                    return os.stat_result(fields)
+                return value
+            def gate(path, **kwargs):
+                raise RuntimeError('reached bounded hash')
+            with self.subTest(size=size), patch.object(pathlib.Path, 'stat', metadata), \
+                    patch.dict(self.common, {'file_sha': gate}):
+                error = RuntimeError if size <= 2_147_483_647 else ValueError
+                with self.assertRaises(error): self.common['verify_assets'](out)
+
+    def test_manifest_checksum_strictness_and_single_bound_capture(self):
+        out = self.assets()
+        digests = self.common['verify_assets'](out)
+        captured = self.common['verify_assets'](out, return_manifest=True)
+        self.assertEqual(captured[0], digests)
+        self.assertEqual(captured[1], json.loads(captured[2]))
+        finite = self.common['strict_json'](
+            b'{"finite":[0.0,-0.0,1.5,1e308],"integer":340282366920938463463374607431768211459,"text":"NaN"}')
+        self.assertEqual(finite['finite'], [0.0, -0.0, 1.5, 1e308])
+        self.assertTrue(all(type(value) is float for value in finite['finite']))
+        self.assertEqual(str(finite['finite'][1]), '-0.0')
+        self.assertEqual(finite['integer'], 2 ** 128 + 3)
+        self.assertIs(type(finite['integer']), int)
+        self.assertEqual(finite['text'], 'NaN')
+        for raw in (b'not-json', b'[]', b'{"a":1,"a":2}',
+                    b'{"a":NaN}', b'{"a":Infinity}', b'{"a":-Infinity}',
+                    b'{"a":1e999}', b'{"a":-1e999}',
+                    b'{"a":[0,NaN]}', b'{"a":{"b":Infinity}}'):
+            (out / 'RELEASE_MANIFEST.json').write_bytes(raw); self.checksums(out)
+            with patch.dict(self.common, {'file_sha': lambda *a, **k: self.fail('manifest first')}):
+                with self.assertRaises((ValueError, json.JSONDecodeError)):
+                    self.common['verify_assets'](out)
+        out = self.assets('second')
+        sums = out / 'SHA256SUMS.txt'
+        for raw in (b'bad line', sums.read_bytes() + sums.read_bytes().splitlines(keepends=True)[0],
+                    b'0' * 64 + b'  unexpected\n'):
+            sums.write_bytes(raw)
+            with patch.dict(self.common, {'file_sha': lambda *a, **k: self.fail('inventory first')}):
+                with self.assertRaises(ValueError): self.common['verify_assets'](out)
+
+    def test_manifest_growth_and_asset_drift_are_not_rehashed_into_acceptance(self):
+        out = self.assets(); manifest = out / 'RELEASE_MANIFEST.json'
+        real = self.common['read_bounded']
+        def captured(path):
+            raw = real(path)
+            if path == manifest:
+                path.write_bytes(raw + b' ')
+            return raw
+        with patch.dict(self.common, {'read_bounded': captured}):
+            with self.assertRaises(ValueError): self.common['verify_assets'](out)
+        self.checksums(out)
+        real_hash = self.common['file_sha']
+        def changed(path, **kwargs):
+            if path.name == 'agijobmanager-usdc.html':
+                path.write_bytes(b'changed after checksum selection')
+            return real_hash(path, **kwargs)
+        with patch.dict(self.common, {'file_sha': changed}):
+            with self.assertRaises(ValueError): self.common['verify_assets'](out)
+
+    def test_size_first_complete_file_comparison_and_builder_wiring(self):
+        a, b = self.folder / 'a', self.folder / 'b'
+        a.write_bytes(b'left'); b.write_bytes(b'longer')
+        with patch.object(os, 'open', side_effect=AssertionError('size first')):
+            self.assertFalse(self.common['files_equal'](a, b))
+        for raw in (b'', b'same', b'a' * (1024 * 1024 + 3)):
+            a.write_bytes(raw); b.write_bytes(raw)
+            with self.read_spy(a), self.read_spy(b):
+                self.assertTrue(self.common['files_equal'](a, b))
+        b.write_bytes(b.read_bytes()[:-1] + b'!')
+        self.assertFalse(self.common['files_equal'](a, b))
+        folders = [self.folder / name for name in ('rebuilt', 'standalone', 'extracted')]
+        for folder in folders:
+            folder.mkdir()
+            for name in BUILDER_ASSETS | BUILDER_ARCHIVE_ONLY_ASSETS:
+                (folder / name).write_bytes(b'complete Builder bytes')
+        (folders[1] / 'MANAGER_CONTEXT.json').unlink()
+        self.common['verify_builder_rebuild'](*folders)
+        target = folders[1] / 'My-SUCCESSOR-Omega-en.html'
+        target.write_bytes(b'complete Builder byte!')
+        with self.assertRaises(ValueError): self.common['verify_builder_rebuild'](*folders)
+
+    def package_fixture(self, name='package', source_limit=None):
+        context = {'sourceManifest': {'fixture': 'owned'}}
+        builders = {item: ('owned Builder ' + item).encode()
+            for item in BUILDER_ASSETS | BUILDER_ARCHIVE_ONLY_ASSETS}
+        builders['SOURCE_MANIFEST.json'] = json.dumps(context['sourceManifest']).encode()
+        builders['MANAGER_CONTEXT.json'] = json.dumps({'sourceManifest': context['sourceManifest'], 'managerSource': {}}).encode()
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, 'w') as archive:
+            archive.writestr('package.json', b'{"version":"owned"}')
+        builders['SUCCESSOR-Omega-editable-source.zip'] = buffer.getvalue()
+        source = {'LICENSE': b'owned license', 'package.json': b'{"version":"1.20.0"}',
+            'ui/agijobmanager-usdc.html': b'<html>owned console</html>'}
+        source.update({'docs/releases/' + TAG + '/' + item: b'owned guide'
+            for item in ('START_HERE.md', 'RELEASE_NOTES.md', 'RECOVERY_GUIDE.md', 'VALIDATION.md')})
+        buffer = io.BytesIO()
+        with tarfile.open(fileobj=buffer, mode='w') as archive:
+            for path, raw in source.items():
+                item = tarfile.TarInfo(path); item.size = len(raw); item.mode = 0o644
+                archive.addfile(item, io.BytesIO(raw))
+        tar = buffer.getvalue()
+        def git(*args):
+            if args == ('rev-parse', 'HEAD'): return ('a' * 40).encode()
+            if args == ('rev-parse', 'HEAD^{tree}'): return ('b' * 40).encode()
+            if args[0] == 'status': return b''
+            if args[0] == 'archive': return tar
+            if args[0] == 'show': return b'1700000000'
+            self.fail('Unexpected fixture Git request')
+        def build(command, **kwargs):
+            if command[:2] == ['node', 'scripts/successor/build.mjs']:
+                output = pathlib.Path(command[3]); output.mkdir()
+                for item, raw in builders.items(): (output / item).write_bytes(raw)
+            else:
+                self.assertEqual(command, ['python3', 'scripts/release/check-v114-boundaries.py'])
+        seen = []
+        def digest(path, **kwargs):
+            seen.append(path.name); return self.common['file_sha'](path, **kwargs)
+        policy = {'DISCOVERY_RELEASE_PROFILE': DISCOVERY_PROFILE, 'select': lambda *a, **k: None}
+        scope = self.load_functions('package-release.py', {'package'}, {
+            'root': self.folder / 'unused-source', 'candidate_policy': policy, 'git': git,
+            'subprocess': SimpleNamespace(run=build),
+            'packaged_guide': lambda raw, *a: raw,
+            'verified_builder_context': lambda *a: (context, b'{"version":"owned"}'),
+            'builder_reconstruction': lambda *a: contextlib.nullcontext(), 'file_sha': digest})
+        if source_limit is not None: scope['LIMIT'] = source_limit
+        out = self.folder / name
+        with contextlib.redirect_stdout(io.StringIO()): scope['package'](out)
+        return out, builders, context, seen
+
+    def test_real_package_checksum_wiring_and_unchanged_source_resource_limit(self):
+        out, _, _, seen = self.package_fixture()
+        self.assertEqual(set(seen), self.asset_names)
+        expected = self.common['verify_assets'](out)
+        self.assertEqual(json.loads((out / 'RELEASE_MANIFEST.json').read_bytes())['archiveLimitBytes'], 450_000_000)
+        self.assertEqual(set(expected), self.asset_names | {'SHA256SUMS.txt'})
+        with self.assertRaises(ValueError): self.package_fixture('too-small', source_limit=1)
+        self.assertFalse((self.folder / 'too-small').exists())
+
+    def test_real_verifier_streams_candidate_hash_and_compares_console_without_external_execution(self):
+        out, builders, _, _ = self.package_fixture()
+        selection = {'releaseProfile': DISCOVERY_PROFILE}
+        native = {'CAPSULE': 'discovery-alpha', 'BROWSER_CAPSULE': 'discovery-browser',
+            'validate_alpha_capsule': lambda *a: None,
+            'validate_browser_capsule': lambda *a: {'campaignDigest': 'c' * 64}}
+        policy = {'select': lambda *a, **k: selection, 'validate_metadata': lambda *a: None,
+            'validate_source': lambda *a: None, 'policy': lambda *a: native}
+        seen, contexts = [], []
+        def digest(path, **kwargs):
+            seen.append(path.name); return self.common['file_sha'](path, **kwargs)
+        def process(command, **kwargs):
+            if command[:2] == ['node', 'scripts/successor/build.mjs']:
+                output = pathlib.Path(command[3]); output.mkdir()
+                for item, raw in builders.items(): (output / item).write_bytes(raw)
+            elif command[:2] == ['node', 'scripts/integrations/discovery-release-native-test.mjs']:
+                contexts.append(json.loads(pathlib.Path(command[4]).read_bytes()))
+            else:
+                self.assertIn(command[0], ('node', 'python3'))
+        scope = self.load_functions('verify-package.py', {
+            'package_inventory', 'archive_inventory', 'verify_package'}, {
+            'candidate_policy': policy, 'file_sha': digest, 'subprocess': SimpleNamespace(run=process),
+            'builder_reconstruction': lambda *a: contextlib.nullcontext(),
+            'retained_builder_package': lambda *a: b'{"version":"owned"}'})
+        with contextlib.redirect_stdout(io.StringIO()): scope['verify_package'](out, profile=DISCOVERY_PROFILE)
+        name = f'AGIJobManager-{TAG}-COMPLETE.zip'
+        self.assertEqual(seen, [name])
+        self.assertEqual(contexts[0]['candidateArchiveSha256'], hashlib.sha256((out / name).read_bytes()).hexdigest())
+        (out / 'agijobmanager-usdc.html').write_bytes(b'different standalone console')
+        self.checksums(out)
+        with contextlib.redirect_stdout(io.StringIO()), self.assertRaisesRegex(ValueError, 'Standalone console'):
+            scope['verify_package'](out, profile=DISCOVERY_PROFILE)
+
+    def transport(self, out, *, change=None):
+        path = self.folder / ('transport-' + str(len(list(self.folder.glob('transport-*')))) + '.zip')
+        with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as archive:
+            for target in sorted(out.iterdir()):
+                info = zipfile.ZipInfo(target.name)
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = (stat.S_IFREG | 0o644) << 16
+                if change: change(info)
+                archive.writestr(info, target.read_bytes())
+        artifact = {'size_in_bytes': path.stat().st_size,
+            'digest': 'sha256:' + hashlib.sha256(path.read_bytes()).hexdigest()}
+        return path, artifact
+
+    def test_collector_streams_actual_transport_and_copies_exact_assets(self):
+        out = self.assets()
+        archive, artifact = self.transport(out)
+        destination = self.folder / 'collected'; destination.mkdir()
+        scope = self.load_functions('collect-qualification.py', {'collect_candidate_assets'})
+        original = zipfile.ZipExtFile.read; calls = []
+        def read(stream, count=-1):
+            self.assertGreater(count, 0); self.assertLessEqual(count, 1024 * 1024)
+            calls.append(count); return original(stream, count)
+        original_open, original_zip = os.open, zipfile.ZipFile
+        descriptors, zip_descriptors = [], []
+        def opened(path, flags, *args, **kwargs):
+            descriptor = original_open(path, flags, *args, **kwargs)
+            if pathlib.Path(path) == archive:
+                self.assertTrue(flags & os.O_NOFOLLOW)
+                self.assertTrue(flags & os.O_NONBLOCK)
+                descriptors.append(descriptor)
+            return descriptor
+        def zipped(stream, *args, **kwargs):
+            self.assertTrue(hasattr(stream, 'fileno'))
+            zip_descriptors.append(stream.fileno())
+            return original_zip(stream, *args, **kwargs)
+        with patch.object(zipfile.ZipExtFile, 'read', read), patch.object(os, 'open', opened), \
+                patch.object(zipfile, 'ZipFile', zipped):
+            observed = scope['collect_candidate_assets'](archive, artifact, destination)
+        self.assertEqual(len(descriptors), 1)
+        self.assertEqual(zip_descriptors, descriptors)
+        self.assertTrue(calls)
+        self.assertEqual(observed[0], self.common['verify_assets'](out))
+        for path in out.iterdir(): self.assertEqual(path.read_bytes(), (destination / path.name).read_bytes())
+
+    def test_collector_metadata_refuses_before_any_member_read(self):
+        source = (ROOT / 'scripts/release/collect-qualification.py').read_text()
+        statements = ast.parse(source).body
+        start = next(i for i, item in enumerate(statements) if isinstance(item, ast.Assign)
+            and any(isinstance(target, ast.Name) and target.id == 'artifact' for target in item.targets))
+        stop = next(i for i in range(start, len(statements)) if isinstance(statements[i], ast.With))
+        for index, size in enumerate((True, 0, -1, '1', 450_000_000, 450_000_001)):
+            destination = self.folder / ('before-download-' + str(index))
+            scope = {'matches': [{'size_in_bytes': size, 'workflow_run': {'head_sha': 'a' * 40}}],
+                'args': SimpleNamespace(source='a' * 40, out=destination),
+                'require': self.common['require'], 'LIMIT': 450_000_000}
+            with self.assertRaises(ValueError):
+                exec(compile(ast.fix_missing_locations(ast.Module(body=statements[start:stop], type_ignores=[])),
+                    '<owned-pre-download-metadata-slice>', 'exec'), scope)
+            self.assertFalse(destination.exists())
+        out = self.assets()
+        scope = self.load_functions('collect-qualification.py', {'collect_candidate_assets'})
+        for change in (
+                lambda info: setattr(info, 'filename', '../bad') if info.filename == 'agijobmanager-usdc.html' else None,
+                lambda info: setattr(info, 'external_attr', (stat.S_IFLNK | 0o777) << 16)
+                    if info.filename == 'agijobmanager-usdc.html' else None):
+            archive, artifact = self.transport(out, change=change)
+            destination = self.folder / ('refused-' + archive.stem); destination.mkdir()
+            with patch.object(zipfile.ZipFile, 'open', side_effect=AssertionError('metadata before member reads')):
+                with self.assertRaises(ValueError): scope['collect_candidate_assets'](archive, artifact, destination)
+            self.assertFalse(list(destination.iterdir()))
+        archive, artifact = self.transport(out)
+        raw = bytearray(archive.read_bytes())
+        offset = 0
+        while True:
+            position = raw.find(b'PK\x01\x02', offset)
+            if position < 0: break
+            raw[position + 8] |= 1
+            offset = position + 4
+        archive.write_bytes(raw)
+        artifact['digest'] = 'sha256:' + hashlib.sha256(raw).hexdigest()
+        destination = self.folder / 'encrypted-refused'; destination.mkdir()
+        with patch.object(zipfile.ZipFile, 'open', side_effect=AssertionError('encryption preflight first')):
+            with self.assertRaises(ValueError): scope['collect_candidate_assets'](archive, artifact, destination)
+        self.assertFalse(list(destination.iterdir()))
+        archive, artifact = self.transport(out)
+        destination = self.folder / 'size-refused'; destination.mkdir()
+        with patch.dict(scope, {'LIMIT': artifact['size_in_bytes']}), \
+                patch.object(zipfile.ZipFile, 'open', side_effect=AssertionError('transport cap first')):
+            with self.assertRaises(ValueError): scope['collect_candidate_assets'](archive, artifact, destination)
+        self.assertFalse(list(destination.iterdir()))
+
+    def test_collector_strict_expanded_budget_and_crc_reject_before_qualification(self):
+        out = self.assets()
+        for target in out.iterdir(): target.write_bytes(b'x' * 1024)
+        archive, artifact = self.transport(out)
+        destination = self.folder / 'expanded-refused'; destination.mkdir()
+        scope = self.load_functions('collect-qualification.py', {'collect_candidate_assets'})
+        with patch.dict(scope, {'LIMIT': 8 * 1024}), \
+                patch.object(zipfile.ZipFile, 'open', side_effect=AssertionError('expanded cap before member reads')):
+            with self.assertRaises(ValueError): scope['collect_candidate_assets'](archive, artifact, destination)
+        self.assertFalse(list(destination.iterdir()))
+        out = self.assets('crc-assets')
+        archive, artifact = self.transport(out)
+        raw = bytearray(archive.read_bytes()); central = raw.index(b'PK\x01\x02')
+        raw[central + 16] ^= 1; archive.write_bytes(raw)
+        artifact['digest'] = 'sha256:' + hashlib.sha256(raw).hexdigest()
+        destination = self.folder / 'crc-refused'; destination.mkdir()
+        with patch.dict(scope, {'verify_assets': lambda *a, **k: self.fail('CRC must reject first')}):
+            with self.assertRaises(zipfile.BadZipFile):
+                scope['collect_candidate_assets'](archive, artifact, destination)
+
+    def test_published_qualification_strict_capture_precedes_record_validation(self):
+        out = self.assets('published-json')
+        workflows = self.common['WORKFLOWS']
+        config = {'repository': REPOSITORY, 'tag': TAG, 'name': TITLE, 'status': 'qualified',
+            'sourceCommit': 'a' * 40, 'sourceTree': 'b' * 40, 'checkoutCommit': 'a' * 40,
+            'requiredSourceRuns': dict.fromkeys(workflows, {}),
+            'artifactDigests': {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in out.iterdir() if path.name != 'SHA256SUMS.txt'}}
+        scope = self.load_functions('verify-package.py', {'package_inventory'}, {
+            'candidate_policy': {'select': lambda *a, **k: None,
+                'validate_metadata': lambda *a, **k: None},
+            'qualification_workflows': lambda config: workflows})
+        valid = json.dumps(config).encode()
+        qualification = out / 'QUALIFICATION.json'
+        qualification.write_bytes(valid); self.checksums(out)
+        manifest, raw = scope['package_inventory'](out, published=True)
+        self.assertEqual(raw, (out / 'RELEASE_MANIFEST.json').read_bytes())
+        self.assertEqual(manifest['sourceCommit'], config['sourceCommit'])
+        invalid = [valid[:-1] + b', "x": NaN, "x": 1}',
+            valid[:-1] + b', "x": Infinity}', valid[:-1] + b', "x": 1e999}',
+            valid[:-1] + b', "tag": ' + json.dumps(TAG).encode() + b'}', b'[]']
+        for value in invalid:
+            qualification.write_bytes(value); self.checksums(out)
+            with patch.dict(scope, {'verify_assets': lambda *a, **k: self.fail('strict capture before validation')}):
+                with self.subTest(raw=value[-64:]), self.assertRaises(ValueError):
+                    scope['package_inventory'](out, published=True)
+        qualification.write_bytes(valid)
+        with patch.object(os, 'open', side_effect=AssertionError('bound before open')):
+            with self.assertRaises(ValueError):
+                self.common['read_bounded'](qualification, maximum=len(valid) - 1)
+
+    def test_unchanged_inner_archive_expansion_guard_precedes_payload_reads(self):
+        scope = self.load_functions('verify-package.py', {'archive_inventory'})
+        item = zipfile.ZipInfo(f'AGIJobManager-{TAG}/source/LICENSE')
+        item.external_attr = (stat.S_IFREG | 0o644) << 16; item.file_size = 17
+        marker = zipfile.ZipInfo(f'AGIJobManager-{TAG}/RELEASE_MANIFEST.json')
+        marker.external_attr = (stat.S_IFREG | 0o644) << 16; marker.file_size = 3
+        archive = SimpleNamespace(infolist=lambda: [item, marker])
+        with patch.dict(scope, {'LIMIT': 20}):
+            with self.assertRaisesRegex(ValueError, 'expanded size'):
+                scope['archive_inventory'](archive, {'files': {'source/LICENSE': {}}})
 
 
 if __name__ == '__main__': unittest.main()

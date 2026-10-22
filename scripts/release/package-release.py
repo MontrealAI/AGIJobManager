@@ -14,7 +14,7 @@ import tempfile
 import zipfile
 sys.dont_write_bytecode = True
 from release_common import TAG, TITLE, LIMIT, BUILDER_ASSETS, BUILDER_ARCHIVE_ONLY_ASSETS, REPOSITORY, sha, require, source_path, packaged_guide, require_builder_outputs, verified_builder_context, verify_builder_context_outputs
-from release_common import builder_reconstruction
+from release_common import builder_reconstruction, RELEASE_ASSET_MAX_BYTES, file_sha
 
 root = pathlib.Path(__file__).resolve().parents[2]
 candidate_policy = runpy.run_path(str(pathlib.Path(__file__).with_name('package-policy.py')))
@@ -132,8 +132,8 @@ def package(out, *, profile='legacy-v114', manifest=None, manifest_sha256=None,
     for name in BUILDER_ASSETS:
         (out / name).write_bytes(payload[name][0])
     for file in out.iterdir():
-        require(file.stat().st_size < LIMIT, 'Asset exceeds 450 MB')
-    (out / 'SHA256SUMS.txt').write_text(''.join(f'{sha(f.read_bytes())}  {f.name}\n' for f in sorted(out.iterdir())))
+        require(file.stat().st_size <= RELEASE_ASSET_MAX_BYTES, 'Asset exceeds release hosting limit')
+    (out / 'SHA256SUMS.txt').write_text(''.join(f'{file_sha(f)}  {f.name}\n' for f in sorted(out.iterdir())))
     result = {'sourceCommit': source, 'sourceTree': tree, 'files': len(manifest['files']), 'zipBytes': archive_path.stat().st_size, 'published': False}
     if selection is not None:
         result.update(candidate_policy['metadata'](selection))

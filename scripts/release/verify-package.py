@@ -10,7 +10,7 @@ import tempfile
 import zipfile
 sys.dont_write_bytecode = True
 from release_common import TAG, TITLE, REPOSITORY, WORKFLOWS, DISCOVERY_PROFILE, qualification_workflows, LIMIT, require, sha, valid_sha, verify_assets, source_path, verify_builder_rebuild, verify_builder_context_outputs, strict_json
-from release_common import builder_reconstruction, retained_builder_package
+from release_common import builder_reconstruction, retained_builder_package, file_sha, files_equal, read_bounded
 
 candidate_policy = runpy.run_path(str(pathlib.Path(__file__).with_name('package-policy.py')))
 
@@ -24,7 +24,8 @@ def package_inventory(assets, *, published=False, profile='legacy-v114', manifes
         qualification = assets / 'QUALIFICATION.json'
         qualification_limit = 64 * 1024 * 1024 if profile == DISCOVERY_PROFILE else 1_000_000
         require(qualification.is_file() and not qualification.is_symlink() and qualification.stat().st_size < qualification_limit, 'Published qualification is missing or oversized')
-        config = json.loads(qualification.read_text())
+        config = strict_json(read_bounded(qualification, maximum=qualification_limit - 1))
+        require(isinstance(config, dict), 'Published qualification must be an object')
         require(config.get('repository') == REPOSITORY and config.get('tag') == TAG and config.get('name') == TITLE and config.get('status') == 'qualified', 'Published qualification identity differs')
         require(valid_sha(config.get('sourceCommit')) and valid_sha(config.get('sourceTree')) and config.get('checkoutCommit') == config['sourceCommit'], 'Published source binding differs')
         workflows = qualification_workflows(config)
@@ -35,9 +36,7 @@ def package_inventory(assets, *, published=False, profile='legacy-v114', manifes
         runpy.run_path(str(pathlib.Path(__file__).with_name('maintenance-qualification.py')))['verify_record'](config)
     if published and selection and selection.get('releaseProfile') == DISCOVERY_PROFILE:
         runpy.run_path(str(pathlib.Path(__file__).with_name('discovery-qualification.py')))['verify_record'](config)
-    verify_assets(assets, config)
-    manifest_bytes = (assets / 'RELEASE_MANIFEST.json').read_bytes()
-    manifest = strict_json(manifest_bytes)
+    _, manifest, manifest_bytes = verify_assets(assets, config, return_manifest=True)
     require(valid_sha(manifest.get('sourceCommit')) and valid_sha(manifest.get('sourceTree')), 'Invalid manifest source identity')
     candidate_policy['validate_metadata'](manifest, selection)
     return manifest, manifest_bytes
@@ -83,9 +82,7 @@ def extract_browser_capsule(assets, destination, selection, *, qualification=Non
         require(json.dumps(strict_json(retained.read_bytes()), sort_keys=True, allow_nan=False)
                 == json.dumps(qualification, sort_keys=True, allow_nan=False),
                 'Saved browser extraction differs from the trusted qualification')
-    verify_assets(assets, qualification)
-    manifest_raw = (assets / 'RELEASE_MANIFEST.json').read_bytes()
-    manifest = strict_json(manifest_raw)
+    _, manifest, manifest_raw = verify_assets(assets, qualification, return_manifest=True)
     candidate_policy['validate_metadata'](manifest, selection)
     source_root = pathlib.Path(__file__).resolve().parents[2]
     discovery = candidate_policy['policy'](selection)
@@ -142,7 +139,7 @@ def verify_package(assets, *, published=False, profile='legacy-v114', manifest=N
             else:
                 target.write_bytes(data)
                 target.chmod(mode & 0o777)
-        require((pathlib.Path(temp) / 'agijobmanager-usdc.html').read_bytes() == (assets / 'agijobmanager-usdc.html').read_bytes(), 'Standalone console differs')
+        require(files_equal(pathlib.Path(temp) / 'agijobmanager-usdc.html', assets / 'agijobmanager-usdc.html'), 'Standalone console differs')
         source_dir = pathlib.Path(temp) / 'source'
         if selection is not None:
             candidate_policy['validate_source'](source_dir, selection)
@@ -156,7 +153,7 @@ def verify_package(assets, *, published=False, profile='legacy-v114', manifest=N
             context.write_text(json.dumps({'sourceCommit': manifest['sourceCommit'],
                 'sourceTree': manifest['sourceTree'],
                 'browserInput': browser_input,
-                'candidateArchiveSha256': sha((assets / f'AGIJobManager-{TAG}-COMPLETE.zip').read_bytes())}) + '\n')
+                'candidateArchiveSha256': file_sha(assets / f'AGIJobManager-{TAG}-COMPLETE.zip')}) + '\n')
             subprocess.run(['node', 'scripts/integrations/discovery-release-native-test.mjs',
                 '--installed', str(capsule), str(context), str(pathlib.Path(temp) / 'native-evidence'),
                 str(browser_capsule / 'discovery-continuation/fleet-browser-workspace.json'),
