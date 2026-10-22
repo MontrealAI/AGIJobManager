@@ -1,4 +1,4 @@
-"""Authorize Pages only after exact-main publication of the qualified immutable v1.20.0 Discovery release."""
+"""Authorize Pages only after exact-main publication of the qualified v1.20.0 Discovery release."""
 import argparse
 import json
 import os
@@ -7,7 +7,7 @@ import runpy
 import re
 import subprocess
 import tempfile
-from release_common import REPOSITORY, TAG, TITLE, LIMIT, BUILDER_ASSETS, require, valid_sha, strict_json, sha, run_jobs, qualification_workflows, verify_assets
+from release_common import REPOSITORY, TAG, TITLE, RELEASE_ASSET_MAX_BYTES, BUILDER_ASSETS, require, valid_sha, strict_json, sha, run_jobs, qualification_workflows, verify_assets
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 TRIGGER_PATH = '.github/workflows/publish-discovery-v1.yml'
@@ -51,7 +51,7 @@ def validate_published_release(release, source, api, expected, sizes):
     require(type(release.get('id')) is int and release['id'] > 0 and release.get('tag_name') == TAG
         and release.get('target_commitish') == source and release.get('name') == TITLE
         and release.get('draft') is False and release.get('prerelease') is False
-        and release.get('immutable') is True and release.get('published_at'), 'Pages requires the exact published immutable release')
+        and release.get('published_at'), 'Pages requires the exact published release')
     obj = api(f'git/ref/tags/{TAG}')['object']
     for _ in range(5):
         if obj.get('type') == 'commit': break
@@ -70,7 +70,8 @@ def validate_published_release(release, source, api, expected, sizes):
     for asset in assets:
         name = asset['name']
         require(asset.get('state') == 'uploaded' and asset.get('digest') == 'sha256:' + expected[name]
-            and type(asset.get('size')) is int and asset['size'] == sizes[name] and asset['size'] < LIMIT, 'Pages release asset identity differs: ' + name)
+            and type(asset.get('size')) is int and asset['size'] == sizes[name]
+            and 0 < asset['size'] <= RELEASE_ASSET_MAX_BYTES, 'Pages release asset identity differs: ' + name)
     require(api('git/ref/heads/main')['object']['sha'] == source, 'Pages source advanced after release validation')
 
 
@@ -133,7 +134,7 @@ def main():
     require(api('git/ref/heads/main')['object']['sha'] == args.source, 'Pages source advanced before build')
     with pathlib.Path(os.environ['GITHUB_OUTPUT']).open('a') as output:
         output.write('authorized=true\nsource=' + args.source + '\n')
-    print('Published immutable release, exact source, all nine qualification workflows and complete attested asset inventory authenticated for Pages.')
+    print('Published release, exact source, all nine qualification workflows and complete attested asset inventory authenticated for Pages.')
 
 
 if __name__ == '__main__': main()

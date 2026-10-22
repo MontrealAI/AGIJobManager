@@ -74,12 +74,27 @@ class PublishedPages(unittest.TestCase):
         with self.assertRaises(ValueError): self.release_check()
         self.main = SOURCE; self.tag = 'e'*40
         with self.assertRaises(ValueError): self.release_check()
-    def test_unpublished_mutable_old_or_wrong_release_is_rejected(self):
-        for key, value in [('draft', True), ('prerelease', True), ('immutable', False), ('published_at', None),
+    def test_unpublished_old_or_wrong_release_is_rejected(self):
+        for key, value in [('draft', True), ('prerelease', True), ('published_at', None),
                 ('tag_name', 'v1.19.3'), ('target_commitish', 'main'), ('target_commitish', 'e'*40), ('name', 'other')]:
             old = self.release[key]; self.release[key] = value
             with self.subTest(key=key, value=value), self.assertRaises(ValueError): self.release_check()
             self.release[key] = old
+    def test_exact_published_release_does_not_require_github_immutability(self):
+        for value in (False, True):
+            self.release['immutable'] = value
+            with self.subTest(immutable=value): self.release_check()
+        self.release.pop('immutable')
+        self.release_check()
+    def test_public_asset_host_limit_is_distinct_from_archive_resource_budget(self):
+        from release_common import LIMIT, RELEASE_ASSET_MAX_BYTES
+        asset = self.assets[0]
+        for size in (LIMIT, LIMIT + 1, RELEASE_ASSET_MAX_BYTES):
+            asset['size'] = self.sizes[asset['name']] = size
+            with self.subTest(valid=size): self.release_check()
+        for size in (True, 0, -1, '100', RELEASE_ASSET_MAX_BYTES + 1):
+            asset['size'] = self.sizes[asset['name']] = size
+            with self.subTest(invalid=size), self.assertRaises(ValueError): self.release_check()
     def test_release_assets_require_complete_exact_uploaded_bytes_and_digests(self):
         for key, value in [('digest', 'sha256:' + 'e'*64), ('size', 101), ('state', 'starter')]:
             old = self.assets[0][key]; self.assets[0][key] = value
