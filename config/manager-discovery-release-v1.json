@@ -560,10 +560,10 @@
     "scripts/release/pages-publication-discovery.py": {
       "after": {
         "mode": "100644",
-        "sha256": "f71dc00f1b3e0111a6d8b75260a546ae67f2ec1e51c60b69d71067eaeb0ddf7f"
+        "sha256": "cb7dfc7cd8c4f59599bec1d3de0050994c45738ec111e3aefceed6677fa8f9bb"
       },
       "before": null,
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+      "reason": "Retain all actual source/digest/published/tag/qualification checks while accepting supported platform mutability and the existing inclusive host asset limit; preserve historical maintenance and separate transport/archive budgets."
     },
     "scripts/release/publication-authorization-discovery.py": {
       "after": {
@@ -630,10 +630,10 @@
     "scripts/release/test-discovery-release-plumbing.py": {
       "after": {
         "mode": "100644",
-        "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"
+        "sha256": "c321cc9de4d0e223522b94a016a9d6725cb2821addc23fd6d7df2c7fcb2783b5"
       },
       "before": null,
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+      "reason": "Verify the exact reviewed Next security delta and preserve whole-package comparisons; construct the negative publisher extraction phase locally from its actual AST without unavailable historical Git objects, retaining old refusal and actual qualified rebuild success."
     },
     "scripts/release/test-discovery-release-profile.py": {
       "after": {
@@ -654,10 +654,10 @@
     "scripts/release/test-pages-publication-discovery.py": {
       "after": {
         "mode": "100644",
-        "sha256": "a67a07024bb7eaf9eab658d9cf49bbe267c6237b9be7c024d56d45aa92593941"
+        "sha256": "280fd9e7976a001473f92a6b1f7b916126940cdab1d8e086bc061abc7928a0df"
       },
       "before": null,
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+      "reason": "Retain all actual source/digest/published/tag/qualification checks while accepting supported platform mutability and the existing inclusive host asset limit; preserve historical maintenance and separate transport/archive budgets."
     },
     "scripts/release/test-publication-authorization-discovery.py": {
       "after": {
