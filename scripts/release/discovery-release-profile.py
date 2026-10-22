@@ -48,6 +48,18 @@ REQUIRED_ALPHA_SOURCES = {
 }
 PACKAGE_FILES = ('package.json', 'package-lock.json', 'hardhat/package.json',
                  'hardhat/package-lock.json', 'ui/package.json', 'ui/package-lock.json')
+NEXT_PATCH_INTEGRITIES = {'node_modules/@next/env': 'sha512-xxW5EBI8fMPuVTPBW7LL980IRbuDXlbkUAwp9DDhtb4Lnich3nJ13uYpvrX4VE74hWPf6AvHHAMmGCidcHjbfg==',
+ 'node_modules/@next/eslint-plugin-next': 'sha512-EsR/G+skBFfu8Z35P6V/yuu4IV8zkZXIssGOgIRD0ZXqB4CTEuEHQC1ySOQi31u4xjmgHVAdG1RT3QAasRmcZA==',
+ 'node_modules/@next/swc-darwin-arm64': 'sha512-dPoQYXcfSIqx5o+TOXVXO7kONK5qbtNRDeiTfII0bT3puGIT6VF5e0QwmxNZfEZ5Zety5f3m9P/p4xqwfiLlPg==',
+ 'node_modules/@next/swc-darwin-x64': 'sha512-RgCJ7buBivTH+6sddqaVm+/v8kwMHlFkobvdt3DfETutws5HrxnToMIWSN9X3MZ3aAi7BbKrGZZWUDQLEycXqw==',
+ 'node_modules/@next/swc-linux-arm64-gnu': 'sha512-OHXQe13olE59aKe++zHavGcJPh5SLHXi6Anret3BBeq1+qhSuOJDNAli/EDDfxs6UTqA4Qddo4uyYry2slyjiQ==',
+ 'node_modules/@next/swc-linux-arm64-musl': 'sha512-nTB7bB6vfn4ezCJNYP43ukt2o8L3+WxKF/sTcTxepdXsJh3SM9RhlU7wrZYbH7L4HO5M87dqDTwm8587vAkCiw==',
+ 'node_modules/@next/swc-linux-x64-gnu': 'sha512-WXCfVI32rW3xCusoUX1RpZKtyChWU2Zwe27JUDmM3KrXwcDNc9vV4zEq0GKFAURnuQ/Ouo/XqPvB0yh445XZCg==',
+ 'node_modules/@next/swc-linux-x64-musl': 'sha512-Miq+NDb/HWsXuxseYxMM6fuEOQXgTziarkKIRpVKCn8W69cEfhQaQr+90pO+u4q2CbJR2wzXmUuCFyZaJs/Nng==',
+ 'node_modules/@next/swc-win32-arm64-msvc': 'sha512-5LR79lemgDlgxvG7MQJ+zHCkVcrUoQuO7CiIvq3I58vNW4goSOE2b+19Z6FujRWMouvni4gvudYFuFuNxolGWA==',
+ 'node_modules/@next/swc-win32-x64-msvc': 'sha512-GNipvXUYROSTf4PXEyH95FrWImIB5zdaK6uEOg0RP1/X2drnvoMwiBkJ0VWdzX7w3iiBm3y5g2TxkKDGVTOQcg==',
+ 'node_modules/eslint-config-next': 'sha512-FQkDceHNJVfMa2rKbBQKyVILq7nG/zd2TxKsjecJAIv/dOcqaZynK5shwQCt6qrZFFae/EukOFggSP0jtNSLAA==',
+ 'node_modules/next': 'sha512-JjhLBBY1PNnuwPtcZ7t8yxVeJVYvD2Jyp633J+gRCNbzSt7N0E+xqCf6uQiff3+3qmUkwcF/ksfSsK1xsZ76Tw=='}
 # These literals are generated only after the complete finite delta is reviewed.
 # BEGIN FROZEN DISCOVERY DELTA
 BASELINE_SHA256 = ''
@@ -203,6 +215,43 @@ def validate_projections(root, previous):
         require(restored == original and blob(restored.encode()) == previous['entries'][name]['blob'], 'Discovery projection did not reproduce published v1.19.6 bytes')
 
 
+def restore_next_security_patch(name, before, after):
+    if name not in ('ui/package.json', 'ui/package-lock.json'):
+        return
+    original = before['packages'][''] if name.endswith('package-lock.json') else before
+    current = after['packages'][''] if name.endswith('package-lock.json') else after
+    for section, package in (('dependencies', 'next'), ('devDependencies', 'eslint-config-next')):
+        require(original[section][package] == '15.5.27' and current[section][package] == '15.5.28',
+                'Discovery Next security patch pin differs: ' + package)
+        current[section][package] = original[section][package]
+    if not name.endswith('package-lock.json'):
+        return
+    for path, integrity in NEXT_PATCH_INTEGRITIES.items():
+        previous = before['packages'][path]
+        require(previous['version'] == '15.5.27'
+                and previous['resolved'].endswith('-15.5.27.tgz'),
+                'Discovery Next predecessor record differs: ' + path)
+        expected = strict_json(json.dumps(previous))
+        expected.update(version='15.5.28', integrity=integrity,
+                        resolved=previous['resolved'][:-len('15.5.27.tgz')] + '15.5.28.tgz')
+        if path == 'node_modules/next':
+            require(expected['dependencies']['@next/env'] == '15.5.27', 'Discovery Next env predecessor differs')
+            expected['dependencies']['@next/env'] = '15.5.28'
+            optional = expected['optionalDependencies']
+            require(optional['sharp'] == '^0.34.3 || ^0.35.4', 'Discovery Next sharp predecessor differs')
+            optional['sharp'] = '^0.34.3 || ^0.35.5'
+            for package in optional:
+                if package.startswith('@next/swc-'):
+                    require(optional[package] == '15.5.27', 'Discovery Next SWC predecessor differs')
+                    optional[package] = '15.5.28'
+        elif path == 'node_modules/eslint-config-next':
+            require(expected['dependencies']['@next/eslint-plugin-next'] == '15.5.27',
+                    'Discovery Next ESLint predecessor differs')
+            expected['dependencies']['@next/eslint-plugin-next'] = '15.5.28'
+        require(same(after['packages'][path], expected), 'Discovery Next security package record differs: ' + path)
+        after['packages'][path] = previous
+
+
 def validate_packages(root, previous):
     for name in PACKAGE_FILES:
         require(name in MODIFIED, 'Discovery software labels must be explicitly versioned: ' + name)
@@ -213,6 +262,7 @@ def validate_packages(root, previous):
         if name.endswith('package-lock.json'):
             require(after['packages']['']['version'] == VERSION, 'Discovery lock root version differs')
             after['packages']['']['version'] = before['packages']['']['version']
+        restore_next_security_patch(name, before, after)
         require(same(after, before), 'Discovery changed a dependency, command or compiler setting: ' + name)
     before = strict_json(previous['originals']['config/usdc-deployment.json'])
     after = strict_json(read(root, 'config/usdc-deployment.json')[1])
