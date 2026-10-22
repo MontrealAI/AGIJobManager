@@ -17,3 +17,10 @@ This proves no installed capture, durable owner mission commit, release, settlem
 
 Every ZIP member was CRC checked and compared byte-for-byte with its original input. MEMBERS.json records all
 sizes and SHA256 values. Earlier failure and source/native evidence in Alpha#4855 remains unchanged.
+
+The original archive remains available at the immutable source below. The current working tree omits its ZIP
+entry to comply with the unchanged repository no-binaries policy; the archive and original failure history are
+retained in commit57b760784bae30630697e0024eec91cb2fc05958. Download it as `RAW_MANAGER_INTEGRATION.zip`
+before checking this packet's original SHA256SUMS and MEMBERS inventory.
+
+[Original archive](https://github.com/MontrealAI/AGIJobManager/blob/57b760784bae30630697e0024eec91cb2fc05958/evidence/autonomous-enterprises-20261022/integration-c655/RAW_MANAGER_INTEGRATION.zip).
