@@ -1,6 +1,6 @@
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+# Superseded source-only Discovery reconciliation
 
-# Discovery source-only baseline reconciliation
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 This local candidate normal-merges the existing Discovery source into actual
 maintenance main `900bb4b46cb7de7f6f69f553a5687866f978a413`, tree

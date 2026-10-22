@@ -35,13 +35,26 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm --prefix hardhat ci
+      - name: Capture the exact reviewed Alpha implementation
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: MontrealAI/AGI-Alpha-Agent-v0
+          # Draft pin: pending final Alpha review and fresh native qualification.
+          ref: b062fde0118ca74e1f36fc96816ca6985ab64bc8
+          path: build/discovery-alpha
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Isolate the installed native source from Manager inputs
+        run: |
+          test ! -e "$RUNNER_TEMP/discovery-alpha"
+          mv "$GITHUB_WORKSPACE/build/discovery-alpha" "$RUNNER_TEMP/discovery-alpha"
       - name: Source and dependency compatibility boundaries
         id: source-policy
         run: |
           set -euo pipefail
-          manifest_sha=$(sha256sum config/manager-dependency-maintenance-v1.json | cut -d' ' -f1)
-          verifier_sha=$(sha256sum scripts/release/maintenance-profile.py | cut -d' ' -f1)
-          python3 scripts/release/maintenance-profile.py --dependency-root "$(realpath node_modules)"
+          manifest_sha=$(sha256sum config/manager-discovery-release-v1.json | cut -d' ' -f1)
+          verifier_sha=$(sha256sum scripts/release/discovery-release-profile.py | cut -d' ' -f1)
+          python3 scripts/release/discovery-release-profile.py --dependency-root "$(realpath node_modules)" --native-source-root "$RUNNER_TEMP/discovery-alpha" --manifest-sha256 "$manifest_sha" --verifier-sha256 "$verifier_sha"
           printf 'manifest=%s\nverifier=%s\n' "$manifest_sha" "$verifier_sha" >> "$GITHUB_OUTPUT"
       - name: Run root and Hardhat audits at low threshold
         run: |
@@ -60,15 +73,16 @@ jobs:
       - name: Test release qualification gates offline
         run: |
           python3 scripts/release/test-release-gates.py
-          python3 scripts/release/run-maintenance-inherited-tests.py --dependency-root "$(realpath node_modules)"
+          python3 scripts/release/run-discovery-preservation.py --inherited --dependency-root "$(realpath node_modules)"
       - name: Native transformation profile and inherited release tests
         run: |
-          python3 scripts/release/test-maintenance-profile.py
-          python3 scripts/release/test-maintenance-qualification.py
+          python3 scripts/release/test-discovery-release-profile.py
+          python3 scripts/release/test-discovery-qualification.py
           python3 scripts/release/test-transformational-qualification.py
-          python3 scripts/release/test-publication-authorization-ti.py
-          python3 scripts/release/test-pages-publication-maintenance.py
-          python3 scripts/release/test-maintenance-plumbing.py
+          python3 scripts/release/test-publication-authorization-discovery.py
+          python3 scripts/release/test-pages-publication-discovery.py
+          python3 scripts/release/test-discovery-release-plumbing.py
+          python3 scripts/release/test-discovery-saved-candidate.py
       - name: Resolve candidate identity from package metadata
         id: candidate
         run: |
@@ -81,6 +95,10 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write(f'tag={TAG}\n')
           PY
+      - name: Capture one authenticated original Alpha browser input capsule
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/release/discovery-browser-input.py --output "$RUNNER_TEMP/discovery-browser-input"
       - name: Build and independently rebuild candidate assets
         env:
           CANDIDATE_MANIFEST_SHA: ${{ steps.source-policy.outputs.manifest }}
@@ -88,9 +106,11 @@ jobs:
         run: |
           for output in "build/release/${{ steps.candidate.outputs.tag }}-candidate" /tmp/agi-candidate-rebuild; do
             python3 scripts/release/package-release.py --out "$output" \
-              --profile manager-dependency-maintenance-v1 --object-store "$PWD" \
+              --profile manager-discovery-release-v1 --object-store "$PWD" \
               --dependency-root "$(realpath node_modules)" \
-              --manifest config/manager-dependency-maintenance-v1.json \
+              --native-source-root "$RUNNER_TEMP/discovery-alpha" \
+              --browser-input-root "$RUNNER_TEMP/discovery-browser-input" \
+              --manifest config/manager-discovery-release-v1.json \
               --manifest-sha256 "$CANDIDATE_MANIFEST_SHA" \
               --verifier-sha256 "$CANDIDATE_VERIFIER_SHA"
           done
@@ -101,7 +121,8 @@ jobs:
           CANDIDATE_VERIFIER_SHA: ${{ steps.source-policy.outputs.verifier }}
         run: |
           python3 scripts/release/verify-package.py "build/release/${{ steps.candidate.outputs.tag }}-candidate" \
-            --profile manager-dependency-maintenance-v1 --manifest config/manager-dependency-maintenance-v1.json \
+            --profile manager-discovery-release-v1 --manifest config/manager-discovery-release-v1.json \
+            --native-source-root "$RUNNER_TEMP/discovery-alpha" \
             --manifest-sha256 "$CANDIDATE_MANIFEST_SHA" \
             --verifier-sha256 "$CANDIDATE_VERIFIER_SHA"
       - name: Retain source-pinned candidate assets

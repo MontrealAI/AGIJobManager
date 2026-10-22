@@ -44,6 +44,10 @@ The retained v1.19.5 developer adapter inspects a complete Alpha transformation 
 
 **En français :** l’inspection d’une campagne Alpha reste gratuite, sans permission d’exécution ni paiement. Le pilote natif à plafond zéro ne permet aucune proposition payante. Le Créateur local existant reste inchangé.
 
+## Inspect a Discovery Lab campaign
+
+The Discovery Lab developer adapter checks the typed Learn–Extract–Abstract–Compose–Test–Evolve campaign using an explicitly installed, source-pinned Alpha inspector. Returned receipt bytes can be retained in the same Alpha mission history and Evidence Docket. The USDC route has a zero currency cap and remains a draft: importing a request or receipt grants no execution, payment, settlement or capability authority. Start with the [Discovery Lab guide](docs/successor/DISCOVERY_LAB.md) and [{{TAG}} qualification boundary](docs/releases/{{TAG}}/VALIDATION.md).
+
 ## Historical October 10 instance — ENS connected, activation on HOLD
 
 The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_USDC_2026-10-10.md) reports the verified helper at `0x6EE7A600C56C1Bfd12c482190d5dAbDD7194CDBC` connected to manager `0xCFA78f9980eA9B55c705B3E44467baE383cE1fA7`, using **`job-<jobId>.usdc.jobs.agi.eth`**. At the recorded block **26,165,026**, intake was paused and no job had been posted. This is dated operator evidence, not a live status indicator or permission to fund jobs.
@@ -60,7 +64,7 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Current software version: {{TAG}} — Scoped dependency maintenance candidate.**
+**Current software version: {{TAG}} — Discovery Lab admission candidate.**
 [Latest deployment and instance-specific operations](docs/OPERATIONS/COMMISSIONING.md) ·
 [Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Release notes](docs/releases/{{TAG}}/RELEASE_NOTES.md).
 

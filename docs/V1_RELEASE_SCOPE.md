@@ -1,6 +1,6 @@
 # AGIJobManager release scope
 
-**Current edition: v1.19.6.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
+**Current edition: v1.20.0.** Use [release identity and deployment commands](RELEASE_GUIDE.md), the matching archive and its exact-source evidence. AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery; work and evidence evaluation occur outside the contract.
 
 ## Inherited contract hardening and second-deployment checks
 
@@ -19,13 +19,14 @@ The public archive contains no private Fleet/Agent/Node application, production 
 
 ## Published download versus current source
 
-**v1.19.6 is a scoped dependency-maintenance candidate.** It patches root/UI follow-redirects to 1.16.1, UI Hono to 4.13.11 and UI Vite to 7.3.7, and adds a separate finite source/qualification policy. Read the [maintenance entry guide](releases/v1.19.6/START_HERE.md) and [validation boundary](releases/v1.19.6/VALIDATION.md). The v1.19.5 native transformation adapter remains free inspection only, with its original independently supplied runtime bindings and immutable Alpha source pin. The inherited Builder remains at its immutable v1.19.4 code pin. Contracts, compiler settings, deployed bytecode, transaction defaults, original Alpha dossiers, recovery obligations and historical evidence keep their identities. Fresh exact-final-source hosted qualification remains mandatory. The matching release page and external qualification establish whether this candidate has been published. Private Fleet 1.10.0, Agent 1.16.0 and Node 2.17.0 remain separate companion editions; this maintenance does not qualify their hardware or live execution.
+**v1.20.0 is a Discovery Lab admission candidate.** It adds a separate finite release profile, saved Alpha and original-browser input capsules, and same-mission native receipt and docket validation. It retains the published v1.19.6 dependency repairs: root/UI follow-redirects 1.16.1, UI Hono 4.13.11 and UI Vite 7.3.7. Read the [Discovery entry guide](releases/v1.20.0/START_HERE.md) and [validation boundary](releases/v1.20.0/VALIDATION.md). The v1.19.5 native transformation adapter remains free inspection only, with its original independently supplied runtime bindings and immutable Alpha source pin. The inherited Builder remains at its immutable v1.19.4 code pin. Contracts, compiler settings, deployed bytecode, transaction defaults, original Alpha dossiers, recovery obligations and historical evidence keep their identities. Fresh exact-final-source hosted qualification remains mandatory. The matching release page and external qualification establish whether this candidate has been published. Private Fleet 1.10.0, Agent 1.16.0 and Node 2.17.0 remain separate companion editions; this candidate does not qualify their hardware or live execution.
 
 Use an immutable tag and matching COMPLETE archive. Its outer `VALIDATION.md` and `RELEASE_MANIFEST.json`, plus the published external `QUALIFICATION.json`, identify the qualified source and publication evidence. Main may contain later work; never combine its scripts with an older release's instructions or attestations. Current guides apply to their checkout. Historical releases, dated qualification records and legal notices retain their original versions.
 
 | Edition | Change introduced |
 | --- | --- |
-| v1.19.6 | Scoped follow-redirects, Hono and Vite audit repair; separate maintenance source policy and fresh final-source qualification required |
+| v1.20.0 | Discovery Lab admission with saved source/input capsules, native same-mission receipts and dockets, and separate final-source qualification; retains v1.19.6 repairs |
+| [v1.19.6](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.6) | Scoped follow-redirects, Hono and Vite audit repair; separate maintenance source policy |
 | v1.19.5 | Free native transformation-campaign inspection, retained original campaign bytes, runtime-binding checks and a separate finite source/qualification policy; no positive native paid proposal |
 | [v1.19.4](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.4) | Operator guidance, reviewed deployment evidence and authority checks, stronger embedded-content validation and consistent French navigation |
 | [v1.19.2](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.19.2) | Current deployment records across the website and consoles, explicit historical instance routes and regression checks for stale primary addresses |
