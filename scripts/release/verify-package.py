@@ -10,7 +10,7 @@ import tempfile
 import zipfile
 sys.dont_write_bytecode = True
 from release_common import TAG, TITLE, REPOSITORY, WORKFLOWS, DISCOVERY_PROFILE, qualification_workflows, LIMIT, require, sha, valid_sha, verify_assets, source_path, verify_builder_rebuild, verify_builder_context_outputs, strict_json
-from release_common import builder_reconstruction, retained_builder_package, file_sha, files_equal
+from release_common import builder_reconstruction, retained_builder_package, file_sha, files_equal, read_bounded
 
 candidate_policy = runpy.run_path(str(pathlib.Path(__file__).with_name('package-policy.py')))
 
@@ -24,7 +24,8 @@ def package_inventory(assets, *, published=False, profile='legacy-v114', manifes
         qualification = assets / 'QUALIFICATION.json'
         qualification_limit = 64 * 1024 * 1024 if profile == DISCOVERY_PROFILE else 1_000_000
         require(qualification.is_file() and not qualification.is_symlink() and qualification.stat().st_size < qualification_limit, 'Published qualification is missing or oversized')
-        config = json.loads(qualification.read_text())
+        config = strict_json(read_bounded(qualification, maximum=qualification_limit - 1))
+        require(isinstance(config, dict), 'Published qualification must be an object')
         require(config.get('repository') == REPOSITORY and config.get('tag') == TAG and config.get('name') == TITLE and config.get('status') == 'qualified', 'Published qualification identity differs')
         require(valid_sha(config.get('sourceCommit')) and valid_sha(config.get('sourceTree')) and config.get('checkoutCommit') == config['sourceCommit'], 'Published source binding differs')
         workflows = qualification_workflows(config)
