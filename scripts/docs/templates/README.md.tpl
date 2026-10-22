@@ -40,7 +40,7 @@ Two bounded local engines produce real editable artifacts: a public-data report 
 
 ## Inspect a transformation campaign
 
-The {{TAG}} developer adapter inspects a complete Alpha transformation campaign with an installed, compatible native inspector and independently supplied runtime bindings. The current native pilot has zero currency allowances: **inspection is free; a positive paid proposal is unsupported**. Inspection does not execute work, grant permissions or sign a transaction. The existing local Builder and its pinned runtime remain unchanged. Start with the [{{TAG}} guide](docs/releases/{{TAG}}/START_HERE.md) and [adapter contract and recovery](docs/successor/TRANSFORMATIONAL_WORK.md). This is a developer API, not a new console action.
+The retained v1.19.5 developer adapter inspects a complete Alpha transformation campaign with an installed, compatible native inspector and independently supplied runtime bindings. The current native pilot has zero currency allowances: **inspection is free; a positive paid proposal is unsupported**. Inspection does not execute work, grant permissions or sign a transaction. The existing local Builder and its pinned runtime remain unchanged. Start with the [{{TAG}} guide](docs/releases/{{TAG}}/START_HERE.md) and [adapter contract and recovery](docs/successor/TRANSFORMATIONAL_WORK.md). This is a developer API, not a new console action.
 
 **En français :** l’inspection d’une campagne Alpha reste gratuite, sans permission d’exécution ni paiement. Le pilote natif à plafond zéro ne permet aucune proposition payante. Le Créateur local existant reste inchangé.
 
@@ -60,7 +60,7 @@ The 10 October 2026 [deployment and connection record](docs/deployments/MAINNET_
 
 AGIJobManager is the software behind the USDC job contract and supporting tools. The technical documentation, qualification evidence and deployment instructions follow below. [Website publishing guide](docs/ui/GITHUB_PAGES.md).
 
-**Current software version: {{TAG}} — Free transformation-campaign inspection.**
+**Current software version: {{TAG}} — Scoped dependency maintenance candidate.**
 [Latest deployment and instance-specific operations](docs/OPERATIONS/COMMISSIONING.md) ·
 [Finite operator actions](OPERATOR_ACTIONS_REQUIRED.md) · [Release notes](docs/releases/{{TAG}}/RELEASE_NOTES.md).
 

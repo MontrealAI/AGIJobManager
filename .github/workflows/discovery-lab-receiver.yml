@@ -34,12 +34,12 @@ jobs:
       - name: Verify the candidate-only finite source inventory from actual tracked inputs
         run: |
           set -euo pipefail
-          python3 scripts/release/test-discovery-lab-profile.py > "$RUNNER_TEMP/discovery-lab/source-profile-tests.txt" 2>&1
+          python3 scripts/release/test-discovery-lab-profile-v2.py > "$RUNNER_TEMP/discovery-lab/source-profile-tests.txt" 2>&1
           cat "$RUNNER_TEMP/discovery-lab/source-profile-tests.txt"
           python3 - <<'PYCODE' > "$RUNNER_TEMP/discovery-lab/source-profile.json"
           import hashlib, json, pathlib, runpy, subprocess
           root = pathlib.Path.cwd()
-          policy = runpy.run_path(str(root / 'scripts/release/discovery-lab-profile.py'))
+          policy = runpy.run_path(str(root / 'scripts/release/discovery-lab-profile-v2.py'))
           if subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard', '-z']):
               raise ValueError('Untracked source cannot enter candidate qualification')
           actual = subprocess.check_output(['git', 'ls-files', '--cached', '-z']).decode().rstrip('\0').split('\0')
@@ -50,7 +50,7 @@ jobs:
           result['sourceTree'] = subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}']).decode().strip()
           print(json.dumps(result, sort_keys=True))
           PYCODE
-          sha256sum config/discovery-lab-source-candidate-v1.json config/discovery-lab-source-baseline-v1.json scripts/release/discovery-lab-profile.py scripts/release/test-discovery-lab-profile.py .github/workflows/discovery-lab-receiver.yml docs/successor/DISCOVERY_LAB.md >> "$RUNNER_TEMP/discovery-lab/SHA256SUMS.txt"
+          sha256sum config/discovery-lab-source-candidate-v2.json config/discovery-lab-source-baseline-v2.json scripts/release/discovery-lab-profile-v2.py scripts/release/test-discovery-lab-profile-v2.py .github/workflows/discovery-lab-receiver.yml docs/successor/DISCOVERY_LAB.md >> "$RUNNER_TEMP/discovery-lab/SHA256SUMS.txt"
       - name: Capture the exact reviewed Alpha implementation
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
