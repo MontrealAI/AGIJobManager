@@ -528,5 +528,95 @@ class SavedBrowserCapsule(unittest.TestCase):
         with self.assertRaises(ValueError): P['validate_browser_capsule'](self.root, self.capsule)
 
 
+class DiscoveryNextSecurityPatch(unittest.TestCase):
+    OLD_INTEGRITIES = {'node_modules/@next/env': 'sha512-WC5hvVqiuFOcRyz6gKPeJkiVvSMf3scNeAV49CdWtVqxmUlzh8UKR6YHt9yiNkh8LngtzqSlVz07/Ma3ZAzchA==',
+     'node_modules/@next/eslint-plugin-next': 'sha512-a94xlzvOLaULh4Fzcvj9B2hwIOtPHJW75gghkXiJ8s1Jk0eo00UknrDVhx04Y+8ARu9ds13vy/jHg5u/PdVGqw==',
+     'node_modules/@next/swc-darwin-arm64': 'sha512-fBA9QurmK4+uj4wNhmRTuO5zMVRaBHCvp6H93zTG/5i6Yi6TewbvbesXB8YQNj8T99Cwrow87hHiFV6wL/hyMA==',
+     'node_modules/@next/swc-darwin-x64': 'sha512-FGZwJwry8qZNHxD/nfwrCwCHHrqx6epqItkkxbYcBQEQ2uw5S43bY83fQB5zbAsZE7TELMjoYkbhsQ4oKM7wwg==',
+     'node_modules/@next/swc-linux-arm64-gnu': 'sha512-GQulAaJYNF1RYuatlsw9/uzbKz4if2V7Ic9nVO+P0ljYPm4yBRTFIl6g5YkKTw40lMLbpy9edLoH44g3jSHMYA==',
+     'node_modules/@next/swc-linux-arm64-musl': 'sha512-URFFsUmu8Pi0/1qdnUI7tx7keZw1Mt5zHfrIX1RfDG9Nih8DYxK54WZsDJUX2ZTlii1jgotL7qcbwKnSAES6xQ==',
+     'node_modules/@next/swc-linux-x64-gnu': 'sha512-aJp74z7uvU5jQhyH7lyk+4qSRcTdKbKT9NQE3jiO9kWYkoHZjKi0zzHDbCoZ+v2sJDEiJ/z58R0UlWMGWNF3HA==',
+     'node_modules/@next/swc-linux-x64-musl': 'sha512-ILl2bQ8MbpvyMpY8AXljb3BXs0MJSC8HXZ6QV5AWpVS7ZELqNPtrHvhUk+SNarvjvICXX8bCS287TCi+gUFVYg==',
+     'node_modules/@next/swc-win32-arm64-msvc': 'sha512-1MB9Rh5y8TOPN2x7naNTJNkCZQav9c70AI7EBYXxsEewwOffC4DjjwBwKf20NBvcA+u+5jDv7nVmHxunlP2d7Q==',
+     'node_modules/@next/swc-win32-x64-msvc': 'sha512-XtYgpGOswgnyBWXzOEG6q9RhvnSw0CEZ0MbWqCsl5PISgt9EzvJvNW5mU5n1PsphX/lnamzxjgQXH2GUJL8nqg==',
+     'node_modules/eslint-config-next': 'sha512-SlpZ5Ch1bM+GNHxahIoCy5OVgbpIHzHoGQDjHo6vEhxvYMukWYVo++AEh9RWYaIxH1i38PO7ArzSdmTruswOew==',
+     'node_modules/next': 'sha512-F82CrlPZ8GRxBH9RIIoR3qU1t5RT3dv1K8moe8SjlDEquiFipvEI13R1Om90TaUOEwShkWCMlg8+gvTNzfMhvg=='}
+    OLD_UI_SHA256 = {'ui/package.json': '733f32d36e894adcdbf2d3da2ed12a1ef77d06622dfef3302c89dd23ea4cfd49',
+                     'ui/package-lock.json': 'f12a33c0135afa6487cc6b7d247e885c154e7058de2230803f3e3cc314756b2c'}
+
+    def setUp(self):
+        self.after = {name: json.loads((ROOT / name).read_bytes())
+                      for name in (*P['PACKAGE_FILES'], 'config/usdc-deployment.json')}
+        self.before = copy.deepcopy(self.after)
+        for name, value in self.before.items():
+            value['version'] = '1.19.6'
+            if name.endswith('package-lock.json'):
+                value['packages']['']['version'] = '1.19.6'
+        for name in ('ui/package.json', 'ui/package-lock.json'):
+            value = self.before[name]
+            root = value['packages'][''] if name.endswith('package-lock.json') else value
+            root['dependencies']['next'] = '15.5.27'
+            root['devDependencies']['eslint-config-next'] = '15.5.27'
+        lock = self.before['ui/package-lock.json']['packages']
+        for path, integrity in self.OLD_INTEGRITIES.items():
+            value = lock[path]
+            value.update(version='15.5.27', integrity=integrity,
+                         resolved=value['resolved'].replace('-15.5.28.tgz', '-15.5.27.tgz'))
+        lock['node_modules/next']['dependencies']['@next/env'] = '15.5.27'
+        optional = lock['node_modules/next']['optionalDependencies']
+        optional['sharp'] = '^0.34.3 || ^0.35.4'
+        for package in optional:
+            if package.startswith('@next/swc-'):
+                optional[package] = '15.5.27'
+        lock['node_modules/eslint-config-next']['dependencies']['@next/eslint-plugin-next'] = '15.5.27'
+        for name, digest in self.OLD_UI_SHA256.items():
+            self.assertEqual(sha((json.dumps(self.before[name], indent=2) + '\n').encode()), digest)
+
+    def verify(self):
+        originals = {name: json.dumps(value) for name, value in self.before.items()}
+        def read(root, name, **options):
+            return '100644', json.dumps(self.after[name]).encode()
+        with patch.dict(G, {'read': read, 'MODIFIED': dict.fromkeys(P['PACKAGE_FILES'])}):
+            P['validate_packages'](ROOT, {'originals': originals})
+
+    def test_exact_security_transition_preserves_published_package_baseline(self):
+        self.verify()
+
+    def test_wrong_direct_or_root_pin_is_rejected(self):
+        for name in ('ui/package.json', 'ui/package-lock.json'):
+            for section, package in (('dependencies', 'next'), ('devDependencies', 'eslint-config-next')):
+                with self.subTest(name=name, package=package):
+                    original = copy.deepcopy(self.after)
+                    value = self.after[name]
+                    root = value['packages'][''] if name.endswith('package-lock.json') else value
+                    root[section][package] = '15.5.29'
+                    with self.assertRaises(ValueError): self.verify()
+                    self.after = original
+
+    def test_rehashed_wrong_registry_integrity_and_transitive_change_are_rejected(self):
+        for path in P['NEXT_PATCH_INTEGRITIES']:
+            for field, value in (('integrity', 'sha512-' + 'A' * 88),
+                                 ('resolved', 'https://example.invalid/next.tgz'), ('version', '15.5.29')):
+                with self.subTest(path=path, field=field):
+                    original = copy.deepcopy(self.after)
+                    self.after['ui/package-lock.json']['packages'][path][field] = value
+                    with self.assertRaises(ValueError): self.verify()
+                    self.after = original
+        self.after['ui/package-lock.json']['packages']['node_modules/next']['dependencies']['@swc/helpers'] = '9.9.9'
+        with self.assertRaises(ValueError): self.verify()
+
+    def test_unrelated_dependencies_commands_compiler_and_deployment_stay_protected(self):
+        changes = [('ui/package.json', lambda value: value['dependencies'].update(react='19.0.0')),
+                   ('ui/package.json', lambda value: value['scripts'].update(build='echo bypass')),
+                   ('package.json', lambda value: value['devDependencies'].update(solc='0.9.0')),
+                   ('config/usdc-deployment.json', lambda value: value.update(unreviewed=True)),
+                   ('ui/package-lock.json', lambda value: value['packages'].update({'node_modules/unreviewed': {'version': '1.0.0'}}))]
+        for name, change in changes:
+            original = copy.deepcopy(self.after)
+            change(self.after[name])
+            with self.subTest(name=name), self.assertRaises(ValueError): self.verify()
+            self.after = original
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -112,9 +112,9 @@ def file_sha(path, *, maximum=None):
         result.update(block)
     return result.hexdigest()
 
-def read_bounded(path):
+def read_bounded(path, *, maximum=None):
     """Keep metadata parsing below the unchanged archive resource ceiling."""
-    return b''.join(_file_chunks(path, LIMIT - 1))
+    return b''.join(_file_chunks(path, LIMIT - 1 if maximum is None else maximum))
 
 def files_equal(left, right):
     """Compare ordinary files by size first, then through bounded complete reads."""
