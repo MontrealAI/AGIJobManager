@@ -57,7 +57,7 @@ jobs:
         with:
           repository: MontrealAI/AGI-Alpha-Agent-v0
           # Draft pin: pending final Alpha review and fresh native qualification.
-          ref: b062fde0118ca74e1f36fc96816ca6985ab64bc8
+          ref: 61532fb82621a065e668fd11e57289dcfb65c67b
           path: build/discovery-alpha
           fetch-depth: 0
           persist-credentials: false

@@ -1,0 +1,805 @@
+{
+  "baseCommit": "900bb4b46cb7de7f6f69f553a5687866f978a413",
+  "baseTree": "bc42f0b295a649900667dcb1c487122726df7a02",
+  "changes": {
+    ".github/workflows/current-state-release.yml": {
+      "after": {
+        "mode": "100644",
+        "sha256": "2dfce7b41f2db0f4a0660b4b2b2979a9a5ab9f1eae31125c0cdca80224ed3bd2"
+      },
+      "before": {
+        "blob": "edd75629715ef3b736b081c549b32af8bd25d289",
+        "mode": "100644"
+      },
+      "reason": "Retain the reviewed Discovery exact-source candidate/native/publication workflow, replacing only its fixed draft Alpha checkout ref with coordinator-selected615."
+    },
+    ".github/workflows/discovery-lab-receiver.yml": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a1c65963724f0f329f622f5aae47315972e6a2c74a12f321f68c7355d86aefe9"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery exact-source candidate/native/publication workflow, replacing only its fixed draft Alpha checkout ref with coordinator-selected615."
+    },
+    ".github/workflows/mainnet-fork.yml": {
+      "after": {
+        "mode": "100644",
+        "sha256": "100fee5ab3ed78be629d3cafba15b21ed35ed6af0f3e8754936aa78e1cc48962"
+      },
+      "before": {
+        "blob": "99bf3042cf27229998cfac14afa7b13ef22725a8",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed exact-source Discovery qualification or Pages publication integration, preserving historical source/contract evidence and existing gates."
+    },
+    ".github/workflows/pages.yml": {
+      "after": {
+        "mode": "100644",
+        "sha256": "c031cf5037be0b66e49690d006a58e5775d8b4127e4042d6330432519708ad9d"
+      },
+      "before": {
+        "blob": "f5b1dbca198207afaebfd060cf16d840757725a9",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed exact-source Discovery qualification or Pages publication integration, preserving historical source/contract evidence and existing gates."
+    },
+    ".github/workflows/publish-discovery-v1.yml": {
+      "after": {
+        "mode": "100644",
+        "sha256": "4ea431cd5ab3eae804c834164c574a597b9146416da3ea8cdd2c14e033df1f06"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery exact-source candidate/native/publication workflow, replacing only its fixed draft Alpha checkout ref with coordinator-selected615."
+    },
+    "README.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "2d764e334356be81bf21b1ae473d895dd3115d1669ca648a1205469f51023c5b"
+      },
+      "before": {
+        "blob": "79264bda4b317b91feef9385fcf63296b39f55af",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "agijobmanager.html": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a6d9ae64930560c226d96788ed075a552611d314b1ab018f43273e0400a5c781"
+      },
+      "before": {
+        "blob": "1ba333301083c77769bc1a62b98b8a062e6547f6",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
+    },
+    "config/companion-releases.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "92890fbf6f6f4a2751c2b90d100b0f19f58aa3feb564d7dbbe743ba21eb97c95"
+      },
+      "before": {
+        "blob": "6b358534080f54914e090746f3243d809c461c1a",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
+    },
+    "config/discovery-lab-alpha-source.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a463a01423d1b64fa9c5dc793716279890d02e1d4a004202fa3f63ac427dbbe9"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "config/discovery-lab-source-baseline-v1.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ceeca49019f418637dcec1b3586699d382ecdaee23790fef50ae177a360ba74a"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "config/discovery-lab-source-baseline-v2.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "1d4120db3cd90145ab9dcae20e9ff10737f9617854e010eb18026b61124e21c4"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "config/discovery-lab-source-candidate-v1.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "5e233c9505ea00cb4bbe0a840b6afd3569b9601fd33ca76d3df24c9f863970fe"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "config/discovery-lab-source-candidate-v2.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ac898f5a02807e643b23beddde606e7032910dac5a8a031e79603b43175223cd"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "config/discovery-release-alpha-source-v1.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "305b1f716a2450ee4f2f940d2047b01c9caed5d98959348ece31f375fca87331"
+      },
+      "before": null,
+      "reason": "Bind coordinator-selected615 catalog, inspector, complete raw closure and original Apache license for pending final-source installed compatibility."
+    },
+    "config/discovery-release-browser-artifact-v1.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "b3bf7bcfa4d05685d24983b45116bec6fd83ab0bc0593fb418c1e054617e4c7b"
+      },
+      "before": null,
+      "reason": "Bind the newly authenticated615 main-push producer, actual artifact metadata, original common17 bytes and immutable public transport; preserve pending final Manager qualification."
+    },
+    "config/usdc-deployment.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "565e9203b7365ec4f61a61f523d20725a9471d65727f120ab512fe8a74fa6493"
+      },
+      "before": {
+        "blob": "59a027b72f57fa968628777badf581994fc92d81",
+        "mode": "100644"
+      },
+      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
+    },
+    "docs/LEGAL/DISCOVERY_MODULE_ORIGIN.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "74cdea1efac8ce2eecad31f5356ce0c27cb16efd2e9d89543ae20e04a69eb80e"
+      },
+      "before": null,
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/LEGAL/LICENSES/Apache-2.0.txt": {
+      "after": {
+        "mode": "100644",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+      },
+      "before": null,
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/MAINNET_READINESS.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "e046cbc5e02585be491e60e9f74b38588c6ddd095eadc27bd634a1c5adfd82ac"
+      },
+      "before": {
+        "blob": "97f27540ef5ba5f5b4a0d261996900227b1cfeab",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/OPERATIONS/PRIVATE_FLEET.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "f0b86adb41ea8b3254d129246c8222450b55e87704b9ce5bd89974d2add6bf2e"
+      },
+      "before": {
+        "blob": "86183947db559dd51e9e4c47a1d25991294c4bf9",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/REFERENCE/VERSIONS.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "d26f3303a4ab17eda1cfcffe179c8a97b5f5b4d888de2b7d95dd79ff962fa890"
+      },
+      "before": {
+        "blob": "77133ae1c3cd1f83d237bba5cab002629a346368",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/RELEASE_GUIDE.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "67eeed75329661c27ddbfe126b42e98e4a29e47c24abd0c3f84abd859f147909"
+      },
+      "before": {
+        "blob": "d4d5ba35fc7e38b6882127a355736ce808a42f85",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/START_HERE.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "fed56f6ee699a3c598aa30acd8eb40f90c79ddd951a4362209adbeaf3b325a32"
+      },
+      "before": {
+        "blob": "9a454c4ca21bc83ecb3fd30a98ef6af992445b9a",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/V1_RELEASE_SCOPE.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "563523c9388fc9cf27927aa6e348dafa5e802ad24a37e2a5e93078f36767e2df"
+      },
+      "before": {
+        "blob": "9582edb4df8c365ccd42810bf0f9598fe98659bd",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/qualification/mainnet-cutover-v1.20.0-expected.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "5cfd10614ea0802c6df0dfd4ef39f6d15d0d747d6d38fc3052fb703c1b27ca85"
+      },
+      "before": null,
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/qualification/release-v1.20.0-provenance.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "1fc162467cb43f18869adfdeda7b75b6b87b74f2a79c0b0d29789546f2c83295"
+      },
+      "before": null,
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/releases/v1.20.0/RECOVERY_GUIDE.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "8a7e24f99c53d6fe7b347a5170a9af28466627e0aa9e685bdc9067e4610c5fbc"
+      },
+      "before": null,
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/releases/v1.20.0/RELEASE_NOTES.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "2c3dca5e8ef730f2952f3d40481799f915ad909359bfe7488dd467252be4dd2d"
+      },
+      "before": null,
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/releases/v1.20.0/START_HERE.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "98ce3d44651c7d9721cd35409f415733bb85dbd79b4214b8dca9a911decf3889"
+      },
+      "before": null,
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/releases/v1.20.0/VALIDATION.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "cdf598eb19c006016cbe8de8646ee3000bb891d1cdd0275b3f52d79c26c708f6"
+      },
+      "before": null,
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/successor/DISCOVERY_LAB.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "703dfa89a9b52ef378677fe7b17370fe70471729797a2d06fa088ff00c89d964"
+      },
+      "before": null,
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/successor/DISCOVERY_LAB_RECONCILIATION.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "8b558823505534349c10d1ac66654542d4c4bd160e618239472dbdc1d1dc881c"
+      },
+      "before": null,
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/ui/DEPLOYMENT_MAINNET.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "fca5ade0e673fd4376fac738ecccce8fd141ac92b0da7fc338f62e0a24b249b3"
+      },
+      "before": {
+        "blob": "3ab3f3710da7c34fe24cccc49618452b95e46738",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "9a21c59e0f7ff7985a16fee77b1b88be10f497ae1542840e6c49eeacb7c05905"
+      },
+      "before": {
+        "blob": "bd3410c08f596c6ea0957a1610908dcf01dad647",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "docs/ui/VERSIONS.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "d31e7fc06427643acc31615facb3f57187b64f21a18c56ba648037d10b80e2e9"
+      },
+      "before": {
+        "blob": "afbf5d0f675d18ab32d63b7534ffdb467e7082c1",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "hardhat/package-lock.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "573b47fdaea6111b308993f10dbcd46a7c7e711a6b49f3edc379462a42505d52"
+      },
+      "before": {
+        "blob": "0467f735765e52606d88a03e7ed134b2a6e0210b",
+        "mode": "100644"
+      },
+      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
+    },
+    "hardhat/package.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ea3b195d2bb0d9d5f6ca61ed2ffb439c85c1d32bd1fbc6d669e9ae8fafa51bcf"
+      },
+      "before": {
+        "blob": "d98441d560034452febfd114be6ff8ae49d3349a",
+        "mode": "100644"
+      },
+      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
+    },
+    "package-lock.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "208ee651b3a7d4cd4c8c8592ddef2692268e0935a5a8bbf85b95f2874f2071ef"
+      },
+      "before": {
+        "blob": "cce5cc5b97c86af2a238a94706bf1097133e1d53",
+        "mode": "100644"
+      },
+      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
+    },
+    "package.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "f28ffb6971ec0a6b2f6eda2876294ab7da20cb09eaa939a9a9c0693691da0cec"
+      },
+      "before": {
+        "blob": "5a3c0165c4826fc69be63fa5e21888c82dae4671",
+        "mode": "100644"
+      },
+      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
+    },
+    "scripts/docs/templates/README.md.tpl": {
+      "after": {
+        "mode": "100644",
+        "sha256": "8f6a640682f92c1822fc68d22f6c43ead7780d920cfebae5524ae67174e2390a"
+      },
+      "before": {
+        "blob": "60e62538ce3dacef872000720df36c86cba8d283",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl": {
+      "after": {
+        "mode": "100644",
+        "sha256": "631e6e1953b0f28e40702f1cc54679592d016dbaeae880aa215d942e796ce41c"
+      },
+      "before": {
+        "blob": "bb0fd0c85eba72bbcba46e3274e9c245e6374e52",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "scripts/integrations/discovery-installed-operator.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "e7a7eecfb157e445933cf3e1c6f241a0c254b917a25e603a4eb969070868284e"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/integrations/discovery-installed-operator.test.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ef2abee5ea74908ea86c92a82812fa159be6d528c740f9bd036831c94773f138"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/integrations/discovery-installed-runtime.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "b8aa9ce0972287494909fc5118f98f92cd5d926378f78e211b626eb7b8422c53"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/integrations/discovery-lab-contract.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "98c8de8ce2774b7650bf4ee11eeedfb0a69b75fa6d1b080ef823637d77d0ab47"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/integrations/discovery-lab-native-test.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "b1701276242e7cfa8603e80390e596bb05c3481ad8ca284d086398d8f27c6dd3"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/integrations/discovery-lab-work-request.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "da307c2d0621a2f323d60c56dfec01d2fda2b72b753939657ea303d619d68e43"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/integrations/discovery-lab-work-request.test.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ea230fd5c47da6845cc615ed24263045b034c6bb8bebc19873231c7c25531076"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/integrations/discovery-release-module-closure.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "8d3575ece582c158c30f3cc1c5f438b9b32ad2a31f190d6867acf9712beedad5"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/integrations/discovery-release-module-closure.test.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a4de63154a2b3270258ef9d391a718072386c773ab6469cf38c2e02cef76e9ea"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/integrations/discovery-release-native-test.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "091a5c9ceafbf0a3f1dd63433c946a3e49ae612a2aa555746053e6ccc85f38bb"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/integrations/fixtures/discovery-lab-request.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "891e11f3fed142db55e36934b4f1b5869200973216bfdd9257789fd66fb0a82f"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/release/collect-qualification.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "004c4b8fe7088f9f141300f02a05580a6f7621933ea36c213c67a93f4d126538"
+      },
+      "before": {
+        "blob": "d2dcd8c5f4162136f4683abe2ada099f09577ab6",
+        "mode": "100644"
+      },
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/discovery-browser-input.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "f422f63e42d0e780adfc17d0d7671bbe77c0cad82ca855a55d0d907da47f0464"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/discovery-lab-profile-v2.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "20372887e15a178a8e169b2bb67772f287809b5038818ce79b72b32827605e86"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/discovery-lab-profile.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "08607dad60b8ab6d782b7b1a9e1096aaffa12a9afbf86992bcd144627eafa4ee"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/discovery-qualification.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ecc0ba7529df30288bf370ce016f71fa5c00e25f897116fa09997b91fc19036b"
+      },
+      "before": null,
+      "reason": "Preserve the latest-run source/status/attempt rejection gate and authenticate the separate exact-attempt response for full original browser metadata equality, with focused regression coverage and unchanged REST budget."
+    },
+    "scripts/release/discovery-saved-candidate.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "797a9371bbdd58bb931a59a1ba0efa60c8537412cf8c53f90f8d8caa0a5a15c9"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/package-policy.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "e0808a8dd50998a4b3fb645d3f117b1750dd28e9a5f6c65f1ef82335a9dfd638"
+      },
+      "before": {
+        "blob": "dfdaf024c4f0526d655a3a6059d3c4f73558a39b",
+        "mode": "100644"
+      },
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/package-release.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "1a98938756b49453c308ce04236058a1c69896c45f90f299c1b0a0a5388724d4"
+      },
+      "before": {
+        "blob": "9c66ac4d2527159d169ed23b87028c98e2882ba0",
+        "mode": "100644"
+      },
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/pages-publication-discovery.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "f71dc00f1b3e0111a6d8b75260a546ae67f2ec1e51c60b69d71067eaeb0ddf7f"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/publication-authorization-discovery.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "62b633efc19624eee4b79716205f1edeba4bd1fd43e302cf8c42b2898c349f8f"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/publish-release.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "445e7c08893de1b755569c963ddaf20c94fed79be0886d7d143052c540148603"
+      },
+      "before": {
+        "blob": "5fcdf74f18167fd8203a0450b78648a6f25877f8",
+        "mode": "100644"
+      },
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/release_common.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "3e605f02401825d01858a3e7241f8fd890c71804ebba1c1db42cfbc572c76f2a"
+      },
+      "before": {
+        "blob": "7cecacdb3c5347baab3e967b8571626b00dbde91",
+        "mode": "100644"
+      },
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/run-discovery-preservation.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "cee874267f42539a7e4a92394695b6d9cb13a6aabbc4361cdaf25ee914979c15"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/test-discovery-lab-profile-v2.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "e9342676a0c64373c080a85b75ef8ff2c907d3d786017a12d9de6ae76c27b83d"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/test-discovery-lab-profile.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "6473d334c8aa945269a2067c5f300d84fd773c5e441f7dee1169142238eae698"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/test-discovery-qualification.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "bfb41059130d8dc4fdad8d861733109f3068c8cb99aec1111e7a9c190712fb20"
+      },
+      "before": null,
+      "reason": "Preserve the latest-run source/status/attempt rejection gate and authenticate the separate exact-attempt response for full original browser metadata equality, with focused regression coverage and unchanged REST budget."
+    },
+    "scripts/release/test-discovery-release-plumbing.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/test-discovery-release-profile.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "724a8ddebf6d948b2c73211993d91536d1fbeff11a12981f2623ef5596c7e2d7"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/test-discovery-saved-candidate.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "d9ec81402e4f58a0d7d2dc47d3a3a5ed32ffbf9faa5ad7e6147764a75f7037bb"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/test-pages-publication-discovery.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a67a07024bb7eaf9eab658d9cf49bbe267c6237b9be7c024d56d45aa92593941"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/test-publication-authorization-discovery.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "11137e8c8dc0d18145fe481ee937581654ca5ab0aaab51909173cf6f9c9669ba"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/verify-package.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "b1536ebef5679091ca3b41ad3a192dd56aa09763a0595ddb99a43ec1ed756eca"
+      },
+      "before": {
+        "blob": "0632a10f5bb7ad0c7ce89c0f8604ad2c3c44c5b7",
+        "mode": "100644"
+      },
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/wait-qualification.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ad63fef43c95bc4ec666dd43c77d1f8ae8a5dd0db3215a7c74e039219a1531b4"
+      },
+      "before": {
+        "blob": "acf793097e7eaeb1284905f08a169bcc8de1dadc",
+        "mode": "100644"
+      },
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/security/slither-reviewed-findings-v1.20.0.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "211509130bfb92c66f0b1c1f20d16e171e3de082aca0672d95c7421d69c001ab"
+      },
+      "before": null,
+      "reason": "Retain reviewed active software-version qualification alignment; the historical security finding inventory and severity assertions remain in force."
+    },
+    "scripts/security/verify-slither-review.py": {
+      "after": {
+        "mode": "100755",
+        "sha256": "1817af26b258c84abc9105910d144ed457c197de7949c7d16269ef7820cf4951"
+      },
+      "before": {
+        "blob": "f8d346ff4c12c81b31706a3c04f6a75943b97b8b",
+        "mode": "100755"
+      },
+      "reason": "Retain reviewed active software-version qualification alignment; the historical security finding inventory and severity assertions remain in force."
+    },
+    "test/buyerProtection.v095.test.js": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a775e9100d28f73bc7259d079f0d62a0e51ee08d9bc011146724610120417a6f"
+      },
+      "before": {
+        "blob": "5e417453fd7eb50ccc749ac32bc51496f9bc89d7",
+        "mode": "100644"
+      },
+      "reason": "Preserve strict settlement and inclusive dispute semantics; re-pin the actual dispute transaction to end and assert its receipt block timestamp."
+    },
+    "ui/README.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "530e7f4635e87d34dfeac3146805df8cb1b740a07b6b370123449ae8a0ba646c"
+      },
+      "before": {
+        "blob": "9121a78ca4f0e6b1de93873c96d9df584f76c808",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "ui/agijobmanager-usdc.html": {
+      "after": {
+        "mode": "100644",
+        "sha256": "c47219f01292e55215ee68cbf97cf17a95377deaefc958ad36d48d9212fed97c"
+      },
+      "before": {
+        "blob": "d9470efb0a1d6072f45ba23f695f07d1c8b38c88",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
+    },
+    "ui/dist-ipfs/agijobmanager.html": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a6d9ae64930560c226d96788ed075a552611d314b1ab018f43273e0400a5c781"
+      },
+      "before": {
+        "blob": "1ba333301083c77769bc1a62b98b8a062e6547f6",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
+    },
+    "ui/package-lock.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "91c98066fa0d4f0c11c75a7a88fa3d3fab51632c4079e273ce59bde82156584b"
+      },
+      "before": {
+        "blob": "dc4e014f4572c6f5e555c7c16265391e1418ac53",
+        "mode": "100644"
+      },
+      "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override."
+    },
+    "ui/package.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "b9fcc3da62e16dfe4e02d70190001f183d41586148f40b942ae8c2d5f05b7cad"
+      },
+      "before": {
+        "blob": "9af0360c06b4ffec9c474056901ab269c0f31d9a",
+        "mode": "100644"
+      },
+      "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override."
+    },
+    "ui/scripts/singlefile-template.html": {
+      "after": {
+        "mode": "100644",
+        "sha256": "068fc60584ab73d23dbcb90a1f5be6212b65b533ddc309c9712906c3c7c94a4f"
+      },
+      "before": {
+        "blob": "131010193a80f15988104a081039e248d3af998c",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
+    },
+    "ui/src/generated/deployments.ts": {
+      "after": {
+        "mode": "100644",
+        "sha256": "0345b74b7397f9d7da5b8aadde4c863cb6f82ea3550f958413f1ea9daa1cc718"
+      },
+      "before": {
+        "blob": "5bc2917f64492980f11a8b2acb7bd4fc32db1d5a",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
+    }
+  },
+  "profile": "manager-discovery-release-v1",
+  "qualification": "PENDING_EXACT_FINAL_SOURCE_HOSTED_EXECUTION",
+  "repository": "MontrealAI/AGIJobManager",
+  "schema": "agijobmanager/discovery-release-profile/v1",
+  "version": "1.20.0"
+}
