@@ -1,0 +1,277 @@
+{
+  "schema": "manager/concrete-publication-and-ui-inputs/v1",
+  "state": "MERGED_SOURCE_ACTUAL_MAIN_QUALIFICATION_ACTIVE_PUBLICATION_NOT_DISPATCHED",
+  "repository": "MontrealAI/AGIJobManager",
+  "release": {
+    "version": "1.20.0",
+    "tag": "v1.20.0",
+    "name": "v1.20.0 — Discovery Lab admission",
+    "prerelease": false,
+    "profile": "manager-discovery-release-v1",
+    "maturity": "experimental local/synthetic software preview",
+    "previousPublished": "v1.19.6"
+  },
+  "source": {
+    "pr": 1623,
+    "reviewedHead": "52bd32431a18d13d013e237bc7e2be7273fcd1ba",
+    "actualMain": "3153ac394d37eeecb03e825ecce37559427bc6c3",
+    "tree": "4a08ce51d68ea57bbb7193275870053b79943c25",
+    "mergeMethod": "merge",
+    "actualOrderedParents": [
+      "900bb4b46cb7de7f6f69f553a5687866f978a413",
+      "52bd32431a18d13d013e237bc7e2be7273fcd1ba"
+    ],
+    "featureAncestor": "68d1d3cae2e6f2d46c21e8e73311d309b2b307fd",
+    "manifest": "config/manager-discovery-release-v1.json",
+    "manifestSha256": "1d05d472f9c2ac01329b9d1ebc0940bfdca45eb3bcbbc078198984c92a8ed76f",
+    "verifier": "scripts/release/discovery-release-profile.py",
+    "verifierSha256": "1c505a29559d235c248707e36d1bf89d41e982ab25e6ff0287f9e97781abc0cf",
+    "baselineSha256": "9b87e2d76c1ac9fc3f55dd17a18c1968d400c94f41b5c0d24aa4c0f2ddaa1e0d",
+    "prQualified": true,
+    "prRequiredJobs": 13,
+    "prWorkflowGroups": 9,
+    "configuredReview": {
+      "summaryComment": 6350584816,
+      "receiptComment": 6351777793,
+      "state": "COMPLETED_NO_FINDINGS"
+    }
+  },
+  "actualMainQualification": {
+    "state": "RUNNING_NOT_YET_QUALIFIED",
+    "event": "push",
+    "attempt": 1,
+    "runs": {
+      "ci.yml": 39858325252,
+      "current-state-release.yml": 39858325153,
+      "discovery-lab-receiver.yml": 39858324989,
+      "alpha-project-handoff.yml": 39858325088,
+      "docs.yml": 39858325078,
+      "security-verification.yml": 39858325286,
+      "mainnet-fork.yml": 39858324976,
+      "ui.yml": 39858325141,
+      "pages.yml": 39858325055
+    },
+    "savedCandidateArtifact": null,
+    "savedCandidateDigest": null,
+    "native22Artifact": null,
+    "native24Artifact": null
+  },
+  "existingPublisher": {
+    "workflow": ".github/workflows/publish-discovery-v1.yml",
+    "ref": "main",
+    "inputs": {
+      "confirmation": "PUBLISH_v1.20.0"
+    },
+    "expectedSource": "3153ac394d37eeecb03e825ecce37559427bc6c3",
+    "dispatched": false,
+    "rule": "Dispatch only after all nine actual-main producers succeed, their saved candidate/native custody is authenticated, accepted public Alpha bytes and the final compatible manifest are concrete, and main still equals the qualified source. The existing workflow retains its readiness/authorization/attestation/asset gates. Main push builds Pages without deployment."
+  },
+  "upstream": {
+    "repository": "MontrealAI/AGI-Alpha-Agent-v0",
+    "source": "61532fb82621a065e668fd11e57289dcfb65c67b",
+    "tree": "7814d1bd9dcd3845b349590e0bcac57ba93b3167",
+    "expectedTag": "v1.38.0",
+    "reportedPublicReleaseId": 421219343,
+    "actualPublicAssetByteAcceptance": false,
+    "packageProducer": null,
+    "packageArtifactDigest": null,
+    "compatibilityManifest": null,
+    "rule": "Root must authenticate actual public Alpha615/v1.38 assets/custody and fill the coordinated compatible manifest before consumer publication. An uploaded or listed release alone does not establish downloaded-byte verification."
+  },
+  "adapter": {
+    "requestSchema": "successor-discovery-work-request/v1",
+    "receiverSchema": "agijobmanager/discovery-lab-admission/v1",
+    "adapterSha256": "da307c2d0621a2f323d60c56dfec01d2fda2b72b753939657ea303d619d68e43",
+    "sharedContractSha256": "98c8de8ce2774b7650bf4ee11eeedfb0a69b75fa6d1b080ef823637d77d0ab47",
+    "route": "manager-usdc",
+    "currency": "USDC6",
+    "capBaseUnits": "0",
+    "execution": "synthetic-local",
+    "admission": "local-inspection-only",
+    "submission": "unsupported",
+    "externalExecution": "unprovisioned",
+    "authority": "none",
+    "enterprise1617": "Separate later Alpha1.39-compatible milestone; original six native skips are preserved and not accepted by these Discovery checks."
+  },
+  "browserBinding": {
+    "producerRun": 39841271826,
+    "attempt": 1,
+    "artifactId": 12453756312,
+    "artifactDigest": "sha256:3f5dda52ed2833b00b38608894b6a640d931f08f4d27904362fff794b8ada8f4",
+    "transportCommit": "e31e74d1a5144973e6a22006dbe29ea628a80386",
+    "transportTree": "60823a663933991dc5f703735577a40f07a7d3dc",
+    "custodySha256": "c27e9c5f113d2a407ec4499c6ddb7cd922460bfaa873b8426f4c32f01281f6c6"
+  },
+  "postPublicationUI": {
+    "state": "PLANNED_NOT_EXECUTED",
+    "entryPoints": {
+      "homeEnglish": "https://montrealai.github.io/AGIJobManager/",
+      "homeFrench": "https://montrealai.github.io/AGIJobManager/fr/",
+      "buildReceipt": "https://montrealai.github.io/AGIJobManager/build-info.json",
+      "successorEnglish": "https://montrealai.github.io/AGIJobManager/successor/",
+      "successorFrench": "https://montrealai.github.io/AGIJobManager/fr/successor/",
+      "employersEnglish": "https://montrealai.github.io/AGIJobManager/employers/",
+      "employersFrench": "https://montrealai.github.io/AGIJobManager/fr/employers/",
+      "workflowsEnglish": "https://montrealai.github.io/AGIJobManager/workflows/",
+      "workflowsFrench": "https://montrealai.github.io/AGIJobManager/fr/workflows/",
+      "computerReceiptEnglish": "https://montrealai.github.io/AGIJobManager/computer-receipt/",
+      "computerReceiptFrench": "https://montrealai.github.io/AGIJobManager/fr/computer-receipt/",
+      "USDCConsole": "https://montrealai.github.io/AGIJobManager/agijobmanager-usdc.html",
+      "legacyConsoleAlias": "https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html",
+      "retainedSingleFileConsole": "https://montrealai.github.io/AGIJobManager/agijobmanager.html",
+      "readingEnglish": "https://montrealai.github.io/AGIJobManager/#reading",
+      "readingFrench": "https://montrealai.github.io/AGIJobManager/fr/#reading"
+    },
+    "normalSteps": [
+      {
+        "id": "deployed-source",
+        "action": "After actual publisher and Pages deployment success, open build-info.json and both home pages; follow visible source/release, employer and ecosystem links.",
+        "expected": "sourceCommit equals3153ac394d37eeecb03e825ecce37559427bc6c3 and sourceVersion equals1.20.0. Historical contract observations retain their own original date/source."
+      },
+      {
+        "id": "local-mission",
+        "action": "Open successor/ in an empty acceptance workspace. Click Try an example, then Create & run my Ω; inspect the result table and generated files.",
+        "selectors": [
+          "#example",
+          "#run",
+          "#result-content",
+          "#preview"
+        ],
+        "expected": "The built-in public synthetic data produces actual local results without a wallet or external job submission."
+      },
+      {
+        "id": "improve-and-retain",
+        "action": "Click Keep this version and Build & check the improvement; inspect the comparison, keep the chosen version, and download the JSON capsule and portable HTML.",
+        "selectors": [
+          "#keep-version",
+          "#improve-local",
+          "#comparison",
+          "#download-capsule",
+          "#download-html"
+        ],
+        "expected": "The original history remains retained and the selected local version is inspectable; authority remains none."
+      },
+      {
+        "id": "ordinary-reopen",
+        "action": "Save the acceptance mission, inspect saved work or import the downloaded capsule, review its restore preview and explicitly confirm restoration. Use the retained method on new public example data.",
+        "selectors": [
+          "#save",
+          "#load",
+          "#import-file",
+          "#restore-preview",
+          "#restore-consent",
+          "#restore",
+          "#reuse-method",
+          "#new-mission"
+        ],
+        "expected": "Explicit restore consent, original bytes/history and reusable method lineage are retained. Preserve unrelated existing user work."
+      },
+      {
+        "id": "bilingual-mobile",
+        "action": "Repeat the valid example in fr/successor/ and use the language and larger-text controls at desktop and390px mobile widths.",
+        "selectors": [
+          "#language",
+          "#larger"
+        ],
+        "expected": "Inputs remain intact through language change; navigation and controls remain usable without horizontal overflow. Record actual browser and viewports."
+      },
+      {
+        "id": "console-and-papers",
+        "action": "Open the console, employer and workflow pages read-only. Open the existing PDF source URLs below and verify their actual retained bytes/loading.",
+        "expected": "Software/source labels and operating boundaries remain visible. No signing, funding, chain writes, wallet connection or external execution. USDC6 and historical $AGIALPHA routes remain separate."
+      }
+    ],
+    "sourceDocuments": [
+      {
+        "path": "scripts/site/build.mjs",
+        "mode": "100644",
+        "gitBlob": "4e646cfd92021777e34a14011a9d81be2b80a824",
+        "bytes": 9119
+      },
+      {
+        "path": "site/template.mjs",
+        "mode": "100644",
+        "gitBlob": "c3a8d15f17325e0538bc5723d3fc875a198bfdc7",
+        "bytes": 19751
+      },
+      {
+        "path": "site/successor.mjs",
+        "mode": "100644",
+        "gitBlob": "f870f5ecf0cf062e002db27da170723451cd829c",
+        "bytes": 33853
+      },
+      {
+        "path": "scripts/successor/browser-test.mjs",
+        "mode": "100644",
+        "gitBlob": "c5b1c778e3bbb74e2532f7717264c1b05d6d28f6",
+        "bytes": 18498
+      },
+      {
+        "path": "docs/releases/v1.20.0/START_HERE.md",
+        "mode": "100644",
+        "gitBlob": "d80a685c54319566e367773bb4c00a1e9c3113ca",
+        "bytes": 3588
+      },
+      {
+        "path": "docs/releases/v1.20.0/VALIDATION.md",
+        "mode": "100644",
+        "gitBlob": "db0238b26a0dcf001d32de18fece720cd65602ed",
+        "bytes": 4727
+      }
+    ],
+    "papers": [
+      {
+        "path": "docs/AGIJobManager_OpenClaw_Joint_Use_Cases_Institutional_Overview_2026-03-30.pdf",
+        "existingViewer": "https://github.com/MontrealAI/AGIJobManager/blob/main/docs/AGIJobManager_OpenClaw_Joint_Use_Cases_Institutional_Overview_2026-03-30.pdf",
+        "immutableViewer": "https://github.com/MontrealAI/AGIJobManager/blob/3153ac394d37eeecb03e825ecce37559427bc6c3/docs/AGIJobManager_OpenClaw_Joint_Use_Cases_Institutional_Overview_2026-03-30.pdf",
+        "immutableRaw": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/3153ac394d37eeecb03e825ecce37559427bc6c3/docs/AGIJobManager_OpenClaw_Joint_Use_Cases_Institutional_Overview_2026-03-30.pdf",
+        "mode": "100644",
+        "gitBlob": "646bc020838b8b99ce06efdb5d9c1db8ce879dd0",
+        "bytes": 129669,
+        "note": "Existing source PDF; no new Pages path or redirect is claimed."
+      },
+      {
+        "path": "presentations/AGI_Eth_Institutional_v0.pdf",
+        "existingViewer": "https://github.com/MontrealAI/AGIJobManager/blob/main/presentations/AGI_Eth_Institutional_v0.pdf",
+        "immutableViewer": "https://github.com/MontrealAI/AGIJobManager/blob/3153ac394d37eeecb03e825ecce37559427bc6c3/presentations/AGI_Eth_Institutional_v0.pdf",
+        "immutableRaw": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/3153ac394d37eeecb03e825ecce37559427bc6c3/presentations/AGI_Eth_Institutional_v0.pdf",
+        "mode": "100644",
+        "gitBlob": "917b96365d747a22afd639d1c59a03b56aa74c6b",
+        "bytes": 829852,
+        "note": "Existing source PDF; no new Pages path or redirect is claimed."
+      },
+      {
+        "path": "presentations/MONTREALAI_x_ERC8004_v0.pdf",
+        "existingViewer": "https://github.com/MontrealAI/AGIJobManager/blob/main/presentations/MONTREALAI_x_ERC8004_v0.pdf",
+        "immutableViewer": "https://github.com/MontrealAI/AGIJobManager/blob/3153ac394d37eeecb03e825ecce37559427bc6c3/presentations/MONTREALAI_x_ERC8004_v0.pdf",
+        "immutableRaw": "https://raw.githubusercontent.com/MontrealAI/AGIJobManager/3153ac394d37eeecb03e825ecce37559427bc6c3/presentations/MONTREALAI_x_ERC8004_v0.pdf",
+        "mode": "100644",
+        "gitBlob": "85bafa7f9eb7329eef877151a2e68e037fde21e5",
+        "bytes": 2173477,
+        "note": "Existing source PDF; no new Pages path or redirect is claimed."
+      }
+    ],
+    "record": [
+      "Actual deployment/source identity and live build-info.json",
+      "Actual URLs/browser/version/viewports and normal valid actions",
+      "Downloaded UI file bytecounts/SHA256 and retained mission/history identities",
+      "PDF responses/bytes/loading and any observed errors/unfinished steps"
+    ],
+    "boundary": "Normal existing Manager UI after qualified deployment. Discovery admission uses the released complete archive's saved discovery-alpha/discovery-browser and documented installed operator; it is not invented as a new Manager browser button. No denied Alpha enterprise helper/browser probe or attack-bank execution."
+  },
+  "finalAcceptance": {
+    "publicDownloadedBytes": false,
+    "cleanReleasedInstallation": false,
+    "installedCrossRepositoryJourney": false,
+    "liveUI": false,
+    "financialActivation": false,
+    "currentEnvironment": "Local runtime/browser are unavailable; continue connector/hosted gates and retain these exact inputs. Actual download/install/live execution awaits restoration of the existing surfaces, with no new credentials or access expansion."
+  },
+  "preserved": {
+    "preparedPacketFlags": "All remain false in original PREPARED_UNAPPROVED data; external PR qualification is separately evidenced.",
+    "historicalReleasesUnchanged": true,
+    "original0aFailuresAndReviews": true,
+    "ancestryFindingAndFactualDisposition": true,
+    "parentReviewsAndEnterpriseSixSkips": true
+  }
+}
