@@ -1,0 +1,65 @@
+{
+  "schema": "manager/current-finite-source-scope-readback/v1",
+  "repository": "MontrealAI/AGIJobManager",
+  "base": {
+    "commit": "900bb4b46cb7de7f6f69f553a5687866f978a413",
+    "tree": "bc42f0b295a649900667dcb1c487122726df7a02",
+    "leaves": 1613
+  },
+  "current": {
+    "commit": "fc25d03f689dd2ed6a9afcd92e6f380ece11a23c",
+    "tree": "4466eb1766169b212a7e860b9371bad41d626873",
+    "leaves": 1660
+  },
+  "modifiedPaths": [
+    ".github/workflows/current-state-release.yml",
+    ".github/workflows/mainnet-fork.yml",
+    ".github/workflows/pages.yml",
+    "README.md",
+    "agijobmanager.html",
+    "config/companion-releases.json",
+    "config/usdc-deployment.json",
+    "docs/MAINNET_READINESS.md",
+    "docs/OPERATIONS/PRIVATE_FLEET.md",
+    "docs/REFERENCE/VERSIONS.md",
+    "docs/RELEASE_GUIDE.md",
+    "docs/START_HERE.md",
+    "docs/V1_RELEASE_SCOPE.md",
+    "docs/ui/DEPLOYMENT_MAINNET.md",
+    "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md",
+    "docs/ui/VERSIONS.md",
+    "hardhat/package-lock.json",
+    "hardhat/package.json",
+    "package-lock.json",
+    "package.json",
+    "scripts/docs/templates/README.md.tpl",
+    "scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl",
+    "scripts/release/collect-qualification.py",
+    "scripts/release/package-policy.py",
+    "scripts/release/package-release.py",
+    "scripts/release/publish-release.py",
+    "scripts/release/release_common.py",
+    "scripts/release/verify-package.py",
+    "scripts/release/wait-qualification.py",
+    "scripts/security/verify-slither-review.py",
+    "ui/README.md",
+    "ui/agijobmanager-usdc.html",
+    "ui/dist-ipfs/agijobmanager.html",
+    "ui/package-lock.json",
+    "ui/package.json",
+    "ui/scripts/singlefile-template.html",
+    "ui/src/generated/deployments.ts"
+  ],
+  "added": 47,
+  "uiGuideAlreadyCurrentModified": true,
+  "boundaryIsOnlyNewFinalModifiedPath": true,
+  "counts": {
+    "currentModified": 37,
+    "currentFinite": 83,
+    "finalModified": 38,
+    "finalFinite": 85,
+    "protected": 1589
+  },
+  "proof": "Fresh connector recursive complete tree reads compared every leaf blob/mode; no final source or B/M/V generated."
+}
+

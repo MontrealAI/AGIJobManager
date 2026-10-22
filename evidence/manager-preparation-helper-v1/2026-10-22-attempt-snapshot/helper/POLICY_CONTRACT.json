@@ -1,0 +1,165 @@
+{
+  "schema": "manager/helper-attempt-snapshot-policy/v1",
+  "state": "OWNED35_PASS_INDEPENDENT_REVIEW_PENDING",
+  "previousFrozenHelper": {
+    "bytes": 90481,
+    "sha256": "e1c6fddec78b377e6781730e6a421923af269465856e95cd369440f8fcbd3792",
+    "blob": "7b25f8d317d6a2d7210fba1ea869610523628e63"
+  },
+  "activeHelper": {
+    "bytes": 91948,
+    "sha256": "c39733d417ac00d51d72462de92276f5c7359be0b725cdc16d6a181c8cab6547",
+    "blob": "75407324f5e7d7962dd14f057823705368b1fa21"
+  },
+  "activeTests": {
+    "bytes": 51331,
+    "sha256": "98d6a8c9e8161a40b6aa4dceedc64dda99be80f5de8610f1804ffe6370cffd48",
+    "blob": "bb17d76199ff070506d980baced7008e6a8f9681"
+  },
+  "fixedReviewedOverlays": {
+    "scripts/release/discovery-qualification.py": {
+      "mode": "100644",
+      "blob": "3608ce1e69dac5aa645071a1c0d4cabdace02f4b",
+      "bytes": 73143,
+      "sha256": "ecc0ba7529df30288bf370ce016f71fa5c00e25f897116fa09997b91fc19036b"
+    },
+    "scripts/release/test-discovery-qualification.py": {
+      "mode": "100644",
+      "blob": "bfe73cf64aaa79b8404b096adc1f46ed9c69ea13",
+      "bytes": 84618,
+      "sha256": "bfb41059130d8dc4fdad8d861733109f3068c8cb99aec1111e7a9c190712fb20"
+    },
+    "scripts/release/release_common.py": {
+      "mode": "100644",
+      "blob": "baddc9e4eb38f8efdfc2613e33513869513f6285",
+      "bytes": 26690,
+      "sha256": "3e605f02401825d01858a3e7241f8fd890c71804ebba1c1db42cfbc572c76f2a"
+    },
+    "scripts/release/package-release.py": {
+      "mode": "100644",
+      "blob": "f4131a0a905d63daa76e69040be93e0a963d9b37",
+      "bytes": 10855,
+      "sha256": "1a98938756b49453c308ce04236058a1c69896c45f90f299c1b0a0a5388724d4"
+    },
+    "scripts/release/verify-package.py": {
+      "mode": "100644",
+      "blob": "fd8685ed9bb0fc4a3e4b6729dc2c7cbecedefed5",
+      "bytes": 14275,
+      "sha256": "b1536ebef5679091ca3b41ad3a192dd56aa09763a0595ddb99a43ec1ed756eca"
+    },
+    "scripts/release/collect-qualification.py": {
+      "mode": "100644",
+      "blob": "8e393a049a2953a35955ada8c664054d8fb51012",
+      "bytes": 11347,
+      "sha256": "004c4b8fe7088f9f141300f02a05580a6f7621933ea36c213c67a93f4d126538"
+    },
+    "scripts/release/test-discovery-release-plumbing.py": {
+      "mode": "100644",
+      "blob": "f5123723938915e2152cc944a3acd7cf7a043fe1",
+      "bytes": 74322,
+      "sha256": "5a460bf0f9cb76b99552847bca33da5bf7b40d8886487d1cd8fa349bffa6a2d9"
+    },
+    "scripts/release/test-discovery-release-profile.py": {
+      "mode": "100644",
+      "blob": "b17138095b4680aa719b7b2b6198a5e50abb2c5d",
+      "bytes": 38782,
+      "sha256": "724a8ddebf6d948b2c73211993d91536d1fbeff11a12981f2623ef5596c7e2d7"
+    },
+    "ui/package.json": {
+      "mode": "100644",
+      "blob": "3019b3a9df311e2a2638aaa063e9367ed1fe5048",
+      "bytes": 3414,
+      "sha256": "b9fcc3da62e16dfe4e02d70190001f183d41586148f40b942ae8c2d5f05b7cad"
+    },
+    "ui/package-lock.json": {
+      "mode": "100644",
+      "blob": "39415b6c2f132fae7343a298b3ae348223216eec",
+      "bytes": 530005,
+      "sha256": "91c98066fa0d4f0c11c75a7a88fa3d3fab51632c4079e273ce59bde82156584b"
+    },
+    "docs/REFERENCE/VERSIONS.md": {
+      "mode": "100644",
+      "blob": "d736ba418c23e68c512c0a05c5ec6677f8005894",
+      "bytes": 1072,
+      "sha256": "d26f3303a4ab17eda1cfcffe179c8a97b5f5b4d888de2b7d95dd79ff962fa890"
+    },
+    "docs/ui/VERSIONS.md": {
+      "mode": "100644",
+      "blob": "dcf6cbe62ac2d512adbb79806254aa95bb215e67",
+      "bytes": 457,
+      "sha256": "d31e7fc06427643acc31615facb3f57187b64f21a18c56ba648037d10b80e2e9"
+    },
+    "test/buyerProtection.v095.test.js": {
+      "mode": "100644",
+      "blob": "193d372831dcc88259bff04cb9ab03e2ef6b5051",
+      "bytes": 19212,
+      "sha256": "a775e9100d28f73bc7259d079f0d62a0e51ee08d9bc011146724610120417a6f"
+    }
+  },
+  "concreteFixedPathCount": 13,
+  "contextualPathCount": 5,
+  "allOverlayPathCount": 18,
+  "freshSnapshotRoles": [
+    "run",
+    "latest-run",
+    "jobs",
+    "artifacts",
+    "checkout-commit",
+    "public-commit"
+  ],
+  "metadataLeafCount": 26,
+  "immutablePacketMemberCount": 17,
+  "changes": {
+    "existingFunctions": [
+      "final_metadata",
+      "verify_packet_metadata"
+    ],
+    "newFunctions": [
+      "fresh_snapshot_urls",
+      "validate_run_identity"
+    ],
+    "unchangedExistingFunctions": 65,
+    "latestRunGate": "Require current general run exact selected source/workflow/main/push/completed/success/run_attempt1, repository and head_repository before reading packet bodies.",
+    "attemptFullEquality": "Fresh exact /attempts/1 object must fully type-strict equal immutable packet run sidecar, with no normalization or optional URL alternatives."
+  },
+  "sourceCorrection": {
+    "pr": 1622,
+    "commit": "4d14d0a043074d8ca02828e247a2715ce3f50dc5",
+    "tree": "cdd5ef6dcf49c7fd586a3bdf8cad7e691d801f43",
+    "parent": "0d790835a4b2346034533f4e63d70e18b2f1570f"
+  },
+  "countsUnchanged": {
+    "currentFinite": 83,
+    "finalFinite": 85,
+    "originalBeforeImagesAndProjections": 38,
+    "protected": 1589,
+    "boundaryOnlyProtectedToFinite": true
+  },
+  "tests": {
+    "old": 33,
+    "new": 35,
+    "oldASTUnchanged": 30,
+    "adaptedOld": [
+      "test_27_fixed_reviewed_overlay_identities_and_exact_paths",
+      "test_32_exact_UI_guide_overlay_already_within_modified_scope",
+      "test_33_only_two_reviewed_capture_records_change_with_policy_gates_preserved"
+    ],
+    "authorRun": "35/35 pass in0.953s; full stdout/stderr retained"
+  },
+  "flags": {
+    "sourceReviewed": false,
+    "releaseQualified": false,
+    "publicationApproved": false,
+    "executionApproved": false,
+    "nativeExecutionQualified": false
+  },
+  "notRun": [
+    "actual updated capture/render",
+    "captured source import",
+    "generated verifier execution",
+    "native/custody/product/restricted probes",
+    "source apply",
+    "main merge",
+    "release"
+  ]
+}

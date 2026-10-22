@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "path": "CHECKS.json",
+      "bytes": 8331,
+      "sha256": "826ad7bc41da65f8eeecc97a103374acad530a0762f8f398dc70015f50979df5"
+    },
+    {
+      "path": "INDEPENDENT_REVIEW.json",
+      "bytes": 3737,
+      "sha256": "ef125f4553be9605108b3351de9ac96a2d531e803a0dca49d790578951dfbd99"
+    },
+    {
+      "path": "INITIAL_REVIEW_COMPARISON_CORRECTION.txt",
+      "bytes": 271,
+      "sha256": "eae9a8d484fe3e085765bc1a122b088a5824334a92b64ae312d2832a734dc98d"
+    },
+    {
+      "path": "OWNED35.stderr.txt",
+      "bytes": 4858,
+      "sha256": "d2d665882abb42ce09cc55a975112fb99c73b0178ac1e52d463f9a8b54312278"
+    },
+    {
+      "path": "OWNED35.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "PUBLIC_COMMIT_READBACK.json",
+      "bytes": 1347,
+      "sha256": "54154950038bc49e9363bc17530bac23bdca9ca8533400d05b0dcceccc5c4ea9"
+    },
+    {
+      "path": "PUBLIC_SOURCE_READBACK.json",
+      "bytes": 161217,
+      "sha256": "0524d7fc7a453dc60c25355660abe697bf14b1e2c9f1f850cdcd316547e51325"
+    }
+  ],
+  "exactCopyAuthorFreeze": "d4a3ed8460f45d93d22915b2fab0994906ba922b7e0c3b29290377a909cc284a"
+}

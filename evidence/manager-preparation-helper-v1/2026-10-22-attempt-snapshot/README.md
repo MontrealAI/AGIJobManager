@@ -1,0 +1,11 @@
+# Frozen attempt/latest-run preparation helper amendment
+
+Normal evidence-only child of public9730921fe8d936495ba8e6086abc60a71c11de20. Original973 helper/checkpoint and failed25-metadata capture remain unchanged. This amendment corrects the verified API endpoint representation mismatch; it is not integration source or release approval.
+
+The owned helper now requires exactly six fresh records and26 closed metadata leaves. It retains the general latest run's exact source/workflow/main/push/status/run_attempt1 gate and uses a separately authenticated exact attempt1 response for full type-strict equality with the untouched original packet sidecar. No packet editing, body normalization, alternate endpoint or optional bypass. Bounded/hash-checked CAS bytes are loaded before verify_packet_metadata; its latest gate precedes packet parsing/access and all render/output. Product collector1622 separately rejects latest reruns before attempt/raw fetching.
+
+Author35/35 and independent35/35 owned-data fixtures pass. Sixty-five prior policy-function ASTs stay exact; only final_metadata and verify_packet_metadata change, with two new bounded URL/identity helpers. Two public1622 source/test after-images join the original11 fixed overlays; concrete13fixed+5contextual. Both added overlay paths are already finite. Current83/final85/before+projections38/protected1589 and the pinned empty template/nine public originals/limits remain unchanged.
+
+helper/ is the exact frozen author directory, including before-attempt-snapshot-policy/ and all earlier failed/fixed logs. independent-review/ contains separate later source/hash/AST/functional review and actual35-test receipts. Frozen author pending wording is preserved; later independent review supplies disposition. CUSTODY.json identifies every byte stream.
+
+The tests execute only newly authored helper and owned inert fixtures. Actual revised input capture, B/M/V render, captured/generated module execution, native/custody/product/restricted probes, source application, main merge and release are not established by this checkpoint. Every approval/qualification flag stays false. Reuse this helper in the existing coordinator-owned preparation lane; do not duplicate B/M/V.

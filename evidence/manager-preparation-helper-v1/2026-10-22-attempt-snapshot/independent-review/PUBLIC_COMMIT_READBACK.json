@@ -1,0 +1,35 @@
+{
+  "sha": "4d14d0a043074d8ca02828e247a2715ce3f50dc5",
+  "node_id": "C_kwDORCBDDNoAKDRkMTRkMGEwNDMwNzRkOGNhMDI4MjhlMjQ3YTI3MTVjZTNmNTBkYzU",
+  "url": "https://api.github.com/repos/MontrealAI/AGIJobManager/git/commits/4d14d0a043074d8ca02828e247a2715ce3f50dc5",
+  "html_url": "https://github.com/MontrealAI/AGIJobManager/commit/4d14d0a043074d8ca02828e247a2715ce3f50dc5",
+  "author": {
+    "name": "MONTREAL.AI",
+    "email": "info@montreal.ai",
+    "date": "2026-10-22T20:09:33Z"
+  },
+  "committer": {
+    "name": "MONTREAL.AI",
+    "email": "info@montreal.ai",
+    "date": "2026-10-22T20:09:33Z"
+  },
+  "tree": {
+    "sha": "cdd5ef6dcf49c7fd586a3bdf8cad7e691d801f43",
+    "url": "https://api.github.com/repos/MontrealAI/AGIJobManager/git/trees/cdd5ef6dcf49c7fd586a3bdf8cad7e691d801f43"
+  },
+  "message": "fix: authenticate original browser attempt metadata after latest-run gate",
+  "parents": [
+    {
+      "sha": "0d790835a4b2346034533f4e63d70e18b2f1570f",
+      "url": "https://api.github.com/repos/MontrealAI/AGIJobManager/git/commits/0d790835a4b2346034533f4e63d70e18b2f1570f",
+      "html_url": "https://github.com/MontrealAI/AGIJobManager/commit/0d790835a4b2346034533f4e63d70e18b2f1570f"
+    }
+  ],
+  "verification": {
+    "verified": false,
+    "reason": "unsigned",
+    "signature": null,
+    "payload": null,
+    "verified_at": null
+  }
+}

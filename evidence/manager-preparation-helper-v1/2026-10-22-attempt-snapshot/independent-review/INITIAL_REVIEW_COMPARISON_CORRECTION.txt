@@ -1,0 +1,1 @@
+Initial own audit wrongly compared old provenance-enriched contract rows against raw four-field identities. Assertion: Prior11 reviewed fixed identities preserved. Corrected audit projects old rows to mode/blob/bytes/sha256 and all eleven match; no author bytes changed.

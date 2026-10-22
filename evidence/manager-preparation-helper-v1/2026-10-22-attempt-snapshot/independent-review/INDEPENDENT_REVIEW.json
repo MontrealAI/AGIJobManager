@@ -1,0 +1,65 @@
+{
+  "checks": 138,
+  "flags": {
+    "executionApproved": false,
+    "nativeExecutionQualified": false,
+    "publicationApproved": false,
+    "releaseQualified": false,
+    "sourceReviewed": false
+  },
+  "gates": [
+    "All six fresh roles mandatory; exact attempt1 URL distinct from mandatory latest generic URL; no optional alternatives/normalization.",
+    "Both latest and retained full-attempt run identity bind source/workflow/main/push/completed/success/attempt1 and both repositories with strict JSON types.",
+    "Newer latest attempt2 refuses even when original attempt1 body matches, before packet mapping access in verifier.",
+    "Original five immutable sidecars and common17 body inventory unchanged; strict full payload equality retained for each.",
+    "All metadata locators, limits, aggregate budgets, complete capture closure, descriptor checks, CAS hashes, projected/protected source checks, late closure/output exclusivity remain inherited.",
+    "Fixed13+contextual5=18; original83/final85 finite,38 before/projections,1589 protected remain exact; two added overlay paths were already finite."
+  ],
+  "limitations": [
+    "Only owned35 fixture module/data tests executed; no captured source, B/M/V render, generated verifier, native/restricted/custody probes, source apply, merge or release.",
+    "Concrete amended26-role capture/selection not yet independently accepted.",
+    "Existing failed25-role capture/evidence remains preserved and must not render."
+  ],
+  "preciseOrdering": "Latest-run identity check precedes packet parsing/access inside verify_packet_metadata and all rendering/output. prepare has already read bounded, metadata-validated/hash-checked CAS bytes by that call; this is not before every CAS open. Product collector latest gate does precede attempt/raw fetch.",
+  "publicAfterimages": [
+    {
+      "blob": "3608ce1e69dac5aa645071a1c0d4cabdace02f4b",
+      "bytes": 73143,
+      "mode": "100644",
+      "path": "scripts/release/discovery-qualification.py",
+      "provenance": "4d14d0a043074d8ca02828e247a2715ce3f50dc5",
+      "sha256": "ecc0ba7529df30288bf370ce016f71fa5c00e25f897116fa09997b91fc19036b"
+    },
+    {
+      "blob": "bfe73cf64aaa79b8404b096adc1f46ed9c69ea13",
+      "bytes": 84618,
+      "mode": "100644",
+      "path": "scripts/release/test-discovery-qualification.py",
+      "provenance": "4d14d0a043074d8ca02828e247a2715ce3f50dc5",
+      "sha256": "bfb41059130d8dc4fdad8d861733109f3068c8cb99aec1111e7a9c190712fb20"
+    }
+  ],
+  "reviewerCorrection": "Initial audit compared prior provenance-enriched contract rows directly to raw identity rows. It was corrected to compare all four identity fields, preserving provenance checks separately; no author finding.",
+  "schema": "manager/independent-attempt-snapshot-policy-review/v1",
+  "source": {
+    "bytes": 91948,
+    "sha256": "c39733d417ac00d51d72462de92276f5c7359be0b725cdc16d6a181c8cab6547"
+  },
+  "state": "NO_CONCRETE_FINDING",
+  "tests": {
+    "adaptedOriginalMethods": [
+      "OwnedDataTests.test_27_fixed_reviewed_overlay_identities_and_exact_paths",
+      "OwnedDataTests.test_32_exact_UI_guide_overlay_already_within_modified_scope",
+      "OwnedDataTests.test_33_only_two_reviewed_capture_records_change_with_policy_gates_preserved"
+    ],
+    "bytes": 51331,
+    "independentRun": "35/35 owned fixtures pass in1.279s from exact copy; see OWNED35.stderr.txt",
+    "newTests": [
+      "OwnedDataTests.test_34_latest_rerun_refuses_even_when_original_attempt_matches",
+      "OwnedDataTests.test_35_exact_attempt_endpoints_and_only_reviewed_function_changes"
+    ],
+    "originalASTUnchanged": 30,
+    "originalCount": 33,
+    "sha256": "98d6a8c9e8161a40b6aa4dceedc64dda99be80f5de8610f1804ffe6370cffd48"
+  }
+}

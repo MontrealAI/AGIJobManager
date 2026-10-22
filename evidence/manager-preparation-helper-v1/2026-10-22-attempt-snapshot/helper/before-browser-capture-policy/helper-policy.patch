@@ -1,0 +1,91 @@
+--- a/prepare.py
++++ b/prepare.py
+@@ -575,6 +575,7 @@
+     "ui/package.json": {"mode": "100644", "blob": "3019b3a9df311e2a2638aaa063e9367ed1fe5048", "bytes": 3414, "sha256": "b9fcc3da62e16dfe4e02d70190001f183d41586148f40b942ae8c2d5f05b7cad"},
+     "ui/package-lock.json": {"mode": "100644", "blob": "39415b6c2f132fae7343a298b3ae348223216eec", "bytes": 530005, "sha256": "91c98066fa0d4f0c11c75a7a88fa3d3fab51632c4079e273ce59bde82156584b"},
+     "docs/REFERENCE/VERSIONS.md": {"mode": "100644", "blob": "d736ba418c23e68c512c0a05c5ec6677f8005894", "bytes": 1072, "sha256": "d26f3303a4ab17eda1cfcffe179c8a97b5f5b4d888de2b7d95dd79ff962fa890"},
++    "docs/ui/VERSIONS.md": {"mode": "100644", "blob": "dcf6cbe62ac2d512adbb79806254aa95bb215e67", "bytes": 457, "sha256": "d31e7fc06427643acc31615facb3f57187b64f21a18c56ba648037d10b80e2e9"},
+     BOUNDARY_PATH: {"mode": "100644", "blob": "193d372831dcc88259bff04cb9ab03e2ef6b5051", "bytes": 19212, "sha256": "a775e9100d28f73bc7259d079f0d62a0e51ee08d9bc011146724610120417a6f"},
+ }
+ FIXED_CORRECTION_PROVENANCE = {
+@@ -582,6 +583,7 @@
+     for path in FIXED_REVIEWED_OVERLAYS if path != BOUNDARY_PATH
+ }
+ FIXED_CORRECTION_PROVENANCE[BOUNDARY_PATH] = "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710"
++FIXED_CORRECTION_PROVENANCE["docs/ui/VERSIONS.md"] = "88b14a5b2b7c474e4c16bac8af79650adf709ab7"
+ UI_BASE_RECORDS = {
+     "ui/package.json": {"mode": "100644", "blob": "9af0360c06b4ffec9c474056901ab269c0f31d9a", "bytes": 3414, "sha256": "733f32d36e894adcdbf2d3da2ed12a1ef77d06622dfef3302c89dd23ea4cfd49"},
+     "ui/package-lock.json": {"mode": "100644", "blob": "dc4e014f4572c6f5e555c7c16265391e1418ac53", "bytes": 530005, "sha256": "f12a33c0135afa6487cc6b7d247e885c154e7058de2230803f3e3cc314756b2c"},
+--- a/test_prepare.py
++++ b/test_prepare.py
+@@ -523,16 +523,17 @@
+ 
+     def test_27_fixed_reviewed_overlay_identities_and_exact_paths(self):
+         self.assertEqual(set(P.FIXED_REVIEWED_OVERLAYS), P.SIX_IO | set(P.UI_BASE_RECORDS)
+-                         | {"docs/REFERENCE/VERSIONS.md", P.BOUNDARY_PATH})
+-        self.assertEqual(len(P.FIXED_REVIEWED_OVERLAYS), 10)
++                         | {"docs/REFERENCE/VERSIONS.md", "docs/ui/VERSIONS.md", P.BOUNDARY_PATH})
++        self.assertEqual(len(P.FIXED_REVIEWED_OVERLAYS), 11)
+         self.assertEqual(len(P.CONTEXTUAL_OVERLAYS), 5)
+-        self.assertEqual(len(P.OVERLAY_PATHS), 15)
++        self.assertEqual(len(P.OVERLAY_PATHS), 16)
+         overlays = {**P.FIXED_REVIEWED_OVERLAYS,
+                     **{path: P.identify(b"owned contextual data") for path in P.CONTEXTUAL_OVERLAYS}}
+         P.reviewed_overlay_records(overlays)
+         for path in P.FIXED_REVIEWED_OVERLAYS:
+             self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[path],
+                 "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710" if path == P.BOUNDARY_PATH
++                else "88b14a5b2b7c474e4c16bac8af79650adf709ab7" if path == "docs/ui/VERSIONS.md"
+                 else "b8ff0a7df7195a0b1f132b43114422d3dfb64add")
+             for key, value in (("mode", "100755"), ("blob", "0" * 40),
+                                ("bytes", overlays[path]["bytes"] + 1), ("sha256", "0" * 64)):
+@@ -549,7 +550,7 @@
+     def scope_fixture(self):
+         old_io = P.SIX_IO - {"scripts/release/test-discovery-release-plumbing.py",
+                              "scripts/release/test-discovery-release-profile.py"}
+-        modified = set(P.PACKAGES) | {"config/usdc-deployment.json", "docs/REFERENCE/VERSIONS.md",
++        modified = set(P.PACKAGES) | {"config/usdc-deployment.json", "docs/REFERENCE/VERSIONS.md", "docs/ui/VERSIONS.md",
+                                      ".github/workflows/current-state-release.yml"} | old_io
+         modified.update("data/modified-" + str(index) + ".txt" for index in range(37 - len(modified)))
+         aliases = {"docs/AGIJOBMANAGER.md", "docs/AGIJobManager.md", "docs/ARCHITECTURE.md",
+@@ -698,5 +699,40 @@
+         self.assertEqual(P.CURRENT_COMMIT, "fc25d03f689dd2ed6a9afcd92e6f380ece11a23c")
+ 
+ 
++    def test_32_exact_UI_guide_overlay_already_within_modified_scope(self):
++        path = "docs/ui/VERSIONS.md"
++        old = (MODULE_PATH.parent / "fixtures/ui-guide-before.md").read_bytes()
++        new = (MODULE_PATH.parent / "fixtures/ui-guide-after.md").read_bytes()
++        self.assertEqual(P.git_blob(old), "bc50c1364201e77bb7cd1ddd971040da8f3a5646")
++        self.assertEqual(P.identify(new), P.FIXED_REVIEWED_OVERLAYS[path])
++        self.assertEqual(new.replace(b"| next | 15.5.28 |", b"| next | 15.5.27 |"), old)
++        basis, current, before, overlays, trees = self.scope_fixture()
++        proposed, modified = P.source_basis_metadata(basis, current, before, overlays, trees)
++        self.assertIn(path, P.changed_sets(trees["base"], current)[0])
++        self.assertIn(path, basis["currentFinite"])
++        self.assertIn(path, basis["finalFinite"])
++        self.assertNotIn(path, basis["protected"])
++        self.assertEqual(len(modified), 38)
++        self.assertEqual(len(basis["finalFinite"]), 85)
++        self.assertEqual(len(basis["protected"]), 1589)
++        previous = ast.parse((MODULE_PATH.parent / "before-policy/prepare.py").read_text())
++        def assignment(name, tree):
++            return next(n.value for n in tree.body if isinstance(n, ast.Assign)
++                and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name) and n.targets[0].id == name)
++        # BOUNDARY_PATH is a named key, so compare every other literal assignment and
++        # the previous overlay dictionary syntax rather than importing historical code.
++        previous_dict = next(n.value for n in previous.body if isinstance(n, ast.Assign)
++            and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name)
++            and n.targets[0].id == "FIXED_REVIEWED_OVERLAYS")
++        expected = {key.id if isinstance(key, ast.Name) else ast.literal_eval(key): ast.literal_eval(value)
++                    for key, value in zip(previous_dict.keys, previous_dict.values)}
++        expected[P.BOUNDARY_PATH] = expected.pop("BOUNDARY_PATH")
++        self.assertEqual({name: value for name, value in P.FIXED_REVIEWED_OVERLAYS.items() if name != path}, expected)
++        current_ast = ast.parse(MODULE_PATH.read_text())
++        for name in ("TEMPLATE_SHA256", "TEMPLATE_BYTES", "BASE_COMMIT", "CURRENT_COMMIT", "API_ROLE_FACTS"):
++            self.assertEqual(ast.dump(assignment(name, previous), include_attributes=False),
++                             ast.dump(assignment(name, current_ast), include_attributes=False))
++
++
+ if __name__ == "__main__":
+     unittest.main(verbosity=2)
