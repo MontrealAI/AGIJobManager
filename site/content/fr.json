@@ -476,5 +476,14 @@
   "historicalBoundary": "Ces adresses appartiennent à l’instance antérieure. Sa connexion ENS ne démontre ni rattachement d’un module ni autorisation d’espace de noms pour le dernier gestionnaire. Son relevé daté d’admission en pause n’est ni une lecture en direct ni une autorisation d’activer l’admission. Les mandats et créances restent sur leur gestionnaire d’origine.",
   "historicalRecord": "Lire le relevé historique structuré",
   "historicalGuide": "Lire l’historique du déploiement du 10 octobre",
-  "noTransactionTarget": "Consulter ou copier ces adresses déclarées ne sélectionne aucune cible de transaction. La console s’ouvre toujours sans gestionnaire par défaut ; aucun portefeuille n’est requis pour lire cette page."
+  "noTransactionTarget": "Consulter ou copier ces adresses déclarées ne sélectionne aucune cible de transaction. La console s’ouvre toujours sans gestionnaire par défaut ; aucun portefeuille n’est requis pour lire cette page.",
+  "autonomousEnterprises": {
+    "scope": "APERÇU SOURCE",
+    "title": "Construire les moyens de construire.",
+    "description": "Construisez avec Alpha une capacité de calcul vérifiée. Figez ses octets, utilisez-la pour des tâches ultérieures et examinez un dossier de preuves commun. Manager fournit son interface distincte de commande et de revue en USDC6.",
+    "boundary": "Le nouveau récepteur est un contrat logiciel testé localement, avec un plafond monétaire nul. L’intégration installée, le paiement et le pilote opérationnel restent NOT_RUN.",
+    "cta": "Examiner la source de la fonderie",
+    "guide": "Récepteur USDC6 et vérifications restantes",
+    "research": "Fondement de recherche et six étapes"
+  }
 }

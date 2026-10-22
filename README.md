@@ -38,6 +38,18 @@ Two bounded local engines produce real editable artifacts: a public-data report 
 
 **En français :** créez un rapport de données publiques ou un site simple, vérifiez le résultat, choisissez une amélioration et téléchargez votre système. Le parcours local fonctionne sans compte, portefeuille ni clé de fournisseur. [Guide français](docs/successor/GUIDE_FR.md).
 
+## Autonomous Enterprises · source preview
+
+Build checked computational capabilities with Alpha, freeze their bytes and inspect later use through the same
+thirteen-section Evidence Docket. Manager supplies a distinct **USDC6** alternative commission/review route.
+[Foundry source candidate](https://github.com/MontrealAI/AGI-Alpha-Agent-v0/pull/4855) ·
+[Receiver contract, local checks and remaining acceptance](docs/successor/AUTONOMOUS_ENTERPRISES.md).
+The new receiver has a zero currency cap. Installed integration and the operational real-task pilot remain **NOT_RUN**.
+
+**En français :** construisez et figez des capacités vérifiées, puis examinez leur réutilisation dans un dossier commun.
+Manager conserve sa route USDC6 distincte. Le récepteur source est testé localement ; l’intégration installée et le
+pilote opérationnel restent **NOT_RUN**. [Contrat et limites](docs/successor/AUTONOMOUS_ENTERPRISES.md).
+
 ## Inspect a transformation campaign
 
 The v1.19.5 developer adapter inspects a complete Alpha transformation campaign with an installed, compatible native inspector and independently supplied runtime bindings. The current native pilot has zero currency allowances: **inspection is free; a positive paid proposal is unsupported**. Inspection does not execute work, grant permissions or sign a transaction. The existing local Builder and its pinned runtime remain unchanged. Start with the [v1.19.5 guide](docs/releases/v1.19.5/START_HERE.md) and [adapter contract and recovery](docs/successor/TRANSFORMATIONAL_WORK.md). This is a developer API, not a new console action.

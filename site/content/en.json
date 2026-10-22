@@ -476,5 +476,14 @@
   "historicalBoundary": "These addresses belong to the earlier instance. Its ENS connection does not establish a helper attachment or namespace authorization for the latest Manager. Its dated paused-intake record is not a live-state check or approval to activate intake. Existing jobs and claims stay on their original manager.",
   "historicalRecord": "Read the historical machine-readable record",
   "historicalGuide": "Read the October 10 deployment history",
-  "noTransactionTarget": "Viewing or copying these reported addresses selects no transaction target. The console still opens without a default manager; no wallet is needed to read this page."
+  "noTransactionTarget": "Viewing or copying these reported addresses selects no transaction target. The console still opens without a default manager; no wallet is needed to read this page.",
+  "autonomousEnterprises": {
+    "scope": "SOURCE PREVIEW",
+    "title": "Build the means of building.",
+    "description": "Construct a checked computational factory with Alpha. Freeze its bytes, invoke it on later tasks and inspect one shared evidence docket. Manager supplies the distinct USDC6 commission and review interface.",
+    "boundary": "The new receiver is a locally tested source contract with a zero currency cap. Installed integration, payment and the operational real-task pilot remain NOT_RUN.",
+    "cta": "Inspect the foundry source",
+    "guide": "USDC6 receiver and remaining acceptance",
+    "research": "Research foundation and six stages"
+  }
 }
