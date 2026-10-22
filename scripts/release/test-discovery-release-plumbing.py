@@ -1053,6 +1053,37 @@ class ReleaseAssetBoundedIO(unittest.TestCase):
             with self.assertRaises(zipfile.BadZipFile):
                 scope['collect_candidate_assets'](archive, artifact, destination)
 
+    def test_published_qualification_strict_capture_precedes_record_validation(self):
+        out = self.assets('published-json')
+        workflows = self.common['WORKFLOWS']
+        config = {'repository': REPOSITORY, 'tag': TAG, 'name': TITLE, 'status': 'qualified',
+            'sourceCommit': 'a' * 40, 'sourceTree': 'b' * 40, 'checkoutCommit': 'a' * 40,
+            'requiredSourceRuns': dict.fromkeys(workflows, {}),
+            'artifactDigests': {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in out.iterdir() if path.name != 'SHA256SUMS.txt'}}
+        scope = self.load_functions('verify-package.py', {'package_inventory'}, {
+            'candidate_policy': {'select': lambda *a, **k: None,
+                'validate_metadata': lambda *a, **k: None},
+            'qualification_workflows': lambda config: workflows})
+        valid = json.dumps(config).encode()
+        qualification = out / 'QUALIFICATION.json'
+        qualification.write_bytes(valid); self.checksums(out)
+        manifest, raw = scope['package_inventory'](out, published=True)
+        self.assertEqual(raw, (out / 'RELEASE_MANIFEST.json').read_bytes())
+        self.assertEqual(manifest['sourceCommit'], config['sourceCommit'])
+        invalid = [valid[:-1] + b', "x": NaN, "x": 1}',
+            valid[:-1] + b', "x": Infinity}', valid[:-1] + b', "x": 1e999}',
+            valid[:-1] + b', "tag": ' + json.dumps(TAG).encode() + b'}', b'[]']
+        for value in invalid:
+            qualification.write_bytes(value); self.checksums(out)
+            with patch.dict(scope, {'verify_assets': lambda *a, **k: self.fail('strict capture before validation')}):
+                with self.subTest(raw=value[-64:]), self.assertRaises(ValueError):
+                    scope['package_inventory'](out, published=True)
+        qualification.write_bytes(valid)
+        with patch.object(os, 'open', side_effect=AssertionError('bound before open')):
+            with self.assertRaises(ValueError):
+                self.common['read_bounded'](qualification, maximum=len(valid) - 1)
+
     def test_unchanged_inner_archive_expansion_guard_precedes_payload_reads(self):
         scope = self.load_functions('verify-package.py', {'archive_inventory'})
         item = zipfile.ZipInfo(f'AGIJobManager-{TAG}/source/LICENSE')
