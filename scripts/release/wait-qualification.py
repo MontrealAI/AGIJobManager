@@ -5,14 +5,15 @@ import os
 import pathlib
 import subprocess
 import time
-from release_common import REPOSITORY, WORKFLOWS, require, valid_sha
+from release_common import REPOSITORY, WORKFLOWS, DISCOVERY_PROFILE, qualification_workflows, require, valid_sha
 
 
-def readiness(api, source):
+def readiness(api, source, profile=None):
     require(valid_sha(source), 'A complete source commit is required')
     if api('git/ref/heads/main')['object']['sha'] != source: return 'superseded'
     pending = False
-    for workflow in WORKFLOWS:
+    workflows = qualification_workflows({'sourcePolicy': {'releaseProfile': profile}})
+    for workflow in workflows:
         identity = api(f'actions/workflows/{workflow}')
         require(identity['path'] == '.github/workflows/' + workflow, 'Qualification workflow identity differs')
         runs = api(f'actions/workflows/{identity["id"]}/runs?head_sha={source}&event=push&per_page=100')['workflow_runs']
@@ -28,6 +29,7 @@ def readiness(api, source):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', required=True)
+    parser.add_argument('--profile', choices=[DISCOVERY_PROFILE])
     parser.add_argument('--timeout-seconds', type=int, default=2700)
     parser.add_argument('--poll-seconds', type=int, default=30)
     args = parser.parse_args()
@@ -39,10 +41,10 @@ def main():
         return json.loads(result.stdout)
     deadline = time.monotonic() + args.timeout_seconds
     while True:
-        status = readiness(api, args.source)
+        status = readiness(api, args.source, args.profile)
         if status != 'pending': break
         require(time.monotonic() + args.poll_seconds <= deadline, 'Exact-source qualification did not finish within the bounded wait')
-        print('Waiting for all eight required exact-source workflows.', flush=True)
+        print('Waiting for all required exact-source workflows.', flush=True)
         time.sleep(args.poll_seconds)
     with pathlib.Path(os.environ['GITHUB_OUTPUT']).open('a') as output:
         output.write('ready=' + ('true' if status == 'ready' else 'false') + '\n')

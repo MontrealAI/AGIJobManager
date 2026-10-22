@@ -9,7 +9,7 @@ import sys
 import tempfile
 import zipfile
 sys.dont_write_bytecode = True
-from release_common import TAG, TITLE, REPOSITORY, WORKFLOWS, LIMIT, require, sha, valid_sha, verify_assets, source_path, verify_builder_rebuild, verify_builder_context_outputs, strict_json
+from release_common import TAG, TITLE, REPOSITORY, WORKFLOWS, DISCOVERY_PROFILE, qualification_workflows, LIMIT, require, sha, valid_sha, verify_assets, source_path, verify_builder_rebuild, verify_builder_context_outputs, strict_json
 from release_common import builder_reconstruction, retained_builder_package
 
 candidate_policy = runpy.run_path(str(pathlib.Path(__file__).with_name('package-policy.py')))
@@ -22,13 +22,19 @@ def package_inventory(assets, *, published=False, profile='legacy-v114', manifes
     config = None
     if published:
         qualification = assets / 'QUALIFICATION.json'
-        require(qualification.is_file() and not qualification.is_symlink() and qualification.stat().st_size < 1_000_000, 'Published qualification is missing or oversized')
+        qualification_limit = 64 * 1024 * 1024 if profile == DISCOVERY_PROFILE else 1_000_000
+        require(qualification.is_file() and not qualification.is_symlink() and qualification.stat().st_size < qualification_limit, 'Published qualification is missing or oversized')
         config = json.loads(qualification.read_text())
         require(config.get('repository') == REPOSITORY and config.get('tag') == TAG and config.get('name') == TITLE and config.get('status') == 'qualified', 'Published qualification identity differs')
         require(valid_sha(config.get('sourceCommit')) and valid_sha(config.get('sourceTree')) and config.get('checkoutCommit') == config['sourceCommit'], 'Published source binding differs')
-        require(set(config.get('requiredSourceRuns', {})) == set(WORKFLOWS), f'Published qualification must record all {len(WORKFLOWS)} workflows')
-    if published and selection and selection.get('releaseProfile') == 'manager-transformational-v1':
+        workflows = qualification_workflows(config)
+        require(set(config.get('requiredSourceRuns', {})) == set(workflows), f'Published qualification must record all {len(workflows)} workflows')
+    if published and selection and selection.get('releaseProfile') in ('manager-transformational-v1', 'manager-dependency-maintenance-v1', DISCOVERY_PROFILE):
         runpy.run_path(str(pathlib.Path(__file__).with_name('transformational-qualification.py')))['verify_record'](config)
+    if published and selection and selection.get('releaseProfile') == 'manager-dependency-maintenance-v1':
+        runpy.run_path(str(pathlib.Path(__file__).with_name('maintenance-qualification.py')))['verify_record'](config)
+    if published and selection and selection.get('releaseProfile') == DISCOVERY_PROFILE:
+        runpy.run_path(str(pathlib.Path(__file__).with_name('discovery-qualification.py')))['verify_record'](config)
     verify_assets(assets, config)
     manifest_bytes = (assets / 'RELEASE_MANIFEST.json').read_bytes()
     manifest = strict_json(manifest_bytes)
@@ -55,8 +61,62 @@ def archive_inventory(archive, manifest):
             source_path(name[len('source/'):], mode)
     return prefix
 
+
+def extract_browser_capsule(assets, destination, selection, *, qualification=None):
+    """Reuse saved original bytes; bind an explicit caller-validated qualification when present."""
+    assets, destination = pathlib.Path(assets), pathlib.Path(destination)
+    require(selection is not None and selection.get('releaseProfile') == DISCOVERY_PROFILE,
+            'Saved browser extraction requires explicit Discovery profile')
+    require(destination.is_absolute() and not destination.exists() and destination.parent.resolve() == destination.parent,
+            'Saved browser extraction output must be absent and absolute')
+    if qualification is not None:
+        require(isinstance(qualification, dict) and qualification.get('repository') == REPOSITORY
+                and qualification.get('tag') == TAG and qualification.get('name') == TITLE
+                and qualification.get('status') == 'qualified' and qualification.get('sourcePolicy') == selection
+                and valid_sha(qualification.get('sourceCommit')) and valid_sha(qualification.get('sourceTree'))
+                and qualification.get('checkoutCommit') == qualification['sourceCommit'],
+                'Saved browser extraction qualification context differs')
+        retained = assets / 'QUALIFICATION.json'
+        require(retained.is_file() and not retained.is_symlink()
+                and retained.stat().st_size <= 64 * 1024 * 1024,
+                'Saved browser extraction qualification is missing or unbounded')
+        require(json.dumps(strict_json(retained.read_bytes()), sort_keys=True, allow_nan=False)
+                == json.dumps(qualification, sort_keys=True, allow_nan=False),
+                'Saved browser extraction differs from the trusted qualification')
+    verify_assets(assets, qualification)
+    manifest_raw = (assets / 'RELEASE_MANIFEST.json').read_bytes()
+    manifest = strict_json(manifest_raw)
+    candidate_policy['validate_metadata'](manifest, selection)
+    source_root = pathlib.Path(__file__).resolve().parents[2]
+    discovery = candidate_policy['policy'](selection)
+    expected = set(discovery['browser_policy'](source_root)['BROWSER_MEMBERS']) | {discovery['BROWSER_MANIFEST']}
+    captured = {}
+    with zipfile.ZipFile(assets / f'AGIJobManager-{TAG}-COMPLETE.zip') as archive:
+        prefix = archive_inventory(archive, manifest)
+        total = 0
+        for name in sorted(expected):
+            target_name = discovery['BROWSER_CAPSULE'] + '/' + name
+            item = archive.getinfo(prefix + target_name)
+            total += item.file_size
+            require(0 < item.file_size <= 2_000_000 and total <= 16_000_000
+                    and item.external_attr >> 16 == (stat.S_IFREG | 0o644),
+                    'Saved browser extraction bytes/mode exceed their bound')
+            raw = archive.read(item)
+            require(manifest['files'][target_name] == {'sha256': sha(raw), 'bytes': len(raw), 'mode': item.external_attr >> 16},
+                    'Saved browser extraction member differs')
+            captured[name] = raw
+    destination.mkdir(mode=0o700)
+    for name, raw in captured.items():
+        target = destination / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open('xb') as stream:
+            stream.write(raw)
+        target.chmod(0o644)
+    discovery['validate_browser_capsule'](source_root, destination)
+    return destination
+
 def verify_package(assets, *, published=False, profile='legacy-v114', manifest=None,
-                   manifest_sha256=None, verifier_sha256=None, schema_sha256=None):
+                   manifest_sha256=None, verifier_sha256=None, schema_sha256=None, native_source_root=None):
     assets = pathlib.Path(assets)
     options = dict(profile=profile, manifest=manifest, manifest_sha256=manifest_sha256,
         verifier_sha256=verifier_sha256, schema_sha256=schema_sha256)
@@ -86,6 +146,24 @@ def verify_package(assets, *, published=False, profile='legacy-v114', manifest=N
         source_dir = pathlib.Path(temp) / 'source'
         if selection is not None:
             candidate_policy['validate_source'](source_dir, selection)
+        if selection is not None and selection.get('releaseProfile') == DISCOVERY_PROFILE:
+            discovery = candidate_policy['policy'](selection)
+            capsule = pathlib.Path(temp) / discovery['CAPSULE']
+            discovery['validate_alpha_capsule'](source_dir, capsule)
+            browser_capsule = pathlib.Path(temp) / discovery['BROWSER_CAPSULE']
+            browser_input = discovery['validate_browser_capsule'](source_dir, browser_capsule)
+            context = pathlib.Path(temp) / 'native-context.json'
+            context.write_text(json.dumps({'sourceCommit': manifest['sourceCommit'],
+                'sourceTree': manifest['sourceTree'],
+                'browserInput': browser_input,
+                'candidateArchiveSha256': sha((assets / f'AGIJobManager-{TAG}-COMPLETE.zip').read_bytes())}) + '\n')
+            subprocess.run(['node', 'scripts/integrations/discovery-release-native-test.mjs',
+                '--installed', str(capsule), str(context), str(pathlib.Path(temp) / 'native-evidence'),
+                str(browser_capsule / 'discovery-continuation/fleet-browser-workspace.json'),
+                str(browser_capsule / 'discovery-continuation/fleet-browser-request.json'),
+                browser_input['campaignDigest']], cwd=source_dir, check=True)
+        else:
+            require(native_source_root is None, 'Native source root requires explicit Discovery release selection')
         regenerated = pathlib.Path(temp) / 'rebuilt'
         selected_package = retained_builder_package(temp)
         with builder_reconstruction(source_dir, manifest.get('builderSource'), selected_package):
@@ -95,7 +173,7 @@ def verify_package(assets, *, published=False, profile='legacy-v114', manifest=N
             subprocess.run(['node', '--test', 'scripts/successor/portable.test.mjs'], cwd=source_dir, check=True)
         subprocess.run(['node', 'scripts/release/verify-usdc-ui.mjs', '.'], cwd=source_dir, check=True)
         subprocess.run(['python3', 'scripts/release/test-release-gates.py'], cwd=source_dir, check=True)
-        if selection is not None and selection.get('releaseProfile') == 'manager-transformational-v1':
+        if selection is not None and selection.get('releaseProfile') in ('manager-transformational-v1', 'manager-dependency-maintenance-v1', DISCOVERY_PROFILE):
             subprocess.run(['node', '--test', 'scripts/integrations/transformational-work-request.test.mjs', 'scripts/integrations/transformational-native-source.test.mjs'], cwd=source_dir, check=True)
             subprocess.run(['python3', 'scripts/release/test-transformational-qualification.py'], cwd=source_dir, check=True)
             subprocess.run(['python3', 'scripts/release/test-publication-authorization-ti.py'], cwd=source_dir, check=True)
@@ -110,4 +188,5 @@ if __name__ == '__main__':
     parser.add_argument('assets', type=pathlib.Path)
     parser.add_argument('--published', action='store_true', help='Require the complete published inventory, including QUALIFICATION.json and its exact asset/source bindings')
     candidate_policy['add_selection_arguments'](parser)
+    parser.add_argument('--native-source-root', help='Optional source-side capture root; installed Discovery replay uses only saved capsule bytes')
     verify_package(**vars(parser.parse_args()))

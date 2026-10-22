@@ -12,7 +12,7 @@ from urllib.parse import quote, urlsplit, urlunsplit
 
 REPOSITORY = 'MontrealAI/AGIJobManager'
 TAG = 'v' + json.loads((pathlib.Path(__file__).resolve().parents[2] / 'package.json').read_text())['version']
-TITLE = TAG + ' — Operator guidance and deployment evidence'
+TITLE = TAG + ' — Discovery Lab admission'
 BUILDER_ASSETS = {'My-SUCCESSOR-Omega-en.html', 'My-SUCCESSOR-Omega-fr.html', 'SUCCESSOR-Omega-editable-source.zip', 'SOURCE_MANIFEST.json'}
 BUILDER_ARCHIVE_ONLY_ASSETS = {'MANAGER_CONTEXT.json'}
 LIMIT = 450_000_000
@@ -27,7 +27,19 @@ WORKFLOWS = {
     'pages.yml': ['Build and check website'],
     'alpha-project-handoff.yml': ['receiver-validation'],
 }
+DISCOVERY_PROFILE = 'manager-discovery-release-v1'
+DISCOVERY_WORKFLOW = 'discovery-lab-receiver.yml'
+DISCOVERY_JOBS = ['Discovery Lab zero-cap receiver policy (22.23.2)', 'Discovery Lab zero-cap receiver policy (24.21.0)']
+
+def qualification_workflows(config=None):
+    # Existing historical profiles retain their original eight gates.
+    result = {name: list(jobs) for name, jobs in WORKFLOWS.items()}
+    if config and config.get('sourcePolicy', {}).get('releaseProfile') == DISCOVERY_PROFILE:
+        result[DISCOVERY_WORKFLOW] = list(DISCOVERY_JOBS)
+    return result
+
 REQUIRED_STEPS = {
+    'discovery-lab-receiver.yml': ['Check exact source and run transport-policy regressions', 'Verify the versioned Discovery release source inventory', 'Capture the exact reviewed Alpha implementation', 'Run actual pinned synthetic campaign and native admission', 'Retain exact-source policy and actual local native evidence'],
     'alpha-project-handoff.yml': ['Fetch the exact reviewed native Alpha validator', 'Exercise actual receiver validation, work and bilingual history'],
     'pages.yml': ['Build and verify static pages', 'SUCCESSOR local and adversarial checks', 'Verify mobile, desktop and bilingual interactions', 'SUCCESSOR browser, accessibility and isolated worker rehearsal'],
     'ci.yml': ['Lint', 'Build', 'Bytecode size check', 'Test'],
@@ -234,8 +246,9 @@ def run_jobs(api, run_id, attempt):
             return result
         page += 1
 
-def validate_run(api, logs, workflow, item, source, *, publication=False):
-    require(workflow in WORKFLOWS and item['workflow'] == workflow, 'Unknown workflow identity')
+def validate_run(api, logs, workflow, item, source, *, publication=False, workflows=None):
+    workflows = WORKFLOWS if workflows is None else workflows
+    require(workflow in workflows and item['workflow'] == workflow, 'Unknown workflow identity')
     require(type(item['id']) is int and item['id'] > 0 and type(item['attempt']) is int and item['attempt'] > 0, 'Invalid run identity')
     run = api(f'actions/runs/{item["id"]}')
     for key, value in [('id', item['id']), ('workflow_id', item['workflowId']), ('run_attempt', item['attempt']), ('head_sha', source), ('path', '.github/workflows/' + workflow), ('event', item['event']), ('head_branch', item['headBranch']), ('status', 'completed'), ('conclusion', 'success')]:
@@ -251,7 +264,7 @@ def validate_run(api, logs, workflow, item, source, *, publication=False):
         deployment = [j for j in jobs if j['name'] == 'Publish GitHub Pages']
         require(len(deployment) == 1 and deployment[0]['status'] == 'completed' and deployment[0]['conclusion'] == 'skipped', 'Qualification must not publish Pages')
         jobs = [j for j in jobs if j['name'] != 'Publish GitHub Pages']
-    require(sorted(j['name'] for j in jobs) == sorted(WORKFLOWS[workflow]), 'Required jobs differ or are duplicated')
+    require(sorted(j['name'] for j in jobs) == sorted(workflows[workflow]), 'Required jobs differ or are duplicated')
     for job in jobs:
         require(job['status'] == 'completed' and job['conclusion'] == 'success' and job.get('head_sha') == source and job.get('run_id') == item['id'], 'Required source job did not succeed on source')
         wanted = ['Verify qualified source checkout', *REQUIRED_STEPS[workflow]]
@@ -270,9 +283,10 @@ def validate_qualification(config, api, logs, *, publication=False):
     source = config['sourceCommit']
     require(config.get('checkoutCommit') == source, 'Qualification did not check out exact source')
     require(api(f'git/commits/{source}')['tree']['sha'] == config['sourceTree'], 'Source tree differs')
-    require(set(config.get('requiredSourceRuns', {})) == set(WORKFLOWS), f'All {len(WORKFLOWS)} qualification workflows are required')
+    workflows = qualification_workflows(config)
+    require(set(config.get('requiredSourceRuns', {})) == set(workflows), f'All {len(workflows)} qualification workflows are required')
     for workflow, item in config['requiredSourceRuns'].items():
-        validate_run(api, logs, workflow, item, source, publication=publication)
+        validate_run(api, logs, workflow, item, source, publication=publication, workflows=workflows)
     return source
 
 def verify_assets(out, config=None):

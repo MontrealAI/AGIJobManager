@@ -25,17 +25,28 @@ def git(*args):
     return subprocess.check_output(['git', '--no-replace-objects', '-c', 'core.fsmonitor=false', '-c', 'core.hooksPath=/dev/null', *args], cwd=root, env=env)
 
 def package(out, *, profile='legacy-v114', manifest=None, manifest_sha256=None,
-            verifier_sha256=None, schema_sha256=None, object_store=None, dependency_root=None):
+            verifier_sha256=None, schema_sha256=None, object_store=None, dependency_root=None, native_source_root=None,
+            browser_input_root=None):
     selection = candidate_policy['select'](profile, manifest=manifest, manifest_sha256=manifest_sha256,
         verifier_sha256=verifier_sha256, schema_sha256=schema_sha256)
-    require(selection is not None or not any((object_store, dependency_root)), 'Legacy packaging cannot accept candidate roots')
-    source = git('rev-parse', 'HEAD').decode().strip()
-    tree = git('rev-parse', 'HEAD^{tree}').decode().strip()
-    require(not git('status', '--porcelain', '--untracked-files=no').strip(), 'Tracked source must be clean')
-    if selection is None:
-        subprocess.run(['python3', 'scripts/release/check-v114-boundaries.py'], cwd=root, check=True)
+    require(selection is not None or not any((object_store, dependency_root, native_source_root, browser_input_root)), 'Legacy packaging cannot accept candidate roots')
+    require(browser_input_root is None or profile == candidate_policy['DISCOVERY_RELEASE_PROFILE'], 'Browser input root requires explicit Discovery profile')
+    if profile == candidate_policy['DISCOVERY_RELEASE_PROFILE']:
+        identity = candidate_policy['discovery_release']()['git_identity'](root)
+        source, tree = identity['commit'], identity['tree']
     else:
-        candidate_policy['checkout'](root, selection, object_store, dependency_root, source, tree)
+        source = git('rev-parse', 'HEAD').decode().strip()
+        tree = git('rev-parse', 'HEAD^{tree}').decode().strip()
+    if profile == candidate_policy['DISCOVERY_RELEASE_PROFILE']:
+        # The full guard rejects local Git execution controls before status can
+        # invoke a filter. Historical profile ordering remains unchanged.
+        candidate_policy['checkout'](root, selection, object_store, dependency_root, source, tree, alpha_root=native_source_root)
+    else:
+        require(not git('status', '--porcelain', '--untracked-files=no').strip(), 'Tracked source must be clean')
+        if selection is None:
+            subprocess.run(['python3', 'scripts/release/check-v114-boundaries.py'], cwd=root, check=True)
+        else:
+            candidate_policy['checkout'](root, selection, object_store, dependency_root, source, tree, alpha_root=native_source_root)
     payload = {}
     with tarfile.open(fileobj=io.BytesIO(git('archive', source)), mode='r:') as archive:
         for member in archive.getmembers():
@@ -49,6 +60,18 @@ def package(out, *, profile='legacy-v114', manifest=None, manifest_sha256=None,
             data = member.linkname.encode() if member.issym() else archive.extractfile(member).read()
             require(len(data) < LIMIT, 'Source file exceeds package limit')
             payload['source/' + member.name] = (data, mode)
+    if profile == candidate_policy['DISCOVERY_RELEASE_PROFILE']:
+        discovery = candidate_policy['policy'](selection)
+        captured_alpha = discovery['capture_alpha_capsule'](root, native_source_root)
+        for name, (mode, data) in captured_alpha.items():
+            payload[discovery['CAPSULE'] + '/' + name] = (data,
+                stat.S_IFREG | (0o755 if mode == '100755' else 0o644))
+        require(browser_input_root is not None and pathlib.Path(browser_input_root).is_absolute()
+                and pathlib.Path(browser_input_root).resolve() == pathlib.Path(browser_input_root),
+                'Discovery packaging requires the producer-owned original browser input capsule')
+        saved_browser = discovery['validate_browser_capsule'](root, browser_input_root, return_files=True)
+        for name, data in sorted(saved_browser['files'].items()):
+            payload[discovery['BROWSER_CAPSULE'] + '/' + name] = (data, stat.S_IFREG | 0o644)
     guides = {f'docs/releases/{TAG}/{name}': name for name in ['START_HERE.md', 'RELEASE_NOTES.md', 'RECOVERY_GUIDE.md', 'VALIDATION.md']}
     for source_name, name in guides.items():
         payload[name] = (packaged_guide(payload['source/' + source_name][0], source_name, payload, guides), stat.S_IFREG | 0o644)
@@ -122,4 +145,6 @@ if __name__ == '__main__':
     candidate_policy['add_selection_arguments'](parser)
     parser.add_argument('--object-store', action='append', help='Exact absolute Git object-store root for explicitly selected candidate input checks')
     parser.add_argument('--dependency-root', help='Exact absolute installed compiler dependency root; never used by offline extraction')
+    parser.add_argument('--native-source-root', help='Explicit installed Alpha Git root required only by the Discovery release profile')
+    parser.add_argument('--browser-input-root', help='Absolute producer-owned authenticated original browser input capsule, required for Discovery')
     package(**vars(parser.parse_args()))
