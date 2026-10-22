@@ -100,7 +100,7 @@ class DiscoveryReleaseSource(unittest.TestCase):
 
     def test_repin_cannot_change_an_old_maintenance_guard_or_source_candidate(self):
         for name in P['PROTECTED']:
-            self.substitute(name, (ROOT / name).read_bytes() + b'\n', self.rejection)
+            self.substitute(name, P['read'](ROOT, name)[1] + b'\n', self.rejection)
         name = next(iter(P['PROTECTED']))
         self.change_manifest(lambda value: value['changes'].update({name: {'before': self.previous['entries'].get(name), 'after': {'mode': '100644', 'sha256': 'a' * 64}, 'reason': 'attempted gate change'}}))
 
