@@ -1,0 +1,9 @@
+{
+  "schema": "retained-public-evidence-reference/v1",
+  "repository": "MontrealAI/AGIJobManager",
+  "commit": "57b760784bae30630697e0024eec91cb2fc05958",
+  "path": "evidence/autonomous-enterprises-20261022/integration-c655/RAW_MANAGER_INTEGRATION.zip",
+  "bytes": 55501,
+  "sha256": "886ff3360380b3b77df485065d95d94e33498a14e933997aa07b9f93a58f28b7",
+  "reason": "Current tree complies with existing no-binaries policy; original ZIP and complete failure history remain retained at the immutable commit."
+}
