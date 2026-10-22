@@ -118,7 +118,11 @@ contract('v0.9.5 buyer protection and payment isolation', accounts => {
     await submit(); const end = Number((await manager.getJobDeadlines(0)).settlementAfter.toString());
     await rpc('evm_setNextBlockTimestamp', [end]); await rpc('evm_mine');
     await expectCustomError(manager.finalizeJob.call(0), 'InvalidState');
-    await manager.disputeJob(0, { from: buyer }); assert.equal((await manager.getJobCore(0)).disputed, true);
+    await rpc('evm_setNextBlockTimestamp', [end]);
+    const dispute = await manager.disputeJob(0, { from: buyer });
+    const mined = await rpc('eth_getBlockByNumber', [`0x${dispute.receipt.blockNumber.toString(16)}`, false]);
+    assert.equal(Number(BigInt(mined.timestamp)), end, 'dispute must execute at the exact inclusive boundary');
+    assert.equal((await manager.getJobCore(0)).disputed, true);
   });
   it('does not let buyer acceptance slash a dissenting reviewer', async () => {
     await submit(); const before = await balance(alice);
