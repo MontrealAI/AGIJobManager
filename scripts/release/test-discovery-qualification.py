@@ -724,7 +724,13 @@ def public_packet_fixture(*, served_catalog_prefix=b'', source_count=1):
     responses['actions/runs/71/artifacts?per_page=100&page=1'] = {
         'total_count': 1, 'artifacts': [responses['actions/artifacts/73']]}
     responses['actions/runs/71'].update(display_title='Recorded exact-source journey', run_number=1,
-        actor={'login': 'recorded-actor'}, triggering_actor={'login': 'recorded-trigger'})
+        actor={'login': 'recorded-actor'}, triggering_actor={'login': 'recorded-trigger'},
+        jobs_url='https://api.github.com/repos/' + m.ALPHA_REPOSITORY + '/actions/runs/71/jobs',
+        logs_url='https://api.github.com/repos/' + m.ALPHA_REPOSITORY + '/actions/runs/71/logs')
+    attempt_run = copy.deepcopy(responses['actions/runs/71'])
+    attempt_run.update(jobs_url='https://api.github.com/repos/' + m.ALPHA_REPOSITORY + '/actions/runs/71/attempts/2/jobs',
+        logs_url='https://api.github.com/repos/' + m.ALPHA_REPOSITORY + '/actions/runs/71/attempts/2/logs')
+    responses['actions/runs/71/attempts/2'] = attempt_run
     for index, step in enumerate(job['steps'], 1): step['number'] = index
     jobs_response = responses['actions/runs/71/attempts/2/jobs?per_page=100&page=1']
     jobs_response['jobs'].append({'id': 75, 'name': 'paper-scope', 'run_id': 71,
@@ -737,7 +743,7 @@ def public_packet_fixture(*, served_catalog_prefix=b'', source_count=1):
     artifacts_response['total_count'] = 2
     checkout.update(message='Recorded source commit', author={'name': 'Recorded Author'},
         committer={'name': 'Recorded Committer'}, verification={'verified': False, 'reason': 'unsigned'})
-    metadata = {'run': responses['actions/runs/71'],
+    metadata = {'run': responses['actions/runs/71/attempts/2'],
         'jobs': responses['actions/runs/71/attempts/2/jobs?per_page=100&page=1'],
         'artifacts': responses['actions/runs/71/artifacts?per_page=100&page=1'],
         'checkout-commit': checkout, 'public-commit': checkout}
@@ -829,18 +835,18 @@ class AlphaBrowserArtifactTests(unittest.TestCase):
         self.assertIn('git/commits/' + self.pin['transport']['commit'], self.downloads)
         self.assertIn('actions/runs/71/artifacts?per_page=100&page=1', self.downloads)
         self.assertNotIn('actions/artifacts/73', self.downloads)
-        self.assertEqual(result['rawTransport']['restReads'], 8)
-        self.assertEqual(len(self.downloads), 8)
+        self.assertEqual(result['rawTransport']['restReads'], 9)
+        self.assertEqual(len(self.downloads), 9)
         self.assertEqual(result['rawTransport']['immutableObjects'], len(self.raw_downloads))
 
-    def test_full_forty_one_source_packet_uses_eight_rest_reads_and_only_immutable_raw_bodies(self):
+    def test_full_forty_one_source_packet_uses_nine_rest_reads_and_only_immutable_raw_bodies(self):
         self.pin, self.files, self.raw, self.responses = public_packet_fixture(source_count=41)
         self.expected.update(alphaSourceHash=self.pin['sourceHash'], catalogSha256=self.pin['catalogSha256'])
         result = self.live()
         self.assertEqual(len(result['catalog']['sources']), 41)
-        self.assertEqual(len(self.downloads), 8)
+        self.assertEqual(len(self.downloads), 9)
         self.assertLessEqual(len(self.downloads), 12)
-        self.assertEqual(result['rawTransport']['restReads'], 8)
+        self.assertEqual(result['rawTransport']['restReads'], 9)
         self.assertEqual(result['rawTransport']['immutableObjects'], len(self.raw_downloads))
         # Repeated workspaces, source catalog and commit metadata are identical Git objects.
         self.assertLess(len(self.raw_downloads), 17 + 41 + 1)
@@ -851,7 +857,7 @@ class AlphaBrowserArtifactTests(unittest.TestCase):
         first = self.live(); reads = len(self.raw_downloads)
         second = self.live()
         self.assertEqual(first['rawTransport'], second['rawTransport'])
-        self.assertEqual(len(self.downloads), 16)
+        self.assertEqual(len(self.downloads), 18)
         self.assertEqual(len(self.raw_downloads), 2 * reads)
         self.responses['actions/runs/71']['conclusion'] = 'failure'
         with self.assertRaisesRegex(ValueError, 'workflow/run/source'): self.live()
@@ -890,16 +896,39 @@ class AlphaBrowserArtifactTests(unittest.TestCase):
         self.assertEqual(m.canonical(original), m.canonical(changed))
         self.assertNotEqual(original_raw, raw)
         self.downloads, self.raw_downloads = [], []
-        self.assertEqual(self.live()['rawTransport']['restReads'], 8)
+        self.assertEqual(self.live()['rawTransport']['restReads'], 9)
 
     def test_fresh_mutable_ancillary_observations_are_not_cached_between_authentications(self):
         self.live()
-        self.responses['actions/runs/71']['display_title'] = 'Changed live ancillary title'
+        self.responses['actions/runs/71/attempts/2']['display_title'] = 'Changed live ancillary title'
         with self.assertRaisesRegex(ValueError, 'complete metadata snapshot differs: run'): self.live()
         self.assertEqual(self.downloads.count('actions/runs/71'), 2)
+        self.assertEqual(self.downloads.count('actions/runs/71/attempts/2'), 2)
         self.assertEqual(self.downloads.count('actions/runs/71/attempts/2/jobs?per_page=100&page=1'), 2)
         self.assertEqual(self.downloads.count('actions/runs/71/artifacts?per_page=100&page=1'), 2)
-        self.assertEqual(len(self.downloads), 15)  # Second authentication refuses before its final source-tree read.
+        self.assertEqual(len(self.downloads), 17)  # Second authentication refuses before its final source-tree read.
+
+    def test_exact_attempt_snapshot_retains_full_metadata_and_latest_rerun_gate(self):
+        latest = self.responses['actions/runs/71']
+        attempt = self.responses['actions/runs/71/attempts/2']
+        self.assertIsNot(latest, attempt)
+        self.assertNotEqual(latest['jobs_url'], attempt['jobs_url'])
+        self.assertNotEqual(latest['logs_url'], attempt['logs_url'])
+        self.assertEqual(self.live()['files'], self.files)
+        self.assertLess(self.downloads.index('actions/runs/71'), self.downloads.index('actions/runs/71/attempts/2'))
+        self.assertEqual(self.downloads.count('actions/runs/71/attempts/2'), 1)
+        latest['run_attempt'] = 3
+        self.downloads, self.raw_downloads = [], []
+        with self.assertRaisesRegex(ValueError, 'workflow/run/source'):
+            self.live()
+        self.assertNotIn('actions/runs/71/attempts/2', self.downloads)
+        self.assertEqual(self.raw_downloads, [])
+        self.assertEqual(attempt['run_attempt'], 2)
+        latest['run_attempt'] = 2
+        attempt['actor']['login'] = 'changed-attempt-actor'
+        with self.assertRaisesRegex(ValueError, 'complete metadata snapshot differs: run'):
+            self.live()
+        self.assertEqual(latest['actor']['login'], 'recorded-actor')
 
     def test_both_full_live_collection_envelopes_are_complete_unique_and_bounded(self):
         for field, endpoint in [('jobs', 'actions/runs/71/attempts/2/jobs?per_page=100&page=1'),
@@ -933,7 +962,7 @@ class AlphaBrowserArtifactTests(unittest.TestCase):
         reader = unittest.mock.Mock(side_effect=AssertionError('No body before metadata qualification'))
         with self.assertRaisesRegex(ValueError, 'inventory.*jobs'):
             m.authenticate_browser_input(self.pin, api, self.expected, raw_body=reader)
-        self.assertEqual(len(calls), 3)
+        self.assertEqual(len(calls), 4)
         self.assertLessEqual(len(calls), 12)
         reader.assert_not_called()
 

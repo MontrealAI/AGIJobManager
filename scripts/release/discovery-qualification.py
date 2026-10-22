@@ -476,6 +476,8 @@ def authenticate_browser_input(binding, api, expected, *, raw_body=None):
         and run.get('repository', {}).get('full_name') == ALPHA_REPOSITORY
         and run.get('head_repository', {}).get('full_name') == ALPHA_REPOSITORY,
         'Alpha browser producer workflow/run/source is unqualified')
+    # Keep the latest-run rerun gate above; compare the retained full attempt representation below.
+    attempt_run = api(f'actions/runs/{producer["runId"]}/attempts/{producer["runAttempt"]}')
     jobs_response = api(f'actions/runs/{producer["runId"]}/attempts/{producer["runAttempt"]}/jobs?per_page=100&page=1')
     jobs = complete_browser_metadata_inventory(jobs_response, 'jobs')
     capability = [job for job in jobs if job.get('name') == 'capability']
@@ -501,7 +503,7 @@ def authenticate_browser_input(binding, api, expected, *, raw_body=None):
         and artifact.get('expired') is False and artifact.get('workflow_run', {}).get('id') == producer['runId']
         and artifact.get('workflow_run', {}).get('head_sha') == producer['headCommit'],
         'Alpha browser artifact API identity differs')
-    snapshots = {'run': run, 'jobs': jobs_response, 'artifacts': artifacts_response,
+    snapshots = {'run': attempt_run, 'jobs': jobs_response, 'artifacts': artifacts_response,
         'checkout-commit': commit, 'public-commit': commit}
     result = public_browser_packet(binding, api, owned_raw, snapshots=snapshots)
     tree = api(f'git/trees/{producer["checkoutTree"]}?recursive=1')
