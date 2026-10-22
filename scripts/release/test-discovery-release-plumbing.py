@@ -58,7 +58,9 @@ class DiscoveryPlumbing(unittest.TestCase):
             old = json.loads(previous(name)); current = json.loads((ROOT / name).read_bytes())
             with self.subTest(path=name):
                 self.assertEqual(current['version'], '1.20.0')
-                self.assertEqual(version_only(current, old), old)
+                restored = version_only(current, old)
+                PROFILE['restore_next_security_patch'](name, old, restored)
+                self.assertEqual(restored, old)
         name = 'config/usdc-deployment.json'
         old = json.loads(previous(name)); current = json.loads((ROOT / name).read_bytes())
         self.assertEqual(current['version'], '1.20.0'); self.assertEqual(version_only(current, old), old)
@@ -323,14 +325,21 @@ class QualifiedDiscoveryRebuild(unittest.TestCase):
             'subprocess': SimpleNamespace(run=build), 'root': self.root, 'verify_assets': verify_assets, 'require': require}
         with patch.dict(self.verifier['extract_browser_capsule'].__globals__,
                 {'__file__': str(self.root / 'scripts/release/verify-package.py')}):
-            old = ast.parse(previous('scripts/release/publish-release.py',
-                '1ca9ab4c0064d7f53d00e661c675fc0dda87c6f1').decode())
-            old_block = next(node for node in old.body if isinstance(node, ast.With) and any(
-                isinstance(value, ast.Constant) and value.value == 'v114-publication-rebuild-'
-                for value in ast.walk(node)))
+            old_block = copy.deepcopy(block)
+            mutations = 0
+            for call in ast.walk(old_block):
+                if (isinstance(call, ast.Call) and isinstance(call.func, ast.Subscript)
+                        and isinstance(call.func.slice, ast.Constant)
+                        and call.func.slice.value == 'extract_browser_capsule'):
+                    for keyword in list(call.keywords):
+                        if (keyword.arg == 'qualification' and isinstance(keyword.value, ast.Name)
+                                and keyword.value.id == 'config'):
+                            call.keywords.remove(keyword)
+                            mutations += 1
+            self.assertEqual(mutations, 1)
             with self.assertRaisesRegex(ValueError, 'Unexpected or missing assets'):
                 exec(compile(ast.fix_missing_locations(ast.Module(body=[old_block], type_ignores=[])),
-                    '<retained-1ca-publisher-phase-failure>', 'exec'), scope)
+                    '<candidate-only-publisher-phase-failure>', 'exec'), scope)
             self.assertEqual(len(self.package_calls), 1)
             exec(compile(ast.fix_missing_locations(ast.Module(body=[block], type_ignores=[])),
                 '<actual-publisher-qualified-rebuild>', 'exec'), scope)
