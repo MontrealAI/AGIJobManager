@@ -1,0 +1,419 @@
+--- a/prepare.py
++++ b/prepare.py
+@@ -23,8 +23,8 @@
+ RECONCILIATION_TREE = "bbd10c991be3d2d3936789e991e4f21550659580"
+ CURRENT_COMMIT = "fc25d03f689dd2ed6a9afcd92e6f380ece11a23c"
+ CURRENT_TREE = "4466eb1766169b212a7e860b9371bad41d626873"
+-TEMPLATE_SHA256 = "4298f36fd74995592617c51dd782793f22e270c75368ef66624928bbadfdb27a"
+-TEMPLATE_BYTES = 36032
++TEMPLATE_SHA256 = "91dff54f2dbd7f6644c6a3b93540c584a964af03eadfa8170e1491d2ececa213"
++TEMPLATE_BYTES = 40085
+ B_PATH = "config/discovery-release-baseline-v1.json"
+ M_PATH = "config/manager-discovery-release-v1.json"
+ V_PATH = "scripts/release/discovery-release-profile.py"
+@@ -564,7 +564,30 @@
+     ".github/workflows/discovery-lab-receiver.yml",
+     ".github/workflows/publish-discovery-v1.yml",
+ ))
+-OVERLAY_PATHS = SIX_IO | WORKFLOW_THREE | frozenset((BROWSER_PATH, SHIPPING_PATH))
++BOUNDARY_PATH = "test/buyerProtection.v095.test.js"
++FIXED_REVIEWED_OVERLAYS = {
++    "scripts/release/release_common.py": {"mode": "100644", "blob": "baddc9e4eb38f8efdfc2613e33513869513f6285", "bytes": 26690, "sha256": "3e605f02401825d01858a3e7241f8fd890c71804ebba1c1db42cfbc572c76f2a"},
++    "scripts/release/package-release.py": {"mode": "100644", "blob": "f4131a0a905d63daa76e69040be93e0a963d9b37", "bytes": 10855, "sha256": "1a98938756b49453c308ce04236058a1c69896c45f90f299c1b0a0a5388724d4"},
++    "scripts/release/verify-package.py": {"mode": "100644", "blob": "1db9e41427b297d37f09e348e0fc95703a8931a8", "bytes": 14248, "sha256": "b0d9d2058549e3ee12dbfa6fbf6c6975ce442fa7b68e6a6e227efa86e08e502d"},
++    "scripts/release/collect-qualification.py": {"mode": "100644", "blob": "8e393a049a2953a35955ada8c664054d8fb51012", "bytes": 11347, "sha256": "004c4b8fe7088f9f141300f02a05580a6f7621933ea36c213c67a93f4d126538"},
++    "scripts/release/test-discovery-release-plumbing.py": {"mode": "100644", "blob": "befa53c064025bbdb4bfbe98535198103c1c699e", "bytes": 72705, "sha256": "2dcbda151f7da7eb5085c7066ccf18a6c4e69597e0b3f23a10fc276b7d9a3074"},
++    "scripts/release/test-discovery-release-profile.py": {"mode": "100644", "blob": "b17138095b4680aa719b7b2b6198a5e50abb2c5d", "bytes": 38782, "sha256": "724a8ddebf6d948b2c73211993d91536d1fbeff11a12981f2623ef5596c7e2d7"},
++    "ui/package.json": {"mode": "100644", "blob": "3019b3a9df311e2a2638aaa063e9367ed1fe5048", "bytes": 3414, "sha256": "b9fcc3da62e16dfe4e02d70190001f183d41586148f40b942ae8c2d5f05b7cad"},
++    "ui/package-lock.json": {"mode": "100644", "blob": "39415b6c2f132fae7343a298b3ae348223216eec", "bytes": 530005, "sha256": "91c98066fa0d4f0c11c75a7a88fa3d3fab51632c4079e273ce59bde82156584b"},
++    "docs/REFERENCE/VERSIONS.md": {"mode": "100644", "blob": "d736ba418c23e68c512c0a05c5ec6677f8005894", "bytes": 1072, "sha256": "d26f3303a4ab17eda1cfcffe179c8a97b5f5b4d888de2b7d95dd79ff962fa890"},
++    BOUNDARY_PATH: {"mode": "100644", "blob": "193d372831dcc88259bff04cb9ab03e2ef6b5051", "bytes": 19212, "sha256": "a775e9100d28f73bc7259d079f0d62a0e51ee08d9bc011146724610120417a6f"},
++}
++FIXED_CORRECTION_PROVENANCE = {
++    path: "b8ff0a7df7195a0b1f132b43114422d3dfb64add"
++    for path in FIXED_REVIEWED_OVERLAYS if path != BOUNDARY_PATH
++}
++FIXED_CORRECTION_PROVENANCE[BOUNDARY_PATH] = "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710"
++UI_BASE_RECORDS = {
++    "ui/package.json": {"mode": "100644", "blob": "9af0360c06b4ffec9c474056901ab269c0f31d9a", "bytes": 3414, "sha256": "733f32d36e894adcdbf2d3da2ed12a1ef77d06622dfef3302c89dd23ea4cfd49"},
++    "ui/package-lock.json": {"mode": "100644", "blob": "dc4e014f4572c6f5e555c7c16265391e1418ac53", "bytes": 530005, "sha256": "f12a33c0135afa6487cc6b7d247e885c154e7058de2230803f3e3cc314756b2c"},
++}
++CONTEXTUAL_OVERLAYS = WORKFLOW_THREE | frozenset((BROWSER_PATH, SHIPPING_PATH))
++OVERLAY_PATHS = frozenset(FIXED_REVIEWED_OVERLAYS) | CONTEXTUAL_OVERLAYS
+ PACKAGES = (
+     "package.json", "package-lock.json", "hardhat/package.json",
+     "hardhat/package-lock.json", "ui/package.json", "ui/package-lock.json",
+@@ -748,13 +771,20 @@
+                  "Finite addition before-image differs")
+ 
+ 
++def reviewed_overlay_records(overlays):
++    record_map(overlays)
++    need(set(overlays) == OVERLAY_PATHS, "Exact reviewed contextual/final overlay set differs")
++    for path, identity in FIXED_REVIEWED_OVERLAYS.items():
++        need(overlays[path] == identity, "Fixed reviewed correction differs: " + path)
++
++
+ def source_basis_metadata(basis, current, before, overlays, trees):
+     """Validate every authority-bearing record before opening source CAS payloads."""
+     exact(basis, ("schema", "currentFinite", "finalFinite", "protected", "projections"))
+     need(basis["schema"] == "manager/externally-selected-bmv-basis/v1", "Basis schema differs")
+     record_map(current)
+     record_map(before)
+-    record_map(overlays)
++    reviewed_overlay_records(overlays)
+     need(set(current) == set(trees["current"]), "Complete current map paths differ")
+     for path, identity in current.items():
+         need({key: identity[key] for key in ("mode", "blob", "bytes")}
+@@ -764,28 +794,28 @@
+     need(len(modified) == 37 and len(added) == 47 and V_PATH in added
+          and B_PATH not in current and M_PATH not in current and SHIPPING_PATH not in current,
+          "Fixed current source delta differs")
+-    need(set(before) == modified, "Independent original37 inventory differs")
+-    for path, identity in before.items():
+-        need(git_entry(identity) == git_entry(base[path]) and identity["bytes"] == base[path]["bytes"],
+-             "Original37 record differs from original900")
+-    need(sum(item["bytes"] for item in before.values()) <= CEILINGS["totalBeforeImagesBytes"],
+-         "Original37 byte budget exceeded")
+     finite_records(basis["currentFinite"], current, base)
+     need(set(basis["currentFinite"]) == modified | (added - {V_PATH}),
+          "Current finite83 set differs")
+-    need(set(overlays) == OVERLAY_PATHS, "Exact reviewed contextual/final overlay set differs")
+     proposed = {**current, **overlays}
+     final_modified, final_added = changed_sets(base, proposed)
+-    need(final_modified == modified and final_added == added | {SHIPPING_PATH},
++    need(final_modified == modified | {BOUNDARY_PATH} and len(final_modified) == 38
++         and final_added == added | {SHIPPING_PATH},
+          "Proposed final source boundary differs")
++    need(set(before) == final_modified, "Independent original38 inventory differs")
++    for path, identity in before.items():
++        need(git_entry(identity) == git_entry(base[path]) and identity["bytes"] == base[path]["bytes"],
++             "Original38 record differs from original900")
++    need(sum(item["bytes"] for item in before.values()) <= CEILINGS["totalBeforeImagesBytes"],
++         "Original38 byte budget exceeded")
+     finite_records(basis["finalFinite"], proposed, base)
+-    need(set(basis["finalFinite"]) == modified | (final_added - {V_PATH})
+-         and len(basis["finalFinite"]) == 84, "Externally selected final finite84 differs")
+-    unchanged = {path for path in base if path not in modified}
++    need(set(basis["finalFinite"]) == final_modified | (final_added - {V_PATH})
++         and len(basis["finalFinite"]) == 85, "Externally selected final finite85 differs")
++    unchanged = {path for path in base if path not in final_modified}
+     protected = basis["protected"]
+     need(type(protected) is dict and set(protected) == unchanged | NATIVE_TEN | V2_FOUR
+-         and len(protected) == 1590 and not set(protected) & modified,
+-         "New1590 protected selection differs")
++         and len(protected) == 1589 and not set(protected) & final_modified,
++         "New1589 protected selection differs")
+     need(not set(overlays) & set(protected), "Overlay changes a protected path")
+     for path, item in protected.items():
+         exact(item, ("identity", "anchor"))
+@@ -799,14 +829,14 @@
+              and item["identity"]["bytes"] == original[path]["bytes"]
+              and item["identity"] == current[path] == proposed[path],
+              "Protected fixed provenance or raw identity differs")
+-    need(type(basis["projections"]) is dict and set(basis["projections"]) == modified,
++    need(type(basis["projections"]) is dict and set(basis["projections"]) == final_modified,
+          "Every modified path requires an external projection")
+     for path, edits in basis["projections"].items():
+         projection_metadata(edits, before[path]["bytes"])
+     historical_aliases({p: git_entry(r) for p, r in base.items()},
+                        {p: git_entry(r) for p, r in current.items()},
+                        {p: git_entry(r) for p, r in proposed.items()})
+-    return proposed, modified
++    return proposed, final_modified
+ 
+ 
+ def verify_corpus_bytes(current, before, overlays, basis, trees, payloads):
+@@ -842,8 +872,15 @@
+ def validate_package_invariants(original_text, proposed, payloads):
+     for path in (*PACKAGES, "config/usdc-deployment.json"):
+         need(path in original_text, "Version-only original is missing")
+-        old = strict_json(original_text[path].encode("utf8"))
+-        after = strict_json(payloads[proposed[path]["blob"]])
++        old_raw = original_text[path].encode("utf8")
++        after_raw = payloads[proposed[path]["blob"]]
++        if path in UI_BASE_RECORDS:
++            matches(old_raw, UI_BASE_RECORDS[path])
++            need(proposed[path] == FIXED_REVIEWED_OVERLAYS[path],
++                 "UI dependency correction record differs")
++            matches(after_raw, FIXED_REVIEWED_OVERLAYS[path])
++        old = strict_json(old_raw)
++        after = strict_json(after_raw)
+         need(type(old) is dict and type(after) is dict and after.get("version") == "1.20.0",
+              "Software version label differs")
+         after["version"] = old.get("version")
+@@ -852,7 +889,8 @@
+                  and after["packages"][""].get("version") == "1.20.0",
+                  "Lock root version differs")
+             after["packages"][""]["version"] = old["packages"][""]["version"]
+-        need(same_json(old, after), "Dependency/command/compiler/deployment authority changed")
++        if path not in UI_BASE_RECORDS:
++            need(same_json(old, after), "Dependency/command/compiler/deployment authority changed")
+ 
+ 
+ ALPHA_REPOSITORY = "MontrealAI/AGI-Alpha-Agent-v0"
+@@ -1346,8 +1384,8 @@
+     entries = dict(proposed)
+     entries.update({path: identify(raw) for path, raw in outputs.items()})
+     root, tree_objects = git_tree({path: git_entry(item) for path, item in entries.items()})
+-    need(len(entries) == 1663 and len(basis["finalFinite"]) == 84
+-         and len(basis["protected"]) == 1590, "Proposed packet count invariant differs")
++    need(len(entries) == 1663 and len(basis["finalFinite"]) == 85
++         and len(basis["protected"]) == 1589, "Proposed packet count invariant differs")
+     output_identities = {path: identify(raw) for path, raw in outputs.items()}
+     receipt = {
+         "schema": "manager/prepared-unapproved-receipt/v1",
+@@ -1364,8 +1402,8 @@
+             "projectionsSha256": sha256(canonical_json(basis["projections"])),
+         },
+         "counts": {"currentLeaves": 1660, "proposedLeaves": len(entries),
+-                   "finiteModified": 37, "finiteAdded": 47, "finiteTotal": 84,
+-                   "separateControls": 3, "protected": 1590, "proposedTreeObjects": len(tree_objects)},
++                   "finiteModified": 38, "finiteAdded": 47, "finiteTotal": 85,
++                   "separateControls": 3, "protected": 1589, "proposedTreeObjects": len(tree_objects)},
+         "outputs": output_identities,
+         "proposedTree": root,
+         "proposedLogicalBytes": sum(item["bytes"] for item in entries.values()),
+--- a/test_prepare.py
++++ b/test_prepare.py
+@@ -1,4 +1,4 @@
+-"""Twenty-six tiny OWNED-DATA tests for the new external preparation implementation.
++"""Owned-data policy tests for the new external preparation implementation.
+ 
+ These tests import only the newly authored sibling prepare.py. They never import
+ a captured repository module, execute a generated verifier, invoke Git/processes,
+@@ -336,9 +336,18 @@
+         with self.assertRaises(P.Refusal):
+             capture.recheck()
+ 
+-    def test_18_version_only_package_and_deployment_invariants(self):
++    def package_fixture(self):
+         originals, proposed, payloads = {}, {}, {}
+         for path in (*P.PACKAGES, "config/usdc-deployment.json"):
++            if path in P.UI_BASE_RECORDS:
++                old_raw = (MODULE_PATH.parent / "fixtures/base" / path).read_bytes()
++                raw = (MODULE_PATH.parent / "fixtures/after" / path).read_bytes()
++                P.matches(old_raw, P.UI_BASE_RECORDS[path])
++                P.matches(raw, P.FIXED_REVIEWED_OVERLAYS[path])
++                originals[path] = old_raw.decode("utf8")
++                proposed[path] = P.identify(raw)
++                payloads[proposed[path]["blob"]] = raw
++                continue
+             before = {"version": "1.19.6", "settings": {"unchanged": "yes"}}
+             after = {"version": "1.20.0", "settings": {"unchanged": "yes"}}
+             if path.endswith("package-lock.json"):
+@@ -348,6 +357,10 @@
+             raw = json.dumps(after).encode()
+             proposed[path] = P.identify(raw)
+             payloads[proposed[path]["blob"]] = raw
++        return originals, proposed, payloads
++
++    def test_18_version_only_package_and_deployment_invariants(self):
++        originals, proposed, payloads = self.package_fixture()
+         P.validate_package_invariants(originals, proposed, payloads)
+         path = "config/usdc-deployment.json"
+         raw = b'{"version":"1.20.0","settings":{"unchanged":"changed"}}'
+@@ -446,8 +459,8 @@
+         proposed = {"data/" + str(i) + ".txt": P.identify(b"x") for i in range(1659)}
+         proposed[P.V_PATH] = P.identify(b"empty-template")
+         proposed["hardhat/contracts"] = P.identify(b"../contracts", "120000")
+-        basis = {"currentFinite": {}, "finalFinite": {str(i): {} for i in range(84)},
+-                 "protected": {str(i): {} for i in range(1590)}, "projections": {}}
++        basis = {"currentFinite": {}, "finalFinite": {str(i): {} for i in range(85)},
++                 "protected": {str(i): {} for i in range(1589)}, "projections": {}}
+         args = (outputs, proposed, basis, {"bytes": 1, "sha256": "0" * 64}, {}, {})
+         raw = P.make_packet(*args)
+         self.assertEqual(raw, P.make_packet(*args))
+@@ -456,6 +469,9 @@
+         self.assertEqual(packet["receipt"]["flags"], P.FALSE_FLAGS)
+         self.assertTrue(all(value is False for value in packet["receipt"]["flags"].values()))
+         self.assertEqual(packet["receipt"]["counts"]["proposedLeaves"], 1663)
++        self.assertEqual({name: packet["receipt"]["counts"][name]
++                          for name in ("finiteModified", "finiteAdded", "finiteTotal", "protected")},
++                         {"finiteModified": 38, "finiteAdded": 47, "finiteTotal": 85, "protected": 1589})
+         self.assertNotIn("packetSha256", packet["receipt"])
+         self.assertEqual(set(packet["files"]), P.CONTROLS)
+         self.assertEqual(proposed["hardhat/contracts"]["mode"], "120000")
+@@ -505,5 +521,182 @@
+                         self.assertEqual(list(root.iterdir()), [])
+ 
+ 
++    def test_27_fixed_reviewed_overlay_identities_and_exact_paths(self):
++        self.assertEqual(set(P.FIXED_REVIEWED_OVERLAYS), P.SIX_IO | set(P.UI_BASE_RECORDS)
++                         | {"docs/REFERENCE/VERSIONS.md", P.BOUNDARY_PATH})
++        self.assertEqual(len(P.FIXED_REVIEWED_OVERLAYS), 10)
++        self.assertEqual(len(P.CONTEXTUAL_OVERLAYS), 5)
++        self.assertEqual(len(P.OVERLAY_PATHS), 15)
++        overlays = {**P.FIXED_REVIEWED_OVERLAYS,
++                    **{path: P.identify(b"owned contextual data") for path in P.CONTEXTUAL_OVERLAYS}}
++        P.reviewed_overlay_records(overlays)
++        for path in P.FIXED_REVIEWED_OVERLAYS:
++            self.assertEqual(P.FIXED_CORRECTION_PROVENANCE[path],
++                "1905fbe1dae8c98ed8e7e5ca55aa29e12f8c5710" if path == P.BOUNDARY_PATH
++                else "b8ff0a7df7195a0b1f132b43114422d3dfb64add")
++            for key, value in (("mode", "100755"), ("blob", "0" * 40),
++                               ("bytes", overlays[path]["bytes"] + 1), ("sha256", "0" * 64)):
++                broken = {name: dict(record) for name, record in overlays.items()}
++                broken[path][key] = value
++                with self.subTest(path=path, field=key), self.assertRaises(P.Refusal):
++                    P.reviewed_overlay_records(broken)
++        for changed in ({path: row for path, row in overlays.items() if path != P.BOUNDARY_PATH},
++                        {**overlays, P.V_PATH: P.identify(b"arbitrary verifier")},
++                        {**overlays, "unreviewed/runtime.py": P.identify(b"arbitrary source")}):
++            with self.assertRaises(P.Refusal):
++                P.reviewed_overlay_records(changed)
++
++    def scope_fixture(self):
++        old_io = P.SIX_IO - {"scripts/release/test-discovery-release-plumbing.py",
++                             "scripts/release/test-discovery-release-profile.py"}
++        modified = set(P.PACKAGES) | {"config/usdc-deployment.json", "docs/REFERENCE/VERSIONS.md",
++                                     ".github/workflows/current-state-release.yml"} | old_io
++        modified.update("data/modified-" + str(index) + ".txt" for index in range(37 - len(modified)))
++        aliases = {"docs/AGIJOBMANAGER.md", "docs/AGIJobManager.md", "docs/ARCHITECTURE.md",
++                   "docs/architecture.md", "docs/CONTRACTS/AGIJobManager.md",
++                   "docs/contracts/AGIJobManager.md", "docs/TESTING.md", "docs/Testing.md",
++                   "docs/DEPLOYMENT/a.md", "docs/deployment/b.md"}
++        base_paths = modified | aliases | {P.BOUNDARY_PATH}
++        base_paths.update("data/protected-" + str(index) + ".txt" for index in range(1613 - len(base_paths)))
++        base = {path: P.identify(("owned base " + path).encode()) for path in base_paths}
++        current = dict(base)
++        current.update({path: P.identify(("owned current " + path).encode()) for path in modified})
++        added = P.NATIVE_TEN | P.V2_FOUR | {P.V_PATH, P.BROWSER_PATH,
++            ".github/workflows/discovery-lab-receiver.yml", ".github/workflows/publish-discovery-v1.yml",
++            "scripts/release/test-discovery-release-plumbing.py", "scripts/release/test-discovery-release-profile.py"}
++        added = set(added) | {"owned-added/path-" + str(index) + ".txt" for index in range(47 - len(added))}
++        current.update({path: P.identify(("owned addition " + path).encode()) for path in added})
++        overlays = {**P.FIXED_REVIEWED_OVERLAYS,
++                    **{path: P.identify(("owned contextual " + path).encode()) for path in P.CONTEXTUAL_OVERLAYS}}
++        proposed = {**current, **overlays}
++        final_modified = modified | {P.BOUNDARY_PATH}
++        before = {path: base[path] for path in final_modified}
++        def finite(paths, records):
++            return {path: {"status": "M" if path in base else "A",
++                           "before": P.git_entry(base[path]) if path in base else None,
++                           "after": records[path], "reason": "Owned metadata policy fixture"} for path in paths}
++        protected_paths = (set(base) - final_modified) | P.NATIVE_TEN | P.V2_FOUR
++        basis = {"schema": "manager/externally-selected-bmv-basis/v1",
++                 "currentFinite": finite(modified | (added - {P.V_PATH}), current),
++                 "finalFinite": finite(final_modified | ((added | {P.SHIPPING_PATH}) - {P.V_PATH}), proposed),
++                 "protected": {path: {"identity": current[path], "anchor":
++                    P.BASE_COMMIT if path in base else P.FEATURE_COMMIT if path in P.NATIVE_TEN
++                    else P.RECONCILIATION_COMMIT} for path in protected_paths},
++                 "projections": {path: [] for path in final_modified}}
++        def tree(records):
++            return {path: {key: record[key] for key in ("mode", "blob", "bytes")}
++                    for path, record in records.items()}
++        trees = {"base": tree(base), "current": tree(current),
++                 "feature": tree({path: current[path] for path in P.NATIVE_TEN}),
++                 "reconciliation": tree({path: current[path] for path in P.V2_FOUR})}
++        return basis, current, before, overlays, trees
++
++    def test_28_only_boundary_moves_to_final_scope_with_original38(self):
++        basis, current, before, overlays, trees = self.scope_fixture()
++        proposed, modified = P.source_basis_metadata(basis, current, before, overlays, trees)
++        self.assertEqual(len(P.changed_sets(trees["base"], current)[0]), 37)
++        self.assertEqual(len(basis["currentFinite"]), 83)
++        self.assertEqual(len(modified), 38)
++        self.assertEqual(len(before), 38)
++        self.assertEqual(len(basis["finalFinite"]), 85)
++        self.assertEqual(len(basis["protected"]), 1589)
++        self.assertNotIn(P.BOUNDARY_PATH, basis["currentFinite"])
++        self.assertIn(P.BOUNDARY_PATH, basis["finalFinite"])
++        self.assertNotIn(P.BOUNDARY_PATH, basis["protected"])
++        self.assertEqual(modified - P.changed_sets(trees["base"], current)[0], {P.BOUNDARY_PATH})
++        self.assertEqual(set(proposed), set(current) | {P.SHIPPING_PATH})
++        with self.assertRaisesRegex(P.Refusal, "original38"):
++            P.source_basis_metadata(basis, current,
++                {path: row for path, row in before.items() if path != P.BOUNDARY_PATH}, overlays, trees)
++        broken = {path: dict(row) for path, row in before.items()}
++        broken[P.BOUNDARY_PATH]["bytes"] += 1
++        with self.assertRaises(P.Refusal):
++            P.source_basis_metadata(basis, current, broken, overlays, trees)
++        broken_basis = {**basis, "projections": {path: row for path, row in basis["projections"].items()
++                                               if path != P.BOUNDARY_PATH}}
++        with self.assertRaisesRegex(P.Refusal, "projection"):
++            P.source_basis_metadata(broken_basis, current, before, overlays, trees)
++
++    def test_29_all_other_protected_bytes_and_anchors_are_retained(self):
++        basis, current, before, overlays, trees = self.scope_fixture()
++        protected = basis["protected"]
++        self.assertEqual(sum(row["anchor"] == P.BASE_COMMIT for row in protected.values()), 1575)
++        self.assertEqual(sum(row["anchor"] == P.FEATURE_COMMIT for row in protected.values()), 10)
++        self.assertEqual(sum(row["anchor"] == P.RECONCILIATION_COMMIT for row in protected.values()), 4)
++        sample = [next(path for path, row in protected.items() if row["anchor"] == anchor)
++                  for anchor in (P.BASE_COMMIT, P.FEATURE_COMMIT, P.RECONCILIATION_COMMIT)]
++        for path in sample:
++            for change in ("identity", "anchor", "drop"):
++                broken = {name: {"identity": dict(row["identity"]), "anchor": row["anchor"]}
++                          for name, row in protected.items()}
++                if change == "identity":
++                    broken[path]["identity"]["sha256"] = "0" * 64
++                elif change == "anchor":
++                    broken[path]["anchor"] = "0" * 40
++                else:
++                    broken.pop(path)
++                with self.subTest(path=path, change=change), self.assertRaises(P.Refusal):
++                    P.source_basis_metadata({**basis, "protected": broken}, current, before, overlays, trees)
++        broader = {**overlays, sample[0]: P.identify(b"unreviewed protected replacement")}
++        with self.assertRaises(P.Refusal):
++            P.source_basis_metadata(basis, current, before, broader, trees)
++
++    def test_30_only_exact_UI_bytes_and_other_package_authority_remain(self):
++        for path in P.UI_BASE_RECORDS:
++            for change in ("old-padding", "new-padding", "dependency", "command", "mode"):
++                originals, proposed, payloads = self.package_fixture()
++                if change == "old-padding":
++                    originals[path] += " "
++                elif change == "mode":
++                    proposed[path] = {**proposed[path], "mode": "100755"}
++                else:
++                    raw = payloads[proposed[path]["blob"]]
++                    if change == "new-padding":
++                        raw += b" "
++                    else:
++                        value = json.loads(raw)
++                        root = value["packages"][""] if path.endswith("package-lock.json") else value
++                        if change == "dependency":
++                            root["dependencies"]["react"] = "19.0.0"
++                        else:
++                            root.setdefault("scripts", {})["build"] = "echo unreviewed"
++                        raw = json.dumps(value).encode()
++                    proposed[path] = P.identify(raw)
++                    payloads[proposed[path]["blob"]] = raw
++                with self.subTest(path=path, change=change), self.assertRaises(P.Refusal):
++                    P.validate_package_invariants(originals, proposed, payloads)
++        for path in set(P.PACKAGES) - set(P.UI_BASE_RECORDS):
++            originals, proposed, payloads = self.package_fixture()
++            value = json.loads(payloads[proposed[path]["blob"]])
++            value["devDependencies"] = {"solc": "0.9.0"}
++            raw = json.dumps(value).encode()
++            proposed[path] = P.identify(raw)
++            payloads[proposed[path]["blob"]] = raw
++            with self.subTest(path=path), self.assertRaises(P.Refusal):
++                P.validate_package_invariants(originals, proposed, payloads)
++
++    def test_31_new_template_pin_and_original_fixed_facts_remain(self):
++        raw = (MODULE_PATH.parent / "fixtures/reviewed-template.py.txt").read_bytes()
++        self.assertEqual(len(raw), 40085)
++        self.assertEqual(P.sha256(raw), "91dff54f2dbd7f6644c6a3b93540c584a964af03eadfa8170e1491d2ececa213")
++        self.assertEqual(P.git_blob(raw), "ae0fd95636225d39133bd85da103e388b9debeb6")
++        self.assertEqual(raw.count(P.FROZEN_BLOCK.encode()), 1)
++        self.assertEqual((P.TEMPLATE_BYTES, P.TEMPLATE_SHA256), (len(raw), P.sha256(raw)))
++        for invalid in (raw + b"\n", b" " * len(raw), b" " * 36032):
++            with self.assertRaisesRegex(P.Refusal, "template pin"):
++                P.render_bmv(invalid, {}, {}, {}, {})
++        old_tree = ast.parse((MODULE_PATH.parent / "before/prepare.py").read_text())
++        new_tree = ast.parse(MODULE_PATH.read_text())
++        names = {"BASE_COMMIT", "BASE_TREE", "FEATURE_COMMIT", "FEATURE_TREE", "RECONCILIATION_COMMIT",
++                 "RECONCILIATION_TREE", "CURRENT_COMMIT", "CURRENT_TREE", "API_ROLE_FACTS"}
++        def facts(tree):
++            return {node.targets[0].id: ast.dump(node.value, include_attributes=False)
++                    for node in tree.body if isinstance(node, ast.Assign) and len(node.targets) == 1
++                    and isinstance(node.targets[0], ast.Name) and node.targets[0].id in names}
++        self.assertEqual(facts(old_tree), facts(new_tree))
++        self.assertEqual(len(P.API_ROLE_FACTS), 9)
++        self.assertEqual(P.CURRENT_COMMIT, "fc25d03f689dd2ed6a9afcd92e6f380ece11a23c")
++
++
+ if __name__ == "__main__":
+     unittest.main(verbosity=2)

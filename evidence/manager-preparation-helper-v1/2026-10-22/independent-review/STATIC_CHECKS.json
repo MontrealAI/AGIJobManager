@@ -1,0 +1,35 @@
+{
+  "sourceIdentities": {
+    "prepare.py": {
+      "bytes": 90481,
+      "sha256": "e1c6fddec78b377e6781730e6a421923af269465856e95cd369440f8fcbd3792",
+      "gitBlob": "7b25f8d317d6a2d7210fba1ea869610523628e63"
+    },
+    "test_prepare.py": {
+      "bytes": 46197,
+      "sha256": "fa9e79309d9e4200649c31e468ee767dfcda9eafb4e61a43e20bc44cdcc6ddb5",
+      "gitBlob": "3e7630af437ed0d0652eb3be04ed5c0ce9438ec5"
+    },
+    "FREEZE_INVENTORY.json": {
+      "bytes": 10929,
+      "sha256": "ef5df4c6903da5b5e74cf4259787e968e0927ef90d6e89eeaa6c4f7cf8f22581",
+      "gitBlob": "99311bd08a905b5ba5bd32d7db5dcadfd1ebb50f"
+    }
+  },
+  "allFrozenFilesVerified": 47,
+  "changedFixedRecordPaths": [
+    "scripts/release/test-discovery-release-plumbing.py",
+    "scripts/release/verify-package.py"
+  ],
+  "allOwnHelperFunctionASTsUnchanged": 67,
+  "previousTestMethods": 32,
+  "unchangedPriorTestMethodASTs": 30,
+  "changedTestMethods": [
+    "test_27_fixed_reviewed_overlay_identities_and_exact_paths",
+    "test_32_exact_UI_guide_overlay_already_within_modified_scope"
+  ],
+  "newTestMethods": [
+    "test_33_only_two_reviewed_capture_records_change_with_policy_gates_preserved"
+  ],
+  "independentCopyExact": true
+}

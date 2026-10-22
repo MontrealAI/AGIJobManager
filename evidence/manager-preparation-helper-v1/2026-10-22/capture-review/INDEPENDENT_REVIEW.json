@@ -1,0 +1,98 @@
+{
+  "result": "No concrete finding in amended inert constant capture.",
+  "newCapture": "/workspace/scratch/475a997acac1/manager-constant-input-capture-browser-fix-20261022",
+  "oldCapture": "/workspace/scratch/475a997acac1/manager-constant-input-capture-20261022",
+  "identities": {
+    "CURRENT_RECORDS.json": {
+      "bytes": 379204,
+      "sha256": "5223bf5674f1c69e798b07b2485c06eaafd30553a81e80933b129d85fbeef868"
+    },
+    "ORIGINAL_BEFORE_RECORDS.json": {
+      "bytes": 8344,
+      "sha256": "904b8e8c138014debddb2cd800424a6e576635417a51fd42a002d635cb889e66"
+    },
+    "EMPTY_TEMPLATE_REF.json": {
+      "bytes": 476,
+      "sha256": "885e0334852a6f484bba11481a2754ab8b28fa7ff37cd586b423ca5df4f8291a"
+    },
+    "FIXED_REVIEWED_RECORDS.json": {
+      "bytes": 2464,
+      "sha256": "cb52ede23d917f5c0d13d302289b38086b45727ba2e06cf3c5b3287b4bb47f30"
+    },
+    "CAS_INVENTORY.json": {
+      "bytes": 254488,
+      "sha256": "296fe87340d05dc985b480916f06d87b6b2173f8d9b71bca6a00d20885db4164"
+    },
+    "CAPTURE_REFS.json": {
+      "bytes": 6116,
+      "sha256": "6e80c036ec8d9c78a16e64cfd027ef967f75fae729468a8f6b6f5f12229bb3ba"
+    },
+    "CAPTURE_REPORT.json": {
+      "bytes": 6106,
+      "sha256": "3e7a1655ef412b5d0b77e70e0e604a702d3b19344b606cc65a15a53811c26537"
+    },
+    "FREEZE_INVENTORY.json": {
+      "bytes": 275550,
+      "sha256": "a907e3c4a359c3e2734c261f16ef999fe30db8bb8a6f8688863febcfac7a9792"
+    }
+  },
+  "verified": {
+    "oldAndNewFreezeFileHashChecksEach": 1669,
+    "currentBeforeAndEmptyTemplateRefsByteIdentical": true,
+    "fixedPaths": 11,
+    "onlyChangedFixedPaths": [
+      "scripts/release/test-discovery-release-plumbing.py",
+      "scripts/release/verify-package.py"
+    ],
+    "otherFixedRecordsExact": 9,
+    "casRemoved": [
+      "1db9e41427b297d37f09e348e0fc95703a8931a8",
+      "befa53c064025bbdb4bfbe98535198103c1c699e"
+    ],
+    "casAdded": [
+      "f5123723938915e2152cc944a3acd7cf7a043fe1",
+      "fd8685ed9bb0fc4a3e4b6729dc2c7cbecedefed5"
+    ],
+    "commonCasBodiesByteIdentical": 1660,
+    "uniqueCasBlobs": 1662,
+    "casBytes": 50653368,
+    "deltaBytes": 1644,
+    "currentRecords": 1660,
+    "originalBeforeRecords": 38,
+    "templateBytes": 40085,
+    "allMapRecordBodiesGitBlobLengthSha256Checked": true,
+    "casExactClosure": true,
+    "freshPublic0dBodiesMatchBothNewBlobs": true,
+    "caseAliasGroupsRemainVirtual": [
+      [
+        "docs/AGIJOBMANAGER.md",
+        "docs/AGIJobManager.md"
+      ],
+      [
+        "docs/ARCHITECTURE.md",
+        "docs/architecture.md"
+      ],
+      [
+        "docs/CONTRACTS/AGIJobManager.md",
+        "docs/contracts/AGIJobManager.md"
+      ],
+      [
+        "docs/TESTING.md",
+        "docs/Testing.md"
+      ]
+    ],
+    "allPhysicalFilesRegular0600Directories0700": true,
+    "oldCaptureUnchanged": true
+  },
+  "notRun": [
+    "Captured source import or execution",
+    "Source path or physical alias materialization",
+    "Final Alpha or UI packet selection",
+    "Final basis/projections/contextual overlays/BMV generation",
+    "Source application",
+    "Native/custody/product/restricted probes",
+    "Builds/tests",
+    "Public source/pin/merge/release changes"
+  ],
+  "scope": "Data/hash-only independent readback; no author directory writes."
+}

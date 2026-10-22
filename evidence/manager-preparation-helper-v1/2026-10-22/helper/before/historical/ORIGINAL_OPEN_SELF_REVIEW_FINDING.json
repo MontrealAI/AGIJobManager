@@ -1,0 +1,13 @@
+{
+  "schema": "manager/new-preparer-open-self-finding/v1",
+  "id": "PREPARER-LATE-CLOSURE-1",
+  "state": "OPEN_CURRENT_SOURCE_PRESERVED",
+  "finding": "Capture.recheck checks observed leaf snapshots and capture-root metadata, but an extra file introduced inside an existing cas/ or meta/ directory after initial closure need not change root mtime or existing leaves. Complete input-closure promise is therefore not fully repeated at pre-stage/pre-link checks.",
+  "effect": "Only previously captured authenticated bytes reach prospective output; this is an input-closure validation gap, not a source apply or execution capability.",
+  "proposedRepair": "Re-run the same bounded exact closure during every late capture recheck, including before stage and before exclusive final link; preserve explicit expected locator set.",
+  "requiredNegative": "Owned fixture adds an extra leaf inside an existing captured subdirectory after initial closure; late recheck must refuse before final packet link.",
+  "repairApplied": false,
+  "testsRun": false,
+  "finalGeneration": "NOT_RUN",
+  "allApprovalFlagsFalse": true
+}

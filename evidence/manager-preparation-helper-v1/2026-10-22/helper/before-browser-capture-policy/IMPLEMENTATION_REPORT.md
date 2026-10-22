@@ -1,0 +1,9 @@
+# Manager helper exact UI guide extension
+
+The previous ten-overlay policy remains frozen in its original directory and is copied under before-policy. This extension adds only the exact reviewed docs/ui/VERSIONS.md after-image as the eleventh fixed correction. Its recorded source is normal #1620 child88b14a5b. The helper implementation delta is one fixed raw identity and its provenance override; no broader doc or dependency exception exists.
+
+A fresh complete original900/fc25 tree comparison confirms that this guide was already among the37 modified current paths. Counts remain current37/83, final38/85 and protected1,589 (1,575 unchanged900 +10native +4v2). The boundary fixture remains the only new modified input and only protected-to-finite movement. Template, nine public facts, ten earlier fixed corrections, contextual rules, byte/projection checks and all approval flags remain unchanged.
+
+The32 owned-data tests pass. Thirty prior31 test-method ASTs remain unchanged; test27 admits the exact eleventh identity while retaining its rejection subcases. The synthetic metadata fixture now includes this already-modified guide within the existing37 paths. Newtest32 checks inert before/after bytes, one-row reversal, unchanged scope/protection counts and preserved previous constants/overlay records. An initial new-test AST literal-evaluation error is retained; changing that test to static AST equality resolves it without changing helper implementation.
+
+This is an isolated preparation-tool amendment pending independent review. The source corpus, actual final B/M/V generation, generated verifier execution, accepted Alpha/common17 selection, native/custody/product probes, source application, public merge/release and publication remain NOT_RUN. All approval and qualification flags remain false.

@@ -1,0 +1,82 @@
+{
+  "schema": "manager/helper-ui-guide-policy-independent-review/v1",
+  "reviewedDirectory": "/workspace/scratch/475a997acac1/manager-helper-ui-guide-policy-20261022",
+  "findings": [],
+  "result": "No concrete finding in narrow exact UI-guide policy amendment.",
+  "identities": {
+    "prepare.py": {
+      "bytes": 90244,
+      "sha256": "05d4618c7d2dab2e831621ac7033cbc1cb6a5d0e605fcfbe19b787d3e648328e",
+      "gitBlob": "db18a59692912376ec401caa8c8eb7d8ae26cbd1"
+    },
+    "test_prepare.py": {
+      "bytes": 43260,
+      "sha256": "6a43a8c36d65e0be6e0a2dc0308079b3295a1f320e97c44deae50c38e78d1cbd",
+      "gitBlob": "b8b3bd5c3909f19d7f41fadcf0e0f6ceba7cc10a"
+    },
+    "FREEZE_INVENTORY.json": {
+      "bytes": 8758,
+      "sha256": "d4fca7ecf129506c2729c18124bb2d52a6e6031df1453ef8bb8f0e12b7c5810b",
+      "gitBlob": "3f50480a44e94b921ee8a7a55bda2bae7002e8ee"
+    },
+    "POLICY_CONTRACT.json": {
+      "bytes": 20660,
+      "sha256": "783ddf7c3576c0eb4d294c938d806eefad00493716259df6ae33a367814785fb",
+      "gitBlob": "76b5a6828ff92281681acd8d9afba40fef13cc26"
+    }
+  },
+  "verified": {
+    "all38FrozenFilesMatchBeforeAndAfterIndependentCopyRun": true,
+    "exactSourceDelta": "Only one exact fixed doc identity plus one provenance override; removing those two added lines restores previous89,957-byte helper exactly.",
+    "earlierPolicyBeforeImagesExact": true,
+    "allEarlierTenRecordsTemplateNineFactsContextualRulesAndGatesExact": true,
+    "publicAfterFixtureByteEquality": "Fetched exact88b14a5b docs/ui/VERSIONS.md matches afterfixture; exactb8ff oldguide matches beforefixture.",
+    "guideChange": "One Next15.5.27\u219215.5.28 row; timestamp and other bytes preserved.",
+    "sourceScope": "Independent complete immutable900/fc25 connector tree cache confirms37modified47added0removed; docs/ui/VERSIONS.md is already modified and finite.",
+    "scopeCounts": {
+      "currentModified": 37,
+      "currentFinite": 83,
+      "finalModified": 38,
+      "finalFinite": 85,
+      "protected": 1589,
+      "unchanged900Protected": 1575,
+      "nativeProtected": 10,
+      "v2Protected": 4
+    },
+    "onlyNewModifiedAndProtectedMovement": "test/buyerProtection.v095.test.js",
+    "overlays": {
+      "fixed": 11,
+      "contextual": 5,
+      "total": 16
+    },
+    "priorTestMethods": 31,
+    "unchangedPriorTestMethodASTs": 30,
+    "changedPriorTestMethods": [
+      "test_27_fixed_reviewed_overlay_identities_and_exact_paths"
+    ],
+    "newTestMethods": [
+      "test_32_exact_UI_guide_overlay_already_within_modified_scope"
+    ],
+    "fixtureHelperChange": "Adds already-modified guide path and removes one generic filler within the same37fixturemodified paths.",
+    "ownedDataTests": {
+      "collected": 32,
+      "passed": 32,
+      "seconds": 0.739,
+      "copiedExactModuleAndFixtures": true,
+      "capturedOrGeneratedCodeExecuted": false
+    },
+    "authorDirectoryUnchanged": true,
+    "flags": {
+      "sourceReviewed": false,
+      "releaseQualified": false,
+      "publicationApproved": false,
+      "executionApproved": false,
+      "nativeExecutionQualified": false
+    }
+  },
+  "limitations": [
+    "Review covers the exact narrow amendment and preserved earlier policy; all actual final-input acceptance/generation remains NOT_RUN.",
+    "Only newly authored helper module and owned inert fixtures executed in a separate exact copy; captured repository modules, generated verifiers, Git/native/custody/product probes were not executed.",
+    "No final Alpha/common17 selection, source application, public merge/release/pin or publication performed."
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "schema": "manager/new-data-preparer-implementation-contract/v1",
+  "state": "NEW_CODE_AND_OWNED_TESTS_PENDING_EXECUTION_AND_INDEPENDENT_REVIEW",
+  "sourceOrigin": "Newly authored after RAM loss; no recovered old helper source or old test approval.",
+  "fixedRepository": "MontrealAI/AGIJobManager",
+  "fixedCurrent": {
+    "commit": "fc25d03f689dd2ed6a9afcd92e6f380ece11a23c",
+    "tree": "4466eb1766169b212a7e860b9371bad41d626873"
+  },
+  "selectionBootstrap": {
+    "argv": [
+      "--selection",
+      "--selection-bytes",
+      "--selection-sha256"
+    ],
+    "authority": "Out-of-band root-selected exact raw bytes/SHA. Presence is preparation selection, never an approval flag.",
+    "selectionKeys": [
+      "schema",
+      "repository",
+      "currentCommit",
+      "currentTree",
+      "captureRoot",
+      "inputs",
+      "output",
+      "forbiddenRoots",
+      "limits"
+    ]
+  },
+  "inputs": {
+    "originals": "Exactly nine fixed role/URL/raw SHA/byte identities. Full original GitData facts and every subtree/root are checked; no signed-commit-SHA serialization claim.",
+    "template": "Exact36032-byte SHA4298f36f empty template as inert bytes only.",
+    "current_map": "Complete1660 map path->{mode,blob,bytes,sha256}.",
+    "before": "Exactly37 independent original900 modified-path bodies; complete full original1613 entries remain B.entries.",
+    "basis": {
+      "keys": [
+        "schema",
+        "currentFinite",
+        "finalFinite",
+        "protected",
+        "projections"
+      ],
+      "currentFinite": 83,
+      "finalFinite": 84,
+      "protected": 1590,
+      "newProtectedRule": "1576 unchanged900 +native10@68 +v2four@3b7. Counts alone convey no authority; exact original/current/before/after/provenance maps required.",
+      "projections": "Root-reviewed ascending nonoverlapping Python Unicode-codepoint edits, before+after exact text; forward and inverse required."
+    },
+    "overlays": "Exactly6 bounded-I/O paths +3 Alpha checkout-ref workflows +browser binding +genuine new shipping pin; already-selected protected paths cannot be overlaid.",
+    "final": {
+      "keys": [
+        "schema",
+        "acceptedAlphaCommit",
+        "alpha",
+        "packet",
+        "shipping",
+        "browser",
+        "snapshots",
+        "workflowEdits"
+      ],
+      "producer": "Exact original main push, runAttempt1, head==checkout==externally accepted Alpha40SHA.",
+      "alpha": "Complete full public tree metadata +required catalog/native/inspector/license/page raw closure; no full Alpha raw/ordinary Git proof claim.",
+      "packet": "Exactly CUSTODY+11originalraw+metadata/{run,jobs,artifacts,checkout-commit,public-commit}.json under exact accepted-source prefix; checkout/public full GitData raw bodies byte-identical.",
+      "snapshots": "Five root-selected complete fresh API originals matched in full with JSON type distinctions. Helper never fetches or approves freshness.",
+      "workflowEdits": "Exactly one literal old b062fde0118ca74e1f36fc96816ca6985ab64bc8 checkout ref per selected workflow to accepted Alpha; every other byte identical."
+    },
+    "cas": "Exact union of all selected raw blob payloads, flat cas/<lower40hex>, ordinary0600 physical files, virtual modes kept separate."
+  },
+  "preflight": "Every metadata schema/type/resource/path/role and every CAS stat/closure checked before first CAS payload read. All ancestor opens no-follow; bounded size+1 read and complete snapshots/rechecks. Unknown final inputs refuse before output.",
+  "output": {
+    "name": "PREPARED_PACKET.json",
+    "root": "Externally selected real owned0700 parent, exact dev/inode, outside all capture/selection/forbidden roots.",
+    "keys": [
+      "schema",
+      "files",
+      "receipt"
+    ],
+    "files": "Exactly B/M/V mode100644 with literal UTF8 strings; V only one exact frozen block replaced, outside bytes exact.",
+    "receipt": "PREPARED_UNAPPROVED acyclic input/output/count/tree identities. Packet hash outside packet only.",
+    "commit": "Fresh0600 exclusive stage, fsync/close/reopen/raw verify, exclusive same-parent hardlink to absent final; no overwrite, replace, apply, extract or fallback.",
+    "uncertain": "Any possible post-link error gives COMMIT_STATUS_UNCERTAIN, retains final bytes, no success/clean-refusal/retry."
+  },
+  "managerLimits": {
+    "sourceLeaves": 2048,
+    "treeEntries": 4096
+  },
+  "publicMetadataLimits": {
+    "treeEntries": 8192,
+    "treeLeaves": 8192,
+    "scope": "Only canonical public Alpha and packet full-tree metadata; Manager source limits unchanged."
+  },
+  "virtualAliases": "Six exact inherited casefold node groups are retained with anchored unchanged leaf identities; no new aliases. Physical CAS is flat lowercase; no platform checkout claim.",
+  "tests": {
+    "methods": 25,
+    "scope": "New own module +tiny owned ordinary data/metadata fixtures only; fixture paths remain below new own attempt directory.",
+    "status": "NOT_RUN_YET",
+    "negativeControls": [
+      "attempt2 refuses before API/CAS I/O",
+      "4421public entries admitted; same4421 Manager refused;8193public refused",
+      "nonfinite JSON including1e999",
+      "duplicate/type/Unicode/path/raw identity/last-record metadata failures",
+      "codepoint reversible edits and exact frozen block",
+      "no-follow leaf/ancestor/special-node metadata",
+      "fresh/late-collision/failed-stage/post-link-uncertain/other-inode cleanup",
+      "no retained imports/eval/exec/compile/process/network modules in helper"
+    ]
+  },
+  "actualGeneration": "NOT_RUN_UNAVAILABLE_EXTERNALLY_SELECTED_ACCEPTED_FINAL_INPUTS",
+  "actualHostedOrdinaryProof": "NOT_RUN_MANDATORY_BEFORE_CANDIDATE_AFTER_NPM",
+  "priorCheckpoints": [
+    {
+      "sha256": "140e9f771235b2f48636acd0cf1cd019fccccdd178a51ee642e76dd95ba9a79d",
+      "state": "Incompletecoreunchanged"
+    },
+    {
+      "sha256": "4c113e1c9ce30f396b4fa156da213dfd96fe4f1314e5b18708d89fb96768afd7",
+      "state": "Incompletepriorsections; peerfindingspreserved"
+    }
+  ],
+  "closedDraftFindings": [
+    {
+      "id": "PREPARER-ORIGINAL-ATTEMPT-1",
+      "status": "REPAIR_DRAFTED_TEST_NOT_RUN"
+    },
+    {
+      "id": "PREPARER-PUBLIC-TREE-BOUND-1",
+      "status": "REPAIR_DRAFTED_TEST_NOT_RUN"
+    }
+  ],
+  "flags": {
+    "sourceReviewed": false,
+    "releaseQualified": false,
+    "publicationApproved": false,
+    "executionApproved": false,
+    "nativeExecutionQualified": false
+  }
+}
