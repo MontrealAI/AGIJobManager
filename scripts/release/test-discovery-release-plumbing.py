@@ -347,6 +347,35 @@ class QualifiedDiscoveryRebuild(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'qualification context'):
             self.extraction(self.folder / 'wrong-policy', {**self.config, 'sourcePolicy': {}})
 
+    def test_qualified_extraction_captures_metadata_without_path_read_and_rejects_late_symlink(self):
+        self.qualify()
+        retained = self.assets / 'QUALIFICATION.json'
+        original = pathlib.Path.read_bytes
+        def guarded_read(path):
+            if path == retained:
+                raise AssertionError('qualification must use descriptor-bounded capture')
+            return original(path)
+        with patch.object(pathlib.Path, 'read_bytes', guarded_read):
+            self.extraction(self.folder / 'bounded-qualified-extraction', self.config)
+        read = self.verifier['extract_browser_capsule'].__globals__['read_bounded']
+        outside = self.folder / 'outside-qualification.json'
+        outside.write_text(json.dumps(self.config))
+        calls = []
+        def replace_after_metadata(path, *, maximum):
+            self.assertEqual(path, retained)
+            self.assertEqual(maximum, 64 * 1024 * 1024)
+            calls.append(path)
+            retained.unlink()
+            retained.symlink_to(outside)
+            return read(path, maximum=maximum)
+        with patch.dict(self.verifier['extract_browser_capsule'].__globals__,
+                {'read_bounded': replace_after_metadata}), \
+                patch.object(os, 'open', side_effect=AssertionError('late symlink must reject before open')):
+            with self.assertRaisesRegex(ValueError, 'ordinary bounded input'):
+                self.extraction(self.folder / 'late-symlink-refused', self.config)
+        self.assertEqual(calls, [retained])
+        self.assertFalse((self.folder / 'late-symlink-refused').exists())
+
     def test_rehashed_qualification_or_assets_cannot_replace_the_callers_trusted_bindings(self):
         self.qualify()
         retained = self.assets / 'QUALIFICATION.json'; original = retained.read_bytes()

@@ -79,7 +79,7 @@ def extract_browser_capsule(assets, destination, selection, *, qualification=Non
         require(retained.is_file() and not retained.is_symlink()
                 and retained.stat().st_size <= 64 * 1024 * 1024,
                 'Saved browser extraction qualification is missing or unbounded')
-        require(json.dumps(strict_json(retained.read_bytes()), sort_keys=True, allow_nan=False)
+        require(json.dumps(strict_json(read_bounded(retained, maximum=64 * 1024 * 1024)), sort_keys=True, allow_nan=False)
                 == json.dumps(qualification, sort_keys=True, allow_nan=False),
                 'Saved browser extraction differs from the trusted qualification')
     _, manifest, manifest_raw = verify_assets(assets, qualification, return_manifest=True)
