@@ -1,0 +1,99 @@
+{
+  "schema": "successor/discovery-lab-source-candidate/v1",
+  "repository": "MontrealAI/AGIJobManager",
+  "profile": "discovery-lab-source-candidate-v1",
+  "baseCommit": "4d4c32685eebf23b0aa35dbb45abe23ac8a261cb",
+  "baseTree": "3676cb41be9c5c5110cc266e0ff6f7c20bfbec86",
+  "claims": {
+    "sourcePackageOnly": true,
+    "releaseQualified": false,
+    "releaseIdentity": null,
+    "publicationApproved": false,
+    "executionApproved": false
+  },
+  "changes": {
+    ".github/workflows/discovery-lab-receiver.yml": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "b109267bff69dcb401c5ad181d91d9464c0d98c0b47fec9db2a7c39013a1639b"
+      },
+      "reason": "Explicit additive Discovery Lab source and tests; no historical source exemption or publication qualification."
+    },
+    "config/discovery-lab-alpha-source.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "a463a01423d1b64fa9c5dc793716279890d02e1d4a004202fa3f63ac427dbbe9"
+      },
+      "reason": "Explicit native compatibility harness/source pin; authenticated Alpha code only, no execution or publication approval."
+    },
+    "docs/successor/DISCOVERY_LAB.md": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "703dfa89a9b52ef378677fe7b17370fe70471729797a2d06fa088ff00c89d964"
+      },
+      "reason": "Explicit additive Discovery Lab source and tests; no historical source exemption or publication qualification."
+    },
+    "scripts/integrations/discovery-lab-contract.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "98c8de8ce2774b7650bf4ee11eeedfb0a69b75fa6d1b080ef823637d77d0ab47"
+      },
+      "reason": "Explicit additive Discovery Lab source and tests; no historical source exemption or publication qualification."
+    },
+    "scripts/integrations/discovery-lab-native-test.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "b1701276242e7cfa8603e80390e596bb05c3481ad8ca284d086398d8f27c6dd3"
+      },
+      "reason": "Explicit native compatibility harness/source pin; authenticated Alpha code only, no execution or publication approval."
+    },
+    "scripts/integrations/discovery-lab-work-request.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "da307c2d0621a2f323d60c56dfec01d2fda2b72b753939657ea303d619d68e43"
+      },
+      "reason": "Explicit additive Discovery Lab source and tests; no historical source exemption or publication qualification."
+    },
+    "scripts/integrations/discovery-lab-work-request.test.mjs": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "ea230fd5c47da6845cc615ed24263045b034c6bb8bebc19873231c7c25531076"
+      },
+      "reason": "Explicit additive Discovery Lab source and tests; no historical source exemption or publication qualification."
+    },
+    "scripts/integrations/fixtures/discovery-lab-request.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "891e11f3fed142db55e36934b4f1b5869200973216bfdd9257789fd66fb0a82f"
+      },
+      "reason": "Explicit additive Discovery Lab source and tests; no historical source exemption or publication qualification."
+    },
+    "scripts/release/package-policy.py": {
+      "before": {
+        "blob": "b5d0ebbd9a54b971a3073bd8bca770e54447f451",
+        "mode": "100644"
+      },
+      "after": {
+        "mode": "100644",
+        "sha256": "ba6cb55859a6589e059e43171927430772a130dde2bc31b1074b9498c99743a3"
+      },
+      "reason": "Exact nonpublishing package selector projection; every previous selector byte and guard preserved."
+    },
+    "scripts/release/test-discovery-lab-profile.py": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "6473d334c8aa945269a2067c5f300d84fd773c5e441f7dee1169142238eae698"
+      },
+      "reason": "Explicit additive Discovery Lab source and tests; no historical source exemption or publication qualification."
+    }
+  }
+}

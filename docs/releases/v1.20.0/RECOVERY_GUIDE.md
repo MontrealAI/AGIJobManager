@@ -1,0 +1,7 @@
+# v1.20.0 Discovery Lab recovery
+
+Stop admission when the installed source pin, mission, artifact ancestry, resource envelope, returned receipt or final-source qualification differs. Preserve the original request and raw receipt bytes, failed attempt, resource report and saved mission history. A rejected or inconclusive inspection is evidence to retain, not permission to execute or retry without accounting for the prior attempt.
+
+Reopen the same saved Alpha mission and inspect its retained evidence and unknown costs. Import only a receipt whose source/mission/campaign binding matches the installed context. Duplicate semantic inspection records are refused even when their raw JSON framing differs. Do not rewrite history, invent invocation nonces, promote unattested receipt provenance or treat a checksum as independent authority.
+
+For software rollback, recover the separately published v1.19.6 source and matching immutable assets/qualification. Its historical maintenance profile and publisher are preserved byte for byte. Keep the original Builder, transformation campaign and existing deployed-manager recovery paths. This software candidate cannot alter an immutable deployed contract or activate paid intake. The [general release guide](../../RELEASE_GUIDE.md) and [instance-specific operations](../../OPERATIONS/COMMISSIONING.md) remain separate from this developer inspection route.

@@ -1,7 +1,7 @@
 # Versions Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `47c0b205ded5`.
-- Source snapshot fingerprint: `47c0b205ded5`.
+- Generated at (deterministic source fingerprint): `1cdb766df1fd`.
+- Source snapshot fingerprint: `1cdb766df1fd`.
 - Generation mode: deterministic from repository source files.
 
 ## Toolchain snapshot
@@ -21,7 +21,7 @@
 | @openzeppelin/contracts | 4.9.6 | `package.json` |
 | ethers | 6.17.0 | `package.json` |
 | hardhat | 3.17.0 | `hardhat/package-lock.json` |
-| next (ui) | 15.5.27 | `ui/package.json` |
+| next (ui) | 15.5.28 | `ui/package.json` |
 | solc | 0.8.37 | `package-lock.json` |
 | solhint | 6.2.4 | `package.json` |
 | viem (ui) | 2.56.7 | `ui/package.json` |

@@ -1,0 +1,139 @@
+{
+  "baseCommit": "900bb4b46cb7de7f6f69f553a5687866f978a413",
+  "baseTree": "bc42f0b295a649900667dcb1c487122726df7a02",
+  "changes": {
+    ".github/workflows/discovery-lab-receiver.yml": {
+      "after": {
+        "mode": "100644",
+        "sha256": "545f1b4e8a56a4e5359a751acb264b5bedad87671f532bd339587f9a59e99a61"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "config/discovery-lab-alpha-source.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a463a01423d1b64fa9c5dc793716279890d02e1d4a004202fa3f63ac427dbbe9"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "config/discovery-lab-source-baseline-v1.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ceeca49019f418637dcec1b3586699d382ecdaee23790fef50ae177a360ba74a"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "config/discovery-lab-source-candidate-v1.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "5e233c9505ea00cb4bbe0a840b6afd3569b9601fd33ca76d3df24c9f863970fe"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "docs/successor/DISCOVERY_LAB.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "703dfa89a9b52ef378677fe7b17370fe70471729797a2d06fa088ff00c89d964"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "docs/successor/DISCOVERY_LAB_RECONCILIATION.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "835b94d559f15d000adaa656dcf3de13961c35186a3d65a660a2a5c0aef3bc05"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "scripts/integrations/discovery-lab-contract.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "98c8de8ce2774b7650bf4ee11eeedfb0a69b75fa6d1b080ef823637d77d0ab47"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "scripts/integrations/discovery-lab-native-test.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "b1701276242e7cfa8603e80390e596bb05c3481ad8ca284d086398d8f27c6dd3"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "scripts/integrations/discovery-lab-work-request.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "da307c2d0621a2f323d60c56dfec01d2fda2b72b753939657ea303d619d68e43"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "scripts/integrations/discovery-lab-work-request.test.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ea230fd5c47da6845cc615ed24263045b034c6bb8bebc19873231c7c25531076"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "scripts/integrations/fixtures/discovery-lab-request.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "891e11f3fed142db55e36934b4f1b5869200973216bfdd9257789fd66fb0a82f"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "scripts/release/discovery-lab-profile.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "08607dad60b8ab6d782b7b1a9e1096aaffa12a9afbf86992bcd144627eafa4ee"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "scripts/release/package-policy.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "96b2a60b7b0681c5750b86b39123327631934046df72154cd390bf2a7d5c997f"
+      },
+      "before": {
+        "blob": "dfdaf024c4f0526d655a3a6059d3c4f73558a39b",
+        "mode": "100644"
+      },
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "scripts/release/test-discovery-lab-profile-v2.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "e9342676a0c64373c080a85b75ef8ff2c907d3d786017a12d9de6ae76c27b83d"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    },
+    "scripts/release/test-discovery-lab-profile.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "6473d334c8aa945269a2067c5f300d84fd773c5e441f7dee1169142238eae698"
+      },
+      "before": null,
+      "reason": "Explicit source-only Discovery baseline reconciliation; no release or execution authority."
+    }
+  },
+  "claims": {
+    "executionApproved": false,
+    "publicationApproved": false,
+    "releaseIdentity": null,
+    "releaseQualified": false,
+    "sourcePackageOnly": true
+  },
+  "profile": "discovery-lab-source-candidate-v2",
+  "repository": "MontrealAI/AGIJobManager",
+  "schema": "successor/discovery-lab-source-candidate/v2"
+}
