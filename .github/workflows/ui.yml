@@ -39,7 +39,19 @@ jobs:
       - run: npm run check:no-binaries
         working-directory: .
       - run: npm ci
-      - run: npm audit --audit-level=low
+      - name: Check reviewed audit disposition controls with installed UI dependencies
+        run: node --test ../scripts/security/zod-audit-disposition.test.cjs
+      - name: Check UI registry audit and bounded backport disposition
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/build/security/audit-ui"
+          set +e
+          npm audit --json --audit-level=low > "$GITHUB_WORKSPACE/build/security/audit-ui"/raw.json 2> "$GITHUB_WORKSPACE/build/security/audit-ui"/stderr.txt
+          audit_exit=$?
+          set -e
+          printf '%s\n' "$audit_exit" > "$GITHUB_WORKSPACE/build/security/audit-ui"/exit.txt
+          node ../scripts/check-zod-backport-audit.cjs --repository "$GITHUB_WORKSPACE" --scope ui \
+            --audit "$GITHUB_WORKSPACE/build/security/audit-ui"/raw.json --stderr "$GITHUB_WORKSPACE/build/security/audit-ui"/stderr.txt \
+            --exit-file "$GITHUB_WORKSPACE/build/security/audit-ui"/exit.txt --output "$GITHUB_WORKSPACE/build/security/audit-ui"/disposition.json
       - run: npm run check:no-binaries
       - run: npm run lint
       - run: npm run typecheck
@@ -56,3 +68,11 @@ jobs:
       - run: npm run verify:ipfs
       - run: npm run verify:deterministic
       - run: env -u NEXT_PUBLIC_DEMO_MODE -u NEXT_PUBLIC_DEMO_ACTOR -u NEXT_PUBLIC_CHAIN_ID -u NEXT_PUBLIC_AGI_JOB_MANAGER_ADDRESS -u NEXT_PUBLIC_USDC_TOKEN_ADDRESS npm run verify:committed-html
+
+      - name: Preserve raw UI registry audit and source disposition
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ui-source-bound-audit-evidence
+          path: build/security/audit-ui/
+          if-no-files-found: error

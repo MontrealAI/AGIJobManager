@@ -58,8 +58,24 @@ jobs:
           printf 'manifest=%s\nverifier=%s\n' "$manifest_sha" "$verifier_sha" >> "$GITHUB_OUTPUT"
       - name: Run root and Hardhat audits at low threshold
         run: |
-          npm audit --audit-level=low
-          npm --prefix hardhat audit --audit-level=low
+          mkdir -p "$GITHUB_WORKSPACE/build/security/audit-root"
+          set +e
+          npm audit --json --audit-level=low > "$GITHUB_WORKSPACE/build/security/audit-root"/raw.json 2> "$GITHUB_WORKSPACE/build/security/audit-root"/stderr.txt
+          audit_exit=$?
+          set -e
+          printf '%s\n' "$audit_exit" > "$GITHUB_WORKSPACE/build/security/audit-root"/exit.txt
+          node scripts/check-zod-backport-audit.cjs --repository "$GITHUB_WORKSPACE" --scope root \
+            --audit "$GITHUB_WORKSPACE/build/security/audit-root"/raw.json --stderr "$GITHUB_WORKSPACE/build/security/audit-root"/stderr.txt \
+            --exit-file "$GITHUB_WORKSPACE/build/security/audit-root"/exit.txt --output "$GITHUB_WORKSPACE/build/security/audit-root"/disposition.json
+          mkdir -p "$GITHUB_WORKSPACE/build/security/audit-hardhat"
+          set +e
+          npm --prefix hardhat audit --json --audit-level=low > "$GITHUB_WORKSPACE/build/security/audit-hardhat"/raw.json 2> "$GITHUB_WORKSPACE/build/security/audit-hardhat"/stderr.txt
+          audit_exit=$?
+          set -e
+          printf '%s\n' "$audit_exit" > "$GITHUB_WORKSPACE/build/security/audit-hardhat"/exit.txt
+          node scripts/check-zod-backport-audit.cjs --repository "$GITHUB_WORKSPACE" --scope hardhat \
+            --audit "$GITHUB_WORKSPACE/build/security/audit-hardhat"/raw.json --stderr "$GITHUB_WORKSPACE/build/security/audit-hardhat"/stderr.txt \
+            --exit-file "$GITHUB_WORKSPACE/build/security/audit-hardhat"/exit.txt --output "$GITHUB_WORKSPACE/build/security/audit-hardhat"/disposition.json
       - name: Compile reviewed candidate contracts
         run: npm run build
       - name: Complete preflight and real entrypoint regressions
@@ -130,6 +146,13 @@ jobs:
         with:
           name: AGIJobManager-${{ steps.candidate.outputs.tag }}-candidate-${{ github.event.pull_request.head.sha || github.sha }}
           path: build/release/${{ steps.candidate.outputs.tag }}-candidate/
+          if-no-files-found: error
+      - name: Preserve raw registry audits and source dispositions
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: candidate-source-bound-audit-evidence
+          path: build/security/audit-*/**
           if-no-files-found: error
 # Deliberately no publish job and no contents:write permission.
 # Publication needs separately reviewed final-source CI metadata and authorization.

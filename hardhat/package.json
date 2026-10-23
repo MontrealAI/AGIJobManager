@@ -1,7 +1,7 @@
 {
   "name": "agijobmanager-hardhat",
   "private": true,
-  "version": "1.20.0",
+  "version": "1.20.1",
   "description": "Official Hardhat deployment + verification workflow for AGIJobManager",
   "scripts": {
     "clean": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs clean",
@@ -40,7 +40,8 @@
     "dotenv": "^16.6.1",
     "ethers": "6.17.0",
     "hardhat": "3.17.0",
-    "mocha": "11.8.0"
+    "mocha": "11.8.0",
+    "zod": "file:../ui/vendor/zod"
   },
   "engines": {
     "node": ">=22.23.2"
@@ -49,6 +50,7 @@
   "overrides": {
     "diff": "8.0.3",
     "serialize-javascript": "7.0.5",
-    "glob": "13.0.0"
+    "glob": "13.0.0",
+    "zod@^3": "$zod"
   }
 }

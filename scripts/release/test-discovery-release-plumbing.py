@@ -47,23 +47,34 @@ def version_only(value, old):
 class DiscoveryPlumbing(unittest.TestCase):
     def test_historical_maintenance_guards_publisher_and_unrelated_gate_workflows_are_byte_exact(self):
         names = set(PRESERVATION['PROTECTED']) | {'.github/workflows/' + name for name in [
-            'ci.yml', 'ui.yml', 'docs.yml', 'security-verification.yml', 'alpha-project-handoff.yml']}
+            'ci.yml', 'docs.yml', 'alpha-project-handoff.yml']}
         for name in sorted(names):
             with self.subTest(path=name): self.assertEqual((ROOT / name).read_bytes(), previous(name))
         for name in ['scripts/integrations/discovery-lab-native-test.mjs', 'config/discovery-lab-alpha-source.json']:
             with self.subTest(path=name): self.assertEqual((ROOT / name).read_bytes(), previous(name, FEATURE))
 
-    def test_package_and_deployment_changes_are_version_metadata_only(self):
+    def test_current_audit_workflow_projection_preserves_exact_published_beforeimages(self):
+        self.assertEqual(set(PROFILE['AUDIT_WORKFLOW_ORIGINALS']), {
+            '.github/workflows/ui.yml', '.github/workflows/security-verification.yml'})
+        for name, text in PROFILE['AUDIT_WORKFLOW_ORIGINALS'].items():
+            with self.subTest(path=name):
+                self.assertEqual(text.encode(), previous(name))
+                self.assertNotIn(name, PROFILE['PROTECTED'])
+                self.assertIn(name, PROFILE['MODIFIED'])
+        PROFILE['validate_projections'](ROOT, PROFILE['baseline'](ROOT))
+
+    def test_package_and_deployment_changes_restore_exact_predecessor_with_reviewed_security_patches(self):
         for name in PROFILE['PACKAGE_FILES']:
             old = json.loads(previous(name)); current = json.loads((ROOT / name).read_bytes())
             with self.subTest(path=name):
-                self.assertEqual(current['version'], '1.20.0')
+                self.assertEqual(current['version'], '1.20.1')
                 restored = version_only(current, old)
+                PROFILE['restore_zod_security_patch'](name, restored)
                 PROFILE['restore_next_security_patch'](name, old, restored)
                 self.assertEqual(restored, old)
         name = 'config/usdc-deployment.json'
         old = json.loads(previous(name)); current = json.loads((ROOT / name).read_bytes())
-        self.assertEqual(current['version'], '1.20.0'); self.assertEqual(version_only(current, old), old)
+        self.assertEqual(current['version'], '1.20.1'); self.assertEqual(version_only(current, old), old)
 
     def test_copied_apache_module_has_packaged_license_and_origin_without_relicensing_manager(self):
         license_name = 'docs/LEGAL/LICENSES/Apache-2.0.txt'
@@ -85,7 +96,7 @@ class DiscoveryPlumbing(unittest.TestCase):
     def test_explicit_new_selector_does_not_promote_old_source_candidate_profiles(self):
         selected = {'releaseProfile': 'manager-discovery-release-v1'}
         self.assertEqual(POLICY['policy'](selected)['PROFILE'], 'manager-discovery-release-v1')
-        for profile in ['unknown', 'manager-discovery-release-v2', '1.20.0']:
+        for profile in ['unknown', 'manager-discovery-release-v2', '1.20.1']:
             with self.subTest(profile=profile), self.assertRaises(ValueError): POLICY['select'](profile)
         parser = argparse.ArgumentParser()
         POLICY['add_selection_arguments'](parser)
@@ -98,7 +109,7 @@ class DiscoveryPlumbing(unittest.TestCase):
     def test_new_publisher_requires_dispatch_confirmation_readiness_and_exact_source_attestation(self):
         text = (ROOT / '.github/workflows/publish-discovery-v1.yml').read_text()
         for exact in ["github.ref == 'refs/heads/main'", "github.event_name == 'workflow_dispatch'",
-                "inputs.confirmation == 'PUBLISH_v1.20.0'", "if: steps.readiness.outputs.ready != 'true'\n        run: exit 1",
+                "inputs.confirmation == 'PUBLISH_v1.20.1'", "if: steps.readiness.outputs.ready != 'true'\n        run: exit 1",
                 'wait-qualification.py --source "$SOURCE_COMMIT" --profile manager-discovery-release-v1',
                 '--deny-self-hosted-runners', '--source-ref refs/heads/main', '--signer-digest "$SOURCE_COMMIT"',
                 '--source-digest "$SOURCE_COMMIT"', '$GITHUB_REPOSITORY/.github/workflows/publish-discovery-v1.yml']:
@@ -142,7 +153,7 @@ class DiscoveryPlumbing(unittest.TestCase):
         self.assertLess(candidate.index('discovery-browser-input.py --output'), candidate.index('for output in'))
 
     def test_expected_fork_and_scan_are_comparisons_with_unchanged_observations(self):
-        provenance = json.loads((ROOT / 'docs/qualification/release-v1.20.0-provenance.json').read_bytes())
+        provenance = json.loads((ROOT / 'docs/qualification/release-v1.20.1-provenance.json').read_bytes())
         self.assertIs(provenance['executed'], False)
         self.assertEqual(provenance['baselineCommit'], BASE)
         for kind, field in [('fork', 'sourceSha256'), ('staticAnalysis', 'source_sha256')]:
@@ -161,7 +172,7 @@ class DiscoveryPlumbing(unittest.TestCase):
             self.assertEqual(current, old)
             self.assertIs(item['executed'], False); self.assertIs(item['observationsOrFindingsChanged'], False)
         fork = (ROOT / '.github/workflows/mainnet-fork.yml').read_bytes()
-        self.assertEqual(fork.replace(b'v1.20.0-expected.json', b'v1.19.6-expected.json'), previous('.github/workflows/mainnet-fork.yml'))
+        self.assertEqual(fork.replace(b'v1.20.1-expected.json', b'v1.19.6-expected.json'), previous('.github/workflows/mainnet-fork.yml'))
 
     def test_current_pages_dispatch_is_explicit_and_historical_preservation_is_separate(self):
         text = (ROOT / '.github/workflows/pages.yml').read_text()
@@ -169,7 +180,7 @@ class DiscoveryPlumbing(unittest.TestCase):
                 '.github/workflows/publish-v114.yml)', 'pages-publication-maintenance.py --source',
                 '*) exit 1 ;;', 'run-discovery-preservation.py --pages build/pages']:
             self.assertIn(exact, text)
-        self.assertIn('VERSION = \'1.20.0\'', (ROOT / 'scripts/release/run-discovery-preservation.py').read_text())
+        self.assertIn('VERSION = \'1.20.1\'', (ROOT / 'scripts/release/run-discovery-preservation.py').read_text())
         self.assertIn('materialize(source_objects)', (ROOT / 'scripts/release/run-discovery-preservation.py').read_text())
         self.assertIn('test-discovery-lab-profile.py', (ROOT / 'scripts/release/run-discovery-preservation.py').read_text())
 
@@ -416,7 +427,7 @@ class FinalDiscoveryPublicationIdentity(unittest.TestCase):
         self.assertIsInstance(publication, ast.Expr)
         self.assertEqual(publication.value.func.id, 'api')
         self.assertEqual(publication.value.args[1].value, 'PATCH')
-        source, tag = 'a' * 40, 'v1.20.0'
+        source, tag = 'a' * 40, 'v1.20.1'
         release = {'id': 99, 'draft': True, 'prerelease': False, 'tag_name': tag,
             'target_commitish': source, 'name': TITLE, 'body': 'Reviewed notes'}
         asset = {'name': 'COMPLETE.zip', 'digest': 'sha256:' + 'c' * 64, 'state': 'uploaded'}
@@ -636,7 +647,7 @@ class CurrentPagesPreservation(unittest.TestCase):
             raw = b'<html><p>Inert synthetic raw inventory fixture</p></html>'
             target.write_bytes(raw); self.files[name] = {'bytes': len(raw), 'sha256': sha(raw)}
         (self.pages / '.nojekyll').write_bytes(b'')
-        self.info = {'sourceCommit': 'a' * 40, 'sourceVersion': '1.20.0', 'files': self.files,
+        self.info = {'sourceCommit': 'a' * 40, 'sourceVersion': '1.20.1', 'files': self.files,
             'buildOnlyFiles': {'.nojekyll': {'bytes': 0, 'sha256': sha(b'')}}}
         self.write_info()
     def write_info(self): (self.pages / 'build-info.json').write_text(json.dumps(self.info))
@@ -659,7 +670,7 @@ class CurrentPagesPreservation(unittest.TestCase):
     def test_wrong_version_and_indirect_raw_assets_are_rejected(self):
         self.info['sourceVersion'] = '1.19.6'; self.write_info()
         with self.assertRaisesRegex(ValueError, 'source identity'): self.validate()
-        self.info['sourceVersion'] = '1.20.0'; self.write_info()
+        self.info['sourceVersion'] = '1.20.1'; self.write_info()
         name = next(iter(self.files)); path = self.pages / name; path.unlink()
         path.symlink_to(self.pages / '.nojekyll')
         with self.assertRaisesRegex(ValueError, 'indirect'): self.validate()
@@ -900,7 +911,7 @@ class ReleaseAssetBoundedIO(unittest.TestCase):
         with zipfile.ZipFile(buffer, 'w') as archive:
             archive.writestr('package.json', b'{"version":"owned"}')
         builders['SUCCESSOR-Omega-editable-source.zip'] = buffer.getvalue()
-        source = {'LICENSE': b'owned license', 'package.json': b'{"version":"1.20.0"}',
+        source = {'LICENSE': b'owned license', 'package.json': b'{"version":"1.20.1"}',
             'ui/agijobmanager-usdc.html': b'<html>owned console</html>'}
         source.update({'docs/releases/' + TAG + '/' + item: b'owned guide'
             for item in ('START_HERE.md', 'RELEASE_NOTES.md', 'RECOVERY_GUIDE.md', 'VALIDATION.md')})

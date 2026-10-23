@@ -1,4 +1,4 @@
-# v1.20.0 Discovery qualification and operating boundaries
+# v1.20.1 Discovery qualification and operating boundaries
 
 The v1.20.0 Discovery candidate adds source-pinned synthetic campaign admission under a new versioned release profile. It retains the published v1.19.6 dependency repairs and historical guards. Final-source hosted qualification and publication remain pending for this candidate; neither authorizes deployment or intake. Candidate building and source authentication require the exact pinned external Alpha checkout. Installed native inspection uses the Alpha source capsule included in the complete Manager archive.
 

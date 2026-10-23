@@ -51,7 +51,7 @@ class DiscoveryReleaseSource(unittest.TestCase):
             result = self.verify()
         for field in ('releaseQualified', 'publicationApproved', 'executionApproved', 'nativeExecutionQualified'):
             self.assertIs(result[field], False)
-        self.assertEqual(result['version'], '1.20.0')
+        self.assertEqual(result['version'], '1.20.1')
 
     def test_published_v1196_baseline_is_independently_reconstructed(self):
         self.assertEqual(P['tree_digest'](self.previous['entries']), P['BASE_TREE'])
@@ -114,9 +114,21 @@ class DiscoveryReleaseSource(unittest.TestCase):
             self.substitute(name, raw, lambda ignored: self.rejection(selection))
         self.substitute(P['MANIFEST'], (json.dumps(altered) + '\n').encode(), outer, repin=True)
 
+    def test_current_audit_beforeimages_and_new_vendor_remain_source_bound(self):
+        for name in P['AUDIT_WORKFLOW_ORIGINALS']:
+            changed = dict(P['AUDIT_WORKFLOW_ORIGINALS'])
+            changed[name] += '\n'
+            with self.subTest(path=name), patch.dict(G, {'AUDIT_WORKFLOW_ORIGINALS': changed}), self.assertRaises(ValueError):
+                P['baseline'](ROOT)
+        expanded = {**P['AUDIT_WORKFLOW_ORIGINALS'], '.github/workflows/ci.yml': ''}
+        with patch.dict(G, {'AUDIT_WORKFLOW_ORIGINALS': expanded}), self.assertRaises(ValueError):
+            P['baseline'](ROOT)
+        name = 'ui/vendor/zod/v3/types.cjs'
+        self.substitute(name, (ROOT / name).read_bytes() + b'\n', self.rejection)
+
     def test_source_package_metadata_refuses_forged_qualification_and_other_identity(self):
         value = {key: None for key in ('schemaVersion', 'repository', 'tag', 'name', 'sourceCommit', 'sourceTree', 'builderSource', 'stage', 'qualification', 'archiveLimitBytes', 'toolchain', 'exclusions', 'files')}
-        value.update({'schemaVersion': 2, 'repository': P['REPOSITORY'], 'tag': 'v1.20.0', 'name': P['TITLE'], 'sourceCommit': '1' * 40, 'sourceTree': '2' * 40, 'stage': 'source-package', **P['metadata'](self.selection)})
+        value.update({'schemaVersion': 2, 'repository': P['REPOSITORY'], 'tag': 'v1.20.1', 'name': P['TITLE'], 'sourceCommit': '1' * 40, 'sourceTree': '2' * 40, 'stage': 'source-package', **P['metadata'](self.selection)})
         P['validate_metadata'](value, self.selection)
         for name, change in (('tag', 'v1.19.6'), ('name', 'Approved deployment'), ('releaseQualified', True), ('executionApproved', True)):
             with self.assertRaises(ValueError):
@@ -552,6 +564,8 @@ class DiscoveryNextSecurityPatch(unittest.TestCase):
             value['version'] = '1.19.6'
             if name.endswith('package-lock.json'):
                 value['packages']['']['version'] = '1.19.6'
+        for name in P['PACKAGE_FILES']:
+            P['restore_zod_security_patch'](name, self.before[name])
         for name in ('ui/package.json', 'ui/package-lock.json'):
             value = self.before[name]
             root = value['packages'][''] if name.endswith('package-lock.json') else value
@@ -569,8 +583,11 @@ class DiscoveryNextSecurityPatch(unittest.TestCase):
             if package.startswith('@next/swc-'):
                 optional[package] = '15.5.27'
         lock['node_modules/eslint-config-next']['dependencies']['@next/eslint-plugin-next'] = '15.5.27'
+        baseline = P['baseline'](ROOT)
         for name, digest in self.OLD_UI_SHA256.items():
-            self.assertEqual(sha((json.dumps(self.before[name], indent=2) + '\n').encode()), digest)
+            original = baseline['originals'][name]
+            self.assertEqual(sha(original.encode()), digest)
+            self.assertEqual(self.before[name], json.loads(original))
 
     def verify(self):
         originals = {name: json.dumps(value) for name, value in self.before.items()}
@@ -604,6 +621,29 @@ class DiscoveryNextSecurityPatch(unittest.TestCase):
                     self.after = original
         self.after['ui/package-lock.json']['packages']['node_modules/next']['dependencies']['@swc/helpers'] = '9.9.9'
         with self.assertRaises(ValueError): self.verify()
+
+    def test_every_reviewed_zod_package_record_and_per_major_route_is_exact(self):
+        for name, records in P['ZOD_PATCH_INVERSES'].items():
+            for path, before, selected in records:
+                original = copy.deepcopy(self.after)
+                parent = self.after[name]
+                for part in path[:-1]:
+                    parent = parent[part]
+                if not selected['present']:
+                    parent[path[-1]] = before.get('value', {'version': '3.25.76'})
+                elif isinstance(selected['value'], dict):
+                    parent[path[-1]] = {**selected['value'], 'unreviewed': True}
+                else:
+                    parent[path[-1]] = str(selected['value']) + '-unreviewed'
+                with self.subTest(name=name, path=path), self.assertRaises(ValueError):
+                    self.verify()
+                self.after = original
+
+    def test_unknown_registry_v3_node_is_not_hidden_by_the_zod_inverse(self):
+        self.after['ui/package-lock.json']['packages']['node_modules/unknown/node_modules/zod'] = {
+            'version': '3.25.76', 'resolved': 'https://registry.npmjs.org/zod/-/zod-3.25.76.tgz'}
+        with self.assertRaises(ValueError):
+            self.verify()
 
     def test_unrelated_dependencies_commands_compiler_and_deployment_stay_protected(self):
         changes = [('ui/package.json', lambda value: value['dependencies'].update(react='19.0.0')),
