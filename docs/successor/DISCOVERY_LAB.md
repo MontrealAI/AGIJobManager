@@ -80,3 +80,42 @@ Failed inspections now return receiver-owned errors with the exact original thro
 The pinned inspector validates the complete committed request and a private snapshot of the separately supplied payload before replay. It requires each remaining limit to fit within the committed vector, and charges a distinct 10,000 declared inspection checking units plus encoded snapshot bytes and actual elapsed time. Native test envelopes derive that inspection reserve from the authenticated installed contract, adding it to the receiver's separate 10,000 admission units and ancestor charter caps. Zero or exceeded elapsed allowances remain incomplete; synchronous finite replay uses a measured soft deadline without a hard preemption claim. Historical 1665 evidence remains scoped to its original source and does not qualify this correction.
 
 The shared parser now encodes only captured descriptor values and validates one inert frame before semantic checks or hash suspension. The receiver also validates and retains one inert checker-report snapshot, so a later report view cannot replace accepted fields or recorded costs. Callback-report regression cases cover property traps, negative late resource values and first-frame unknown authority fields. These are admission-policy checks; actual native compatibility remains separately source-pinned.
+
+
+## Continue a mission containing a Jobs receipt (next-edition proposal)
+
+The published v1.20.0 installed operator retains its original own-receiver-only behavior. The proposed correction permits one explicitly selected Jobs rc.20 context. It preserves the historical mission's Alpha source and the original v1.20.0 assets.
+
+First independently authenticate the published Jobs rc.20 archive, its manifest and the exact receiver source against the accepted release provenance. Save the following exact record, including its final newline, as `jobs-rc20-counterpart.json`:
+
+```json
+{
+  "schema": "manager/discovery-qualified-counterpart/v1",
+  "id": "jobs-rc20-f7",
+  "archiveSha256": "5ae312997ce3e2685760e621954828a82ded714cc245339fcfcdd5245373ccfa",
+  "archiveBytes": 457348,
+  "manifestSha256": "3ce7fe629f1f39800711dcd3be32f2c5c0b00aec67dbfd45b906a1f32c9d4606",
+  "source": {
+    "repository": "MontrealAI/AGIJobsv0",
+    "commit": "f7c00e668fe31ce1ea907f0006b6c14dc9db5e01",
+    "tree": "17c1cf5ccca47d427401e2832433e325d5e10563",
+    "adapterSha256": "337fabca02ece2a25b8cc50e56fea5bf5338f2b6f18343eb4a3353a634aefec4",
+    "contractSha256": "98c8de8ce2774b7650bf4ee11eeedfb0a69b75fa6d1b080ef823637d77d0ab47"
+  }
+}
+```
+
+Select this record by its independently reviewed SHA-256: `4c03da6f03b9361820d894b20914558a539b54cd566313150b8ece4fe9c03cf1`. Add its absolute path and that SHA-256 as the final two arguments to the existing installed operator command:
+
+```sh
+node source/scripts/integrations/discovery-installed-operator.mjs \
+  /absolute/discovery-alpha /absolute/workspace-after-jobs.json \
+  /absolute/original-usdc-request.json CAMPAIGN_DIGEST \
+  /absolute/RELEASE_MANIFEST.json /absolute/new-inspection-output \
+  /absolute/jobs-rc20-counterpart.json \
+  4c03da6f03b9361820d894b20914558a539b54cd566313150b8ece4fe9c03cf1
+```
+
+Omitting the two optional arguments retains the own-receiver-only policy. Only the exact reviewed source/archive/manifest tuple is admitted. Missing, unknown, changed or extra fields refuse. Imported history cannot select trusted sources. Prior receipt sources are checked before producing a new receipt. The new Manager receipt is independently inspected against only Manager's own computed source; only complete-docket export and reopening use the explicitly selected Manager+Jobs context. Raw requests and receipts, event prefix, costs, duplicate refusal and separate zero-cap USDC/AGIALPHA routes remain intact.
+
+This local proposal targets the next available patch after v1.20.0 (proposed v1.20.1, unreserved). Exact-source independent review, finite release-policy rebinding, all applicable checks and new publication/installed acceptance remain required. A local correction does not modify or qualify the original v1.20.0 release.
