@@ -5837,6 +5837,7 @@ async function updateSummary(){
 
     async function verifySubdomain(kind, alpha=false){
       if(!requireConnected()) return;
+      if(!isMainnet || APP_STATE.wallet.chainId !== 1){ setToast('Switch to Ethereum Mainnet before verifying membership.', 'warn'); return; }
       const checkedAccount = userAccount;
       const checkedManager = agiJobManager;
       const checkedWeb3 = web3;
@@ -5846,7 +5847,8 @@ async function updateSummary(){
         chainId: APP_STATE.wallet.chainId,
         manager: String(AGI_JOB_MANAGER || '').toLowerCase()
       };
-      const isCurrentVerification = ()=> (APP_STATE.writeEpoch || 0) === verificationContext.epoch
+      const isCurrentVerification = ()=> isMainnet && verificationContext.chainId === 1
+        && (APP_STATE.writeEpoch || 0) === verificationContext.epoch
         && String(userAccount || '').toLowerCase() === verificationContext.account
         && APP_STATE.wallet.chainId === verificationContext.chainId
         && String(AGI_JOB_MANAGER || '').toLowerCase() === verificationContext.manager;
@@ -7483,20 +7485,20 @@ function normalizeIpfsToHttp(uri){
           if(typeof updateWriteGate === 'function') updateWriteGate();
         }catch{}
       }
-      async function reverifySavedInputs(){
+      async function reverifySavedInputs(isCurrentRefresh){
         const saved = readSession();
         const agentSub = String(byId('agentSub')?.value||saved.agentSub||'').trim();
         const clubSub = String(byId('clubSub')?.value||saved.clubSub||'').trim();
         const preferAgentAlpha = !!saved.agentAlphaPreferred;
         const preferClubAlpha = !!saved.clubAlphaPreferred;
-        if(agentSub && typeof verifySubdomain === 'function'){
+        if(agentSub && isCurrentRefresh() && typeof verifySubdomain === 'function'){
           if(preferAgentAlpha){
             await verifySubdomain('agent', true);
           }else{
             await verifySubdomain('agent', false);
           }
         }
-        if(clubSub && typeof verifySubdomain === 'function'){
+        if(clubSub && isCurrentRefresh() && typeof verifySubdomain === 'function'){
           if(preferClubAlpha){
             await verifySubdomain('club', true);
           }else{
@@ -7506,8 +7508,15 @@ function normalizeIpfsToHttp(uri){
       }
       async function silentWalletRefresh(){
         if(!window.ethereum?.request) return;
+        const refreshContext = {epoch: APP_STATE.writeEpoch || 0, account: String(userAccount || '').toLowerCase(),
+          chainId: APP_STATE.wallet.chainId, manager: String(AGI_JOB_MANAGER || '').toLowerCase()};
+        const isCurrentRefresh = ()=> (APP_STATE.writeEpoch || 0) === refreshContext.epoch
+          && String(userAccount || '').toLowerCase() === refreshContext.account
+          && APP_STATE.wallet.chainId === refreshContext.chainId
+          && String(AGI_JOB_MANAGER || '').toLowerCase() === refreshContext.manager;
         try{
           const accounts = await window.ethereum.request({method:'eth_accounts'});
+          if(!isCurrentRefresh()) return;
           const account = accounts && accounts[0] ? String(accounts[0]) : '';
           if(!account){
             userAccount = null;
@@ -7545,6 +7554,7 @@ function normalizeIpfsToHttp(uri){
           const firstUnverifiedConnection = accountHint === 'not connected' && !accountChanged
             && !verified.agent && !verified.club && !verified.agentAlpha && !verified.clubAlpha;
           const sameSession = !accountHint || firstUnverifiedConnection || accountHint.includes(account.slice(0,6).toLowerCase());
+          refreshContext.account = account.toLowerCase();
           userAccount = account;
           APP_STATE.wallet.account = account;
           if(byId('walletStatus')) byId('walletStatus').textContent = (typeof shortAddr === 'function') ? shortAddr(account) : account;
@@ -7553,6 +7563,8 @@ function normalizeIpfsToHttp(uri){
             if(!web3 && window.Web3) web3 = new Web3(window.ethereum);
             if(web3 && web3.eth && typeof web3.eth.getChainId === 'function'){
               const cid = Number(await web3.eth.getChainId());
+              if(!isCurrentRefresh()) return;
+              refreshContext.chainId = cid;
               isMainnet = (cid === 1);
               APP_STATE.wallet.chainId = cid;
               APP_STATE.wallet.isMainnet = isMainnet;
@@ -7565,9 +7577,13 @@ function normalizeIpfsToHttp(uri){
           }else if(typeof refreshAll === 'function'){
             await refreshAll(true);
           }
+          if(!isCurrentRefresh()) return;
           if(sameSession && !accountChanged){
-            showSessionRestore('Wallet still detected. Re-validating membership…');
-            await reverifySavedInputs();
+            if(isMainnet && APP_STATE.wallet.chainId === 1){
+              showSessionRestore('Wallet still detected. Re-validating membership…');
+              await reverifySavedInputs(isCurrentRefresh);
+              if(!isCurrentRefresh()) return;
+            }
           }else{
             hasAcceptedTerms = false;
             APP_STATE.wallet.termsAccepted = false;

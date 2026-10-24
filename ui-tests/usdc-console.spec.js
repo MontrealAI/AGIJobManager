@@ -82,7 +82,7 @@ async function openConsole(page, options = {}) {
       if (type === 'focus') focusListeners.push(listener);
       return addEventListener.call(this, type, listener, ...options);
     };
-    const state = { accounts: [], chainId: options.chainId || '0x1', requests: [], prohibited: [], failReads: false, wrongToken: false };
+    const state = { accounts: [], chainId: options.chainId || '0x1', requests: [], prohibited: [], membershipReads: [], failReads: false, wrongToken: false };
     let heldRead = null, nextHeldSelector = '', heldAccountRead = null, holdNextAccountRead = false;
     const emit = async (event, value) => Promise.all([...(listeners.get(event) || [])].map(callback => callback(value)));
     window.__usdcWallet = {
@@ -144,6 +144,7 @@ async function openConsole(page, options = {}) {
         if (method === 'eth_getLogs') return [];
         if (method === 'eth_call') {
           const tx = params[0], target = String(tx.to || '').toLowerCase(), selector = String(tx.data || tx.input || '').slice(0, 10);
+          if (target === fixture.wrapper) state.membershipReads.push({ method: Object.keys(fixture.wrapperSelectors).find(name => fixture.wrapperSelectors[name] === selector), chainId: state.chainId });
           if (state.failReads || !Object.hasOwn(fixture.readsByTarget, target)) {
             throw Object.assign(new Error('execution reverted: unavailable fixture contract read'), { code: -32000 });
           }
@@ -467,6 +468,22 @@ test.describe('Published USDC console in a real browser', () => {
     await expect(page.locator('#agentAlphaBadge')).toBeVisible();
     await expect(page.locator('#termsAccepted')).not.toBeChecked();
     await expect(page.locator('#createJobBtn')).toBeDisabled();
+    // An old resume must not start its second role in a newer wallet context.
+    await page.locator('#clubSub').fill('refresh-fixture-validator');
+    await page.evaluate(() => {
+      window.__usdcWallet.holdMembershipRead('getApproved');
+      window.__pendingWalletRefresh = window.__usdcWallet.refreshSession();
+    });
+    await expect.poll(() => page.evaluate(() => window.__usdcWallet.state.heldMembershipRead)).toBe('getApproved');
+    await page.evaluate(account => window.__usdcWallet.accounts([account]), NEXT_BUYER);
+    const readsBeforeResume = await page.evaluate(() => window.__usdcWallet.state.membershipReads.length);
+    await page.evaluate(() => window.__usdcWallet.releaseMembershipRead());
+    await page.evaluate(() => window.__pendingWalletRefresh);
+    expect(await page.evaluate(() => window.__usdcWallet.state.membershipReads.length)).toBe(readsBeforeResume);
+    await expectUnverifiedMembership(page);
+    await expect(page.locator('#walletStatus')).toContainText(/0xbbbb/i);
+    await expect(page.locator('#termsAccepted')).not.toBeChecked();
+    await expect(page.locator('#createJobBtn')).toBeDisabled();
     await assertNoExecution(page, errors);
   });
 
@@ -487,8 +504,25 @@ test.describe('Published USDC console in a real browser', () => {
     await connectReadyBuyer(page);
     await seedSyntheticMembership(page);
     await startDelayedMembershipVerification(page);
+    await page.evaluate(() => {
+      window.__usdcWallet.holdAccountRead();
+      window.__pendingWalletRefresh = window.__usdcWallet.refreshSession();
+    });
+    await expect.poll(() => page.evaluate(() => window.__usdcWallet.state.heldAccountRead)).toBe(true);
     await page.evaluate(() => window.__usdcWallet.chain('0xaa36a7'));
+    await expectUnverifiedMembership(page);
+    await page.evaluate(() => window.__usdcWallet.releaseAccountRead());
+    await page.evaluate(() => window.__pendingWalletRefresh);
     await finishDelayedMembershipVerification(page);
+    // Neither a fresh resume nor an explicit role check may use wrong-chain ENS.
+    await page.evaluate(async () => {
+      await window.__usdcWallet.refreshSession();
+      await verifySubdomain('agent', true);
+      document.getElementById('clubSub').value = 'wrong-network-validator';
+      await verifySubdomain('club', true);
+      document.getElementById('clubSub').value = '';
+    });
+    expect(await page.evaluate(() => window.__usdcWallet.state.membershipReads.filter(read => read.chainId !== '0x1'))).toEqual([]);
     await expect(page.locator('#missionPrimaryBtn')).toHaveAttribute('data-action', 'switch-mainnet');
     await expect(page.locator('#createJobBtn')).toBeDisabled();
     await expect(page.locator('#termsAccepted')).not.toBeChecked();
