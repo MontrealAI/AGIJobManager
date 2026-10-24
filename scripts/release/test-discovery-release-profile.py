@@ -565,6 +565,7 @@ class DiscoveryNextSecurityPatch(unittest.TestCase):
             if name.endswith('package-lock.json'):
                 value['packages']['']['version'] = '1.19.6'
         for name in P['PACKAGE_FILES']:
+            P['restore_advisory_security_patch'](name, self.before[name])
             P['restore_zod_security_patch'](name, self.before[name])
         for name in ('ui/package.json', 'ui/package-lock.json'):
             value = self.before[name]
@@ -638,6 +639,34 @@ class DiscoveryNextSecurityPatch(unittest.TestCase):
                 with self.subTest(name=name, path=path), self.assertRaises(ValueError):
                     self.verify()
                 self.after = original
+
+    def test_every_new_upstream_security_selection_is_exact(self):
+        for name, records in P['ADVISORY_PATCH_INVERSES'].items():
+            for path, before, selected in records:
+                original = copy.deepcopy(self.after)
+                parent = self.after[name]
+                for part in path[:-1]:
+                    parent = parent[part]
+                if isinstance(selected['value'], dict):
+                    parent[path[-1]] = {**selected['value'], 'unreviewed': True}
+                else:
+                    parent[path[-1]] = str(selected['value']) + '-unreviewed'
+                with self.subTest(name=name, path=path), self.assertRaises(ValueError):
+                    self.verify()
+                self.after = original
+
+    def test_upstream_patches_reject_old_versions_wrong_major_and_tampered_integrity(self):
+        for name, node, field, value in [
+                ('package-lock.json', 'node_modules/fast-uri', 'version', '3.1.8'),
+                ('package-lock.json', 'node_modules/undici', 'version', '8.12.2'),
+                ('ui/package-lock.json', 'node_modules/undici', 'version', '7.30.1'),
+                ('hardhat/package-lock.json', 'node_modules/serialize-javascript', 'version', '7.1.2'),
+                ('ui/package-lock.json', 'node_modules/undici', 'integrity', 'sha512-unreviewed')]:
+            original = copy.deepcopy(self.after)
+            self.after[name]['packages'][node][field] = value
+            with self.subTest(name=name, node=node, field=field), self.assertRaises(ValueError):
+                self.verify()
+            self.after = original
 
     def test_unknown_registry_v3_node_is_not_hidden_by_the_zod_inverse(self):
         self.after['ui/package-lock.json']['packages']['node_modules/unknown/node_modules/zod'] = {

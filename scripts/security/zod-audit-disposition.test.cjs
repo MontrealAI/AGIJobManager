@@ -66,6 +66,28 @@ for (const scope of ['root', 'ui', 'hardhat']) test(`${scope}: constructed insta
     }
   } finally { fs.rmSync(fixture.directory, { recursive: true }); }
 });
+test('UI permits only the other authenticated coupled Appkit effects mapping', () => {
+  const fixture = constructedTree('ui');
+  try {
+    const raw = JSON.parse(fs.readFileSync(fixture.auditPath));
+    const variants = profile.scopes.ui.coupledEffectsVariants;
+    const current = variants.findIndex(variant => Object.entries(variant).every(([name, effects]) => JSON.stringify(raw.vulnerabilities[name].effects) === JSON.stringify(effects)));
+    assert.notEqual(current, -1);
+    const alternate = 1 - current;
+    changeAudit(fixture, audit => { for (const [name, effects] of Object.entries(variants[alternate])) audit.vulnerabilities[name].effects = effects; });
+    const report = checkZodBackportAudit(fixture.options);
+    assert.equal(report.coupledEffectsVariant, alternate);
+    assert.equal(report.registryAudit, 'FAILED_KNOWN_BACKPORT_MATCH');
+  } finally { fs.rmSync(fixture.directory, { recursive: true }); }
+});
+for (const state of ['both', 'neither']) control(`fails third coupled Appkit effects combination: ${state}`, 'ui', fixture => changeAudit(fixture, audit => {
+  for (const name of ['@reown/appkit-controllers', '@reown/appkit-ui']) {
+    const withoutPay = audit.vulnerabilities[name].effects.filter(name => name !== '@reown/appkit-pay');
+    audit.vulnerabilities[name].effects = state === 'both' ? [...withoutPay, '@reown/appkit-pay'].sort() : withoutPay;
+  }
+}), 'AUDIT_PROFILE_MISMATCH');
+control('fails unknown Appkit effect despite permitted coupled alternatives', 'ui', fixture => changeAudit(fixture, audit => audit.vulnerabilities['@reown/appkit-controllers'].effects.push('@reown/unreviewed')), 'AUDIT_PROFILE_MISMATCH');
+for (const scope of ['root', 'ui']) control(`${scope}: preserved ff5 actual CI audits with new advisories remain rejected`, scope, fixture => fs.copyFileSync(path.join(fixtures, `rejected-ff5-${scope}-audit.json`), fixture.auditPath), 'AUDIT_PROFILE_MISMATCH');
 control('fails new unrelated audit row', 'root', fixture => changeAudit(fixture, audit => { audit.vulnerabilities.unreviewed = { name: 'unreviewed', via: [], nodes: ['node_modules/unreviewed'] }; }), 'AUDIT_PROFILE_MISMATCH');
 control('fails a new node on an otherwise known advisory', 'ui', fixture => changeAudit(fixture, audit => audit.vulnerabilities.zod.nodes.push('node_modules/unknown/node_modules/zod')), 'AUDIT_PROFILE_MISMATCH');
 control('fails changed primitive details', 'root', fixture => changeAudit(fixture, audit => { audit.vulnerabilities.zod.via[0].source = 1; }), 'AUDIT_PROFILE_MISMATCH');
@@ -108,15 +130,15 @@ control('fails network error JSON', 'root', fixture => fs.writeFileSync(fixture.
 control('fails unexpected error stderr', 'root', fixture => fs.writeFileSync(fixture.stderrPath, 'npm error code ENETUNREACH\n'), 'AUDIT_STDERR');
 control('fails malformed JSON', 'root', fixture => fs.writeFileSync(fixture.auditPath, '{broken'));
 control('fails duplicate JSON evidence keys', 'root', fixture => { const bytes = fs.readFileSync(fixture.auditPath, 'utf8'); fs.writeFileSync(fixture.auditPath, bytes.replace('"auditReportVersion": 2', '"auditReportVersion": 2, "auditReportVersion": 2')); }, 'DUPLICATE_JSON_KEY');
-test('constructed clean registry exit0 remains separately labelled PASS_RAW', () => {
-  const fixture = constructedTree('root');
+for (const scope of ['root', 'ui', 'hardhat']) test(`${scope}: captured corrected clean snapshot in a constructed tree stays separately labelled PASS_RAW`, () => {
+  const fixture = constructedTree(scope);
   try {
-    changeAudit(fixture, audit => { audit.vulnerabilities = {}; audit.metadata.vulnerabilities = { info: 0, low: 0, moderate: 0, high: 0, critical: 0, total: 0 }; });
-    fs.writeFileSync(fixture.exitPath, '0\n');
+    for (const [extension, target] of [['json', fixture.auditPath], ['stderr', fixture.stderrPath], ['exit', fixture.exitPath]]) fs.copyFileSync(path.join(fixtures, `corrected-${scope}-clean-audit.${extension}`), target);
     const report = checkZodBackportAudit(fixture.options);
     assert.equal(report.registryAudit, 'PASS_RAW');
     assert.equal(report.registryAuditExitCode, 0);
     assert.equal(report.originalAuditFailurePreserved, false);
+    assert.equal(report.coupledEffectsVariant, null);
     assert.deepEqual(report.matchedRows, []);
   } finally { fs.rmSync(fixture.directory, { recursive: true }); }
 });

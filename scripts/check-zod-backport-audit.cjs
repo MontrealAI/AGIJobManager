@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { createRequire } = require('node:module');
-const PROFILE_SHA256 = 'e54d73332b0bba51481a06b604f2fc0fd7a26484f3690d41dab436795e2eb65e';
+const PROFILE_SHA256 = '7dc6cbb7dad6a8879f19a2d29e239f258a373e802c2525a02d271e9b7814e2ef';
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const canonical = value => JSON.stringify(value, function (_key, entry) { return entry && typeof entry === 'object' && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map(key => [key, entry[key]])) : entry; });
 function requireThat(condition, code, message) { if (!condition) throw Object.assign(new Error(message), { code }); }
@@ -156,10 +156,12 @@ function checkZodBackportAudit({ repositoryRoot, scope: scopeName, auditPath, st
   const root = fs.realpathSync(repositoryRoot), auditBytes = readRegular(auditPath), stderrBytes = readRegular(stderrPath), exitBytes = readRegular(exitPath);
   requireThat(/^[01]\n?$/.test(exitBytes.toString()), 'AUDIT_EXIT', 'Network/command failure or missing original exit code');
   const auditExitCode = Number(exitBytes.toString().trim()), stderr = stderrBytes.toString();
-  requireThat(stderr === '' || stderr === profile.knownNpmWarning, 'AUDIT_STDERR', 'Unexpected stderr is not a vulnerability disposition');
+  requireThat(stderr === '' || profile.knownNpmWarnings.includes(stderr), 'AUDIT_STDERR', 'Unexpected stderr is not a vulnerability disposition');
   const audit = parseJson(auditBytes), clean = auditExitCode === 0;
-  const expected = clean ? { ...scope.audit, vulnerabilities: {}, metadata: { ...scope.audit.metadata, vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 0, total: 0 } } } : scope.audit;
-  requireThat(canonical(audit) === canonical(expected), 'AUDIT_PROFILE_MISMATCH', 'Raw audit has new, missing or changed findings, nodes, via/effects, metadata or an error response');
+  const expected = clean ? scope.cleanAudit : scope.audit;
+  const candidates = !clean && scope.coupledEffectsVariants ? scope.coupledEffectsVariants.map(variant => ({ ...expected, vulnerabilities: { ...expected.vulnerabilities, ...Object.fromEntries(Object.entries(variant).map(([name, effects]) => [name, { ...expected.vulnerabilities[name], effects }])) } })) : [expected];
+  const matchedAuditVariant = candidates.findIndex(candidate => canonical(audit) === canonical(candidate));
+  requireThat(matchedAuditVariant !== -1, 'AUDIT_PROFILE_MISMATCH', 'Raw audit has new, missing or changed findings, nodes, via/effects, metadata or an error response');
   if (!clean) verifyClosure(audit, profile.primitive);
   const packageBytes = {};
   for (const [relative, expectedHash] of Object.entries(profile.packageFiles)) { const bytes = readRegular(path.join(root, relative)); requireThat(sha(bytes) === expectedHash, 'PACKAGE_LOCK_IDENTITY', relative); packageBytes[relative] = bytes; }
@@ -170,7 +172,7 @@ function checkZodBackportAudit({ repositoryRoot, scope: scopeName, auditPath, st
   for (const [relative, expectedHash] of Object.entries(profile.runtimeFiles)) requireThat(sha(readRegular(path.join(vendorDirectory, relative))) === expectedHash, 'RUNTIME_IDENTITY', relative);
   const lockRelative = scope.directory ? scope.directory + '/package-lock.json' : 'package-lock.json';
   const installed = verifyInstalled(root, scope, profile, vendorDirectory, parseJson(packageBytes[lockRelative]));
-  return { schema: 'manager/zod-bounded-source-audit-disposition/v1', registryAudit: clean ? 'PASS_RAW' : 'FAILED_KNOWN_BACKPORT_MATCH', registryAuditExitCode: auditExitCode, sourceDisposition: 'PASS', category: 'CODE_BACKPORT_EQUIVALENT_TO_6652_BOUNDED_ONLY', scope: scopeName, raw: { auditSha256: sha(auditBytes), stderrSha256: sha(stderrBytes), exitCodeSha256: sha(exitBytes) }, profileSha256: PROFILE_SHA256, vendorManifestSha256, vendorFiles: Object.keys(profile.vendorFiles).length, runtimeFiles: profile.runtimeFiles, packageFiles: profile.packageFiles, matchedPrimitive: clean ? null : profile.primitive, matchedRows: clean ? [] : Object.keys(audit.vulnerabilities), installed, limits: profile.limits, originalAuditFailurePreserved: !clean, unboundedContainersQualified: false, globalCveEradicationClaimed: false };
+  return { schema: 'manager/zod-bounded-source-audit-disposition/v1', registryAudit: clean ? 'PASS_RAW' : 'FAILED_KNOWN_BACKPORT_MATCH', registryAuditExitCode: auditExitCode, sourceDisposition: 'PASS', coupledEffectsVariant: !clean && scope.coupledEffectsVariants ? matchedAuditVariant : null, category: 'CODE_BACKPORT_EQUIVALENT_TO_6652_BOUNDED_ONLY', scope: scopeName, raw: { auditSha256: sha(auditBytes), stderrSha256: sha(stderrBytes), exitCodeSha256: sha(exitBytes) }, profileSha256: PROFILE_SHA256, vendorManifestSha256, vendorFiles: Object.keys(profile.vendorFiles).length, runtimeFiles: profile.runtimeFiles, packageFiles: profile.packageFiles, matchedPrimitive: clean ? null : profile.primitive, matchedRows: clean ? [] : Object.keys(audit.vulnerabilities), installed, limits: profile.limits, originalAuditFailurePreserved: !clean, unboundedContainersQualified: false, globalCveEradicationClaimed: false };
 }
 if (require.main === module) {
   const args = process.argv.slice(2), options = {};

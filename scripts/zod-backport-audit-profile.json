@@ -1,14 +1,13 @@
 {
   "schema": "manager/zod-bounded-audit-finite-profile/v1",
   "forkVersion": "3.25.76+agijobmanager.1",
-  "knownNpmWarning": "npm warn Unknown env config \"http-proxy\". This will stop working in the next major version of npm.\n",
   "packageFiles": {
-    "package.json": "46d54057971be7c26c2af0491842e317c0ba554ab8ea53b93cfb2dbf31e82bfe",
-    "package-lock.json": "80ff0410a32c32ce6930e26f2c84c3a07075c190048d1e29e2ebb0f4d76316a6",
-    "hardhat/package.json": "a4af6b40d2ba1f9a840fa8936db309a3d6c043fa2338ec6d437024da214ba1b6",
-    "hardhat/package-lock.json": "e1c8b924d6a633f4cecc0dd3f093c65bff43ccef8be1accf7743b3b322cbba0b",
-    "ui/package.json": "0c46a1bf03f29d86893ee648707f4f696deb2e66b2908d7c4c94e9a8a661a943",
-    "ui/package-lock.json": "3b3aff4871d57dabcd5e9323010eac7d5ef24092855a0652f0da745c9d77847f"
+    "package.json": "10366f73594f43b8690f884b066d9f96e534058eeb9753d53ea70dac722566b0",
+    "package-lock.json": "26e66d9b9ceeea702cac9f4cf1d01d67f73c0f6c0b4a3acba821b1cc12003987",
+    "hardhat/package.json": "64e09b238b0c88c11f27b0790b4174f0f6ab34ba8f166d01f4c9b876924b0f19",
+    "hardhat/package-lock.json": "57a4f9976cec3508869abdb0e077c7db634b79208512ec8490a859edd30c9b3a",
+    "ui/package.json": "65bc4f3b1083713f8da25257d4d8d0f54d7c7b16bd0987651bccbeac80dd8239",
+    "ui/package-lock.json": "8878a88cc7596260c4cf4977fc0215a4b275ed3ec86e600beeb59791127c5cff"
   },
   "vendorFiles": {
     "LICENSE": {
@@ -16,8 +15,8 @@
       "sha256": "3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8"
     },
     "README.md": {
-      "bytes": 3341,
-      "sha256": "0019515b8945443a82e5dd9f1171a1370a48d7f998b898cb337f22d095e245d1"
+      "bytes": 3445,
+      "sha256": "8d73af2d857e42ffc870833b57ee0d4c9dce48ddfe0121b6d6cd86045846c180"
     },
     "UPSTREAM.json": {
       "bytes": 16874,
@@ -723,7 +722,44 @@
           "version": "3.25.76+agijobmanager.1"
         }
       ],
-      "registry4Nodes": {}
+      "registry4Nodes": {},
+      "cleanAudit": {
+        "auditReportVersion": 2,
+        "vulnerabilities": {},
+        "metadata": {
+          "vulnerabilities": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "dependencies": {
+            "prod": 2,
+            "dev": 233,
+            "optional": 43,
+            "peer": 0,
+            "peerOptional": 0,
+            "total": 234
+          }
+        }
+      },
+      "auditCaptureProvenance": {
+        "clean": {
+          "kind": "ACTUAL_CORRECTED_LOCK_ONLY_CAPTURE",
+          "node": "v24.21.0",
+          "npm": "11.19.0",
+          "rawSha256": "243b591cf235d4c05690b9dd5cb2e08aa18974cf7411b8fc24ae3ff872e242e7",
+          "stderrSha256": "9aac3da9a7039a99c345545c32f286aa65c358d571bfce7e00d94625d095c829",
+          "exitCode": 0
+        },
+        "knownZodOnly": {
+          "kind": "HISTORICAL_FINITE_SIGNATURE_ONLY_CONDITIONAL_ON_FRESH_MATCH_AND_ALL_CURRENT_SOURCE_INSTALL_GUARDS",
+          "historicalProfileSha256": "e54d73332b0bba51481a06b604f2fc0fd7a26484f3690d41dab436795e2eb65e",
+          "rawHistoricalSourceReusedAsCurrentAcceptance": false
+        }
+      }
     },
     "ui": {
       "directory": "ui",
@@ -1213,6 +1249,74 @@
       ],
       "registry4Nodes": {
         "node_modules/@wagmi/connectors/node_modules/zod": "4.6.6"
+      },
+      "coupledEffectsVariants": [
+        {
+          "@reown/appkit-controllers": [
+            "@reown/appkit",
+            "@reown/appkit-scaffold-ui",
+            "@reown/appkit-utils"
+          ],
+          "@reown/appkit-ui": [
+            "@reown/appkit",
+            "@reown/appkit-pay",
+            "@reown/appkit-scaffold-ui"
+          ]
+        },
+        {
+          "@reown/appkit-controllers": [
+            "@reown/appkit",
+            "@reown/appkit-pay",
+            "@reown/appkit-scaffold-ui",
+            "@reown/appkit-utils"
+          ],
+          "@reown/appkit-ui": [
+            "@reown/appkit",
+            "@reown/appkit-scaffold-ui"
+          ]
+        }
+      ],
+      "coupledEffectsEvidence": {
+        "originalProfileSha256": "e54d73332b0bba51481a06b604f2fc0fd7a26484f3690d41dab436795e2eb65e",
+        "actualCiUiAuditSha256": "aa94b20b04b7377471d2c2a0f2e5f4af49ac9a75715aa60bc7b4d6c6ed2406ce",
+        "reason": "npm10.9.8 deduplicates same name@range before addVia while JSON via retains all advisories. Accept only the two exact coupled reverse-effect alternatives; every other audit field stays exact. The actual ff5 audit contains additional undisposed primitives and remains rejected."
+      },
+      "cleanAudit": {
+        "auditReportVersion": 2,
+        "vulnerabilities": {},
+        "metadata": {
+          "vulnerabilities": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "dependencies": {
+            "prod": 520,
+            "dev": 450,
+            "optional": 114,
+            "peer": 11,
+            "peerOptional": 0,
+            "total": 1007
+          }
+        }
+      },
+      "auditCaptureProvenance": {
+        "clean": {
+          "kind": "ACTUAL_CORRECTED_LOCK_ONLY_CAPTURE",
+          "node": "v24.21.0",
+          "npm": "11.19.0",
+          "rawSha256": "6690a3d2a24437e5daf32d66ebb051e0c1684827e6ee920dde255c7aa30f6d26",
+          "stderrSha256": "9aac3da9a7039a99c345545c32f286aa65c358d571bfce7e00d94625d095c829",
+          "exitCode": 0
+        },
+        "knownZodOnly": {
+          "kind": "HISTORICAL_FINITE_SIGNATURE_ONLY_CONDITIONAL_ON_FRESH_MATCH_AND_ALL_CURRENT_SOURCE_INSTALL_GUARDS",
+          "historicalProfileSha256": "e54d73332b0bba51481a06b604f2fc0fd7a26484f3690d41dab436795e2eb65e",
+          "rawHistoricalSourceReusedAsCurrentAcceptance": false
+        }
       }
     },
     "hardhat": {
@@ -1378,7 +1482,44 @@
           "version": "3.25.76+agijobmanager.1"
         }
       ],
-      "registry4Nodes": {}
+      "registry4Nodes": {},
+      "cleanAudit": {
+        "auditReportVersion": 2,
+        "vulnerabilities": {},
+        "metadata": {
+          "vulnerabilities": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "dependencies": {
+            "prod": 1,
+            "dev": 160,
+            "optional": 41,
+            "peer": 0,
+            "peerOptional": 0,
+            "total": 160
+          }
+        }
+      },
+      "auditCaptureProvenance": {
+        "clean": {
+          "kind": "ACTUAL_CORRECTED_LOCK_ONLY_CAPTURE",
+          "node": "v24.21.0",
+          "npm": "11.19.0",
+          "rawSha256": "5ab3752d913c9a0c520cc10ca488a094a983fe2304c01491ce683fcf4053f55c",
+          "stderrSha256": "9aac3da9a7039a99c345545c32f286aa65c358d571bfce7e00d94625d095c829",
+          "exitCode": 0
+        },
+        "knownZodOnly": {
+          "kind": "HISTORICAL_FINITE_SIGNATURE_ONLY_CONDITIONAL_ON_FRESH_MATCH_AND_ALL_CURRENT_SOURCE_INSTALL_GUARDS",
+          "historicalProfileSha256": "e54d73332b0bba51481a06b604f2fc0fd7a26484f3690d41dab436795e2eb65e",
+          "rawHistoricalSourceReusedAsCurrentAcceptance": false
+        }
+      }
     }
   },
   "limits": [
@@ -4763,5 +4904,28 @@
     "archiveBodyRetrievedAt": "2026-10-23T23:40:29.514006+00:00",
     "authenticationEvent": "NEW_NECESSARY_PUBLIC_ARCHIVE_BODY_RETRIEVAL",
     "priorEvidence": "Only registry metadata and selected lock SRI existed; no prior authenticated 4.6.6 archive was reused."
+  },
+  "knownNpmWarnings": [
+    "npm warn Unknown env config \"http-proxy\". This will stop working in the next major version of npm.\n",
+    "npm warn Unknown env config \"http-proxy\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\n"
+  ],
+  "currentCleanCapture": {
+    "kind": "FRESH_EMPTY_CACHE_LOCK_ONLY_REGISTRY_OBSERVATION",
+    "node": "v24.21.0",
+    "npm": "11.19.0",
+    "receiptSha256": "db8588110adac816a3102f08791965865c46a283ec28b39eed1ef44fc4ceb108",
+    "actualInstalledAcceptance": false,
+    "actualNode22CiAcceptance": false,
+    "vendorDocDelta": {
+      "onlyChangedFile": "README.md",
+      "before": {
+        "bytes": 3341,
+        "sha256": "0019515b8945443a82e5dd9f1171a1370a48d7f998b898cb337f22d095e245d1"
+      },
+      "after": {
+        "bytes": 3445,
+        "sha256": "8d73af2d857e42ffc870833b57ee0d4c9dce48ddfe0121b6d6cd86045846c180"
+      }
+    }
   }
 }

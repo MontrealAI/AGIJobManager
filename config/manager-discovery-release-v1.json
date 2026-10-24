@@ -130,7 +130,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "6bad29899ca0652fcdd33307fd9b8dcdd0e3cdeb4b4b45d73da898dcfb226c37"
+        "sha256": "89e263ac79adc522e331b230e93324ae6a2b13c70bb215ac8381f914978e993e"
       },
       "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
     },
@@ -207,7 +207,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "e1c8b924d6a633f4cecc0dd3f093c65bff43ccef8be1accf7743b3b322cbba0b"
+        "sha256": "57a4f9976cec3508869abdb0e077c7db634b79208512ec8490a859edd30c9b3a"
       },
       "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
     },
@@ -218,7 +218,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "a4af6b40d2ba1f9a840fa8936db309a3d6c043fa2338ec6d437024da214ba1b6"
+        "sha256": "64e09b238b0c88c11f27b0790b4174f0f6ab34ba8f166d01f4c9b876924b0f19"
       },
       "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
     },
@@ -229,7 +229,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "80ff0410a32c32ce6930e26f2c84c3a07075c190048d1e29e2ebb0f4d76316a6"
+        "sha256": "26e66d9b9ceeea702cac9f4cf1d01d67f73c0f6c0b4a3acba821b1cc12003987"
       },
       "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
     },
@@ -240,7 +240,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "46d54057971be7c26c2af0491842e317c0ba554ab8ea53b93cfb2dbf31e82bfe"
+        "sha256": "10366f73594f43b8690f884b066d9f96e534058eeb9753d53ea70dac722566b0"
       },
       "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
     },
@@ -405,7 +405,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "3b3aff4871d57dabcd5e9323010eac7d5ef24092855a0652f0da745c9d77847f"
+        "sha256": "8878a88cc7596260c4cf4977fc0215a4b275ed3ec86e600beeb59791127c5cff"
       },
       "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override."
     },
@@ -416,7 +416,7 @@
       },
       "after": {
         "mode": "100644",
-        "sha256": "0c46a1bf03f29d86893ee648707f4f696deb2e66b2908d7c4c94e9a8a661a943"
+        "sha256": "65bc4f3b1083713f8da25257d4d8d0f54d7c7b16bd0987651bccbeac80dd8239"
       },
       "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override."
     },
@@ -542,7 +542,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "28433e09b7ce4fc72a85a5c778d8bd8893dbbe292fb76c971b38b6436afb90a3"
+        "sha256": "3216b38bab7e3e9d3bdf2fb3b5baff73c8feb6d7b63c773598d92b87eaa6f2eb"
       },
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
@@ -558,7 +558,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "83c644af1989d5addee21e9ea692aa8d379fab98f38b2756d433ecef0977918b"
+        "sha256": "15477f5841da1175717c8f42e10a60d7d37ea56b0d1128ec77359fd3a8d2e3ca"
       },
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
@@ -606,7 +606,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "f2c744ddd8e721c390f6187aa7acbc702d16883edf4779f1e1123ec535a3ab6b"
+        "sha256": "a37bdc40efa0312bbdf801167163cc895c5d014fa17a3cec06208946eaf56a48"
       },
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
@@ -622,7 +622,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "19ec5ffe84a3e1b399c6e2edbd948be161e2934601623fa0333cea4ccb082bc1"
+        "sha256": "6db585777a6fc854af9e44c4433167f70c2ed1c2e810f0dae4eaaa8050515135"
       },
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
@@ -646,7 +646,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "117a92166a95d5a4b622a4692ae9c2bae1bf8749fa82ec43cc8715439bfc0836"
+        "sha256": "efa2457bf6c04caa001a5456db88a44bcbcafbf43f37a20a3998e13620a3a74b"
       },
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
@@ -830,7 +830,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "a10f160830f80a2b6f63d1729d60885583ef01862a11f3196f0aa9a5230e4179"
+        "sha256": "2e475ae977a88682290b8396f08b7e56f65c0290b69e8e3c9bd526a1ef89a8d2"
       },
       "reason": "Verify the exact reviewed Next security delta and preserve whole-package comparisons; construct the negative publisher extraction phase locally from its actual AST without unavailable historical Git objects, retaining old refusal and actual qualified rebuild success."
     },
@@ -838,7 +838,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "f6514d923dbd91c6295e1dfc8d641b9e1db31c69a9dc27ff03014696182b5de4"
+        "sha256": "6ac77e8fed3386cd78a19dee42fa66867662172edfac8014206b7acb712298f9"
       },
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
     },
@@ -878,7 +878,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "8739511c88ddaaa87b9ef982f9f762afccf77484116b4ab01afe1567b6f4baf3"
+        "sha256": "d84e66edd2c80abb947c2ef428ff1ffecebecf5de77500c79add1921413cbaed"
       },
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
@@ -886,7 +886,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "19380c2f75106503f44e38eeb3fb8d64f2342d72d36b2c11f40019fabd7b4f35"
+        "sha256": "f09171654e19c64b3e46e378c5b31b6440f380a87450debb2f7dfc57724a6aad"
       },
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
@@ -902,7 +902,79 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "e54d73332b0bba51481a06b604f2fc0fd7a26484f3690d41dab436795e2eb65e"
+        "sha256": "7dc6cbb7dad6a8879f19a2d29e239f258a373e802c2525a02d271e9b7814e2ef"
+      },
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+    },
+    "test/fixtures/zod-backport-audit/corrected-hardhat-clean-audit.exit": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      },
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+    },
+    "test/fixtures/zod-backport-audit/corrected-hardhat-clean-audit.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "5ab3752d913c9a0c520cc10ca488a094a983fe2304c01491ce683fcf4053f55c"
+      },
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+    },
+    "test/fixtures/zod-backport-audit/corrected-hardhat-clean-audit.stderr": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "9aac3da9a7039a99c345545c32f286aa65c358d571bfce7e00d94625d095c829"
+      },
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+    },
+    "test/fixtures/zod-backport-audit/corrected-root-clean-audit.exit": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      },
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+    },
+    "test/fixtures/zod-backport-audit/corrected-root-clean-audit.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "243b591cf235d4c05690b9dd5cb2e08aa18974cf7411b8fc24ae3ff872e242e7"
+      },
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+    },
+    "test/fixtures/zod-backport-audit/corrected-root-clean-audit.stderr": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "9aac3da9a7039a99c345545c32f286aa65c358d571bfce7e00d94625d095c829"
+      },
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+    },
+    "test/fixtures/zod-backport-audit/corrected-ui-clean-audit.exit": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      },
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+    },
+    "test/fixtures/zod-backport-audit/corrected-ui-clean-audit.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "6690a3d2a24437e5daf32d66ebb051e0c1684827e6ee920dde255c7aa30f6d26"
+      },
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+    },
+    "test/fixtures/zod-backport-audit/corrected-ui-clean-audit.stderr": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "9aac3da9a7039a99c345545c32f286aa65c358d571bfce7e00d94625d095c829"
       },
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
@@ -927,6 +999,22 @@
       "after": {
         "mode": "100644",
         "sha256": "7125f194612fcff2f454c05d848e7cb71facc1967b4d5017e25b34fdee3ba74f"
+      },
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+    },
+    "test/fixtures/zod-backport-audit/rejected-ff5-root-audit.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "3deb6663cc5fe2d9232b41b3d559b86384a279c9011aa27dc152024a8509a25a"
+      },
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+    },
+    "test/fixtures/zod-backport-audit/rejected-ff5-ui-audit.json": {
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "sha256": "aa94b20b04b7377471d2c2a0f2e5f4af49ac9a75715aa60bc7b4d6c6ed2406ce"
       },
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
@@ -990,7 +1078,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "0019515b8945443a82e5dd9f1171a1370a48d7f998b898cb337f22d095e245d1"
+        "sha256": "8d73af2d857e42ffc870833b57ee0d4c9dce48ddfe0121b6d6cd86045846c180"
       },
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },

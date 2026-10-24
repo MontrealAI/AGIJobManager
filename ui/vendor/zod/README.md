@@ -36,8 +36,9 @@ remains a separate registry `zod@4.6.6` dependency. This selection changes no
 transaction defaults.
 
 The original npm audit finding remains attached to its original lock/source.
-Registry audit still reports this honest Zod 3 version as affected: the raw audit
-failure is retained. A separate, source-bound backport disposition checks the
+The retained Node 22 registry audit reports this honest Zod 3 version as
+affected; that raw failure is retained. A newer npm version can return an empty
+registry report without auditing the local component. A separate, source-bound backport disposition checks the
 exact reviewed vendor, lock graph and installed resolutions and refuses unknown
 findings or drift. That disposition does not turn the registry audit into a pass
 or establish global resource-exhaustion resistance. Provenance, bounded refusal

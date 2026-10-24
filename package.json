@@ -84,7 +84,10 @@
   },
   "overrides": {
     "tmp": "0.2.7",
-    "zod@^3": "$zod"
+    "zod@^3": "$zod",
+    "fast-uri": "3.1.9",
+    "undici@^7": "7.30.1",
+    "serialize-javascript": "7.1.3"
   },
   "type": "module"
 }
