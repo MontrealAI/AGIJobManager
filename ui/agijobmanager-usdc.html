@@ -5832,6 +5832,19 @@ async function updateSummary(){
 
     async function verifySubdomain(kind, alpha=false){
       if(!requireConnected()) return;
+      const checkedAccount = userAccount;
+      const checkedManager = agiJobManager;
+      const checkedWeb3 = web3;
+      const verificationContext = {
+        epoch: APP_STATE.writeEpoch || 0,
+        account: String(checkedAccount).toLowerCase(),
+        chainId: APP_STATE.wallet.chainId,
+        manager: String(AGI_JOB_MANAGER || '').toLowerCase()
+      };
+      const isCurrentVerification = ()=> (APP_STATE.writeEpoch || 0) === verificationContext.epoch
+        && String(userAccount || '').toLowerCase() === verificationContext.account
+        && APP_STATE.wallet.chainId === verificationContext.chainId
+        && String(AGI_JOB_MANAGER || '').toLowerCase() === verificationContext.manager;
       const isAgent = kind==="agent";
       const input = isAgent ? el("agentSub") : el("clubSub");
       const out = isAgent ? el("agentOut") : el("clubOut");
@@ -5865,25 +5878,32 @@ async function updateSummary(){
       try{
         const full = `${sub}.${suffix}`;
         const tokenID = namehash(full);
-        const managerWrapperAddr = await agiJobManager?.methods?.nameWrapper?.().call().catch(()=> '');
+        const managerWrapperAddr = await checkedManager?.methods?.nameWrapper?.().call().catch(()=> '');
+        if(!isCurrentVerification()) return;
         const wrapperCheckDegraded = !managerWrapperAddr || isZeroAddress(managerWrapperAddr);
         const runtimeNameWrapper = wrapperCheckDegraded ? NAME_WRAPPER : managerWrapperAddr;
-        const nw = new web3.eth.Contract(NameWrapperABI, runtimeNameWrapper);
+        const nw = new checkedWeb3.eth.Contract(NameWrapperABI, runtimeNameWrapper);
         const owner = await nw.methods.ownerOf(tokenID).call();
-        const acct = String(userAccount || '').toLowerCase();
+        if(!isCurrentVerification()) return;
+        const acct = verificationContext.account;
         const ownerLc = String(owner || '').toLowerCase();
         const approved = await nw.methods.getApproved(tokenID).call().catch(()=>"0x0000000000000000000000000000000000000000");
+        if(!isCurrentVerification()) return;
         const approvedLc = String(approved || '').toLowerCase();
-        const approvedForAll = await nw.methods.isApprovedForAll(owner, userAccount).call().catch(()=>false);
+        const approvedForAll = await nw.methods.isApprovedForAll(owner, checkedAccount).call().catch(()=>false);
+        if(!isCurrentVerification()) return;
         let resolverAddrMatch = false;
         try{
-          const ensRegistryAddr = await agiJobManager.methods.ens().call();
+          const ensRegistryAddr = await checkedManager.methods.ens().call();
+          if(!isCurrentVerification()) return;
           if(ensRegistryAddr && !isZeroAddress(ensRegistryAddr)){
-            const ensRegistry = new web3.eth.Contract(ENSRegistryResolverABI, ensRegistryAddr);
+            const ensRegistry = new checkedWeb3.eth.Contract(ENSRegistryResolverABI, ensRegistryAddr);
             const nodeResolver = await ensRegistry.methods.resolver(tokenID).call().catch(()=>"0x0000000000000000000000000000000000000000");
+            if(!isCurrentVerification()) return;
             resolverAddrMatch = !!nodeResolver && String(nodeResolver).toLowerCase() === acct;
           }
         }catch{}
+        if(!isCurrentVerification()) return;
         const isAuthorized = ownerLc === acct || approvedLc === acct || !!approvedForAll || resolverAddrMatch;
 
         if(isAuthorized){
@@ -5904,7 +5924,9 @@ async function updateSummary(){
           pill.className = "pill ok";
           pill.textContent = (isAgent?"Agent":"Club") + (alpha ? " ENS: verified (alpha)" : " ENS: verified");
           await loadJobs();
+          if(!isCurrentVerification()) return;
           await updateDynamicInsights();
+          if(!isCurrentVerification()) return;
         }else{
           clearRoleVerification();
           out.textContent = `Not authorized for this wallet: ${full}`;
@@ -5913,6 +5935,7 @@ async function updateSummary(){
         }
         updateReadinessUI();
       }catch(e){
+        if(!isCurrentVerification()) return;
         console.error(e);
         clearRoleVerification();
         out.textContent = `Verification error: ${e.message || String(e)}`;

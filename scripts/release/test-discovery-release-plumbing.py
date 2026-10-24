@@ -55,13 +55,21 @@ class DiscoveryPlumbing(unittest.TestCase):
 
     def test_current_audit_workflow_projection_preserves_exact_published_beforeimages(self):
         self.assertEqual(set(PROFILE['AUDIT_WORKFLOW_ORIGINALS']), {
-            '.github/workflows/ui.yml', '.github/workflows/security-verification.yml'})
+            '.github/workflows/ui.yml', '.github/workflows/security-verification.yml',
+            'ui-tests/usdc-console.spec.js'})
+        baseline = PROFILE['baseline'](ROOT)
         for name, text in PROFILE['AUDIT_WORKFLOW_ORIGINALS'].items():
             with self.subTest(path=name):
                 self.assertEqual(text.encode(), previous(name))
+                self.assertEqual(PROFILE['blob'](text.encode()), baseline['entries'][name]['blob'])
                 self.assertNotIn(name, PROFILE['PROTECTED'])
                 self.assertIn(name, PROFILE['MODIFIED'])
-        PROFILE['validate_projections'](ROOT, PROFILE['baseline'](ROOT))
+        spec = 'ui-tests/usdc-console.spec.js'
+        self.assertEqual(baseline['entries'][spec], {
+            'mode': '100644', 'blob': '97b28b436f18d8a389ca21f8d7292c92df38065a'})
+        self.assertEqual(sha(PROFILE['AUDIT_WORKFLOW_ORIGINALS'][spec].encode()),
+            '31ac6da4ae10dcedb927daa1eb1ff06f0385c2dfb2bf7737f147eea1d4716b03')
+        PROFILE['validate_projections'](ROOT, baseline)
 
     def test_package_and_deployment_changes_restore_exact_predecessor_with_reviewed_security_patches(self):
         for name in PROFILE['PACKAGE_FILES']:

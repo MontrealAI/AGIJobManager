@@ -15,12 +15,14 @@ const NEXT_BUYER = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const WALLET30 = '0x3333333333333333333333333333333333333333';
 const WALLET10 = '0x4444444444444444444444444444444444444444';
 const USDC = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+const WRAPPER = '0x5555555555555555555555555555555555555555';
 const ZERO = '0x' + '0'.repeat(40);
 
 function rpcFixture() {
   const managerMethods = {
     'usdcToken()': ['address', USDC], 'wallet30()': ['address', WALLET30], 'wallet10()': ['address', WALLET10],
     'pendingOwner()': ['address', ZERO], 'owner()': ['address', WALLET30], 'ensJobPages()': ['address', ZERO],
+    'nameWrapper()': ['address', WRAPPER], 'ens()': ['address', ZERO],
     'settlementPausedSeconds()': ['uint256', 0], 'nextJobId()': ['uint256', 0], 'totalSupply()': ['uint256', 0],
     'requiredValidatorApprovals()': ['uint256', 3], 'requiredValidatorDisapprovals()': ['uint256', 3],
     'voteQuorum()': ['uint256', 3], 'completionReviewPeriod()': ['uint256', 604800],
@@ -47,10 +49,13 @@ function rpcFixture() {
     }));
     return { iface, calls };
   }
+  const wrapper = encodeReads({ 'ownerOf(uint256)': ['address', BUYER],
+    'getApproved(uint256)': ['address', ZERO], 'isApprovedForAll(address,address)': ['bool', false] });
   const manager = encodeReads(managerMethods), token = encodeReads(tokenMethods);
-  return { readsByTarget: { [MANAGER]: manager.calls, [OTHER_MANAGER]: manager.calls, [USDC]: token.calls },
+  return { readsByTarget: { [MANAGER]: manager.calls, [OTHER_MANAGER]: manager.calls, [USDC]: token.calls, [WRAPPER]: wrapper.calls },
+    wrapperSelectors: Object.fromEntries(['ownerOf', 'getApproved', 'isApprovedForAll'].map(name => [name, wrapper.iface.getFunction(name).selector])),
     tokenSelector: manager.iface.getFunction('usdcToken').selector,
-    badToken: manager.iface.encodeFunctionResult('usdcToken', [OTHER_MANAGER]), manager: MANAGER, otherManager: OTHER_MANAGER, buyer: BUYER, usdc: USDC };
+    badToken: manager.iface.encodeFunctionResult('usdcToken', [OTHER_MANAGER]), manager: MANAGER, otherManager: OTHER_MANAGER, buyer: BUYER, usdc: USDC, wrapper: WRAPPER };
 }
 
 async function openConsole(page, options = {}) {
@@ -72,13 +77,24 @@ async function openConsole(page, options = {}) {
   await page.addInitScript(({ fixture, options }) => {
     const listeners = new Map();
     const state = { accounts: [], chainId: options.chainId || '0x1', requests: [], prohibited: [], failReads: false, wrongToken: false };
+    let heldRead = null, nextHeldSelector = '';
     const emit = async (event, value) => Promise.all([...(listeners.get(event) || [])].map(callback => callback(value)));
     window.__usdcWallet = {
       state,
       async accounts(accounts) { state.accounts = accounts; await emit('accountsChanged', accounts); },
       async chain(chainId) { state.chainId = chainId; await emit('chainChanged', chainId); },
       failReads(value) { state.failReads = value; },
-      wrongToken(value) { state.wrongToken = value; }
+      wrongToken(value) { state.wrongToken = value; },
+      holdMembershipRead(method) {
+        if (heldRead || nextHeldSelector || !Object.hasOwn(fixture.wrapperSelectors, method)) throw new Error('Invalid or overlapping membership read gate.');
+        nextHeldSelector = fixture.wrapperSelectors[method];
+      },
+      releaseMembershipRead(fail = false) {
+        if (!heldRead) throw new Error('No membership read is waiting.');
+        const pending = heldRead; heldRead = null; state.heldMembershipRead = null;
+        if (fail) pending.reject(Object.assign(new Error('execution reverted: delayed fixture ownership read'), { code: -32000 }));
+        else pending.resolve(pending.result);
+      }
     };
     window.ethereum = {
       isMetaMask: true,
@@ -95,17 +111,24 @@ async function openConsole(page, options = {}) {
         if (method === 'eth_chainId') return state.chainId;
         if (method === 'net_version') return String(parseInt(state.chainId, 16));
         if (method === 'wallet_switchEthereumChain') { state.chainId = params[0].chainId; await emit('chainChanged', state.chainId); return null; }
-        if (method === 'eth_getCode') return [fixture.manager, fixture.otherManager, fixture.usdc].includes(params[0].toLowerCase()) ? '0x6000' : '0x';
+        if (method === 'eth_getCode') return Object.hasOwn(fixture.readsByTarget, params[0].toLowerCase()) ? '0x6000' : '0x';
         if (method === 'eth_getBalance') return '0xde0b6b3a7640000';
         if (method === 'eth_blockNumber') return '0x1';
         if (method === 'eth_getLogs') return [];
         if (method === 'eth_call') {
           const tx = params[0], target = String(tx.to || '').toLowerCase(), selector = String(tx.data || tx.input || '').slice(0, 10);
-          if (state.failReads || ![fixture.manager, fixture.otherManager, fixture.usdc].includes(target)) {
+          if (state.failReads || !Object.hasOwn(fixture.readsByTarget, target)) {
             throw Object.assign(new Error('execution reverted: unavailable fixture contract read'), { code: -32000 });
           }
           const reads = fixture.readsByTarget[target];
           if ([fixture.manager, fixture.otherManager].includes(target) && selector === fixture.tokenSelector && state.wrongToken) return fixture.badToken;
+          if (target === fixture.wrapper && selector === nextHeldSelector) {
+            nextHeldSelector = '';
+            return new Promise((resolve, reject) => {
+              heldRead = { resolve, reject, result: reads[selector] };
+              state.heldMembershipRead = Object.keys(fixture.wrapperSelectors).find(name => fixture.wrapperSelectors[name] === selector);
+            });
+          }
           if (Object.hasOwn(reads, selector)) return reads[selector];
           throw Object.assign(new Error(`execution reverted: unsupported fixture read ${selector}`), { code: -32000 });
         }
@@ -162,6 +185,22 @@ async function expectUnverifiedMembership(page) {
   for (const id of ['validatorBadge', 'agentAlphaBadge', 'clubAlphaBadge']) await expect(page.locator(`#${id}`)).toBeHidden();
   await expect(page.locator('#missionAgentStatus')).toHaveText('Unverified');
   await expect(page.locator('#missionValidatorStatus')).toHaveText('Unverified');
+}
+
+async function startDelayedMembershipVerification(page, method = 'getApproved') {
+  await page.evaluate(method => {
+    const input = document.getElementById('agentSub');
+    input.value = 'delayed-fixture-agent';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    window.__usdcWallet.holdMembershipRead(method);
+    window.__pendingMembershipVerification = verifySubdomain('agent', true);
+  }, method);
+  await expect.poll(() => page.evaluate(() => window.__usdcWallet.state.heldMembershipRead)).toBe(method);
+}
+
+async function finishDelayedMembershipVerification(page, fail = false) {
+  await page.evaluate(fail => window.__usdcWallet.releaseMembershipRead(fail), fail);
+  await page.evaluate(() => window.__pendingMembershipVerification);
 }
 
 test.describe('Published USDC console in a real browser', () => {
@@ -347,11 +386,14 @@ test.describe('Published USDC console in a real browser', () => {
     const errors = await openConsole(page);
     await connectReadyBuyer(page);
     await openPostingReview(page);
+    await startDelayedMembershipVerification(page);
     await page.evaluate(() => {
       const checkbox = document.getElementById('termsAccepted');
       checkbox.checked = false;
       checkbox.dispatchEvent(new Event('change', { bubbles: true }));
     });
+    await finishDelayedMembershipVerification(page);
+    await expectUnverifiedMembership(page);
     await expect(page.locator('#actionReviewModal')).toHaveAttribute('aria-hidden', 'true');
     await expect(page.locator('#createJobBtn')).toBeDisabled();
     await assertNoExecution(page, errors);
@@ -376,13 +418,28 @@ test.describe('Published USDC console in a real browser', () => {
     await connectReadyBuyer(page);
     await openPostingReview(page);
     await seedSyntheticMembership(page);
+    await startDelayedMembershipVerification(page);
     await page.evaluate(account => window.__usdcWallet.accounts([account]), NEXT_BUYER);
+    await finishDelayedMembershipVerification(page);
     await expect(page.locator('#actionReviewModal')).toHaveAttribute('aria-hidden', 'true');
     await expect(page.locator('#termsAccepted')).not.toBeChecked();
     await expect(page.locator('#createJobBtn')).toBeDisabled();
     await expect(page.locator('#missionPrimaryBtn')).toHaveAttribute('data-action', 'terms');
     await expect(page.locator('#walletStatus')).toContainText(/0xbbbb/i);
     await expectUnverifiedMembership(page);
+    // A rejected response from the previous context must not clear a newer
+    // verification that used the actual ABI-decoded fixture ownership read.
+    await startDelayedMembershipVerification(page, 'ownerOf');
+    await page.evaluate(account => window.__usdcWallet.accounts([account]), BUYER);
+    await page.locator('#agentSub').fill('current-fixture-agent');
+    await page.evaluate(() => verifySubdomain('agent', true));
+    await expect(page.locator('#agentPill')).toHaveText('Agent ENS: verified (alpha)');
+    await finishDelayedMembershipVerification(page, true);
+    expect(await page.evaluate(() => ({ ...verified }))).toEqual({ agent: 'current-fixture-agent', club: null, agentAlpha: true, clubAlpha: false });
+    await expect(page.locator('#agentPill')).toHaveText('Agent ENS: verified (alpha)');
+    await expect(page.locator('#agentAlphaBadge')).toBeVisible();
+    await expect(page.locator('#termsAccepted')).not.toBeChecked();
+    await expect(page.locator('#createJobBtn')).toBeDisabled();
     await assertNoExecution(page, errors);
   });
 
@@ -402,7 +459,9 @@ test.describe('Published USDC console in a real browser', () => {
     const errors = await openConsole(page);
     await connectReadyBuyer(page);
     await seedSyntheticMembership(page);
+    await startDelayedMembershipVerification(page);
     await page.evaluate(() => window.__usdcWallet.chain('0xaa36a7'));
+    await finishDelayedMembershipVerification(page);
     await expect(page.locator('#missionPrimaryBtn')).toHaveAttribute('data-action', 'switch-mainnet');
     await expect(page.locator('#createJobBtn')).toBeDisabled();
     await expect(page.locator('#termsAccepted')).not.toBeChecked();
@@ -418,8 +477,11 @@ test.describe('Published USDC console in a real browser', () => {
   test('a replacement deployment with the wrong token stays locked even after terms acceptance', async ({ page }) => {
     const errors = await openConsole(page);
     await connectReadyBuyer(page);
+    await startDelayedMembershipVerification(page);
     await page.evaluate(() => window.__usdcWallet.wrongToken(true));
     await chooseManager(page, OTHER_MANAGER);
+    await finishDelayedMembershipVerification(page);
+    await expectUnverifiedMembership(page);
     await expect(page.locator('#usdcDeploymentStatus')).toContainText('not native Circle USDC');
     await page.locator('#termsAccepted').check();
     await expect(page.locator('#missionPrimaryBtn')).toHaveAttribute('data-action', 'deployment');
