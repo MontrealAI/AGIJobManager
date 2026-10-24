@@ -58,6 +58,7 @@ for (const scope of ['root', 'ui', 'hardhat']) test(`${scope}: constructed insta
     assert.equal(report.vendorFiles, 144);
     assert.equal(report.originalAuditFailurePreserved, true);
     assert.equal(report.globalCveEradicationClaimed, false);
+    if (scope === 'hardhat') assert.equal(report.hardhatEthersRangeVariant, 1);
     assert.equal(report.matchedRows.length, scope === 'root' ? 3 : scope === 'ui' ? 18 : 5);
     if (scope === 'ui') {
       const porto = report.installed.consumers.find(consumer => consumer.node.endsWith('/porto'));
@@ -88,6 +89,19 @@ for (const state of ['both', 'neither']) control(`fails third coupled Appkit eff
 }), 'AUDIT_PROFILE_MISMATCH');
 control('fails unknown Appkit effect despite permitted coupled alternatives', 'ui', fixture => changeAudit(fixture, audit => audit.vulnerabilities['@reown/appkit-controllers'].effects.push('@reown/unreviewed')), 'AUDIT_PROFILE_MISMATCH');
 for (const scope of ['root', 'ui']) control(`${scope}: preserved ff5 actual CI audits with new advisories remain rejected`, scope, fixture => fs.copyFileSync(path.join(fixtures, `rejected-ff5-${scope}-audit.json`), fixture.auditPath), 'AUDIT_PROFILE_MISMATCH');
+test('Hardhat actual Node22 captured signature is the current finite range candidate', () => {
+  const fixture = constructedTree('hardhat');
+  try {
+    for (const [extension, target] of [['json', fixture.auditPath], ['stderr', fixture.stderrPath], ['exit', fixture.exitPath]]) fs.copyFileSync(path.join(fixtures, `fa7-hardhat-audit.${extension}`), target);
+    const report = checkZodBackportAudit(fixture.options);
+    assert.equal(report.hardhatEthersRangeVariant, 0);
+    assert.equal(report.registryAudit, 'FAILED_KNOWN_BACKPORT_MATCH');
+    assert.equal(report.registryAuditExitCode, 1);
+  } finally { fs.rmSync(fixture.directory, { recursive: true }); }
+});
+control('fails any third Hardhat ethers range string', 'hardhat', fixture => changeAudit(fixture, audit => { audit.vulnerabilities['@nomicfoundation/hardhat-ethers'].range = '3.0.7 || 3.0.8 || >=4.0.0-next.0'; }), 'AUDIT_PROFILE_MISMATCH');
+control('Hardhat range alternatives do not permit a changed primitive', 'hardhat', fixture => changeAudit(fixture, audit => { audit.vulnerabilities.zod.via[0].source = 1; }), 'AUDIT_PROFILE_MISMATCH');
+control('Hardhat range alternatives do not permit an additional node', 'hardhat', fixture => changeAudit(fixture, audit => audit.vulnerabilities.zod.nodes.push('node_modules/unknown/node_modules/zod')), 'AUDIT_PROFILE_MISMATCH');
 control('fails new unrelated audit row', 'root', fixture => changeAudit(fixture, audit => { audit.vulnerabilities.unreviewed = { name: 'unreviewed', via: [], nodes: ['node_modules/unreviewed'] }; }), 'AUDIT_PROFILE_MISMATCH');
 control('fails a new node on an otherwise known advisory', 'ui', fixture => changeAudit(fixture, audit => audit.vulnerabilities.zod.nodes.push('node_modules/unknown/node_modules/zod')), 'AUDIT_PROFILE_MISMATCH');
 control('fails changed primitive details', 'root', fixture => changeAudit(fixture, audit => { audit.vulnerabilities.zod.via[0].source = 1; }), 'AUDIT_PROFILE_MISMATCH');

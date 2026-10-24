@@ -1335,7 +1335,7 @@
               "zod"
             ],
             "effects": [],
-            "range": ">=4.0.0-next.0",
+            "range": "3.0.7 || >=4.0.0-next.0",
             "nodes": [
               "node_modules/@nomicfoundation/hardhat-ethers"
             ],
@@ -1515,11 +1515,26 @@
           "exitCode": 0
         },
         "knownZodOnly": {
-          "kind": "HISTORICAL_FINITE_SIGNATURE_ONLY_CONDITIONAL_ON_FRESH_MATCH_AND_ALL_CURRENT_SOURCE_INSTALL_GUARDS",
-          "historicalProfileSha256": "e54d73332b0bba51481a06b604f2fc0fd7a26484f3690d41dab436795e2eb65e",
-          "rawHistoricalSourceReusedAsCurrentAcceptance": false
+          "kind": "ACTUAL_NODE22_CI_CAPTURE_CURRENT_SIGNATURE_WITH_ONE_EXACT_HISTORICAL_RANGE_ALTERNATE",
+          "artifactId": 12540506041,
+          "artifactZipSha256": "7bc4986342cc26e4bc61052eb6c39efa96f9135fea9ffba2918f0704486589c2",
+          "rawSha256": "27348a6b0c6bf1a860b44c96fae218b5ee2861d7a2afb4c3559abcc32ddf78c8",
+          "workflowNode": "22.23.2",
+          "bundledNpmFromOfficialNodeSource": "10.9.8",
+          "originalExitCode": 1,
+          "originalStderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "selectedEthersVersion": "4.1.0",
+          "exactPriorAlternateRange": ">=4.0.0-next.0",
+          "historicalVersionAbsentFromSelectedLockGraph": "3.0.7",
+          "allOtherAuditFieldsExactBetweenObservedSignatures": true,
+          "actualHardhatInstalledSourceDispositionEarned": false,
+          "mechanism": "npm simpleRange uses all advisory versions/range union, including historical versions outside current installed nodes. Specific cache causation is an inference, not demonstrated."
         }
-      }
+      },
+      "hardhatEthersRangeVariants": [
+        "3.0.7 || >=4.0.0-next.0",
+        ">=4.0.0-next.0"
+      ]
     }
   },
   "limits": [
