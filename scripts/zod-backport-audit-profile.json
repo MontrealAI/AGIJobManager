@@ -1250,36 +1250,11 @@
       "registry4Nodes": {
         "node_modules/@wagmi/connectors/node_modules/zod": "4.6.6"
       },
-      "coupledEffectsVariants": [
-        {
-          "@reown/appkit-controllers": [
-            "@reown/appkit",
-            "@reown/appkit-scaffold-ui",
-            "@reown/appkit-utils"
-          ],
-          "@reown/appkit-ui": [
-            "@reown/appkit",
-            "@reown/appkit-pay",
-            "@reown/appkit-scaffold-ui"
-          ]
-        },
-        {
-          "@reown/appkit-controllers": [
-            "@reown/appkit",
-            "@reown/appkit-pay",
-            "@reown/appkit-scaffold-ui",
-            "@reown/appkit-utils"
-          ],
-          "@reown/appkit-ui": [
-            "@reown/appkit",
-            "@reown/appkit-scaffold-ui"
-          ]
-        }
-      ],
       "coupledEffectsEvidence": {
         "originalProfileSha256": "e54d73332b0bba51481a06b604f2fc0fd7a26484f3690d41dab436795e2eb65e",
         "actualCiUiAuditSha256": "aa94b20b04b7377471d2c2a0f2e5f4af49ac9a75715aa60bc7b4d6c6ed2406ce",
-        "reason": "npm10.9.8 deduplicates same name@range before addVia while JSON via retains all advisories. Accept only the two exact coupled reverse-effect alternatives; every other audit field stays exact. The actual ff5 audit contains additional undisposed primitives and remains rejected."
+        "reason": "Historical ff5 evidence motivated a two-snapshot coupled reverse-effect rule. Actual61 evidence shows another valid inverse-via parent, superseding that rule. Current acceptance validates effects as unique known inverse-via edges with omissions permitted while the complete authoritative via graph stays exact; fixAvailable is shaped diagnostic metadata only. The original ff5 audit contains additional undisposed primitives and remains rejected.",
+        "historicalRuleStatus": "SUPERSEDED_BY_VALIDATED_NONAUTHORITATIVE_DIAGNOSTICS"
       },
       "cleanAudit": {
         "auditReportVersion": 2,
@@ -4942,5 +4917,15 @@
         "sha256": "8d73af2d857e42ffc870833b57ee0d4c9dce48ddfe0121b6d6cd86045846c180"
       }
     }
+  },
+  "auditDiagnostics": {
+    "fields": [
+      "effects",
+      "fixAvailable"
+    ],
+    "authority": "none; retained diagnostic metadata never selects code, review, remediation, installation or execution",
+    "effects": "Unique known row names; A.effects may contain B only when exact retained B.via contains A. Missing reverse edges are allowed; all complete authoritative via lists remain exact.",
+    "fixAvailable": "Boolean, or exactly name/version/isSemVerMajor. Object target must name a known direct vulnerable row; version must be canonical SemVer and major flag boolean.",
+    "unchangedTrust": "Exact full risk rows excluding only the two validated diagnostic fields, sole primitive advisory, via, node paths, severity, ranges including only previously reviewed range variants, metadata, package/locks, vendor, registry4 and installed resolution."
   }
 }

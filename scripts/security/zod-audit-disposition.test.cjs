@@ -67,27 +67,66 @@ for (const scope of ['root', 'ui', 'hardhat']) test(`${scope}: constructed insta
     }
   } finally { fs.rmSync(fixture.directory, { recursive: true }); }
 });
-test('UI permits only the other authenticated coupled Appkit effects mapping', () => {
+for (const parents of [[], ['@reown/appkit-controllers'], ['@reown/appkit-ui'], ['@reown/appkit-utils'], ['@reown/appkit-controllers', '@reown/appkit-ui', '@reown/appkit-utils']]) test(`UI accepts valid inverse-via diagnostics without changing exact risk graph: ${parents.join(',') || 'none'}`, () => {
   const fixture = constructedTree('ui');
   try {
-    const raw = JSON.parse(fs.readFileSync(fixture.auditPath));
-    const variants = profile.scopes.ui.coupledEffectsVariants;
-    const current = variants.findIndex(variant => Object.entries(variant).every(([name, effects]) => JSON.stringify(raw.vulnerabilities[name].effects) === JSON.stringify(effects)));
-    assert.notEqual(current, -1);
-    const alternate = 1 - current;
-    changeAudit(fixture, audit => { for (const [name, effects] of Object.entries(variants[alternate])) audit.vulnerabilities[name].effects = effects; });
+    changeAudit(fixture, audit => {
+      for (const name of ['@reown/appkit-controllers', '@reown/appkit-ui', '@reown/appkit-utils']) {
+        const other = audit.vulnerabilities[name].effects.filter(effect => effect !== '@reown/appkit-pay');
+        audit.vulnerabilities[name].effects = parents.includes(name) ? [...other, '@reown/appkit-pay'] : other;
+      }
+    });
     const report = checkZodBackportAudit(fixture.options);
-    assert.equal(report.coupledEffectsVariant, alternate);
     assert.equal(report.registryAudit, 'FAILED_KNOWN_BACKPORT_MATCH');
+    assert.equal(report.auditDiagnostics.usedForTrust, false);
+    assert.equal(report.auditDiagnostics.automaticallyExecuted, false);
+    const raw = JSON.parse(fs.readFileSync(fixture.auditPath));
+    for (const name of parents) assert.deepEqual(report.auditDiagnostics.rows[name].effects, raw.vulnerabilities[name].effects);
   } finally { fs.rmSync(fixture.directory, { recursive: true }); }
 });
-for (const state of ['both', 'neither']) control(`fails third coupled Appkit effects combination: ${state}`, 'ui', fixture => changeAudit(fixture, audit => {
-  for (const name of ['@reown/appkit-controllers', '@reown/appkit-ui']) {
-    const withoutPay = audit.vulnerabilities[name].effects.filter(name => name !== '@reown/appkit-pay');
-    audit.vulnerabilities[name].effects = state === 'both' ? [...withoutPay, '@reown/appkit-pay'].sort() : withoutPay;
-  }
-}), 'AUDIT_PROFILE_MISMATCH');
-control('fails unknown Appkit effect despite permitted coupled alternatives', 'ui', fixture => changeAudit(fixture, audit => audit.vulnerabilities['@reown/appkit-controllers'].effects.push('@reown/unreviewed')), 'AUDIT_PROFILE_MISMATCH');
+control('fails unknown diagnostic effect', 'ui', fixture => changeAudit(fixture, audit => audit.vulnerabilities['@reown/appkit-controllers'].effects.push('@reown/unreviewed')), 'AUDIT_DIAGNOSTIC_EFFECTS');
+control('fails known row that is not an inverse-via diagnostic edge', 'ui', fixture => changeAudit(fixture, audit => audit.vulnerabilities.zod.effects.push('wagmi')), 'AUDIT_DIAGNOSTIC_EFFECTS');
+control('fails duplicate diagnostic effects', 'ui', fixture => changeAudit(fixture, audit => audit.vulnerabilities.zod.effects.push(audit.vulnerabilities.zod.effects[0])), 'AUDIT_DIAGNOSTIC_EFFECTS');
+for (const effects of [null, 'wagmi', [1]]) control(`fails malformed diagnostic effects ${JSON.stringify(effects)}`, 'ui', fixture => changeAudit(fixture, audit => { audit.vulnerabilities.zod.effects = effects; }), 'AUDIT_DIAGNOSTIC_EFFECTS');
+control('fails missing effects field', 'ui', fixture => changeAudit(fixture, audit => { delete audit.vulnerabilities.zod.effects; }), 'AUDIT_DIAGNOSTIC_EFFECTS');
+for (const fix of [false, true, { name: 'hardhat', version: '99.1000.123-alpha.1+diagnostic', isSemVerMajor: false }]) test(`valid fix metadata remains a retained nonexecuted diagnostic: ${JSON.stringify(fix)}`, () => {
+  const fixture = constructedTree('hardhat');
+  try {
+    changeAudit(fixture, audit => { audit.vulnerabilities.zod.fixAvailable = fix; });
+    const report = checkZodBackportAudit(fixture.options);
+    assert.deepEqual(report.auditDiagnostics.rows.zod.fixAvailable, fix);
+    assert.equal(report.auditDiagnostics.usedForTrust, false);
+    assert.equal(report.auditDiagnostics.automaticallyExecuted, false);
+    assert.equal(report.registryAuditExitCode, 1);
+    assert.equal(report.sourceDisposition, 'PASS');
+  } finally { fs.rmSync(fixture.directory, { recursive: true }); }
+});
+for (const fix of [null, [], 'true', {},
+  { name: 'hardhat', version: '2.29.1', isSemVerMajor: true, execute: true },
+  { name: 'hardhat', version: '2.29.1' },
+  { name: '', version: '2.29.1', isSemVerMajor: true },
+  { name: 'unreviewed', version: '2.29.1', isSemVerMajor: true },
+  { name: '@nomicfoundation/hardhat-zod-utils', version: '2.29.1', isSemVerMajor: true },
+  { name: 'hardhat', version: 'latest', isSemVerMajor: true },
+  { name: 'hardhat', version: '01.2.3', isSemVerMajor: true },
+  { name: 'hardhat', version: 'v1.2.3', isSemVerMajor: true },
+  { name: 'hardhat', version: '1.2.3\n', isSemVerMajor: true },
+  { name: 'hardhat', version: '1.2.3-01', isSemVerMajor: true },
+  { name: 'hardhat', version: '2.29.1', isSemVerMajor: 'true' }]) control(`fails malformed or unrelated fix diagnostic ${JSON.stringify(fix)}`, 'hardhat', fixture => changeAudit(fixture, audit => { audit.vulnerabilities.zod.fixAvailable = fix; }), 'AUDIT_DIAGNOSTIC_FIX');
+control('fails missing fixAvailable field', 'hardhat', fixture => changeAudit(fixture, audit => { delete audit.vulnerabilities.zod.fixAvailable; }), 'AUDIT_DIAGNOSTIC_FIX');
+for (const scope of ['hardhat', 'ui']) test(`actual61 ${scope} raw diagnostic variation retains original exit1 and exact risk/source guards`, () => {
+  const fixture = constructedTree(scope);
+  try {
+    for (const [extension, target] of [['json', fixture.auditPath], ['stderr', fixture.stderrPath], ['exit', fixture.exitPath]]) fs.copyFileSync(path.join(fixtures, `61-${scope}-audit.${extension}`), target);
+    const before = fs.readFileSync(fixture.auditPath);
+    const report = checkZodBackportAudit(fixture.options);
+    assert.equal(report.registryAudit, 'FAILED_KNOWN_BACKPORT_MATCH');
+    assert.equal(report.registryAuditExitCode, 1);
+    assert.equal(report.sourceDisposition, 'PASS');
+    assert.deepEqual(fs.readFileSync(fixture.auditPath), before);
+    assert.equal(report.auditDiagnostics.usedForTrust, false);
+  } finally { fs.rmSync(fixture.directory, { recursive: true }); }
+});
 for (const scope of ['root', 'ui']) control(`${scope}: preserved ff5 actual CI audits with new advisories remain rejected`, scope, fixture => fs.copyFileSync(path.join(fixtures, `rejected-ff5-${scope}-audit.json`), fixture.auditPath), 'AUDIT_PROFILE_MISMATCH');
 test('Hardhat actual Node22 captured signature is the current finite range candidate', () => {
   const fixture = constructedTree('hardhat');
@@ -106,7 +145,6 @@ control('fails new unrelated audit row', 'root', fixture => changeAudit(fixture,
 control('fails a new node on an otherwise known advisory', 'ui', fixture => changeAudit(fixture, audit => audit.vulnerabilities.zod.nodes.push('node_modules/unknown/node_modules/zod')), 'AUDIT_PROFILE_MISMATCH');
 control('fails changed primitive details', 'root', fixture => changeAudit(fixture, audit => { audit.vulnerabilities.zod.via[0].source = 1; }), 'AUDIT_PROFILE_MISMATCH');
 control('fails an unknown via reference', 'ui', fixture => changeAudit(fixture, audit => audit.vulnerabilities.wagmi.via.push('unknown')), 'AUDIT_PROFILE_MISMATCH');
-control('fails changed effects closure', 'ui', fixture => changeAudit(fixture, audit => audit.vulnerabilities.zod.effects.push('wagmi')), 'AUDIT_PROFILE_MISMATCH');
 control('fails changed dependency metadata', 'hardhat', fixture => changeAudit(fixture, audit => audit.metadata.dependencies.total++), 'AUDIT_PROFILE_MISMATCH');
 control('fails modified reviewed runtime bytes', 'root', fixture => fs.appendFileSync(path.join(fixture.vendor, 'v3/types.cjs'), '\n'), 'VENDOR_IDENTITY');
 control('fails an extra vendor file', 'root', fixture => fs.writeFileSync(path.join(fixture.vendor, 'unreviewed.js'), 'module.exports = 1'), 'VENDOR_IDENTITY');
@@ -152,7 +190,8 @@ for (const scope of ['root', 'ui', 'hardhat']) test(`${scope}: captured correcte
     assert.equal(report.registryAudit, 'PASS_RAW');
     assert.equal(report.registryAuditExitCode, 0);
     assert.equal(report.originalAuditFailurePreserved, false);
-    assert.equal(report.coupledEffectsVariant, null);
+    assert.equal(report.auditDiagnostics.usedForTrust, false);
+    assert.deepEqual(report.auditDiagnostics.rows, {});
     assert.deepEqual(report.matchedRows, []);
   } finally { fs.rmSync(fixture.directory, { recursive: true }); }
 });

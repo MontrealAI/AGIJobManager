@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { createRequire } = require('node:module');
-const PROFILE_SHA256 = '0cb43cf9d6037a46f7fe61b18f01c7618cbbc3683e1b705f3a8028ccb2b292e1';
+const PROFILE_SHA256 = '37339f548db43979d3e12b42547cdce336d1c7c5462ff7a6c78f65bc1b1b6862';
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const canonical = value => JSON.stringify(value, function (_key, entry) { return entry && typeof entry === 'object' && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map(key => [key, entry[key]])) : entry; });
 function requireThat(condition, code, message) { if (!condition) throw Object.assign(new Error(message), { code }); }
@@ -150,6 +150,39 @@ function verifyClosure(audit, expectedPrimitive) {
   do { prior = reaches.size; for (const [name, row] of Object.entries(rows)) if (row.via.some(via => typeof via === 'string' && reaches.has(via))) reaches.add(name); } while (reaches.size !== prior);
   requireThat(reaches.size === names.size, 'UNRELATED_METAVULNERABILITY', 'Every captured row must reach the one primitive, including legitimate cycles');
 }
+// npm's suggestions and reverse-edge summaries are non-authoritative diagnostics.
+// Keep the complete raw report; only its exact risk projection can match the profile.
+const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+function auditRiskProjection(audit) {
+  if (!record(audit) || !record(audit.vulnerabilities)) return audit;
+  return { ...audit, vulnerabilities: Object.fromEntries(Object.entries(audit.vulnerabilities).map(([name, row]) => {
+    if (!record(row)) return [name, row];
+    const { effects, fixAvailable, ...risk } = row;
+    return [name, risk];
+  })) };
+}
+const semverNumber = '(?:0|[1-9][0-9]*)';
+const semverPrerelease = '(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)';
+const canonicalSemver = new RegExp('^' + semverNumber + '\\.' + semverNumber + '\\.' + semverNumber + '(?:-' + semverPrerelease + '(?:\\.' + semverPrerelease + ')*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$');
+function validateAuditDiagnostics(audit) {
+  const rows = audit.vulnerabilities, diagnostics = {};
+  for (const [name, row] of Object.entries(rows)) {
+    requireThat(Array.isArray(row.effects) && row.effects.every(effect => typeof effect === 'string')
+      && new Set(row.effects).size === row.effects.length, 'AUDIT_DIAGNOSTIC_EFFECTS', 'Effects must be unique row names: ' + name);
+    for (const effect of row.effects) requireThat(Object.hasOwn(rows, effect) && rows[effect].via.includes(name),
+      'AUDIT_DIAGNOSTIC_EFFECTS', 'Effect is not a known inverse-via edge: ' + name + ' -> ' + effect);
+    const fix = row.fixAvailable;
+    if (typeof fix !== 'boolean') {
+      requireThat(record(fix) && canonical(Object.keys(fix).sort()) === canonical(['isSemVerMajor', 'name', 'version'])
+        && typeof fix.name === 'string' && Object.hasOwn(rows, fix.name) && rows[fix.name].isDirect === true
+        && typeof fix.version === 'string' && canonicalSemver.exec(fix.version)?.[0] === fix.version
+        && typeof fix.isSemVerMajor === 'boolean', 'AUDIT_DIAGNOSTIC_FIX', 'Fix suggestion must be a shaped diagnostic for a known direct vulnerable row: ' + name);
+    }
+    diagnostics[name] = { effects: row.effects, fixAvailable: fix };
+  }
+  return { usedForTrust: false, automaticallyExecuted: false, rows: diagnostics };
+}
+
 function checkZodBackportAudit({ repositoryRoot, scope: scopeName, auditPath, stderrPath, exitPath }) {
   const profile = loadProfile(), scope = profile.scopes[scopeName];
   requireThat(scope, 'UNKNOWN_SCOPE', 'Only exact captured root, UI or Hardhat scope is eligible');
@@ -159,10 +192,11 @@ function checkZodBackportAudit({ repositoryRoot, scope: scopeName, auditPath, st
   requireThat(stderr === '' || profile.knownNpmWarnings.includes(stderr), 'AUDIT_STDERR', 'Unexpected stderr is not a vulnerability disposition');
   const audit = parseJson(auditBytes), clean = auditExitCode === 0;
   const expected = clean ? scope.cleanAudit : scope.audit;
-  let candidates = !clean && scope.coupledEffectsVariants ? scope.coupledEffectsVariants.map(variant => ({ ...expected, vulnerabilities: { ...expected.vulnerabilities, ...Object.fromEntries(Object.entries(variant).map(([name, effects]) => [name, { ...expected.vulnerabilities[name], effects }])) } })) : [expected];
+  let candidates = [expected];
   if (!clean && scopeName === 'hardhat' && scope.hardhatEthersRangeVariants) candidates = scope.hardhatEthersRangeVariants.map(range => ({ ...expected, vulnerabilities: { ...expected.vulnerabilities, '@nomicfoundation/hardhat-ethers': { ...expected.vulnerabilities['@nomicfoundation/hardhat-ethers'], range } } }));
-  const matchedAuditVariant = candidates.findIndex(candidate => canonical(audit) === canonical(candidate));
-  requireThat(matchedAuditVariant !== -1, 'AUDIT_PROFILE_MISMATCH', 'Raw audit has new, missing or changed findings, nodes, via/effects, metadata or an error response');
+  const matchedAuditVariant = candidates.findIndex(candidate => canonical(auditRiskProjection(audit)) === canonical(auditRiskProjection(candidate)));
+  requireThat(matchedAuditVariant !== -1, 'AUDIT_PROFILE_MISMATCH', 'Raw audit has new, missing or changed risk rows, primitive, via, nodes, severity, ranges, metadata or an error response');
+  const auditDiagnostics = validateAuditDiagnostics(audit);
   if (!clean) verifyClosure(audit, profile.primitive);
   const packageBytes = {};
   for (const [relative, expectedHash] of Object.entries(profile.packageFiles)) { const bytes = readRegular(path.join(root, relative)); requireThat(sha(bytes) === expectedHash, 'PACKAGE_LOCK_IDENTITY', relative); packageBytes[relative] = bytes; }
@@ -173,7 +207,7 @@ function checkZodBackportAudit({ repositoryRoot, scope: scopeName, auditPath, st
   for (const [relative, expectedHash] of Object.entries(profile.runtimeFiles)) requireThat(sha(readRegular(path.join(vendorDirectory, relative))) === expectedHash, 'RUNTIME_IDENTITY', relative);
   const lockRelative = scope.directory ? scope.directory + '/package-lock.json' : 'package-lock.json';
   const installed = verifyInstalled(root, scope, profile, vendorDirectory, parseJson(packageBytes[lockRelative]));
-  return { schema: 'manager/zod-bounded-source-audit-disposition/v1', registryAudit: clean ? 'PASS_RAW' : 'FAILED_KNOWN_BACKPORT_MATCH', registryAuditExitCode: auditExitCode, sourceDisposition: 'PASS', coupledEffectsVariant: !clean && scope.coupledEffectsVariants ? matchedAuditVariant : null, hardhatEthersRangeVariant: !clean && scopeName === 'hardhat' && scope.hardhatEthersRangeVariants ? matchedAuditVariant : null, category: 'CODE_BACKPORT_EQUIVALENT_TO_6652_BOUNDED_ONLY', scope: scopeName, raw: { auditSha256: sha(auditBytes), stderrSha256: sha(stderrBytes), exitCodeSha256: sha(exitBytes) }, profileSha256: PROFILE_SHA256, vendorManifestSha256, vendorFiles: Object.keys(profile.vendorFiles).length, runtimeFiles: profile.runtimeFiles, packageFiles: profile.packageFiles, matchedPrimitive: clean ? null : profile.primitive, matchedRows: clean ? [] : Object.keys(audit.vulnerabilities), installed, limits: profile.limits, originalAuditFailurePreserved: !clean, unboundedContainersQualified: false, globalCveEradicationClaimed: false };
+  return { schema: 'manager/zod-bounded-source-audit-disposition/v1', registryAudit: clean ? 'PASS_RAW' : 'FAILED_KNOWN_BACKPORT_MATCH', registryAuditExitCode: auditExitCode, sourceDisposition: 'PASS', auditDiagnostics, hardhatEthersRangeVariant: !clean && scopeName === 'hardhat' && scope.hardhatEthersRangeVariants ? matchedAuditVariant : null, category: 'CODE_BACKPORT_EQUIVALENT_TO_6652_BOUNDED_ONLY', scope: scopeName, raw: { auditSha256: sha(auditBytes), stderrSha256: sha(stderrBytes), exitCodeSha256: sha(exitBytes) }, profileSha256: PROFILE_SHA256, vendorManifestSha256, vendorFiles: Object.keys(profile.vendorFiles).length, runtimeFiles: profile.runtimeFiles, packageFiles: profile.packageFiles, matchedPrimitive: clean ? null : profile.primitive, matchedRows: clean ? [] : Object.keys(audit.vulnerabilities), installed, limits: profile.limits, originalAuditFailurePreserved: !clean, unboundedContainersQualified: false, globalCveEradicationClaimed: false };
 }
 if (require.main === module) {
   const args = process.argv.slice(2), options = {};

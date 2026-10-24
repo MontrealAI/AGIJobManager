@@ -1,0 +1,133 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@nomicfoundation/hardhat-ethers": {
+      "name": "@nomicfoundation/hardhat-ethers",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@nomicfoundation/hardhat-zod-utils",
+        "hardhat",
+        "zod"
+      ],
+      "effects": [],
+      "range": "3.0.7 || >=4.0.0-next.0",
+      "nodes": [
+        "node_modules/@nomicfoundation/hardhat-ethers"
+      ],
+      "fixAvailable": {
+        "name": "@nomicfoundation/hardhat-ethers",
+        "version": "4.0.13",
+        "isSemVerMajor": true
+      }
+    },
+    "@nomicfoundation/hardhat-mocha": {
+      "name": "@nomicfoundation/hardhat-mocha",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@nomicfoundation/hardhat-zod-utils",
+        "hardhat",
+        "zod"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@nomicfoundation/hardhat-mocha"
+      ],
+      "fixAvailable": false
+    },
+    "@nomicfoundation/hardhat-zod-utils": {
+      "name": "@nomicfoundation/hardhat-zod-utils",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "zod"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@nomicfoundation/hardhat-zod-utils"
+      ],
+      "fixAvailable": true
+    },
+    "hardhat": {
+      "name": "hardhat",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@nomicfoundation/hardhat-zod-utils",
+        "zod"
+      ],
+      "effects": [
+        "@nomicfoundation/hardhat-ethers"
+      ],
+      "range": ">=3.0.0-next.0",
+      "nodes": [
+        "node_modules/hardhat"
+      ],
+      "fixAvailable": {
+        "name": "hardhat",
+        "version": "2.29.1",
+        "isSemVerMajor": true
+      }
+    },
+    "zod": {
+      "name": "zod",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1243066,
+          "name": "zod",
+          "dependency": "zod",
+          "title": "Zod can exhaust memory while validating oversized constrained collections",
+          "url": "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+          "severity": "high",
+          "cwe": [
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<4.6.6"
+        }
+      ],
+      "effects": [
+        "@nomicfoundation/hardhat-ethers",
+        "@nomicfoundation/hardhat-mocha",
+        "@nomicfoundation/hardhat-zod-utils",
+        "hardhat"
+      ],
+      "range": "<4.6.6",
+      "nodes": [
+        "../ui/vendor/zod",
+        "node_modules/zod"
+      ],
+      "fixAvailable": {
+        "name": "hardhat",
+        "version": "2.29.1",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 5,
+      "critical": 0,
+      "total": 5
+    },
+    "dependencies": {
+      "prod": 1,
+      "dev": 160,
+      "optional": 41,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 160
+    }
+  }
+}
