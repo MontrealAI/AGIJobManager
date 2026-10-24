@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { spawnSync } = require('node:child_process');
+const { createHash } = require('node:crypto');
 const { checkZodBackportAudit } = require('../check-zod-backport-audit.cjs');
 const fixtures = path.resolve(__dirname, '../../test/fixtures/zod-backport-audit');
 const repository = process.env.ZOD_AUDIT_TEST_REPOSITORY || path.resolve(__dirname, '../..');
@@ -48,6 +49,15 @@ function control(name, scope, mutate, code) {
   test(name, () => { const fixture = constructedTree(scope); try { mutate(fixture); assert.throws(() => checkZodBackportAudit(fixture.options), error => !code || error.code === code); } finally { fs.rmSync(fixture.directory, { recursive: true }); } });
 }
 const changeAudit = (fixture, change) => { const audit = JSON.parse(fs.readFileSync(fixture.auditPath)); change(audit); fs.writeFileSync(fixture.auditPath, JSON.stringify(audit)); };
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+function softwareEdition(root, version, only = Object.keys(profile.packageFiles)) {
+  for (const name of only) {
+    const filename = path.join(root, name), value = JSON.parse(fs.readFileSync(filename));
+    value.version = version;
+    if (name.endsWith('package-lock.json')) value.packages[''].version = version;
+    fs.writeFileSync(filename, JSON.stringify(value, null, 2) + '\n');
+  }
+}
 for (const scope of ['root', 'ui', 'hardhat']) test(`${scope}: constructed installed-resolution control preserves registry exit1 and source PASS`, () => {
   const fixture = constructedTree(scope);
   try {
@@ -206,4 +216,86 @@ test('fails changed finite profile before source disposition', () => {
     assert.equal(JSON.parse(result.stderr).code, 'PROFILE_IDENTITY');
     assert.equal(JSON.parse(fs.readFileSync(path.join(directory, 'report.json'))).sourceDisposition, 'FAIL');
   } finally { fs.rmSync(directory, { recursive: true }); }
+});
+
+test('original complete1.20.1 source vector keeps its unchanged profile and report semantics', () => {
+  const fixture = constructedTree('root');
+  try {
+    softwareEdition(fixture.root, '1.20.1');
+    for (const [name, digest] of Object.entries(profile.packageFiles)) assert.equal(sha(fs.readFileSync(path.join(fixture.root, name))), digest);
+    const report = checkZodBackportAudit(fixture.options);
+    assert.equal(report.profileSha256, '37339f548db43979d3e12b42547cdce336d1c7c5462ff7a6c78f65bc1b1b6862');
+    assert.deepEqual(report.packageFiles, profile.packageFiles);
+    assert.equal(Object.hasOwn(report, 'packageSourceIdentity'), false);
+    assert.equal(report.registryAudit, 'FAILED_KNOWN_BACKPORT_MATCH');
+    assert.equal(report.registryAuditExitCode, 1);
+  } finally { fs.rmSync(fixture.directory, { recursive: true }); }
+});
+
+test('current complete1.20.2 vector preserves actual830 raw audit and reports only nine version projections', () => {
+  const fixture = constructedTree('root');
+  try {
+    softwareEdition(fixture.root, '1.20.2');
+    const raw = fs.readFileSync(fixture.auditPath);
+    assert.equal(sha(raw), 'a34f1338932992967f2e1226df00b197714f7358602b2bd7267619161a824150');
+    const report = checkZodBackportAudit(fixture.options);
+    assert.equal(report.packageSourceIdentity.version, '1.20.2');
+    assert.equal(report.packageSourceIdentity.previousVersion, '1.20.1');
+    assert.equal(report.packageSourceIdentity.versionFields, 9);
+    assert.equal(report.packageSourceIdentity.originalProfileSha256, report.profileSha256);
+    assert.deepEqual(report.packageSourceIdentity.originalPackageFiles, profile.packageFiles);
+    for (const [name, digest] of Object.entries(report.packageFiles)) assert.equal(digest, sha(fs.readFileSync(path.join(fixture.root, name))));
+    assert.equal(report.registryAudit, 'FAILED_KNOWN_BACKPORT_MATCH');
+    assert.equal(report.registryAuditExitCode, 1);
+    assert.equal(report.sourceDisposition, 'PASS');
+    assert.deepEqual(fs.readFileSync(fixture.auditPath), raw);
+    assert.equal(report.globalCveEradicationClaimed, false);
+  } finally { fs.rmSync(fixture.directory, { recursive: true }); }
+});
+
+test('source identity refuses every mixed six-file edition in both directions', () => {
+  for (const version of ['1.20.1', '1.20.2']) for (const name of Object.keys(profile.packageFiles)) {
+    const fixture = constructedTree('root');
+    try {
+      softwareEdition(fixture.root, version);
+      softwareEdition(fixture.root, version === '1.20.1' ? '1.20.2' : '1.20.1', [name]);
+      assert.throws(() => checkZodBackportAudit(fixture.options), error => error.code === 'PACKAGE_LOCK_IDENTITY', name);
+    } finally { fs.rmSync(fixture.directory, { recursive: true }); }
+  }
+});
+
+test('source identity refuses a lock with mixed top-level and package-root version fields', () => {
+  for (const name of Object.keys(profile.packageFiles).filter(name => name.endsWith('package-lock.json'))) {
+    const fixture = constructedTree('root');
+    try {
+      softwareEdition(fixture.root, '1.20.2');
+      const filename = path.join(fixture.root, name), value = JSON.parse(fs.readFileSync(filename));
+      value.packages[''].version = '1.20.1'; fs.writeFileSync(filename, JSON.stringify(value, null, 2) + '\n');
+      assert.throws(() => checkZodBackportAudit(fixture.options), error => error.code === 'PACKAGE_LOCK_IDENTITY', name);
+    } finally { fs.rmSync(fixture.directory, { recursive: true }); }
+  }
+});
+
+control('source identity refuses an unreviewed future software edition', 'root', fixture => softwareEdition(fixture.root, '1.20.3'), 'PACKAGE_LOCK_IDENTITY');
+control('version projection does not normalize an unrelated1.20.1 UI dependency', 'root', fixture => {
+  const filename = path.join(fixture.root, 'ui/package-lock.json'), value = JSON.parse(fs.readFileSync(filename));
+  const dependency = Object.entries(value.packages).find(([name, entry]) => name && entry.version === '1.20.1');
+  assert.ok(dependency); dependency[1].version = '1.20.2';
+  fs.writeFileSync(filename, JSON.stringify(value, null, 2) + '\n');
+}, 'PACKAGE_LOCK_IDENTITY');
+
+test('even a mistaken current hash refresh cannot project away a non-version source edit', () => {
+  const fixture = constructedTree('root');
+  try {
+    softwareEdition(fixture.root, '1.20.2');
+    const filename = path.join(fixture.root, 'package.json'), raw = fs.readFileSync(filename), value = JSON.parse(raw);
+    value.scripts.test = 'unreviewed-command'; fs.writeFileSync(filename, JSON.stringify(value, null, 2) + '\n');
+    const currentHash = sha(raw), changedHash = sha(fs.readFileSync(filename));
+    const original = fs.readFileSync(path.join(__dirname, '../check-zod-backport-audit.cjs'), 'utf8');
+    assert.equal(original.split(currentHash).length, 2);
+    const checker = path.join(fixture.directory, 'source-projection-checker.cjs');
+    fs.writeFileSync(checker, original.replace(currentHash, changedHash));
+    fs.copyFileSync(path.join(__dirname, '../zod-backport-audit-profile.json'), path.join(fixture.directory, 'zod-backport-audit-profile.json'));
+    assert.throws(() => require(checker).checkZodBackportAudit(fixture.options), error => error.code === 'PACKAGE_VERSION_PROJECTION');
+  } finally { fs.rmSync(fixture.directory, { recursive: true }); }
 });

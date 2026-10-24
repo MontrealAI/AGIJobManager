@@ -402,10 +402,10 @@
     "docs/releases/v1.20.2/VALIDATION.md": {
       "after": {
         "mode": "100644",
-        "sha256": "f50f2f7951ef72a3f41e5057bbcc3e16912489f061ca318e552aa38d7ae73fc9"
+        "sha256": "5c83a3d7e09cf0f92a014da205f3e0a509e6853e35610ba81a3606d4ba93f0fd"
       },
       "before": null,
-      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver."
     },
     "docs/successor/DISCOVERY_LAB.md": {
       "after": {
@@ -503,10 +503,10 @@
     "scripts/check-zod-backport-audit.cjs": {
       "after": {
         "mode": "100644",
-        "sha256": "a9a939469c40763daf75bae00fb11dd267013e8b54b342cdc736c5fca6845c97"
+        "sha256": "116d1692ac1c2bb3fa8c46d4cf17cc01c1627bb7277c06023f6d9455d393560e"
       },
       "before": null,
-      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver."
     },
     "scripts/docs/templates/README.md.tpl": {
       "after": {
@@ -877,10 +877,10 @@
     "scripts/security/zod-audit-disposition.test.cjs": {
       "after": {
         "mode": "100644",
-        "sha256": "700cf072a86b2a91d847512ee2260bf7e30a3ba432ddd85b65d4779bb0d5164b"
+        "sha256": "07fb35e5464f51afc19b60b64299becff17a38af784e64e6adf3f95f910d5dd6"
       },
       "before": null,
-      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver."
     },
     "scripts/security/zod-constrained-collections.test.cjs": {
       "after": {
