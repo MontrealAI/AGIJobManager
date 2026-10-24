@@ -402,10 +402,10 @@
     "docs/releases/v1.20.2/VALIDATION.md": {
       "after": {
         "mode": "100644",
-        "sha256": "5c83a3d7e09cf0f92a014da205f3e0a509e6853e35610ba81a3606d4ba93f0fd"
+        "sha256": "440bbb452bd0d6b7047e221db805a6b0d18938fc40d328dd4f76aef53a8436f1"
       },
       "before": null,
-      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver."
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver.; Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver."
     },
     "docs/successor/DISCOVERY_LAB.md": {
       "after": {
@@ -1141,6 +1141,17 @@
       "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
+    "ui-tests/usdc-console.spec.js": {
+      "after": {
+        "mode": "100644",
+        "sha256": "d865b9d7956949e2da9044f266af612d7e4eb5fd7e2753184798a5190eb24feb"
+      },
+      "before": {
+        "blob": "97b28b436f18d8a389ca21f8d7292c92df38065a",
+        "mode": "100644"
+      },
+      "reason": "Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver."
+    },
     "ui/README.md": {
       "after": {
         "mode": "100644",
@@ -1155,13 +1166,13 @@
     "ui/agijobmanager-usdc.html": {
       "after": {
         "mode": "100644",
-        "sha256": "1056404462e6ac38fd87ee9e45d5cf0303fbef0bb4c22e4530b64bc03f9c47eb"
+        "sha256": "ae9349f04d010a67bccb7b4d99ecd22eafb2e70ba4af896084e77e84a92b9db1"
       },
       "before": {
         "blob": "d9470efb0a1d6072f45ba23f695f07d1c8b38c88",
         "mode": "100644"
       },
-      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver."
     },
     "ui/dist-ipfs/agijobmanager.html": {
       "after": {

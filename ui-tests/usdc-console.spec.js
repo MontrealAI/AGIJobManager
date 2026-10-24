@@ -147,6 +147,23 @@ async function assertNoExecution(page, errors) {
   expect(errors).toEqual([]);
 }
 
+async function seedSyntheticMembership(page) {
+  // This fixture tests invalidation of prior UI state, not live ENS ownership.
+  await page.evaluate(() => {
+    verified.agent = 'fixture-agent'; verified.club = 'fixture-validator';
+    verified.agentAlpha = true; verified.clubAlpha = true;
+    for (const id of ['validatorBadge', 'agentAlphaBadge', 'clubAlphaBadge']) document.getElementById(id).style.display = 'inline-flex';
+    updateWriteGate();
+  });
+}
+
+async function expectUnverifiedMembership(page) {
+  await expect.poll(() => page.evaluate(() => ({ ...verified }))).toEqual({ agent: null, club: null, agentAlpha: false, clubAlpha: false });
+  for (const id of ['validatorBadge', 'agentAlphaBadge', 'clubAlphaBadge']) await expect(page.locator(`#${id}`)).toBeHidden();
+  await expect(page.locator('#missionAgentStatus')).toHaveText('Unverified');
+  await expect(page.locator('#missionValidatorStatus')).toHaveText('Unverified');
+}
+
 test.describe('Published USDC console in a real browser', () => {
   test('drafts require explicit saving and loading, and can be cleared with old completion drafts and notes', async ({page}) => {
     const errors=await openConsole(page), key='agijobmanager_usdc_v096_builder_draft_v11_1';
@@ -249,10 +266,22 @@ test.describe('Published USDC console in a real browser', () => {
 
   test('checks real Web3 decoding and guides a buyer without requiring ENS', async ({ page }) => {
     const errors = await openConsole(page);
-    await connectReadyBuyer(page);
+    await chooseManager(page);
+    await expect(page.locator('#usdcDeploymentStatus')).toContainText('USDC settlement check passed');
+    await expect(page.locator('#lastRefreshAtLabel')).not.toHaveText('Never');
+    // Complete the ordinary resume refresh before acknowledging terms. Previously
+    // the saved "not connected" hint was mistaken for a different verified wallet.
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('agijm_v33_session') || '{}').accountHint)).toContain('0xaaaa');
+    await expectUnverifiedMembership(page);
+    await expect(page.locator('#createJobBtn')).toBeDisabled();
+    await page.locator('#termsAccepted').check();
+    await expect(page.locator('#createJobBtn')).toBeEnabled();
+    await expect(page.locator('#missionPrimaryBtn')).toHaveAttribute('data-action', 'create');
     await expect(page.locator('#settlementWallets')).toContainText(WALLET30);
     await expect(page.locator('#readyRole')).toHaveText('Buyer · ENS not required');
     await expect(page.locator('#agentPill')).toContainText('not verified');
+    await expect(page.locator('#clubPill')).toHaveText('Club ENS: not verified');
     await expect(page.locator('#missionPosturePill')).not.toContainText('production');
     await page.locator('#termsAccepted').uncheck();
     await expect(page.locator('#createJobBtn')).toBeDisabled();
@@ -262,6 +291,17 @@ test.describe('Published USDC console in a real browser', () => {
   test('role selection changes guidance without granting agent or validator eligibility', async ({ page }) => {
     const errors = await openConsole(page);
     await connectReadyBuyer(page);
+    await seedSyntheticMembership(page);
+    await page.evaluate(() => {
+      const key = 'agijm_v33_session';
+      localStorage.setItem(key, JSON.stringify({ ...JSON.parse(localStorage.getItem(key) || '{}'), accountHint: 'not connected' }));
+      window.dispatchEvent(new Event('focus'));
+    });
+    await expectUnverifiedMembership(page);
+    await expect(page.locator('#agentPill')).toHaveText('Agent ENS: re-verification required');
+    await expect(page.locator('#termsAccepted')).not.toBeChecked();
+    await expect(page.locator('#createJobBtn')).toBeDisabled();
+    await page.locator('#termsAccepted').check();
     for (const role of ['agent', 'validator']) {
       await page.locator('#missionRole').selectOption(role);
       await expect(page.locator('#missionPrimaryBtn')).toHaveAttribute('data-action', 'verify');
@@ -335,12 +375,14 @@ test.describe('Published USDC console in a real browser', () => {
     const errors = await openConsole(page);
     await connectReadyBuyer(page);
     await openPostingReview(page);
+    await seedSyntheticMembership(page);
     await page.evaluate(account => window.__usdcWallet.accounts([account]), NEXT_BUYER);
     await expect(page.locator('#actionReviewModal')).toHaveAttribute('aria-hidden', 'true');
     await expect(page.locator('#termsAccepted')).not.toBeChecked();
     await expect(page.locator('#createJobBtn')).toBeDisabled();
     await expect(page.locator('#missionPrimaryBtn')).toHaveAttribute('data-action', 'terms');
     await expect(page.locator('#walletStatus')).toContainText(/0xbbbb/i);
+    await expectUnverifiedMembership(page);
     await assertNoExecution(page, errors);
   });
 
@@ -359,14 +401,17 @@ test.describe('Published USDC console in a real browser', () => {
   test('network changes enforce chain 1 and clear the previous authorization context', async ({ page }) => {
     const errors = await openConsole(page);
     await connectReadyBuyer(page);
+    await seedSyntheticMembership(page);
     await page.evaluate(() => window.__usdcWallet.chain('0xaa36a7'));
     await expect(page.locator('#missionPrimaryBtn')).toHaveAttribute('data-action', 'switch-mainnet');
     await expect(page.locator('#createJobBtn')).toBeDisabled();
     await expect(page.locator('#termsAccepted')).not.toBeChecked();
+    await expectUnverifiedMembership(page);
     await page.locator('#missionPrimaryBtn').click();
     await expect(page.locator('#missionNetworkStatus')).toHaveText('Ethereum Mainnet');
     await expect(page.locator('#missionPrimaryBtn')).toHaveAttribute('data-action', 'terms');
     await expect(page.locator('#createJobBtn')).toBeDisabled();
+    await expectUnverifiedMembership(page);
     await assertNoExecution(page, errors);
   });
 
