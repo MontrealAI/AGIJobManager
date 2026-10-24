@@ -2817,6 +2817,11 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     function resetRuntimeState(reason='context reset'){
       APP_STATE.writeEpoch = (APP_STATE.writeEpoch || 0) + 1;
       usdcDeploymentValidated = false;
+      verified.agent = null; verified.club = null; verified.agentAlpha = false; verified.clubAlpha = false;
+      for(const [id, label] of [['agentPill', 'Agent'], ['clubPill', 'Club']]){
+        const pill = el(id); if(pill){ pill.className = 'pill'; pill.textContent = label + ' ENS: not verified'; }
+      }
+      for(const id of ['validatorBadge', 'agentAlphaBadge', 'clubAlphaBadge']){ const badge = el(id); if(badge) badge.style.display = 'none'; }
       if(typeof pendingActionConfirmResolver === 'function'){ const resolve = pendingActionConfirmResolver; pendingActionConfirmResolver = null; resolve(false); }
       if(typeof closeActionReview === 'function') closeActionReview();
       pendingReviewedAction = null;

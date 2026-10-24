@@ -1152,13 +1152,13 @@
     "ui-tests/usdc-console.spec.js": {
       "after": {
         "mode": "100644",
-        "sha256": "d610212c633ab5986f035e7ad3213704f53e06c6bd8c9c7de6ff7d24566948fd"
+        "sha256": "197c485619b2e100e49b035d4a12d124904e97a009c273dd1dfdbbc93f2cfde2"
       },
       "before": {
         "blob": "97b28b436f18d8a389ca21f8d7292c92df38065a",
         "mode": "100644"
       },
-      "reason": "Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver."
+      "reason": "Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver.; Clear completed membership credentials, both role pills and all three badges on the existing runtime context reset, including deployment replacement. Reproduce a normal completed focus refresh while an alpha read is pending, assert reset before releasing either delayed callback, and retain wrong-token, terms and zero-signature/transaction controls. Preserve all original before-images and fixed scope; no qualification or authority waiver."
     },
     "ui/README.md": {
       "after": {
@@ -1174,13 +1174,13 @@
     "ui/agijobmanager-usdc.html": {
       "after": {
         "mode": "100644",
-        "sha256": "15529340121f597c4ad272f2853147bcb0509e022b965c9c71873ed3f7e3d2cc"
+        "sha256": "5520d5e05488cd429811389fc81714941cf2b20043c6392dbe4b59347ab84109"
       },
       "before": {
         "blob": "d9470efb0a1d6072f45ba23f695f07d1c8b38c88",
         "mode": "100644"
       },
-      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver."
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver.; Clear completed membership credentials, both role pills and all three badges on the existing runtime context reset, including deployment replacement. Reproduce a normal completed focus refresh while an alpha read is pending, assert reset before releasing either delayed callback, and retain wrong-token, terms and zero-signature/transaction controls. Preserve all original before-images and fixed scope; no qualification or authority waiver."
     },
     "ui/dist-ipfs/agijobmanager.html": {
       "after": {
