@@ -76,8 +76,14 @@ async function openConsole(page, options = {}) {
   });
   await page.addInitScript(({ fixture, options }) => {
     const listeners = new Map();
-    const state = { accounts: [], chainId: options.chainId || '0x1', requests: [], prohibited: [], failReads: false, wrongToken: false };
-    let heldRead = null, nextHeldSelector = '';
+    const focusListeners = [];
+    const addEventListener = window.addEventListener;
+    window.addEventListener = function (type, listener, ...options) {
+      if (type === 'focus') focusListeners.push(listener);
+      return addEventListener.call(this, type, listener, ...options);
+    };
+    const state = { accounts: [], chainId: options.chainId || '0x1', requests: [], prohibited: [], membershipReads: [], failReads: false, wrongToken: false };
+    let heldRead = null, nextHeldSelector = '', heldAccountRead = null, holdNextAccountRead = false;
     const emit = async (event, value) => Promise.all([...(listeners.get(event) || [])].map(callback => callback(value)));
     window.__usdcWallet = {
       state,
@@ -85,6 +91,19 @@ async function openConsole(page, options = {}) {
       async chain(chainId) { state.chainId = chainId; await emit('chainChanged', chainId); },
       failReads(value) { state.failReads = value; },
       wrongToken(value) { state.wrongToken = value; },
+      refreshSession() {
+        if (focusListeners.length !== 1) throw new Error('Expected the console session focus refresh.');
+        return focusListeners[0].call(window, new Event('focus'));
+      },
+      holdAccountRead() {
+        if (heldAccountRead || holdNextAccountRead) throw new Error('An account read is already gated.');
+        holdNextAccountRead = true;
+      },
+      releaseAccountRead() {
+        if (!heldAccountRead) throw new Error('No account read is waiting.');
+        const pending = heldAccountRead; heldAccountRead = null; state.heldAccountRead = false;
+        pending.resolve(pending.accounts);
+      },
       holdMembershipRead(method) {
         if (heldRead || nextHeldSelector || !Object.hasOwn(fixture.wrapperSelectors, method)) throw new Error('Invalid or overlapping membership read gate.');
         nextHeldSelector = fixture.wrapperSelectors[method];
@@ -106,7 +125,15 @@ async function openConsole(page, options = {}) {
           state.prohibited.push(method);
           throw Object.assign(new Error('Browser fixture forbids transactions and signatures.'), { code: 4001 });
         }
-        if (method === 'eth_accounts') return state.accounts;
+        if (method === 'eth_accounts') {
+          if (holdNextAccountRead) {
+            holdNextAccountRead = false;
+            return new Promise(resolve => {
+              heldAccountRead = { resolve, accounts: [...state.accounts] }; state.heldAccountRead = true;
+            });
+          }
+          return state.accounts;
+        }
         if (method === 'eth_requestAccounts') { if (!state.accounts.length) state.accounts = [fixture.buyer]; return state.accounts; }
         if (method === 'eth_chainId') return state.chainId;
         if (method === 'net_version') return String(parseInt(state.chainId, 16));
@@ -117,6 +144,7 @@ async function openConsole(page, options = {}) {
         if (method === 'eth_getLogs') return [];
         if (method === 'eth_call') {
           const tx = params[0], target = String(tx.to || '').toLowerCase(), selector = String(tx.data || tx.input || '').slice(0, 10);
+          if (target === fixture.wrapper) state.membershipReads.push({ method: Object.keys(fixture.wrapperSelectors).find(name => fixture.wrapperSelectors[name] === selector), chainId: state.chainId });
           if (state.failReads || !Object.hasOwn(fixture.readsByTarget, target)) {
             throw Object.assign(new Error('execution reverted: unavailable fixture contract read'), { code: -32000 });
           }
@@ -440,6 +468,22 @@ test.describe('Published USDC console in a real browser', () => {
     await expect(page.locator('#agentAlphaBadge')).toBeVisible();
     await expect(page.locator('#termsAccepted')).not.toBeChecked();
     await expect(page.locator('#createJobBtn')).toBeDisabled();
+    // An old resume must not start its second role in a newer wallet context.
+    await page.locator('#clubSub').fill('refresh-fixture-validator');
+    await page.evaluate(() => {
+      window.__usdcWallet.holdMembershipRead('getApproved');
+      window.__pendingWalletRefresh = window.__usdcWallet.refreshSession();
+    });
+    await expect.poll(() => page.evaluate(() => window.__usdcWallet.state.heldMembershipRead)).toBe('getApproved');
+    await page.evaluate(account => window.__usdcWallet.accounts([account]), NEXT_BUYER);
+    const readsBeforeResume = await page.evaluate(() => window.__usdcWallet.state.membershipReads.length);
+    await page.evaluate(() => window.__usdcWallet.releaseMembershipRead());
+    await page.evaluate(() => window.__pendingWalletRefresh);
+    expect(await page.evaluate(() => window.__usdcWallet.state.membershipReads.length)).toBe(readsBeforeResume);
+    await expectUnverifiedMembership(page);
+    await expect(page.locator('#walletStatus')).toContainText(/0xbbbb/i);
+    await expect(page.locator('#termsAccepted')).not.toBeChecked();
+    await expect(page.locator('#createJobBtn')).toBeDisabled();
     await assertNoExecution(page, errors);
   });
 
@@ -460,8 +504,25 @@ test.describe('Published USDC console in a real browser', () => {
     await connectReadyBuyer(page);
     await seedSyntheticMembership(page);
     await startDelayedMembershipVerification(page);
+    await page.evaluate(() => {
+      window.__usdcWallet.holdAccountRead();
+      window.__pendingWalletRefresh = window.__usdcWallet.refreshSession();
+    });
+    await expect.poll(() => page.evaluate(() => window.__usdcWallet.state.heldAccountRead)).toBe(true);
     await page.evaluate(() => window.__usdcWallet.chain('0xaa36a7'));
+    await expectUnverifiedMembership(page);
+    await page.evaluate(() => window.__usdcWallet.releaseAccountRead());
+    await page.evaluate(() => window.__pendingWalletRefresh);
     await finishDelayedMembershipVerification(page);
+    // Neither a fresh resume nor an explicit role check may use wrong-chain ENS.
+    await page.evaluate(async () => {
+      await window.__usdcWallet.refreshSession();
+      await verifySubdomain('agent', true);
+      document.getElementById('clubSub').value = 'wrong-network-validator';
+      await verifySubdomain('club', true);
+      document.getElementById('clubSub').value = '';
+    });
+    expect(await page.evaluate(() => window.__usdcWallet.state.membershipReads.filter(read => read.chainId !== '0x1'))).toEqual([]);
     await expect(page.locator('#missionPrimaryBtn')).toHaveAttribute('data-action', 'switch-mainnet');
     await expect(page.locator('#createJobBtn')).toBeDisabled();
     await expect(page.locator('#termsAccepted')).not.toBeChecked();
@@ -478,8 +539,22 @@ test.describe('Published USDC console in a real browser', () => {
     const errors = await openConsole(page);
     await connectReadyBuyer(page);
     await startDelayedMembershipVerification(page);
+    // A separate ordinary refresh can finish before the old alpha read does.
+    await page.evaluate(() => window.__usdcWallet.refreshSession());
+    await expect.poll(() => page.evaluate(() => ({ ...verified }))).toEqual({ agent: 'delayed-fixture-agent', club: null, agentAlpha: false, clubAlpha: false });
+    await expect(page.locator('#agentPill')).toHaveText('Agent ENS: verified');
+    // Another refresh must not resume in the replacement deployment's context.
+    await page.evaluate(() => {
+      window.__usdcWallet.holdAccountRead();
+      window.__pendingWalletRefresh = window.__usdcWallet.refreshSession();
+    });
+    await expect.poll(() => page.evaluate(() => window.__usdcWallet.state.heldAccountRead)).toBe(true);
     await page.evaluate(() => window.__usdcWallet.wrongToken(true));
     await chooseManager(page, OTHER_MANAGER);
+    await expect(page.locator('#usdcDeploymentStatus')).toContainText('not native Circle USDC');
+    await expectUnverifiedMembership(page);
+    await page.evaluate(() => window.__usdcWallet.releaseAccountRead());
+    await page.evaluate(() => window.__pendingWalletRefresh);
     await finishDelayedMembershipVerification(page);
     await expectUnverifiedMembership(page);
     await expect(page.locator('#usdcDeploymentStatus')).toContainText('not native Circle USDC');

@@ -788,10 +788,10 @@
     "scripts/release/test-discovery-release-plumbing.py": {
       "after": {
         "mode": "100644",
-        "sha256": "0120bdcf68c560406ef49c711c582337a9b36c324853ae63686acb3fb775de08"
+        "sha256": "dd70ff5faff34e79eb7aecbcbfabf4da07f4e832acf4565d1bb44e2446b22074"
       },
       "before": null,
-      "reason": "Verify the exact reviewed Next security delta and preserve whole-package comparisons; construct the negative publisher extraction phase locally from its actual AST without unavailable historical Git objects, retaining old refusal and actual qualified rebuild success.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver."
+      "reason": "Verify the exact reviewed Next security delta and preserve whole-package comparisons; construct the negative publisher extraction phase locally from its actual AST without unavailable historical Git objects, retaining old refusal and actual qualified rebuild success.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver.; Admit membership only on chain1, preserve current-mainnet checks in the existing verifier, and bind silent refresh to its entry epoch/account/chain/manager before post-await writes and each role launch. Preserve the first deployment-reset fix and every prior before-image; actual successful wrong-chain mock ABI and delayed focus callbacks remain substantive regression controls.; Extend the exact closed supplemental-original set only to the release VM fixture, requiring its authentic900 blob77e12a6/SHA04e28a4a while preserving all four prior originals and every byte comparison."
     },
     "scripts/release/test-discovery-release-profile.py": {
       "after": {
@@ -835,6 +835,17 @@
         "mode": "100644"
       },
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/verify-usdc-ui.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "3ab70f05b7ef94a9dd960b96594f6e1def482be25d33da981ed0be8247509c24"
+      },
+      "before": {
+        "blob": "77e12a60316d1e195f4e8550f5b39d222f8f247f",
+        "mode": "100644"
+      },
+      "reason": "Supply exactly the existing manager constant in the release-copy no-account extracted-function VM fixture after its silent refresh gained a substantive manager/source lease. Preserve all checks and function bodies; bind the distinct authentic original900 release fixture and its exact one-insertion inverse projection. No runtime, browser fixture, authority or qualification change."
     },
     "scripts/release/wait-qualification.py": {
       "after": {
@@ -897,6 +908,17 @@
       },
       "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
+    },
+    "scripts/ui/verify-usdc-console.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "75cc129c264eadc772ca53e80d2dc5b3ae1d487f38295ed2f675e3a65bed1a3f"
+      },
+      "before": {
+        "blob": "790690539446a6ebcf76897357d52717ec4cfb7a",
+        "mode": "100644"
+      },
+      "reason": "Supply the existing AGI_JOB_MANAGER constant in the no-account extracted-function VM fixture because the substantive refresh lease now binds it before the first await. Only this one fixture binding changes; every test function and assertion remains unchanged. Declare its authentic original900 blob and exact inverse projection; no runtime test exception or guard relaxation."
     },
     "scripts/zod-backport-audit-profile.json": {
       "after": {
@@ -1152,13 +1174,13 @@
     "ui-tests/usdc-console.spec.js": {
       "after": {
         "mode": "100644",
-        "sha256": "d610212c633ab5986f035e7ad3213704f53e06c6bd8c9c7de6ff7d24566948fd"
+        "sha256": "b8cdb6d72dd8f7a9e53f1835f3ed560e0f9228d123b1e2243d53b040cff5d5b9"
       },
       "before": {
         "blob": "97b28b436f18d8a389ca21f8d7292c92df38065a",
         "mode": "100644"
       },
-      "reason": "Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver."
+      "reason": "Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver.; Clear completed membership credentials, both role pills and all three badges on the existing runtime context reset, including deployment replacement. Reproduce a normal completed focus refresh while an alpha read is pending, assert reset before releasing either delayed callback, and retain wrong-token, terms and zero-signature/transaction controls. Preserve all original before-images and fixed scope; no qualification or authority waiver.; Admit membership only on chain1, preserve current-mainnet checks in the existing verifier, and bind silent refresh to its entry epoch/account/chain/manager before post-await writes and each role launch. Preserve the first deployment-reset fix and every prior before-image; actual successful wrong-chain mock ABI and delayed focus callbacks remain substantive regression controls."
     },
     "ui/README.md": {
       "after": {
@@ -1174,13 +1196,13 @@
     "ui/agijobmanager-usdc.html": {
       "after": {
         "mode": "100644",
-        "sha256": "15529340121f597c4ad272f2853147bcb0509e022b965c9c71873ed3f7e3d2cc"
+        "sha256": "b046e208085bb14c05a5d7b110338383bd451055252afd9622cdf2930e9f1b8c"
       },
       "before": {
         "blob": "d9470efb0a1d6072f45ba23f695f07d1c8b38c88",
         "mode": "100644"
       },
-      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver."
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver.; Clear completed membership credentials, both role pills and all three badges on the existing runtime context reset, including deployment replacement. Reproduce a normal completed focus refresh while an alpha read is pending, assert reset before releasing either delayed callback, and retain wrong-token, terms and zero-signature/transaction controls. Preserve all original before-images and fixed scope; no qualification or authority waiver.; Admit membership only on chain1, preserve current-mainnet checks in the existing verifier, and bind silent refresh to its entry epoch/account/chain/manager before post-await writes and each role launch. Preserve the first deployment-reset fix and every prior before-image; actual successful wrong-chain mock ABI and delayed focus callbacks remain substantive regression controls."
     },
     "ui/dist-ipfs/agijobmanager.html": {
       "after": {

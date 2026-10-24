@@ -95,6 +95,7 @@ function element(id) {
 let clearedReason, persisted = 0, gated = 0;
 const session = vm.createContext({
   console: {info(){}},
+  AGI_JOB_MANAGER:manager,
   window: {ethereum:{request:async ({method}) => {assert.equal(method,'eth_accounts'); return [];}}},
   userAccount:'stale-account', hasAcceptedTerms:true, usdcDeploymentValidated:true, pendingReviewedAction:{},
   APP_STATE:{wallet:{account:'stale-account',termsAccepted:true},jobsReadDegraded:true,admin:{isModerator:true},registrar:{managerAuthorized:true},identity:{preview:'stale'}},
