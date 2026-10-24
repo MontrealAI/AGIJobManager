@@ -106,6 +106,14 @@
       },
       "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
+    "config/discovery-jobs-rc21-counterpart-v1.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda"
+      },
+      "before": null,
+      "reason": "Adopt only the actual public Jobs rc21 release422958907/sourcebc4abbd5c28f3672275b13300e40ea26c820b8ee/tree009f11b81c554d80eeddda882c8f91f2e89c8b2e complete640B peer b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda under public handoff6389174231. Preserve original rc20, original031b raw USDC request, all policy/authority/qualification controls and historical records; no installed Manager acceptance is inferred."
+    },
     "config/discovery-lab-alpha-source.json": {
       "after": {
         "mode": "100644",
@@ -378,34 +386,34 @@
     "docs/releases/v1.20.2/RECOVERY_GUIDE.md": {
       "after": {
         "mode": "100644",
-        "sha256": "35023abc60ebddd170b0a36dea7f9a283a38550621ba9f2103e6a8e18db67e71"
+        "sha256": "e3a5fb7484b5979c66a01b70af1a5f4506f8b044709e76effa2370ab9eac5d82"
       },
       "before": null,
-      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Adopt only the actual public Jobs rc21 release422958907/sourcebc4abbd5c28f3672275b13300e40ea26c820b8ee/tree009f11b81c554d80eeddda882c8f91f2e89c8b2e complete640B peer b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda under public handoff6389174231. Preserve original rc20, original031b raw USDC request, all policy/authority/qualification controls and historical records; no installed Manager acceptance is inferred."
     },
     "docs/releases/v1.20.2/RELEASE_NOTES.md": {
       "after": {
         "mode": "100644",
-        "sha256": "fd2f7be1275eb700cbb9d3caa8b83195565e29445489a0d28602e23f71217f88"
+        "sha256": "fe9b03c9ab780391fc95711e5915b770d8d87d27cdd9b1c8eca825cb260ac6ad"
       },
       "before": null,
-      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Adopt only the actual public Jobs rc21 release422958907/sourcebc4abbd5c28f3672275b13300e40ea26c820b8ee/tree009f11b81c554d80eeddda882c8f91f2e89c8b2e complete640B peer b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda under public handoff6389174231. Preserve original rc20, original031b raw USDC request, all policy/authority/qualification controls and historical records; no installed Manager acceptance is inferred."
     },
     "docs/releases/v1.20.2/START_HERE.md": {
       "after": {
         "mode": "100644",
-        "sha256": "2008a68f9a3315d5af81c96cab3161592244179c295985bd039b491f024a1add"
+        "sha256": "3e35a7717b87831fea61313e97638c074ad82257a2976eab3ec584a33389aedf"
       },
       "before": null,
-      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Adopt only the actual public Jobs rc21 release422958907/sourcebc4abbd5c28f3672275b13300e40ea26c820b8ee/tree009f11b81c554d80eeddda882c8f91f2e89c8b2e complete640B peer b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda under public handoff6389174231. Preserve original rc20, original031b raw USDC request, all policy/authority/qualification controls and historical records; no installed Manager acceptance is inferred."
     },
     "docs/releases/v1.20.2/VALIDATION.md": {
       "after": {
         "mode": "100644",
-        "sha256": "102f0c4eb2cd2676153f9b427673beb9fde49fddcd9d1d8b4bb7fcf9dfa39fc3"
+        "sha256": "28e61c3e0cc936d2e9443d2e9afbc89a676b61a0edb479be68a5c362a31dc996"
       },
       "before": null,
-      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver.; Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver."
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver.; Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver.; Adopt only the actual public Jobs rc21 release422958907/sourcebc4abbd5c28f3672275b13300e40ea26c820b8ee/tree009f11b81c554d80eeddda882c8f91f2e89c8b2e complete640B peer b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda under public handoff6389174231. Preserve original rc20, original031b raw USDC request, all policy/authority/qualification controls and historical records; no installed Manager acceptance is inferred."
     },
     "docs/successor/DISCOVERY_LAB.md": {
       "after": {
@@ -533,18 +541,18 @@
     "scripts/integrations/discovery-installed-operator.mjs": {
       "after": {
         "mode": "100644",
-        "sha256": "ddca7345cb45f99899c73ee94b470fa07aa525b41bc21c8a74e84875f5a5a793"
+        "sha256": "4cc5856223cd6c66016dde6cd470e39f730720547d0d8f7593cdca242f1b543e"
       },
       "before": null,
-      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority.; Preserve the exact rc20 constant and own-source default; prepare an explicit two-case counterpart selector with null/unadmitted rc21 until its genuine published archive/manifest/source receipt is supplied. Never select code or infer trust from history."
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority.; Preserve the exact rc20 constant and own-source default; prepare an explicit two-case counterpart selector with null/unadmitted rc21 until its genuine published archive/manifest/source receipt is supplied. Never select code or infer trust from history.; Adopt only the actual public Jobs rc21 release422958907/sourcebc4abbd5c28f3672275b13300e40ea26c820b8ee/tree009f11b81c554d80eeddda882c8f91f2e89c8b2e complete640B peer b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda under public handoff6389174231. Preserve original rc20, original031b raw USDC request, all policy/authority/qualification controls and historical records; no installed Manager acceptance is inferred."
     },
     "scripts/integrations/discovery-installed-operator.test.mjs": {
       "after": {
         "mode": "100644",
-        "sha256": "759dad11e2787b2692d3efd97ed7f5d76fb1070fee78c23b18d36d94facf4f69"
+        "sha256": "c4e1f97e1cfd67d2e908f301e4581dbbec9b63d6bb748fa414221df17f8ce0e4"
       },
       "before": null,
-      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Adopt only the actual public Jobs rc21 release422958907/sourcebc4abbd5c28f3672275b13300e40ea26c820b8ee/tree009f11b81c554d80eeddda882c8f91f2e89c8b2e complete640B peer b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda under public handoff6389174231. Preserve original rc20, original031b raw USDC request, all policy/authority/qualification controls and historical records; no installed Manager acceptance is inferred."
     },
     "scripts/integrations/discovery-installed-runtime.mjs": {
       "after": {
