@@ -402,10 +402,10 @@
     "docs/releases/v1.20.2/START_HERE.md": {
       "after": {
         "mode": "100644",
-        "sha256": "3e35a7717b87831fea61313e97638c074ad82257a2976eab3ec584a33389aedf"
+        "sha256": "89d744bb6b3506356950d51b85da88dbb78217b3843e851409ccce7707b224e5"
       },
       "before": null,
-      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Adopt only the actual public Jobs rc21 release422958907/sourcebc4abbd5c28f3672275b13300e40ea26c820b8ee/tree009f11b81c554d80eeddda882c8f91f2e89c8b2e complete640B peer b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda under public handoff6389174231. Preserve original rc20, original031b raw USDC request, all policy/authority/qualification controls and historical records; no installed Manager acceptance is inferred."
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Adopt only the actual public Jobs rc21 release422958907/sourcebc4abbd5c28f3672275b13300e40ea26c820b8ee/tree009f11b81c554d80eeddda882c8f91f2e89c8b2e complete640B peer b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda under public handoff6389174231. Preserve original rc20, original031b raw USDC request, all policy/authority/qualification controls and historical records; no installed Manager acceptance is inferred.; Rewrite only fenced Python subscription/call expressions as identical function aliases/intermediate data variables so unchanged Markdown link guards parse the example correctly; preserve exact original request bytes and exclusive output creation."
     },
     "docs/releases/v1.20.2/VALIDATION.md": {
       "after": {

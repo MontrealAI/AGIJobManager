@@ -17,11 +17,14 @@ installed = pathlib.Path(sys.argv[1]).resolve()
 source = installed / 'source'
 sys.path.insert(0, str(source / 'scripts/release'))
 policy = runpy.run_path(str(source / 'scripts/release/discovery-release-profile.py'))
-captured = policy['validate_browser_capsule'](source, installed / 'discovery-browser', return_files=True)
+validate_browser_capsule = policy['validate_browser_capsule']
+strict_json = policy['strict_json']
+captured = validate_browser_capsule(source, installed / 'discovery-browser', return_files=True)
 prefix = 'discovery-continuation/'
-exports = policy['strict_json'](captured['files'][prefix + 'browser-native-requests.json'])
+files = captured['files']
+exports = strict_json(files[prefix + 'browser-native-requests.json'])
 descriptor = exports['requests']['manager-usdc']
-raw = captured['files'][prefix + descriptor['file']]
+raw = files[prefix + descriptor['file']]
 assert descriptor['currency'] == 'USDC6'
 assert hashlib.sha256(raw).hexdigest() == descriptor['sha256'] == 'c1f9e97e6bb1dd4e8504cbbbf895495fe0b0982f74ddc687d4b6bef014858426'
 with pathlib.Path(sys.argv[2]).open('xb') as output:
