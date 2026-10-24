@@ -4,7 +4,7 @@ TRIGGER_PATH = '.github/workflows/publish-discovery-v1.yml'
 
 
 def authorize(environment, source, api, event=None):
-    require(TAG == 'v1.20.0' and valid_sha(source), 'Discovery publication version/source differs')
+    require(TAG == 'v1.20.1' and valid_sha(source), 'Discovery publication version/source differs')
     require(environment.get('GITHUB_REPOSITORY') == REPOSITORY
             and environment.get('GITHUB_REF') == 'refs/heads/main'
             and environment.get('GITHUB_EVENT_NAME') == 'workflow_dispatch'

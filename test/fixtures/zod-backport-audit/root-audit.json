@@ -1,0 +1,93 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@nomicfoundation/hardhat-zod-utils": {
+      "name": "@nomicfoundation/hardhat-zod-utils",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "zod"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@nomicfoundation/hardhat-zod-utils"
+      ],
+      "fixAvailable": true
+    },
+    "hardhat": {
+      "name": "hardhat",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@nomicfoundation/hardhat-zod-utils",
+        "zod"
+      ],
+      "effects": [],
+      "range": ">=3.0.0-next.0",
+      "nodes": [
+        "node_modules/hardhat"
+      ],
+      "fixAvailable": {
+        "name": "hardhat",
+        "version": "2.29.1",
+        "isSemVerMajor": true
+      }
+    },
+    "zod": {
+      "name": "zod",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1243066,
+          "name": "zod",
+          "dependency": "zod",
+          "title": "Zod can exhaust memory while validating oversized constrained collections",
+          "url": "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+          "severity": "high",
+          "cwe": [
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<4.6.6"
+        }
+      ],
+      "effects": [
+        "@nomicfoundation/hardhat-zod-utils",
+        "hardhat"
+      ],
+      "range": "<4.6.6",
+      "nodes": [
+        "node_modules/zod",
+        "ui/vendor/zod"
+      ],
+      "fixAvailable": {
+        "name": "hardhat",
+        "version": "2.29.1",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 3,
+      "critical": 0,
+      "total": 3
+    },
+    "dependencies": {
+      "prod": 2,
+      "dev": 233,
+      "optional": 43,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 234
+    }
+  }
+}

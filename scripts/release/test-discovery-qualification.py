@@ -726,7 +726,12 @@ def public_packet_fixture(*, served_catalog_prefix=b'', source_count=1):
     responses['actions/runs/71'].update(display_title='Recorded exact-source journey', run_number=1,
         actor={'login': 'recorded-actor'}, triggering_actor={'login': 'recorded-trigger'},
         jobs_url='https://api.github.com/repos/' + m.ALPHA_REPOSITORY + '/actions/runs/71/jobs',
-        logs_url='https://api.github.com/repos/' + m.ALPHA_REPOSITORY + '/actions/runs/71/logs')
+        logs_url='https://api.github.com/repos/' + m.ALPHA_REPOSITORY + '/actions/runs/71/logs',
+        pull_requests=[{'id': 81, 'number': 7, 'url': 'https://api.github.com/repos/example/fork/pulls/7',
+            'head': {'ref': 'main', 'sha': producer['headCommit'],
+                     'repo': {'id': 82, 'url': 'https://api.github.com/repos/' + m.ALPHA_REPOSITORY}},
+            'base': {'ref': 'main', 'sha': '5' * 40,
+                     'repo': {'id': 83, 'url': 'https://api.github.com/repos/example/fork'}}}])
     attempt_run = copy.deepcopy(responses['actions/runs/71'])
     attempt_run.update(jobs_url='https://api.github.com/repos/' + m.ALPHA_REPOSITORY + '/actions/runs/71/attempts/2/jobs',
         logs_url='https://api.github.com/repos/' + m.ALPHA_REPOSITORY + '/actions/runs/71/attempts/2/logs')
@@ -929,6 +934,72 @@ class AlphaBrowserArtifactTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'complete metadata snapshot differs: run'):
             self.live()
         self.assertEqual(latest['actor']['login'], 'recorded-actor')
+
+    def test_only_associated_pr_head_pointer_may_move_and_full_observations_reach_the_log(self):
+        before = copy.deepcopy(self.responses['actions/runs/71/attempts/2'])
+        self.responses['actions/runs/71/attempts/2']['pull_requests'][0]['head']['sha'] = '6' * 40
+        observed = copy.deepcopy(self.responses['actions/runs/71/attempts/2'])
+        with patch('sys.stderr', new=io.StringIO()) as output, patch('sys.stdout', new=io.StringIO()) as protocol:
+            result = self.live()
+        self.assertEqual(protocol.getvalue(), '')
+        record = result['browserMetadataObservation']
+        self.assertEqual(record['captured']['run'], before)
+        self.assertEqual(record['observed']['run'], observed)
+        self.assertEqual(self.responses['actions/runs/71/attempts/2'], observed)
+        self.assertIs(record['associatedPrHeadsUsedAsExecutionSource'], False)
+        self.assertEqual(record['associationChanges'], [{'snapshot': 'run',
+            'path': '/pull_requests/0/head/sha', 'captured': before['pull_requests'][0]['head']['sha'],
+            'observed': '6' * 40, 'role': 'NON_AUTHORITATIVE_ASSOCIATED_PR_HEAD_NOT_EXECUTION_SOURCE'}])
+        logged = output.getvalue().split('DISCOVERY_BROWSER_METADATA_OBSERVATION_BEGIN\n', 1)[1]
+        logged = logged.split('\nDISCOVERY_BROWSER_METADATA_OBSERVATION_END', 1)[0]
+        self.assertEqual(json.loads(logged), record)
+        self.assertEqual(result['files'], self.files)
+        self.assertEqual(result['binding']['producer']['headCommit'], before['head_sha'])
+
+    def test_association_pointer_exception_preserves_real_run_identity(self):
+        for field, value in [('head_sha', '6' * 40), ('run_attempt', 3), ('status', 'queued'),
+                ('conclusion', 'failure'), ('workflow_id', 1)]:
+            self.pin, self.files, self.raw, self.responses = public_packet_fixture()
+            self.responses['actions/runs/71/attempts/2'][field] = value
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, 'complete metadata snapshot differs: run'):
+                self.live()
+
+    def test_association_identity_ref_repo_base_and_unknown_fields_remain_exact(self):
+        changes = [lambda row: row.update(id=99), lambda row: row.update(number=99),
+            lambda row: row.update(url='https://api.github.com/repos/example/fork/pulls/99'),
+            lambda row: row['head'].update(ref='substituted'),
+            lambda row: row['head']['repo'].update(id=99),
+            lambda row: row['base'].update(sha='6' * 40),
+            lambda row: row.update(unreviewed=True),
+            lambda row: row['head'].update(unreviewed=True)]
+        for change in changes:
+            self.pin, self.files, self.raw, self.responses = public_packet_fixture()
+            change(self.responses['actions/runs/71/attempts/2']['pull_requests'][0])
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, 'complete metadata snapshot differs: run'):
+                self.live()
+
+    def test_association_missing_malformed_or_non_sha_pointer_is_rejected(self):
+        changes = [lambda run: run.pop('pull_requests'), lambda run: run.update(pull_requests=[]),
+            lambda run: run.update(pull_requests=None),
+            lambda run: run['pull_requests'][0].pop('head'),
+            lambda run: run['pull_requests'][0]['head'].pop('sha')]
+        changes.extend(lambda run, bad=bad: run['pull_requests'][0]['head'].update(sha=bad)
+            for bad in ['not-a-sha', '6' * 39, '6' * 41, None, True])
+        for change in changes:
+            self.pin, self.files, self.raw, self.responses = public_packet_fixture()
+            change(self.responses['actions/runs/71/attempts/2'])
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, 'associated pull request'):
+                self.live()
+
+    def test_metadata_comparison_changes_neither_owned_input_and_all_other_snapshots_stay_exact(self):
+        captured = copy.deepcopy(self.responses['actions/runs/71/attempts/2'])
+        observed = copy.deepcopy(captured); observed['pull_requests'][0]['head']['sha'] = '6' * 40
+        old = copy.deepcopy(captured); new = copy.deepcopy(observed)
+        self.assertEqual(len(m.compare_browser_metadata_snapshot('run', captured, observed)), 1)
+        self.assertEqual(captured, old); self.assertEqual(observed, new)
+        for name in ['jobs', 'artifacts', 'checkout-commit', 'public-commit']:
+            with self.subTest(snapshot=name), self.assertRaisesRegex(ValueError, 'complete metadata snapshot differs: ' + name):
+                m.compare_browser_metadata_snapshot(name, {'unchanged': 1}, {'unchanged': 2})
 
     def test_both_full_live_collection_envelopes_are_complete_unique_and_bounded(self):
         for field, endpoint in [('jobs', 'actions/runs/71/attempts/2/jobs?per_page=100&page=1'),

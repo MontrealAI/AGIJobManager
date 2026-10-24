@@ -1,0 +1,34 @@
+{
+  "schema": "agijobmanager/discovery-release-comparison-provenance/v1",
+  "version": "1.20.1",
+  "status": "EXPECTED_ONLY_PENDING_FINAL_SOURCE_EXECUTION",
+  "executed": false,
+  "baselineCommit": "900bb4b46cb7de7f6f69f553a5687866f978a413",
+  "baselineTree": "bc42f0b295a649900667dcb1c487122726df7a02",
+  "fork": {
+    "previousPath": "docs/qualification/mainnet-cutover-v1.19.6-expected.json",
+    "previousSha256": "801abf1a278b91ceab8e69dcf5e3f927c31aea30137d09386924cae693869966",
+    "expectedPath": "docs/qualification/mainnet-cutover-v1.20.1-expected.json",
+    "expectedSha256": "3216b38bab7e3e9d3bdf2fb3b5baff73c8feb6d7b63c773598d92b87eaa6f2eb",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "hardhat/package.json",
+      "package-lock.json",
+      "package.json"
+    ],
+    "observationsOrFindingsChanged": false,
+    "executed": false
+  },
+  "staticAnalysis": {
+    "previousPath": "scripts/security/slither-reviewed-findings-v1.19.6.json",
+    "previousSha256": "5728f37e6bc3ee9b86f47f955404cc5ccda90e27401972d5c2aa6c283e3992cb",
+    "expectedPath": "scripts/security/slither-reviewed-findings-v1.20.1.json",
+    "expectedSha256": "d84e66edd2c80abb947c2ef428ff1ffecebecf5de77500c79add1921413cbaed",
+    "changedSourceHashes": [
+      "hardhat/package-lock.json",
+      "package-lock.json"
+    ],
+    "observationsOrFindingsChanged": false,
+    "executed": false
+  }
+}

@@ -36,8 +36,20 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      - name: Check reviewed Zod bounded-collection regressions
+        run: node --test scripts/security/zod-constrained-collections.test.cjs
+
       - name: Check all root dependencies
-        run: npm audit --audit-level=low
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/build/security/audit-root"
+          set +e
+          npm audit --json --audit-level=low > "$GITHUB_WORKSPACE/build/security/audit-root"/raw.json 2> "$GITHUB_WORKSPACE/build/security/audit-root"/stderr.txt
+          audit_exit=$?
+          set -e
+          printf '%s\n' "$audit_exit" > "$GITHUB_WORKSPACE/build/security/audit-root"/exit.txt
+          node scripts/check-zod-backport-audit.cjs --repository "$GITHUB_WORKSPACE" --scope root \
+            --audit "$GITHUB_WORKSPACE/build/security/audit-root"/raw.json --stderr "$GITHUB_WORKSPACE/build/security/audit-root"/stderr.txt \
+            --exit-file "$GITHUB_WORKSPACE/build/security/audit-root"/exit.txt --output "$GITHUB_WORKSPACE/build/security/audit-root"/disposition.json
 
       - name: Verify exact compiler compatibility patches
         run: node --test scripts/security/test-compiler-compatibility.cjs scripts/security/test-artifact-diagnostics.cjs
@@ -46,7 +58,15 @@ jobs:
         working-directory: hardhat
         run: |
           npm ci
-          npm audit --audit-level=low
+          mkdir -p "$GITHUB_WORKSPACE/build/security/audit-hardhat"
+          set +e
+          npm audit --json --audit-level=low > "$GITHUB_WORKSPACE/build/security/audit-hardhat"/raw.json 2> "$GITHUB_WORKSPACE/build/security/audit-hardhat"/stderr.txt
+          audit_exit=$?
+          set -e
+          printf '%s\n' "$audit_exit" > "$GITHUB_WORKSPACE/build/security/audit-hardhat"/exit.txt
+          node ../scripts/check-zod-backport-audit.cjs --repository "$GITHUB_WORKSPACE" --scope hardhat \
+            --audit "$GITHUB_WORKSPACE/build/security/audit-hardhat"/raw.json --stderr "$GITHUB_WORKSPACE/build/security/audit-hardhat"/stderr.txt \
+            --exit-file "$GITHUB_WORKSPACE/build/security/audit-hardhat"/exit.txt --output "$GITHUB_WORKSPACE/build/security/audit-hardhat"/disposition.json
           npm run compile
           node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs test test/compiler-knowledge-base.test.js
           npm run test:preflight
@@ -97,5 +117,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: static-analysis-evidence
-          path: build/security/*.json
+          path: |
+            build/security/*.json
+            build/security/audit-*/**
           if-no-files-found: error

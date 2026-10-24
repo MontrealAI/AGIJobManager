@@ -1,0 +1,61 @@
+{
+  "name": "zod",
+  "version": "3.25.76+agijobmanager.1",
+  "type": "module",
+  "author": "Colin McDonnell <zod@colinhacks.com>",
+  "description": "Local Zod 3 compatibility fork: abort existing oversized array/set bounds before element parsing; not a global resource-exhaustion fix",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "UPSTREAM.json",
+    "src/index.ts",
+    "src/v3",
+    "v3",
+    "index.cjs",
+    "index.js",
+    "index.d.cts",
+    "index.d.ts"
+  ],
+  "funding": "https://github.com/sponsors/colinhacks",
+  "homepage": "https://zod.dev",
+  "keywords": [
+    "typescript",
+    "schema",
+    "validation",
+    "type",
+    "inference"
+  ],
+  "license": "MIT",
+  "sideEffects": false,
+  "main": "./index.cjs",
+  "types": "./index.d.cts",
+  "module": "./index.js",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@zod/source": "./src/index.ts",
+      "types": "./index.d.cts",
+      "import": "./index.js",
+      "require": "./index.cjs"
+    },
+    "./v3": {
+      "@zod/source": "./src/v3/index.ts",
+      "types": "./v3/index.d.cts",
+      "import": "./v3/index.js",
+      "require": "./v3/index.cjs"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/colinhacks/zod.git"
+  },
+  "bugs": {
+    "url": "https://github.com/colinhacks/zod/issues"
+  },
+  "support": {
+    "backing": {
+      "npm-funding": true
+    }
+  },
+  "private": true
+}

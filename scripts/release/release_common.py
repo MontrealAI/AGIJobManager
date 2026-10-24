@@ -14,7 +14,7 @@ from urllib.parse import quote, urlsplit, urlunsplit
 
 REPOSITORY = 'MontrealAI/AGIJobManager'
 TAG = 'v' + json.loads((pathlib.Path(__file__).resolve().parents[2] / 'package.json').read_text())['version']
-TITLE = TAG + ' — Discovery Lab admission'
+TITLE = TAG + ' — Shared mission receipt context'
 BUILDER_ASSETS = {'My-SUCCESSOR-Omega-en.html', 'My-SUCCESSOR-Omega-fr.html', 'SUCCESSOR-Omega-editable-source.zip', 'SOURCE_MANIFEST.json'}
 BUILDER_ARCHIVE_ONLY_ASSETS = {'MANAGER_CONTEXT.json'}
 LIMIT = 450_000_000
@@ -47,7 +47,7 @@ REQUIRED_STEPS = {
     'alpha-project-handoff.yml': ['Fetch the exact reviewed native Alpha validator', 'Exercise actual receiver validation, work and bilingual history'],
     'pages.yml': ['Build and verify static pages', 'SUCCESSOR local and adversarial checks', 'Verify mobile, desktop and bilingual interactions', 'SUCCESSOR browser, accessibility and isolated worker rehearsal'],
     'ci.yml': ['Lint', 'Build', 'Bytecode size check', 'Test'],
-    'ui.yml': ['Run npm audit --audit-level=low', 'Run npm run lint', 'Run npm run typecheck', 'Run npm run test', 'Run npm run test:e2e', 'Run npm run test:a11y', 'Run npm run verify:deterministic'],
+    'ui.yml': ['Check UI registry audit and bounded backport disposition', 'Run npm run lint', 'Run npm run typecheck', 'Run npm run test', 'Run npm run test:e2e', 'Run npm run test:a11y', 'Run npm run verify:deterministic'],
     'docs.yml': ['Check docs freshness/integrity', 'ENS docs integrity'],
     'security-verification.yml': ['Verify deployment toolchain', 'Forge build', 'Forge unit + fuzz tests', 'Forge invariants', 'Run and review extended Slither findings'],
     'mainnet-fork.yml': ['Test actual Circle USDC on a pinned local mainnet fork', 'Rehearse USDC and ENS cutover beside the actual legacy manager', 'Match the committed qualification to the executed source and observations'],

@@ -1,0 +1,427 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@coinbase/cdp-sdk": {
+      "name": "@coinbase/cdp-sdk",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "abitype",
+        "viem",
+        "zod"
+      ],
+      "effects": [],
+      "range": ">=1.0.0",
+      "nodes": [
+        "node_modules/@coinbase/cdp-sdk"
+      ],
+      "fixAvailable": true
+    },
+    "@reown/appkit": {
+      "name": "@reown/appkit",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@reown/appkit-controllers",
+        "@reown/appkit-pay",
+        "@reown/appkit-scaffold-ui",
+        "@reown/appkit-ui",
+        "@reown/appkit-utils",
+        "@reown/appkit-wallet",
+        "@walletconnect/universal-provider"
+      ],
+      "effects": [
+        "@walletconnect/ethereum-provider"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@reown/appkit"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@reown/appkit-controllers": {
+      "name": "@reown/appkit-controllers",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@reown/appkit-wallet",
+        "@walletconnect/universal-provider"
+      ],
+      "effects": [
+        "@reown/appkit",
+        "@reown/appkit-scaffold-ui",
+        "@reown/appkit-utils"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@reown/appkit-controllers"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@reown/appkit-pay": {
+      "name": "@reown/appkit-pay",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@reown/appkit-controllers",
+        "@reown/appkit-ui",
+        "@reown/appkit-utils"
+      ],
+      "effects": [
+        "@reown/appkit"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@reown/appkit-pay"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@reown/appkit-scaffold-ui": {
+      "name": "@reown/appkit-scaffold-ui",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@reown/appkit-controllers",
+        "@reown/appkit-ui",
+        "@reown/appkit-utils",
+        "@reown/appkit-wallet"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@reown/appkit-scaffold-ui"
+      ],
+      "fixAvailable": true
+    },
+    "@reown/appkit-ui": {
+      "name": "@reown/appkit-ui",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@reown/appkit-controllers",
+        "@reown/appkit-wallet"
+      ],
+      "effects": [
+        "@reown/appkit",
+        "@reown/appkit-pay",
+        "@reown/appkit-scaffold-ui"
+      ],
+      "range": ">=1.7.1-449657bc8f95adcfd295a2e883c4bcd439045044.0",
+      "nodes": [
+        "node_modules/@reown/appkit-ui"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@reown/appkit-utils": {
+      "name": "@reown/appkit-utils",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@reown/appkit-controllers",
+        "@reown/appkit-wallet",
+        "@walletconnect/universal-provider"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@reown/appkit-utils"
+      ],
+      "fixAvailable": true
+    },
+    "@reown/appkit-wallet": {
+      "name": "@reown/appkit-wallet",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "zod"
+      ],
+      "effects": [
+        "@reown/appkit",
+        "@reown/appkit-controllers",
+        "@reown/appkit-scaffold-ui",
+        "@reown/appkit-ui",
+        "@reown/appkit-utils"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@reown/appkit-wallet"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@wagmi/connectors": {
+      "name": "@wagmi/connectors",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@walletconnect/ethereum-provider"
+      ],
+      "effects": [
+        "wagmi"
+      ],
+      "range": "<=0.0.0-wc-20250213165818 || >=5.8.0",
+      "nodes": [
+        "node_modules/@wagmi/connectors"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@walletconnect/core": {
+      "name": "@walletconnect/core",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@walletconnect/utils"
+      ],
+      "effects": [],
+      "range": "2.18.1-canary-exp-1 - 2.18.1-rc-1 || 2.19.0-canary-ak-1 - 2.21.9",
+      "nodes": [
+        "node_modules/@reown/appkit-controllers/node_modules/@walletconnect/core",
+        "node_modules/@reown/appkit-utils/node_modules/@walletconnect/core",
+        "node_modules/@reown/appkit/node_modules/@walletconnect/core",
+        "node_modules/@walletconnect/core"
+      ],
+      "fixAvailable": true
+    },
+    "@walletconnect/ethereum-provider": {
+      "name": "@walletconnect/ethereum-provider",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@reown/appkit",
+        "@walletconnect/sign-client",
+        "@walletconnect/universal-provider",
+        "@walletconnect/utils"
+      ],
+      "effects": [
+        "@wagmi/connectors"
+      ],
+      "range": "0.0.0-canary-rollup.0 || 2.17.1-canary-0 - 2.17.1-canary-appkit.0 || 2.17.4-canary-ak-1 - 2.17.4-canary-ak-4 || 2.18.0-canary-ak-1 - 2.18.0-rc-1 || 2.18.1-canary-exp-1 - 2.18.1-rc-1 || >=2.19.0-canary-ak-1",
+      "nodes": [
+        "node_modules/@walletconnect/ethereum-provider"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@walletconnect/sign-client": {
+      "name": "@walletconnect/sign-client",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@walletconnect/core",
+        "@walletconnect/utils"
+      ],
+      "effects": [],
+      "range": "2.18.1-canary-exp-1 - 2.18.1-rc-1 || 2.19.0-canary-ak-1 - 2.21.9",
+      "nodes": [
+        "node_modules/@reown/appkit-controllers/node_modules/@walletconnect/sign-client",
+        "node_modules/@reown/appkit-utils/node_modules/@walletconnect/sign-client",
+        "node_modules/@reown/appkit/node_modules/@walletconnect/sign-client",
+        "node_modules/@walletconnect/sign-client"
+      ],
+      "fixAvailable": true
+    },
+    "@walletconnect/universal-provider": {
+      "name": "@walletconnect/universal-provider",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@walletconnect/sign-client",
+        "@walletconnect/utils"
+      ],
+      "effects": [
+        "@reown/appkit",
+        "@reown/appkit-controllers",
+        "@reown/appkit-utils"
+      ],
+      "range": "2.18.1-canary-exp-1 - 2.18.1-rc-1 || 2.19.0-canary-ak-1 - 2.21.9",
+      "nodes": [
+        "node_modules/@reown/appkit-controllers/node_modules/@walletconnect/universal-provider",
+        "node_modules/@reown/appkit-utils/node_modules/@walletconnect/universal-provider",
+        "node_modules/@reown/appkit/node_modules/@walletconnect/universal-provider",
+        "node_modules/@walletconnect/universal-provider"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@walletconnect/utils": {
+      "name": "@walletconnect/utils",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "viem"
+      ],
+      "effects": [
+        "@walletconnect/core",
+        "@walletconnect/ethereum-provider",
+        "@walletconnect/sign-client",
+        "@walletconnect/universal-provider"
+      ],
+      "range": "2.18.1-canary-exp-1 - 2.18.1-rc-1 || 2.19.0-canary-ak-1 - 2.21.9",
+      "nodes": [
+        "node_modules/@reown/appkit-controllers/node_modules/@walletconnect/utils",
+        "node_modules/@reown/appkit-utils/node_modules/@walletconnect/utils",
+        "node_modules/@reown/appkit/node_modules/@walletconnect/utils",
+        "node_modules/@walletconnect/utils"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "abitype": {
+      "name": "abitype",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "zod"
+      ],
+      "effects": [
+        "@coinbase/cdp-sdk",
+        "viem"
+      ],
+      "range": "<=0.0.0-main-20230430000127 || 0.7.0-canary.20230307T162852 - 1.0.9",
+      "nodes": [
+        "node_modules/@coinbase/cdp-sdk/node_modules/abitype",
+        "node_modules/@reown/appkit-controllers/node_modules/abitype",
+        "node_modules/@reown/appkit-utils/node_modules/abitype",
+        "node_modules/@reown/appkit/node_modules/abitype",
+        "node_modules/@walletconnect/utils/node_modules/abitype",
+        "node_modules/abitype"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "viem": {
+      "name": "viem",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "abitype"
+      ],
+      "effects": [
+        "@coinbase/cdp-sdk",
+        "@walletconnect/utils"
+      ],
+      "range": "<=0.0.0-wagmiv2-20230628182101 || 0.1.10 - 2.37.1",
+      "nodes": [
+        "node_modules/@reown/appkit-controllers/node_modules/@walletconnect/utils/node_modules/viem",
+        "node_modules/@reown/appkit-utils/node_modules/@walletconnect/utils/node_modules/viem",
+        "node_modules/@reown/appkit/node_modules/@walletconnect/utils/node_modules/viem",
+        "node_modules/@walletconnect/utils/node_modules/viem",
+        "node_modules/viem"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "wagmi": {
+      "name": "wagmi",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@wagmi/connectors"
+      ],
+      "effects": [],
+      "range": ">=2.15.1",
+      "nodes": [
+        "node_modules/wagmi"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "zod": {
+      "name": "zod",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1243066,
+          "name": "zod",
+          "dependency": "zod",
+          "title": "Zod can exhaust memory while validating oversized constrained collections",
+          "url": "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+          "severity": "high",
+          "cwe": [
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<4.6.6"
+        }
+      ],
+      "effects": [
+        "@coinbase/cdp-sdk",
+        "@reown/appkit-wallet",
+        "abitype"
+      ],
+      "range": "<4.6.6",
+      "nodes": [
+        "node_modules/zod",
+        "vendor/zod"
+      ],
+      "fixAvailable": {
+        "name": "wagmi",
+        "version": "2.15.0",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 18,
+      "critical": 0,
+      "total": 18
+    },
+    "dependencies": {
+      "prod": 520,
+      "dev": 450,
+      "optional": 114,
+      "peer": 11,
+      "peerOptional": 0,
+      "total": 1007
+    }
+  }
+}
