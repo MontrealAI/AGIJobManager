@@ -68,7 +68,7 @@ test('checkout gc metadata permits only one literal inactive auto zero',()=>fixt
 }));
 
 
-import {receiverSourcesForHistory,JOBS_RC20_COUNTERPART} from './discovery-installed-operator.mjs';
+import {receiverSourcesForHistory,qualifiedCounterpartSource,JOBS_RC20_COUNTERPART,JOBS_RC21_COUNTERPART} from './discovery-installed-operator.mjs';
 const ownSource={repository:'MontrealAI/AGIJobManager',
   commit:'3153ac394d37eeecb03e825ecce37559427bc6c3',tree:'4a08ce51d68ea57bbb7193275870053b79943c25',
   adapterSha256:'a'.repeat(64),contractSha256:JOBS_RC20_COUNTERPART.source.contractSha256};
@@ -101,4 +101,22 @@ test('known counterpart admission never trusts a changed source in retained rece
   }
   assert.throws(()=>receiverSourcesForHistory(ownSource,[{...JOBS_RC20_COUNTERPART.source,extra:true}],JOBS_RC20_COUNTERPART),/absent/);
   assert.throws(()=>receiverSourcesForHistory(ownSource,[{...ownSource,commit:'0'.repeat(40)}],JOBS_RC20_COUNTERPART),/absent/);
+});
+
+test('pending rc21 counterpart admits no inferred archive manifest or source identity',()=>{
+  assert.equal(JOBS_RC21_COUNTERPART,null);
+  assert.equal(qualifiedCounterpartSource(structuredClone(JOBS_RC20_COUNTERPART)),JOBS_RC20_COUNTERPART.source);
+  const unqualified={...structuredClone(JOBS_RC20_COUNTERPART),id:'jobs-rc21-unpublished'};
+  assert.throws(()=>qualifiedCounterpartSource(unqualified),/Counterpart.*pending/);
+  assert.throws(()=>receiverSourcesForHistory(ownSource,[unqualified.source],unqualified),/Counterpart.*pending/);
+  assert.throws(()=>qualifiedCounterpartSource(null),/Counterpart.*pending/);
+});
+
+test('counterpart selection cannot combine the pending edition with historical rc20 identities',()=>{
+  for(const key of ['archiveSha256','archiveBytes','manifestSha256','source']) {
+    const selection=structuredClone(JOBS_RC20_COUNTERPART);
+    selection[key]=key==='archiveBytes'?selection[key]+1:key==='source'?{...selection.source,commit:'0'.repeat(40)}:'0'.repeat(64);
+    assert.throws(()=>qualifiedCounterpartSource(selection),/Counterpart/);
+  }
+  assert.deepEqual(receiverSourcesForHistory(ownSource,[],null),[ownSource]);
 });

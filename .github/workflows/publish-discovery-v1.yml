@@ -3,18 +3,18 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Enter PUBLISH_v1.20.1 after reviewing completed final-source qualification'
+        description: 'Enter PUBLISH_v1.20.2 after reviewing completed final-source qualification'
         required: true
         type: string
 permissions:
   contents: read
   actions: read
 concurrency:
-  group: publish-v1.20.1
+  group: publish-v1.20.2
   cancel-in-progress: false
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.confirmation == 'PUBLISH_v1.20.1'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.confirmation == 'PUBLISH_v1.20.2'
     runs-on: ubuntu-latest
     timeout-minutes: 65
     env:
@@ -44,8 +44,8 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGI-Alpha-Agent-v0
-          # Draft pin: pending final Alpha review and fresh native qualification.
-          ref: 61532fb82621a065e668fd11e57289dcfb65c67b
+          # Exact031b installed-source review6385568620; fresh installed qualification remains required.
+          ref: 031bdb5d055c8bad896daa076baea2b5e17b242c
           path: build/discovery-alpha
           fetch-depth: 0
           persist-credentials: false
@@ -65,25 +65,25 @@ jobs:
         if: steps.readiness.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/release/collect-qualification.py --dependency-root "$(realpath node_modules)" --source "$SOURCE_COMMIT" --out build/release/v1.20.1 --profile manager-discovery-release-v1 --native-source-root "$RUNNER_TEMP/discovery-alpha" --manifest config/manager-discovery-release-v1.json --manifest-sha256 "$(sha256sum config/manager-discovery-release-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/discovery-release-profile.py | cut -d' ' -f1)"
+        run: python3 scripts/release/collect-qualification.py --dependency-root "$(realpath node_modules)" --source "$SOURCE_COMMIT" --out build/release/v1.20.2 --profile manager-discovery-release-v1 --native-source-root "$RUNNER_TEMP/discovery-alpha" --manifest config/manager-discovery-release-v1.json --manifest-sha256 "$(sha256sum config/manager-discovery-release-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/discovery-release-profile.py | cut -d' ' -f1)"
       - name: Verify complete published download inventory
         if: steps.readiness.outputs.ready == 'true'
-        run: python3 scripts/release/verify-package.py build/release/v1.20.1 --published --profile manager-discovery-release-v1 --native-source-root "$RUNNER_TEMP/discovery-alpha" --manifest config/manager-discovery-release-v1.json --manifest-sha256 "$(sha256sum config/manager-discovery-release-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/discovery-release-profile.py | cut -d' ' -f1)"
+        run: python3 scripts/release/verify-package.py build/release/v1.20.2 --published --profile manager-discovery-release-v1 --native-source-root "$RUNNER_TEMP/discovery-alpha" --manifest config/manager-discovery-release-v1.json --manifest-sha256 "$(sha256sum config/manager-discovery-release-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/discovery-release-profile.py | cut -d' ' -f1)"
       - name: Attest exact-source release assembly
         if: steps.readiness.outputs.ready == 'true'
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
-          subject-path: build/release/v1.20.1/*
+          subject-path: build/release/v1.20.2/*
       - name: Verify artifact, repository, workflow and source attestation bindings
         if: steps.readiness.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for asset in build/release/v1.20.1/*; do
+          for asset in build/release/v1.20.2/*; do
             gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY" --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/publish-discovery-v1.yml" --signer-digest "$SOURCE_COMMIT" --source-digest "$SOURCE_COMMIT" --source-ref refs/heads/main --deny-self-hosted-runners
           done
       - name: Validate evidence, create draft, verify assets, then publish
         if: steps.readiness.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/release/publish-release.py --dependency-root "$(realpath node_modules)" --qualification build/release/v1.20.1/QUALIFICATION.json --assets build/release/v1.20.1 --publish --profile manager-discovery-release-v1 --native-source-root "$RUNNER_TEMP/discovery-alpha" --manifest config/manager-discovery-release-v1.json --manifest-sha256 "$(sha256sum config/manager-discovery-release-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/discovery-release-profile.py | cut -d' ' -f1)"
+        run: python3 scripts/release/publish-release.py --dependency-root "$(realpath node_modules)" --qualification build/release/v1.20.2/QUALIFICATION.json --assets build/release/v1.20.2 --publish --profile manager-discovery-release-v1 --native-source-root "$RUNNER_TEMP/discovery-alpha" --manifest config/manager-discovery-release-v1.json --manifest-sha256 "$(sha256sum config/manager-discovery-release-v1.json | cut -d' ' -f1)" --verifier-sha256 "$(sha256sum scripts/release/discovery-release-profile.py | cut -d' ' -f1)"

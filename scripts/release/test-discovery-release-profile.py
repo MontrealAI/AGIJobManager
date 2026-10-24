@@ -51,7 +51,7 @@ class DiscoveryReleaseSource(unittest.TestCase):
             result = self.verify()
         for field in ('releaseQualified', 'publicationApproved', 'executionApproved', 'nativeExecutionQualified'):
             self.assertIs(result[field], False)
-        self.assertEqual(result['version'], '1.20.1')
+        self.assertEqual(result['version'], '1.20.2')
 
     def test_published_v1196_baseline_is_independently_reconstructed(self):
         self.assertEqual(P['tree_digest'](self.previous['entries']), P['BASE_TREE'])
@@ -128,7 +128,7 @@ class DiscoveryReleaseSource(unittest.TestCase):
 
     def test_source_package_metadata_refuses_forged_qualification_and_other_identity(self):
         value = {key: None for key in ('schemaVersion', 'repository', 'tag', 'name', 'sourceCommit', 'sourceTree', 'builderSource', 'stage', 'qualification', 'archiveLimitBytes', 'toolchain', 'exclusions', 'files')}
-        value.update({'schemaVersion': 2, 'repository': P['REPOSITORY'], 'tag': 'v1.20.1', 'name': P['TITLE'], 'sourceCommit': '1' * 40, 'sourceTree': '2' * 40, 'stage': 'source-package', **P['metadata'](self.selection)})
+        value.update({'schemaVersion': 2, 'repository': P['REPOSITORY'], 'tag': 'v1.20.2', 'name': P['TITLE'], 'sourceCommit': '1' * 40, 'sourceTree': '2' * 40, 'stage': 'source-package', **P['metadata'](self.selection)})
         P['validate_metadata'](value, self.selection)
         for name, change in (('tag', 'v1.19.6'), ('name', 'Approved deployment'), ('releaseQualified', True), ('executionApproved', True)):
             with self.assertRaises(ValueError):

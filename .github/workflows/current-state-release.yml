@@ -39,8 +39,8 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: MontrealAI/AGI-Alpha-Agent-v0
-          # Draft pin: pending final Alpha review and fresh native qualification.
-          ref: 61532fb82621a065e668fd11e57289dcfb65c67b
+          # Exact031b installed-source review6385568620; fresh installed qualification remains required.
+          ref: 031bdb5d055c8bad896daa076baea2b5e17b242c
           path: build/discovery-alpha
           fetch-depth: 0
           persist-credentials: false

@@ -13,7 +13,7 @@ from release_common import require, sha, strict_json
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 BASE_COMMIT = '900bb4b46cb7de7f6f69f553a5687866f978a413'
 BASE_TREE = 'bc42f0b295a649900667dcb1c487122726df7a02'
-VERSION = '1.20.1'
+VERSION = '1.20.2'
 PROTECTED = (
     'config/manager-dependency-maintenance-baseline-v1.json',
     'config/manager-dependency-maintenance-v1.json',

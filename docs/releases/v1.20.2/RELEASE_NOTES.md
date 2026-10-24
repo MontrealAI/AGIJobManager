@@ -1,0 +1,11 @@
+# AGIJobManager v1.20.2 — Alpha v1.41 Discovery compatibility
+
+This proposed edition selects the bounded installed Discovery source from public Alpha v1.41.0 commit `031bdb5d055c8bad896daa076baea2b5e17b242c`, tree `330e0e58268ed32990f04278fc543c71db45fd46`. Its [genuine static source review](../../qualification/alpha-installed-source-review-031b.json) covers 53 catalog sources and the separate inspector. The package captures the catalog and original Apache license separately. Static source acceptance grants no installed compatibility, execution, publication or settlement authority.
+
+The browser metadata reader prepares one finite original producer tuple: main-release run `40076340788`, attempt `1`, workflow `366358276`, artifact `12552939436` and job `120821426397` named `successor-capability / capability`. It retains the original execution source and all three required successful steps. Later branch pointers cannot select another source. The original standalone workflow and accepted Alpha 615 packet remain historical evidence.
+
+The original 031b browser packet is selected from immutable public commit `f995b97ae9beef118b7705b31b73bfc9ce65c316`, tree `533dcbb9a3321fd0c4627689c8f8f99f9b4c0c25`. The exact public Jobs rc.21 counterpart archive, installed manifest and receiver source remain pending. The retained rc.20 selection supports historical v1.20.1 only; it does not qualify this new tuple. This preparation must not be published as connected software until that peer selection and the normal final-source, installed and public-download requirements are satisfied.
+
+The root, Hardhat and UI dependency graphs are unchanged from v1.20.1. New fork and scanner files are expected comparisons with unchanged observations and findings; they are not new executions. Solidity, compiler settings, addresses, recorded owner decisions, intake configuration and transaction authority remain unchanged. Manager's USDC6 route and Jobs' AGIALPHA18 route remain distinct zero-cap, unsubmitted drafts.
+
+Published v1.20.1, the original Alpha 615 mission, earlier releases and all historical URLs remain available. See [validation](VALIDATION.md), [startup](START_HERE.md) and [recovery](RECOVERY_GUIDE.md).

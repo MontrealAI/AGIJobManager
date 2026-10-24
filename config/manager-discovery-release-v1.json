@@ -3,2291 +3,2371 @@
   "baseTree": "bc42f0b295a649900667dcb1c487122726df7a02",
   "changes": {
     ".github/workflows/current-state-release.yml": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ddedc8a97a695150696155ea48d37576d9526c889def6bf3325f529d6349a19e"
+      },
       "before": {
         "blob": "edd75629715ef3b736b081c549b32af8bd25d289",
         "mode": "100644"
       },
+      "reason": "Retain the reviewed Discovery exact-source candidate/native/publication workflow, replacing only its fixed draft Alpha checkout ref with coordinator-selected615.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    ".github/workflows/discovery-lab-receiver.yml": {
       "after": {
         "mode": "100644",
-        "sha256": "9759f576d35141b7cdc3294745856e76c3bfdcd405c596633b013a2a8a6b34df"
+        "sha256": "7d5da2050e0afa44a57d2908b6f075afee96e70ab7bcadc022c27ac4f5e771ac"
       },
-      "reason": "Retain the reviewed Discovery exact-source candidate/native/publication workflow, replacing only its fixed draft Alpha checkout ref with coordinator-selected615."
+      "before": null,
+      "reason": "Retain the reviewed Discovery exact-source candidate/native/publication workflow, replacing only its fixed draft Alpha checkout ref with coordinator-selected615.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     ".github/workflows/mainnet-fork.yml": {
+      "after": {
+        "mode": "100644",
+        "sha256": "01a60cdb50cfadfdf9200454afd06d25ec6f44f7e59b5cd52c48d280d709146a"
+      },
       "before": {
         "blob": "99bf3042cf27229998cfac14afa7b13ef22725a8",
         "mode": "100644"
       },
-      "after": {
-        "mode": "100644",
-        "sha256": "8c718589c4c2bbda23602432f53ed51cedd96d642cf7fa4dd8e2314006827e20"
-      },
-      "reason": "Retain reviewed exact-source Discovery qualification or Pages publication integration, preserving historical source/contract evidence and existing gates."
+      "reason": "Retain reviewed exact-source Discovery qualification or Pages publication integration, preserving historical source/contract evidence and existing gates.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     ".github/workflows/pages.yml": {
-      "before": {
-        "blob": "f5b1dbca198207afaebfd060cf16d840757725a9",
-        "mode": "100644"
-      },
       "after": {
         "mode": "100644",
         "sha256": "c031cf5037be0b66e49690d006a58e5775d8b4127e4042d6330432519708ad9d"
       },
-      "reason": "Retain reviewed exact-source Discovery qualification or Pages publication integration, preserving historical source/contract evidence and existing gates."
-    },
-    ".github/workflows/security-verification.yml": {
       "before": {
-        "blob": "487bf463edb9db5b4b5aa8e43d2ee8c344a914d5",
+        "blob": "f5b1dbca198207afaebfd060cf16d840757725a9",
         "mode": "100644"
       },
+      "reason": "Retain reviewed exact-source Discovery qualification or Pages publication integration, preserving historical source/contract evidence and existing gates."
+    },
+    ".github/workflows/publish-discovery-v1.yml": {
+      "after": {
+        "mode": "100644",
+        "sha256": "6a8d8b28c2910bf1c1661ccbc32ad30f5d98e48ad7e6ce83c2eba8faae69f971"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery exact-source candidate/native/publication workflow, replacing only its fixed draft Alpha checkout ref with coordinator-selected615.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    ".github/workflows/security-verification.yml": {
       "after": {
         "mode": "100644",
         "sha256": "3f2529f1be7340c4d6a3ab6d5682546623799123191355282c9f1683d4893403"
       },
+      "before": {
+        "blob": "487bf463edb9db5b4b5aa8e43d2ee8c344a914d5",
+        "mode": "100644"
+      },
       "reason": "Current-edition source-bound registry-audit/backport disposition; exact original900 workflow is authenticated and reversibly retained."
     },
     ".github/workflows/ui.yml": {
-      "before": {
-        "blob": "9aab1f19c8785fbf699daa0723bc68c38dc5a679",
-        "mode": "100644"
-      },
       "after": {
         "mode": "100644",
         "sha256": "f123944bd818bc9cd46be93618e59318ac8cc53181dd65313cced844f0d44dfd"
       },
+      "before": {
+        "blob": "9aab1f19c8785fbf699daa0723bc68c38dc5a679",
+        "mode": "100644"
+      },
       "reason": "Current-edition source-bound registry-audit/backport disposition; exact original900 workflow is authenticated and reversibly retained."
     },
     "README.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "300a30457486bf7c8b9fd3b22b8560fdfa7ed438c876d7a8ae3fcd8ae63d6fad"
+      },
       "before": {
         "blob": "79264bda4b317b91feef9385fcf63296b39f55af",
         "mode": "100644"
       },
-      "after": {
-        "mode": "100644",
-        "sha256": "1e60ac2050232ec5df124d28466f2c90cb154199e296b61e38d3f58d62ac3373"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "agijobmanager.html": {
+      "after": {
+        "mode": "100644",
+        "sha256": "290355a54f8a1179d34812f1f25134fc7255aa11761fa635412253acb457cce1"
+      },
       "before": {
         "blob": "1ba333301083c77769bc1a62b98b8a062e6547f6",
         "mode": "100644"
       },
-      "after": {
-        "mode": "100644",
-        "sha256": "840275921245df33eaee34b1877e2d67adf7088315869eccc6eaf03916c38fb2"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "config/companion-releases.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "91a478bdd39f07aa66d6df84c2bae2e67087e03310334d0327ee45c345b033e3"
+      },
       "before": {
         "blob": "6b358534080f54914e090746f3243d809c461c1a",
         "mode": "100644"
       },
-      "after": {
-        "mode": "100644",
-        "sha256": "8633cdd180395b643c1b1dae38a58a9e88292cc9a969184cc45ad2c4a6b06574"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
-    },
-    "config/usdc-deployment.json": {
-      "before": {
-        "blob": "59a027b72f57fa968628777badf581994fc92d81",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "52e53521585c37c6e91a301c159dfc24c127380aee1ca582f0231bae576c2c42"
-      },
-      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
-    },
-    "docs/MAINNET_READINESS.md": {
-      "before": {
-        "blob": "97f27540ef5ba5f5b4a0d261996900227b1cfeab",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "3eedac1ba501d2fcc405652ea0533c0f29f1e0ace09877081027df2d0cbfd4ad"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "docs/OPERATIONS/PRIVATE_FLEET.md": {
-      "before": {
-        "blob": "86183947db559dd51e9e4c47a1d25991294c4bf9",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "5064a6f2d09985577e539f4ddc293c30d1566eef5cca9c934dae6f4f82c39c85"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "docs/REFERENCE/VERSIONS.md": {
-      "before": {
-        "blob": "77133ae1c3cd1f83d237bba5cab002629a346368",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "89e263ac79adc522e331b230e93324ae6a2b13c70bb215ac8381f914978e993e"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "docs/RELEASE_GUIDE.md": {
-      "before": {
-        "blob": "d4d5ba35fc7e38b6882127a355736ce808a42f85",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "6355f1d7384289536f9c0b796560dcefc58647bc2f091f9c0151be10a5f098c1"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "docs/START_HERE.md": {
-      "before": {
-        "blob": "9a454c4ca21bc83ecb3fd30a98ef6af992445b9a",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "8b495984c8949f61e08d1ba2a44953ca26b14572038464ba2227b653eb2de83f"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "docs/V1_RELEASE_SCOPE.md": {
-      "before": {
-        "blob": "9582edb4df8c365ccd42810bf0f9598fe98659bd",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "17a9bd443177d2a8698dd8f33b95930ab1e58ef373c231bf19bdb1a338174870"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "docs/ui/DEPLOYMENT_MAINNET.md": {
-      "before": {
-        "blob": "3ab3f3710da7c34fe24cccc49618452b95e46738",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "c108e633a7d7dfe93e254217cec33b0f8affe57509ca643eb77cd51bf96f0971"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md": {
-      "before": {
-        "blob": "bd3410c08f596c6ea0957a1610908dcf01dad647",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "77e82f568294e02a04fc09b4666e48cbb9fb82aabe1907768579c35567994186"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "docs/ui/VERSIONS.md": {
-      "before": {
-        "blob": "afbf5d0f675d18ab32d63b7534ffdb467e7082c1",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "ef280f230f99e9b0489dd8ad72501f225fffd62074821bb666fab455c10a53a4"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "hardhat/package-lock.json": {
-      "before": {
-        "blob": "0467f735765e52606d88a03e7ed134b2a6e0210b",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "57a4f9976cec3508869abdb0e077c7db634b79208512ec8490a859edd30c9b3a"
-      },
-      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
-    },
-    "hardhat/package.json": {
-      "before": {
-        "blob": "d98441d560034452febfd114be6ff8ae49d3349a",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "64e09b238b0c88c11f27b0790b4174f0f6ab34ba8f166d01f4c9b876924b0f19"
-      },
-      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
-    },
-    "package-lock.json": {
-      "before": {
-        "blob": "cce5cc5b97c86af2a238a94706bf1097133e1d53",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "26e66d9b9ceeea702cac9f4cf1d01d67f73c0f6c0b4a3acba821b1cc12003987"
-      },
-      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
-    },
-    "package.json": {
-      "before": {
-        "blob": "5a3c0165c4826fc69be63fa5e21888c82dae4671",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "10366f73594f43b8690f884b066d9f96e534058eeb9753d53ea70dac722566b0"
-      },
-      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact."
-    },
-    "scripts/docs/templates/README.md.tpl": {
-      "before": {
-        "blob": "60e62538ce3dacef872000720df36c86cba8d283",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "8f6a640682f92c1822fc68d22f6c43ead7780d920cfebae5524ae67174e2390a"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl": {
-      "before": {
-        "blob": "bb0fd0c85eba72bbcba46e3274e9c245e6374e52",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "631e6e1953b0f28e40702f1cc54679592d016dbaeae880aa215d942e796ce41c"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "scripts/release/collect-qualification.py": {
-      "before": {
-        "blob": "d2dcd8c5f4162136f4683abe2ada099f09577ab6",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "004c4b8fe7088f9f141300f02a05580a6f7621933ea36c213c67a93f4d126538"
-      },
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
-    },
-    "scripts/release/package-policy.py": {
-      "before": {
-        "blob": "dfdaf024c4f0526d655a3a6059d3c4f73558a39b",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "e0808a8dd50998a4b3fb645d3f117b1750dd28e9a5f6c65f1ef82335a9dfd638"
-      },
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
-    },
-    "scripts/release/package-release.py": {
-      "before": {
-        "blob": "9c66ac4d2527159d169ed23b87028c98e2882ba0",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "1a98938756b49453c308ce04236058a1c69896c45f90f299c1b0a0a5388724d4"
-      },
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
-    },
-    "scripts/release/publish-release.py": {
-      "before": {
-        "blob": "5fcdf74f18167fd8203a0450b78648a6f25877f8",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "445e7c08893de1b755569c963ddaf20c94fed79be0886d7d143052c540148603"
-      },
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
-    },
-    "scripts/release/release_common.py": {
-      "before": {
-        "blob": "7cecacdb3c5347baab3e967b8571626b00dbde91",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "2f757910d2a7c622cb05cbfcdbe13390360d2bae864c6cdd379fe1128ac6963d"
-      },
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
-    },
-    "scripts/release/verify-package.py": {
-      "before": {
-        "blob": "0632a10f5bb7ad0c7ce89c0f8604ad2c3c44c5b7",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "b1536ebef5679091ca3b41ad3a192dd56aa09763a0595ddb99a43ec1ed756eca"
-      },
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
-    },
-    "scripts/release/wait-qualification.py": {
-      "before": {
-        "blob": "acf793097e7eaeb1284905f08a169bcc8de1dadc",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "ad63fef43c95bc4ec666dd43c77d1f8ae8a5dd0db3215a7c74e039219a1531b4"
-      },
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
-    },
-    "scripts/security/verify-slither-review.py": {
-      "before": {
-        "blob": "f8d346ff4c12c81b31706a3c04f6a75943b97b8b",
-        "mode": "100755"
-      },
-      "after": {
-        "mode": "100755",
-        "sha256": "b7b4f5b47cee421658a65034f38dbbbfcbd5b9037c9103d9f584ce3c29165842"
-      },
-      "reason": "Retain reviewed active software-version qualification alignment; the historical security finding inventory and severity assertions remain in force."
-    },
-    "test/buyerProtection.v095.test.js": {
-      "before": {
-        "blob": "5e417453fd7eb50ccc749ac32bc51496f9bc89d7",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "a775e9100d28f73bc7259d079f0d62a0e51ee08d9bc011146724610120417a6f"
-      },
-      "reason": "Preserve strict settlement and inclusive dispute semantics; re-pin the actual dispute transaction to end and assert its receipt block timestamp."
-    },
-    "ui/README.md": {
-      "before": {
-        "blob": "9121a78ca4f0e6b1de93873c96d9df584f76c808",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "2095a78ac6be87261ebd93db4bf840d280ef11659844931efaa6aa732f6c1dd3"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
-    },
-    "ui/agijobmanager-usdc.html": {
-      "before": {
-        "blob": "d9470efb0a1d6072f45ba23f695f07d1c8b38c88",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "3e822fd32021feaf76457d174958ca1070af3c145e633d0c96b72d2b43d76bcf"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
-    },
-    "ui/dist-ipfs/agijobmanager.html": {
-      "before": {
-        "blob": "1ba333301083c77769bc1a62b98b8a062e6547f6",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "840275921245df33eaee34b1877e2d67adf7088315869eccc6eaf03916c38fb2"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
-    },
-    "ui/package-lock.json": {
-      "before": {
-        "blob": "dc4e014f4572c6f5e555c7c16265391e1418ac53",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "8878a88cc7596260c4cf4977fc0215a4b275ed3ec86e600beeb59791127c5cff"
-      },
-      "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override."
-    },
-    "ui/package.json": {
-      "before": {
-        "blob": "9af0360c06b4ffec9c474056901ab269c0f31d9a",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "65bc4f3b1083713f8da25257d4d8d0f54d7c7b16bd0987651bccbeac80dd8239"
-      },
-      "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override."
-    },
-    "ui/scripts/singlefile-template.html": {
-      "before": {
-        "blob": "131010193a80f15988104a081039e248d3af998c",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "a6f6f09f49efc16ce0e11c9118014c08b4b4be3d622d69691b992a7bfd2acdde"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
-    },
-    "ui/src/generated/deployments.ts": {
-      "before": {
-        "blob": "5bc2917f64492980f11a8b2acb7bd4fc32db1d5a",
-        "mode": "100644"
-      },
-      "after": {
-        "mode": "100644",
-        "sha256": "ddec64c5bccd44bf57d106b1cbdbbcad4b81eea71a816492b895dd6f0e234b36"
-      },
-      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes."
-    },
-    ".github/workflows/discovery-lab-receiver.yml": {
-      "before": null,
-      "after": {
-        "mode": "100644",
-        "sha256": "a1c65963724f0f329f622f5aae47315972e6a2c74a12f321f68c7355d86aefe9"
-      },
-      "reason": "Retain the reviewed Discovery exact-source candidate/native/publication workflow, replacing only its fixed draft Alpha checkout ref with coordinator-selected615."
-    },
-    ".github/workflows/publish-discovery-v1.yml": {
-      "before": null,
-      "after": {
-        "mode": "100644",
-        "sha256": "b9ce916451c4cb8e387aa9bd9de5ee98e2ae17afb8fd519260c25fca0124e111"
-      },
-      "reason": "Retain the reviewed Discovery exact-source candidate/native/publication workflow, replacing only its fixed draft Alpha checkout ref with coordinator-selected615."
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "config/discovery-lab-alpha-source.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "a463a01423d1b64fa9c5dc793716279890d02e1d4a004202fa3f63ac427dbbe9"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "config/discovery-lab-source-baseline-v1.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "ceeca49019f418637dcec1b3586699d382ecdaee23790fef50ae177a360ba74a"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "config/discovery-lab-source-baseline-v2.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "1d4120db3cd90145ab9dcae20e9ff10737f9617854e010eb18026b61124e21c4"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "config/discovery-lab-source-candidate-v1.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "5e233c9505ea00cb4bbe0a840b6afd3569b9601fd33ca76d3df24c9f863970fe"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "config/discovery-lab-source-candidate-v2.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "ac898f5a02807e643b23beddde606e7032910dac5a8a031e79603b43175223cd"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "config/discovery-release-alpha-source-v1.json": {
-      "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "305b1f716a2450ee4f2f940d2047b01c9caed5d98959348ece31f375fca87331"
+        "sha256": "44614c1e36385aa42da9fc93eb09e1aaee327404c35f14aa061003836845865e"
       },
-      "reason": "Bind coordinator-selected615 catalog, inspector, complete raw closure and original Apache license for pending final-source installed compatibility."
+      "before": null,
+      "reason": "Select only the genuine-reviewed exact031b 54-file Manager source pin under revieweea9f27d182857de727e89cb3051657a3819677bdbea257dbabba158a2d5dc73/public6385568620; original615 remains in c595 history/proof and native/publication acceptance remains pending."
     },
     "config/discovery-release-browser-artifact-v1.json": {
-      "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "b3bf7bcfa4d05685d24983b45116bec6fd83ab0bc0593fb418c1e054617e4c7b"
+        "sha256": "0a6fbc85be008e6767b43a419488d1fc4ff40e2ed9cd4cc379540b4a1c1c9bd8"
       },
-      "reason": "Bind the newly authenticated615 main-push producer, actual artifact metadata, original common17 bytes and immutable public transport; preserve pending final Manager qualification."
+      "before": null,
+      "reason": "Select only genuine original031b public17 packetf995b97ae9beef118b7705b31b73bfc9ce65c316/tree533dcbb9a3321fd0c4627689c8f8f99f9b4c0c25/custodyff32a104482d5599c143cbeadac1be6ec7b034d5fa50226274766c7fe2f4640f; retain originalrun40076340788/attempt1/workflow366358276/artifact12552939436 and all raw input identities without claiming new native or installed acceptance."
+    },
+    "config/usdc-deployment.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "f2212599aff7e6a8c314144d6f0c390408cd475103d3b7239380eadfa838d79a"
+      },
+      "before": {
+        "blob": "59a027b72f57fa968628777badf581994fc92d81",
+        "mode": "100644"
+      },
+      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "docs/LEGAL/DISCOVERY_MODULE_ORIGIN.md": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "74cdea1efac8ce2eecad31f5356ce0c27cb16efd2e9d89543ae20e04a69eb80e"
       },
+      "before": null,
       "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
     },
     "docs/LEGAL/LICENSES/Apache-2.0.txt": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
       },
+      "before": null,
       "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
     },
-    "docs/qualification/mainnet-cutover-v1.20.0-expected.json": {
+    "docs/MAINNET_READINESS.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "d84fd1355fd145cc0325b52f6ecd09e49f2325c4962a0ba84f26bc4d1422f741"
+      },
+      "before": {
+        "blob": "97f27540ef5ba5f5b4a0d261996900227b1cfeab",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/OPERATIONS/PRIVATE_FLEET.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "45d8a9dc4fb3afcfca9d05b2eb191a6cc27027ad658e463d78f4de903aaff232"
+      },
+      "before": {
+        "blob": "86183947db559dd51e9e4c47a1d25991294c4bf9",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/REFERENCE/VERSIONS.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "d5e0509f90aebc6b02dc07ead1a77d7fe45f4219412422480981df110c3966c9"
+      },
+      "before": {
+        "blob": "77133ae1c3cd1f83d237bba5cab002629a346368",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/RELEASE_GUIDE.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "1d683f5ad961a00b262b514f17501fee0f952046b4de6236e7eb027f5042253a"
+      },
+      "before": {
+        "blob": "d4d5ba35fc7e38b6882127a355736ce808a42f85",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/START_HERE.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "9d7a6d4d533259d4bc50739e7fd805ea61a1d2be459c82f5ab4c131530b1ca45"
+      },
+      "before": {
+        "blob": "9a454c4ca21bc83ecb3fd30a98ef6af992445b9a",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/V1_RELEASE_SCOPE.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "85045748739046a3bd95e621f7fb55112d565bbbb5c7d0d5e137fe3fd98d953c"
+      },
+      "before": {
+        "blob": "9582edb4df8c365ccd42810bf0f9598fe98659bd",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/qualification/alpha-installed-source-review-031b.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "eea9f27d182857de727e89cb3051657a3819677bdbea257dbabba158a2d5dc73"
+      },
       "before": null,
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/qualification/mainnet-cutover-v1.20.0-expected.json": {
       "after": {
         "mode": "100644",
         "sha256": "5cfd10614ea0802c6df0dfd4ef39f6d15d0d747d6d38fc3052fb703c1b27ca85"
       },
+      "before": null,
       "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
     },
     "docs/qualification/mainnet-cutover-v1.20.1-expected.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "3216b38bab7e3e9d3bdf2fb3b5baff73c8feb6d7b63c773598d92b87eaa6f2eb"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
-    "docs/qualification/release-v1.20.0-provenance.json": {
+    "docs/qualification/mainnet-cutover-v1.20.2-expected.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "69cb92a221291829ad2b4909f3ab66e8bac059cfb6f82432eacbb3b830da99d8"
+      },
       "before": null,
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/qualification/release-v1.20.0-provenance.json": {
       "after": {
         "mode": "100644",
         "sha256": "1fc162467cb43f18869adfdeda7b75b6b87b74f2a79c0b0d29789546f2c83295"
       },
+      "before": null,
       "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
     },
     "docs/qualification/release-v1.20.1-provenance.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "15477f5841da1175717c8f42e10a60d7d37ea56b0d1128ec77359fd3a8d2e3ca"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
-    "docs/releases/v1.20.0/RECOVERY_GUIDE.md": {
+    "docs/qualification/release-v1.20.2-provenance.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "e3f983bfa1147bef1d57185a6b9205a04599607d221671ce69984561e302e975"
+      },
       "before": null,
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/releases/v1.20.0/RECOVERY_GUIDE.md": {
       "after": {
         "mode": "100644",
         "sha256": "8a7e24f99c53d6fe7b347a5170a9af28466627e0aa9e685bdc9067e4610c5fbc"
       },
+      "before": null,
       "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
     },
     "docs/releases/v1.20.0/RELEASE_NOTES.md": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "2c3dca5e8ef730f2952f3d40481799f915ad909359bfe7488dd467252be4dd2d"
       },
+      "before": null,
       "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
     },
     "docs/releases/v1.20.0/START_HERE.md": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "98ce3d44651c7d9721cd35409f415733bb85dbd79b4214b8dca9a911decf3889"
       },
+      "before": null,
       "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
     },
     "docs/releases/v1.20.0/VALIDATION.md": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "cdf598eb19c006016cbe8de8646ee3000bb891d1cdd0275b3f52d79c26c708f6"
       },
+      "before": null,
       "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
     },
     "docs/releases/v1.20.1/RECOVERY_GUIDE.md": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "bd87a6c288e12f64e551fe4c9bddb8468916b960d090e991048307fb106b68df"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "docs/releases/v1.20.1/RELEASE_NOTES.md": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "a37bdc40efa0312bbdf801167163cc895c5d014fa17a3cec06208946eaf56a48"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "docs/releases/v1.20.1/START_HERE.md": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "48e0b20a24441ce9bb445ab072c0ebd4fa6025f459aa1d94fc244675c9bcf101"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "docs/releases/v1.20.1/VALIDATION.md": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "a2e89390dbc18d4308dc2859f99117e4669b8a219be0078ea7a6fa11675ac9cb"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
-    "docs/successor/DISCOVERY_LAB.md": {
-      "before": null,
+    "docs/releases/v1.20.2/RECOVERY_GUIDE.md": {
       "after": {
         "mode": "100644",
-        "sha256": "76b76b2bc586517c534ace5bd20531e71821c582ecf5263e88ee51d835513b32"
+        "sha256": "35023abc60ebddd170b0a36dea7f9a283a38550621ba9f2103e6a8e18db67e71"
       },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+      "before": null,
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/releases/v1.20.2/RELEASE_NOTES.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "fd2f7be1275eb700cbb9d3caa8b83195565e29445489a0d28602e23f71217f88"
+      },
+      "before": null,
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/releases/v1.20.2/START_HERE.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "2008a68f9a3315d5af81c96cab3161592244179c295985bd039b491f024a1add"
+      },
+      "before": null,
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/releases/v1.20.2/VALIDATION.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "f50f2f7951ef72a3f41e5057bbcc3e16912489f061ca318e552aa38d7ae73fc9"
+      },
+      "before": null,
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/successor/DISCOVERY_LAB.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "171c450715f2267a035330a483d08052024ebfd3d90057e8b536d6d7433167e4"
+      },
+      "before": null,
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "docs/successor/DISCOVERY_LAB_RECONCILIATION.md": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "8b558823505534349c10d1ac66654542d4c4bd160e618239472dbdc1d1dc881c"
       },
+      "before": null,
       "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
     },
+    "docs/ui/DEPLOYMENT_MAINNET.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "e7561cb6354b9665aa25b818fb804ca46d11f4a60c4f95cdf598dceaee0162d9"
+      },
+      "before": {
+        "blob": "3ab3f3710da7c34fe24cccc49618452b95e46738",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "2bd3df066376bb32d469cb33195baa615398b3489a8660a3fa3a6634482b4732"
+      },
+      "before": {
+        "blob": "bd3410c08f596c6ea0957a1610908dcf01dad647",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "docs/ui/VERSIONS.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ef280f230f99e9b0489dd8ad72501f225fffd62074821bb666fab455c10a53a4"
+      },
+      "before": {
+        "blob": "afbf5d0f675d18ab32d63b7534ffdb467e7082c1",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "hardhat/package-lock.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "2bd37a18d6b441f3888d5f38ec62907b79dd16fd908e177538e6192c88e4ea7f"
+      },
+      "before": {
+        "blob": "0467f735765e52606d88a03e7ed134b2a6e0210b",
+        "mode": "100644"
+      },
+      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "hardhat/package.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "c6b2f774e4a97979c6fd7f772b99877af9b4e5b1b690eecf155849aa219a9f8f"
+      },
+      "before": {
+        "blob": "d98441d560034452febfd114be6ff8ae49d3349a",
+        "mode": "100644"
+      },
+      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "package-lock.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "f71fa9622c8aa9e5a7da22e94cbdd7083041c696427b3ddd5b2de2a8f52b0bcf"
+      },
+      "before": {
+        "blob": "cce5cc5b97c86af2a238a94706bf1097133e1d53",
+        "mode": "100644"
+      },
+      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "package.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "15d479c9e1306519240bc78b1976a01bd82f474bd47b877e271b720451e107b6"
+      },
+      "before": {
+        "blob": "5a3c0165c4826fc69be63fa5e21888c82dae4671",
+        "mode": "100644"
+      },
+      "reason": "Retain version-only v1.20.0 software identity; dependency, compiler, command and deployed authority semantics remain exact.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
     "scripts/check-zod-backport-audit.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "a9a939469c40763daf75bae00fb11dd267013e8b54b342cdc736c5fca6845c97"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
-    "scripts/integrations/discovery-installed-operator.mjs": {
-      "before": null,
+    "scripts/docs/templates/README.md.tpl": {
       "after": {
         "mode": "100644",
-        "sha256": "f5183917b60820ee4b8b56ca1f6142daaa8a2da7468b706af07ed6ec35c9b57e"
+        "sha256": "8f6a640682f92c1822fc68d22f6c43ead7780d920cfebae5524ae67174e2390a"
       },
-      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+      "before": {
+        "blob": "60e62538ce3dacef872000720df36c86cba8d283",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "scripts/docs/templates/V1_RELEASE_SCOPE.md.tpl": {
+      "after": {
+        "mode": "100644",
+        "sha256": "631e6e1953b0f28e40702f1cc54679592d016dbaeae880aa215d942e796ce41c"
+      },
+      "before": {
+        "blob": "bb0fd0c85eba72bbcba46e3274e9c245e6374e52",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary."
+    },
+    "scripts/integrations/discovery-installed-operator.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ddca7345cb45f99899c73ee94b470fa07aa525b41bc21c8a74e84875f5a5a793"
+      },
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority.; Preserve the exact rc20 constant and own-source default; prepare an explicit two-case counterpart selector with null/unadmitted rc21 until its genuine published archive/manifest/source receipt is supplied. Never select code or infer trust from history."
     },
     "scripts/integrations/discovery-installed-operator.test.mjs": {
-      "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "7e3c9e7655e519329de1d7d20974cbaa8adf60ce7c20b739b991ab7937f71739"
+        "sha256": "759dad11e2787b2692d3efd97ed7f5d76fb1070fee78c23b18d36d94facf4f69"
       },
-      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+      "before": null,
+      "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "scripts/integrations/discovery-installed-runtime.mjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "b8aa9ce0972287494909fc5118f98f92cd5d926378f78e211b626eb7b8422c53"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "scripts/integrations/discovery-lab-contract.mjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "98c8de8ce2774b7650bf4ee11eeedfb0a69b75fa6d1b080ef823637d77d0ab47"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "scripts/integrations/discovery-lab-native-test.mjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "b1701276242e7cfa8603e80390e596bb05c3481ad8ca284d086398d8f27c6dd3"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "scripts/integrations/discovery-lab-work-request.mjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "da307c2d0621a2f323d60c56dfec01d2fda2b72b753939657ea303d619d68e43"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "scripts/integrations/discovery-lab-work-request.test.mjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "ea230fd5c47da6845cc615ed24263045b034c6bb8bebc19873231c7c25531076"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "scripts/integrations/discovery-release-module-closure.mjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "8d3575ece582c158c30f3cc1c5f438b9b32ad2a31f190d6867acf9712beedad5"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "scripts/integrations/discovery-release-module-closure.test.mjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "a4de63154a2b3270258ef9d391a718072386c773ab6469cf38c2e02cef76e9ea"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "scripts/integrations/discovery-release-native-test.mjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "091a5c9ceafbf0a3f1dd63433c946a3e49ae612a2aa555746053e6ccc85f38bb"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
     "scripts/integrations/fixtures/discovery-lab-request.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "891e11f3fed142db55e36934b4f1b5869200973216bfdd9257789fd66fb0a82f"
       },
+      "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
     },
+    "scripts/release/collect-qualification.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "004c4b8fe7088f9f141300f02a05580a6f7621933ea36c213c67a93f4d126538"
+      },
+      "before": {
+        "blob": "d2dcd8c5f4162136f4683abe2ada099f09577ab6",
+        "mode": "100644"
+      },
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
     "scripts/release/discovery-browser-input.py": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "f422f63e42d0e780adfc17d0d7671bbe77c0cad82ca855a55d0d907da47f0464"
       },
+      "before": null,
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
     },
     "scripts/release/discovery-lab-profile-v2.py": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "20372887e15a178a8e169b2bb67772f287809b5038818ce79b72b32827605e86"
       },
+      "before": null,
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
     },
     "scripts/release/discovery-lab-profile.py": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "08607dad60b8ab6d782b7b1a9e1096aaffa12a9afbf86992bcd144627eafa4ee"
       },
+      "before": null,
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
     },
     "scripts/release/discovery-qualification.py": {
-      "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "260f3bc3f1d72906222d03209c6e21b0f216203c434ca7d1af04cbfa60a3d4ae"
+        "sha256": "7d42759d348f5685d00a64fa83191adcb5f849de84410bede5f0b8f021dfab7d"
       },
-      "reason": "Preserve the latest-run source/status/attempt rejection gate and authenticate the separate exact-attempt response for full original browser metadata equality, with focused regression coverage and unchanged REST budget."
+      "before": null,
+      "reason": "Preserve the latest-run source/status/attempt rejection gate and authenticate the separate exact-attempt response for full original browser metadata equality, with focused regression coverage and unchanged REST budget.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "scripts/release/discovery-saved-candidate.py": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "797a9371bbdd58bb931a59a1ba0efa60c8537412cf8c53f90f8d8caa0a5a15c9"
       },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/fixtures/alpha141-original-browser-producer.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "d4e837ab66e511f83923d3328e8304981ab70312b67670103d90ae32a67f852b"
+      },
+      "before": null,
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "scripts/release/package-policy.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "e0808a8dd50998a4b3fb645d3f117b1750dd28e9a5f6c65f1ef82335a9dfd638"
+      },
+      "before": {
+        "blob": "dfdaf024c4f0526d655a3a6059d3c4f73558a39b",
+        "mode": "100644"
+      },
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/package-release.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "1a98938756b49453c308ce04236058a1c69896c45f90f299c1b0a0a5388724d4"
+      },
+      "before": {
+        "blob": "9c66ac4d2527159d169ed23b87028c98e2882ba0",
+        "mode": "100644"
+      },
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
     },
     "scripts/release/pages-publication-discovery.py": {
-      "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "3fdb0cbc2a7834372aff16ae2c22ef65a30e95d4a67e19ad7248049ed4440f06"
+        "sha256": "f7fc2b3e005acf67f95be37cddac3e55b10a4d50fc92f696e0aeb00162bb84ed"
       },
-      "reason": "Retain all actual source/digest/published/tag/qualification checks while accepting supported platform mutability and the existing inclusive host asset limit; preserve historical maintenance and separate transport/archive budgets."
+      "before": null,
+      "reason": "Retain all actual source/digest/published/tag/qualification checks while accepting supported platform mutability and the existing inclusive host asset limit; preserve historical maintenance and separate transport/archive budgets.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "scripts/release/publication-authorization-discovery.py": {
-      "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "a88e4f09a126236d365ab8ac5a2d1300345fa8c733b0e1ab07cf859adbceedb3"
+        "sha256": "41d5cafd8c665dcfd7c6c91edd8f089efa37915f1a7fe5eff9436b0c301e2a87"
+      },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "scripts/release/publish-release.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "445e7c08893de1b755569c963ddaf20c94fed79be0886d7d143052c540148603"
+      },
+      "before": {
+        "blob": "5fcdf74f18167fd8203a0450b78648a6f25877f8",
+        "mode": "100644"
       },
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/release_common.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "593b8fe5a5dd76d870e871b748258f95151704fc7e2a67b92b0895091ed70728"
+      },
+      "before": {
+        "blob": "7cecacdb3c5347baab3e967b8571626b00dbde91",
+        "mode": "100644"
+      },
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "scripts/release/run-discovery-preservation.py": {
-      "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "6f96645c5ae0eea4d5d659f46f0cafcb4774e359bd9bbf696194326e31bda7d1"
+        "sha256": "34e166cba4b823ff34bf7e37497592fc2b2497a47fe1e38bfa048bf6798e7287"
       },
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "scripts/release/test-discovery-browser-alpha141-profile.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "0449f648257f066829f6886d42c3c1de1339552e15e314be6bccd92306c87c12"
+      },
+      "before": null,
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "scripts/release/test-discovery-lab-profile-v2.py": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e9342676a0c64373c080a85b75ef8ff2c907d3d786017a12d9de6ae76c27b83d"
       },
+      "before": null,
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
     },
     "scripts/release/test-discovery-lab-profile.py": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "6473d334c8aa945269a2067c5f300d84fd773c5e441f7dee1169142238eae698"
       },
+      "before": null,
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
     },
     "scripts/release/test-discovery-qualification.py": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d90bb41d3df5da1efe91183360d059b16b261efb197c3fc379eaaf9fdaeb3e47"
       },
+      "before": null,
       "reason": "Preserve the latest-run source/status/attempt rejection gate and authenticate the separate exact-attempt response for full original browser metadata equality, with focused regression coverage and unchanged REST budget."
     },
     "scripts/release/test-discovery-release-plumbing.py": {
-      "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "2e475ae977a88682290b8396f08b7e56f65c0290b69e8e3c9bd526a1ef89a8d2"
+        "sha256": "68c03fc5389f032a37e800a94f6198bbdae1aee6425551eb95403d47ae32f88e"
       },
-      "reason": "Verify the exact reviewed Next security delta and preserve whole-package comparisons; construct the negative publisher extraction phase locally from its actual AST without unavailable historical Git objects, retaining old refusal and actual qualified rebuild success."
+      "before": null,
+      "reason": "Verify the exact reviewed Next security delta and preserve whole-package comparisons; construct the negative publisher extraction phase locally from its actual AST without unavailable historical Git objects, retaining old refusal and actual qualified rebuild success.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "scripts/release/test-discovery-release-profile.py": {
-      "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "6ac77e8fed3386cd78a19dee42fa66867662172edfac8014206b7acb712298f9"
+        "sha256": "41ef068dd19f30cf07f8eb1489687845eea7dc7f5fae7f8bc80a33d906f52db9"
       },
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
     "scripts/release/test-discovery-saved-candidate.py": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d9ec81402e4f58a0d7d2dc47d3a3a5ed32ffbf9faa5ad7e6147764a75f7037bb"
       },
+      "before": null,
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
     },
     "scripts/release/test-pages-publication-discovery.py": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "280fd9e7976a001473f92a6b1f7b916126940cdab1d8e086bc061abc7928a0df"
       },
+      "before": null,
       "reason": "Retain all actual source/digest/published/tag/qualification checks while accepting supported platform mutability and the existing inclusive host asset limit; preserve historical maintenance and separate transport/archive budgets."
     },
     "scripts/release/test-publication-authorization-discovery.py": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "11137e8c8dc0d18145fe481ee937581654ca5ab0aaab51909173cf6f9c9669ba"
       },
+      "before": null,
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/verify-package.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "b1536ebef5679091ca3b41ad3a192dd56aa09763a0595ddb99a43ec1ed756eca"
+      },
+      "before": {
+        "blob": "0632a10f5bb7ad0c7ce89c0f8604ad2c3c44c5b7",
+        "mode": "100644"
+      },
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/wait-qualification.py": {
+      "after": {
+        "mode": "100644",
+        "sha256": "ad63fef43c95bc4ec666dd43c77d1f8ae8a5dd0db3215a7c74e039219a1531b4"
+      },
+      "before": {
+        "blob": "acf793097e7eaeb1284905f08a169bcc8de1dadc",
+        "mode": "100644"
+      },
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
     },
     "scripts/security/slither-reviewed-findings-v1.20.0.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "211509130bfb92c66f0b1c1f20d16e171e3de082aca0672d95c7421d69c001ab"
       },
+      "before": null,
       "reason": "Retain reviewed active software-version qualification alignment; the historical security finding inventory and severity assertions remain in force."
     },
     "scripts/security/slither-reviewed-findings-v1.20.1.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d84e66edd2c80abb947c2ef428ff1ffecebecf5de77500c79add1921413cbaed"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
-    "scripts/security/zod-audit-disposition.test.cjs": {
+    "scripts/security/slither-reviewed-findings-v1.20.2.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a5ddd0659bca9a9906420fa832266925ef13e561f0d8a2967f5a92ead246240e"
+      },
       "before": null,
+      "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "scripts/security/verify-slither-review.py": {
+      "after": {
+        "mode": "100755",
+        "sha256": "987248c9ef6e5c753a14cb42ad573e086304c687acea4a96504bbe6bfb3d8a22"
+      },
+      "before": {
+        "blob": "f8d346ff4c12c81b31706a3c04f6a75943b97b8b",
+        "mode": "100755"
+      },
+      "reason": "Retain reviewed active software-version qualification alignment; the historical security finding inventory and severity assertions remain in force.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "scripts/security/zod-audit-disposition.test.cjs": {
       "after": {
         "mode": "100644",
         "sha256": "700cf072a86b2a91d847512ee2260bf7e30a3ba432ddd85b65d4779bb0d5164b"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "scripts/security/zod-constrained-collections.test.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d2587fdb5d3ca4853650fd7e05c7db1fe0feeb7165af656d63cee0e1701fc043"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "scripts/zod-backport-audit-profile.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "37339f548db43979d3e12b42547cdce336d1c7c5462ff7a6c78f65bc1b1b6862"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
+    "test/buyerProtection.v095.test.js": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a775e9100d28f73bc7259d079f0d62a0e51ee08d9bc011146724610120417a6f"
+      },
+      "before": {
+        "blob": "5e417453fd7eb50ccc749ac32bc51496f9bc89d7",
+        "mode": "100644"
+      },
+      "reason": "Preserve strict settlement and inclusive dispute semantics; re-pin the actual dispute transaction to end and assert its receipt block timestamp."
+    },
     "test/fixtures/zod-backport-audit/61-hardhat-audit.exit": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/61-hardhat-audit.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "8f0c1b1acb462d3048e0d97fe4daf86f2126b2211fc2241382bc132e624b57e9"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/61-hardhat-audit.stderr": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/61-ui-audit.exit": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/61-ui-audit.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "19511b058c587d667ff65df3d09cd2bfee7f5f16bab5491149f5a93a4cf893b3"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/61-ui-audit.stderr": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/corrected-hardhat-clean-audit.exit": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/corrected-hardhat-clean-audit.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "5ab3752d913c9a0c520cc10ca488a094a983fe2304c01491ce683fcf4053f55c"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/corrected-hardhat-clean-audit.stderr": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9aac3da9a7039a99c345545c32f286aa65c358d571bfce7e00d94625d095c829"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/corrected-root-clean-audit.exit": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/corrected-root-clean-audit.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "243b591cf235d4c05690b9dd5cb2e08aa18974cf7411b8fc24ae3ff872e242e7"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/corrected-root-clean-audit.stderr": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9aac3da9a7039a99c345545c32f286aa65c358d571bfce7e00d94625d095c829"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/corrected-ui-clean-audit.exit": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/corrected-ui-clean-audit.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "6690a3d2a24437e5daf32d66ebb051e0c1684827e6ee920dde255c7aa30f6d26"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/corrected-ui-clean-audit.stderr": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9aac3da9a7039a99c345545c32f286aa65c358d571bfce7e00d94625d095c829"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/fa7-hardhat-audit.exit": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/fa7-hardhat-audit.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "27348a6b0c6bf1a860b44c96fae218b5ee2861d7a2afb4c3559abcc32ddf78c8"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/fa7-hardhat-audit.stderr": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/hardhat-audit.exit": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/hardhat-audit.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "86524093e4f58b12c28467c5ba466ba6ed4733b21d0229e7aecb1ea2d22a7048"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/hardhat-audit.stderr": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "7125f194612fcff2f454c05d848e7cb71facc1967b4d5017e25b34fdee3ba74f"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/rejected-ff5-root-audit.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "3deb6663cc5fe2d9232b41b3d559b86384a279c9011aa27dc152024a8509a25a"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/rejected-ff5-ui-audit.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "aa94b20b04b7377471d2c2a0f2e5f4af49ac9a75715aa60bc7b4d6c6ed2406ce"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/root-audit.exit": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/root-audit.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "a34f1338932992967f2e1226df00b197714f7358602b2bd7267619161a824150"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/root-audit.stderr": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "7125f194612fcff2f454c05d848e7cb71facc1967b4d5017e25b34fdee3ba74f"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/ui-audit.exit": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/ui-audit.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "c78f2d5fa6be6ede4b7a8d4f79cab185cb37772ad9a857a6dc161af5d06ab398"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
     "test/fixtures/zod-backport-audit/ui-audit.stderr": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "7125f194612fcff2f454c05d848e7cb71facc1967b4d5017e25b34fdee3ba74f"
       },
+      "before": null,
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
+    "ui/README.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "48ec50654038c1651d27edb77890d7e632c96b8457a6b25b5f21f13e2a550722"
+      },
+      "before": {
+        "blob": "9121a78ca4f0e6b1de93873c96d9df584f76c808",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "ui/agijobmanager-usdc.html": {
+      "after": {
+        "mode": "100644",
+        "sha256": "1056404462e6ac38fd87ee9e45d5cf0303fbef0bb4c22e4530b64bc03f9c47eb"
+      },
+      "before": {
+        "blob": "d9470efb0a1d6072f45ba23f695f07d1c8b38c88",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "ui/dist-ipfs/agijobmanager.html": {
+      "after": {
+        "mode": "100644",
+        "sha256": "290355a54f8a1179d34812f1f25134fc7255aa11761fa635412253acb457cce1"
+      },
+      "before": {
+        "blob": "1ba333301083c77769bc1a62b98b8a062e6547f6",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "ui/package-lock.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "142f0b4b886649e85f108f2691a7cb010bce9426ef7caceb4ae851eab93e2b57"
+      },
+      "before": {
+        "blob": "dc4e014f4572c6f5e555c7c16265391e1418ac53",
+        "mode": "100644"
+      },
+      "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "ui/package.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "bc2844615241df236140046ce8d8055346fcc9ecf7c48b9ad5556f6158e9f5f5"
+      },
+      "before": {
+        "blob": "9af0360c06b4ffec9c474056901ab269c0f31d9a",
+        "mode": "100644"
+      },
+      "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "ui/scripts/singlefile-template.html": {
+      "after": {
+        "mode": "100644",
+        "sha256": "2df76e565a3e177a94c738242ace1006db7f7a52ad9bcd401c1fc10f1ab77b5f"
+      },
+      "before": {
+        "blob": "131010193a80f15988104a081039e248d3af998c",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
+    "ui/src/generated/deployments.ts": {
+      "after": {
+        "mode": "100644",
+        "sha256": "968e21397cb91031d8e42eb48134a0d4220eb0fd46c15d81af51f48effda6634"
+      },
+      "before": {
+        "blob": "5bc2917f64492980f11a8b2acb7bd4fc32db1d5a",
+        "mode": "100644"
+      },
+      "reason": "Retain reviewed v1.20.0 Discovery entry-point or software identity alignment at this exact path; no contract/deployment/financial authority changes.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+    },
     "ui/vendor/zod/LICENSE": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/README.md": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "8d73af2d857e42ffc870833b57ee0d4c9dce48ddfe0121b6d6cd86045846c180"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/UPSTREAM.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d8d557a5024cad2b07546cadcbd9b4061aa9757395d0b522510e02367c311d7e"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/index.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "69025493407e0f37f24e01e363452d75ae43a89aac18eb24806706b5b534b459"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/index.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "5780b706cece027f0d4444fbb4e1af62dc51e19da7c3d3719f67b22b033859b9"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/index.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "6419c4ac0e637ff08463083e31886d10354f74cbcc4e584400b2b837e39ac881"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/index.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "6419c4ac0e637ff08463083e31886d10354f74cbcc4e584400b2b837e39ac881"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/package.json": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "060805f672d157ca38f979b790af0c25503f988bfda5f3dbdfe5f34055126a4e"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/index.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "6419c4ac0e637ff08463083e31886d10354f74cbcc4e584400b2b837e39ac881"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/ZodError.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e4386fe8f2a49d774c7e1aff4c015c125ac4a0dcf70d5aa6883f167278ca141f"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/benchmarks/datetime.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "0d1a81e5608b286c1843aaecb20bd7d1f62b6674a610a51dc7d1043bed05963d"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/benchmarks/discriminatedUnion.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "33e4f792dbfdc735a72f92fcc117d3dbaea8e7ff3937d523bef3df44814805d3"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/benchmarks/index.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "27f4322ad98e28575d5849a7612c6acea55cd5be8a1571d1885a656e8a9d5620"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/benchmarks/ipv4.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "3ef475926d7e95a5880cd9d7bd780f98642189010046bb9748e27e50360da333"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/benchmarks/object.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "ea0f6d4b3e2c6f47bf1739a53473997da4aaacc1e5f59e57f00cfb6b7f59a4e5"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/benchmarks/primitives.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "706d51c7048aff5108dd71b33b5c66d354a6856be0a48b23bc32e55d284c31d0"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/benchmarks/realworld.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9bcc944a5e875ca191ca10542c113dde3c754e45a196400726f251b045e14215"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/benchmarks/string.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "ed17ef186249dc4f1da01a2d5e0bd3c87da6d0d2dcad89e8afa05e0920d98536"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/benchmarks/union.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9eec8e3e58cb4d3dd76be11874187f71a99c27e06c639de0cc9d8d928687fe0a"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/errors.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "cb8debd524102d5a38dbaadd72b220f68349dbac51ac9663569c1807f64b3772"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/external.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "5d26d2e47e2352def36f89a3e8bf8581da22b7f857e07ef3114cd52cf4813445"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/helpers/enumUtil.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "dffcb43b363e6804128c415c128c32dbbda302049cfce7662b2f0e17eeae044e"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/helpers/errorUtil.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "808aa0875577c556006ca193a5d4bd35a2ade57e50e09199fd9cbf6e780f0a31"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/helpers/parseUtil.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "cb94690c02dce392b98ca364de0d4b24f42db715fbb1759a08bcfb7fa6674645"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/helpers/partialUtil.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "68848db44869461bc20373abdcd002e32cb3759e2d5801ba3d9894d2c23db0b1"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/helpers/typeAliases.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d3cfde44f8089768ebb08098c96d01ca260b88bccf238d55eee93f1c620ff5a5"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/helpers/util.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "df1b9ea5a29a591f273555e240142431617e686aa6a97f172193770c26841a52"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/index.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "3db2efd285e7328d8014b54a7fce3f4861ebcdc655df40517092ed0050983617"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/locales/en.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "f729055c5f4acb839084e5c66c80bdecca02a78df6b048224e56e634322cb223"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/standard-schema.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e14e38f67bfc8d76e208366f639b73b3292f2bd46c97a44f43535c2389927ece"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/Mocker.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "b7732bb15ed6ab38f61dd4a15f088af109b0a99eccb50cdd9f542a17bb935f5e"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/all-errors.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d629da33805d24b17d1f6383009acfbf3b769bd4f2d8191a9720d68e4e64ab7d"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/anyunknown.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "fac8ebb9d3007f7ef1ea320eed85b22b3248fde6bb1fe645a1a513b69442c014"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/array.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e7d3813182c59e511d350bebbd2a25b349868cc73d057b23b1d85a4d927b3711"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/async-parsing.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "45f829362cc917d9505e244ea0d9a06d71a1953747dc31e57780388e82ad5afa"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/async-refinements.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "cfd6752223678338c949f1716deeff8c18807f31343d6a4544f494d10e5acf60"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/base.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "989d8ff33e43dbeb3d08d8f659a3269d22fb573a86d48c72da58ab84e484e532"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/bigint.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "799b38ffff2d2a977493846e127d6f76e5cdb346d8886a2d2c76616253170f45"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/branded.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d0d7213caa6b727fe72a4bd99631984c4038ecbe8f67001840b447ca4b2085b0"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/catch.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e4b1727836b5cdca66337af180a756fab2b712f61d49d17326a90c0a54080be5"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/coerce.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "30dec33039db38b3c2baecbee09c74afc1d9adc68a6229a35628a1bac4539db9"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/complex.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "51d676be11ddb5a0b987471c6e49b819b4f6b2aba77fa23565deb4591439cf40"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/custom.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "6837c23478b39dc6304a98bbbba4a1df9b973d40f6243f0939bfbc339d96b01d"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/date.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "7d352eab070ae8f4fcbc61674f6b238159699ec4b96754ec1aac0cac74091c34"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/deepmasking.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "8b6cef1cdb8eb422ebb50b24e4f88742f13eaf0abf83b08a3980f2406a4b6ac6"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/default.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "92067a119b984ab2750a1eba8e1a5573276aeaed95056e9e283f4a3bb54e5d5e"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/description.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "f1b75327fd817bb63c3b2e3be0ff9aff7511e2a391713756d8cb26cbfd3d5aa5"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/discriminated-unions.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "5bd00d9f7eeac9dd60faa03af58b5a915040f54b93ff77c4eab0d4a18f8b9e9c"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/enum.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "3fcf9f740cd53f52431abda4c61a3732dde44c3a9f1033159e9c0c92fcebd09a"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/error.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "1c77f7fefb917210ac238159c8116bd159158c260008bb6fd2f8a91ba9e55538"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/firstparty.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9906d7da8e62f7b9b7e5cd9553bea0872ad8a0b259214034108cec8a624cfc1d"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/firstpartyschematypes.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9be5a0881151df777293172088b2039ed7e1e6f4a98a7557cdd0211f108c9b96"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/function.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "93b2a5008501e4d883c838e567a6d3da18f88f31fb71a7ba5615664572f89783"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/generics.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d1a4c54239acff333f76231084c48133257fefe14f504d0cab055979b5a9e723"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/instanceof.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "b11897351fcf312dee317408b7aa27929ba37538c468588429f4f4ae3c5fa4ce"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/intersection.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "c560d1fbca45e049f07eb2a382f7ee4c678164825cf5725b014312eac9412c8c"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/language-server.source.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "aeb84d6fb14e6511a3509a0545770d869986f397ee02da640730d4ff97c6be4a"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/language-server.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "c75a03c145d1b0f28c62cba881aae1db600912a1df3be99d1996a18da776c498"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/literal.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "a22faed6c08e04c75d6bb0180d5e1fafc4645b15445a479f338016ee4855c362"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/map.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "bb52432835e9fa70a94f444fc9e7c2d8e6ac5eb905cc3b8ae54846e52fa57360"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/masking.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "557f4bc4d8f4ab29afd87f07cf70fa4de60d765fc86fbc5eb4b788f34dd825a2"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/mocker.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "46f64d2995e29c5838189ed10cd1b185b44c33dbc21418364a80ac19f285362b"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/nan.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "2ef6416fc58f94964cb889d28f8b7019a90365d24229d8146c845b8c7b0b8610"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/nativeEnum.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "6f64363193a447f71a8aa5440461bdb5451c6c4433fb4fca785ef4798d5b52fb"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/nullable.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "c51336535632e1404455bca333ccafc143191600047251a3e3e13f551693c516"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/number.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d56a65ec9bc03482c2b23eecb97c5213b564b5aaafeaf205d2a1f54a2c91e1d8"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/object-augmentation.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "69777e89506b2d8157c98e176dde94a7c664db7228485c52a18154ac4b794382"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/object-in-es5-env.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "687d2c52ddaaca24ab3d3e301cba042a7560888570af23b50a0597d3012d500c"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/object.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "11635f1db70a587205bb58bee8bd6385af2e3f44711037df033994181538e5e0"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/optional.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "0edb7a6478e931bf256f3d71d1367d2b8199b4082101dba97cc306e4dc3c92c9"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/parseUtil.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "822a6d836b05ab38eadf26592420eba6be694dc7c1d654388efbb601af00c288"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/parser.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "7c8b720c921618f6c89eb08eae80ba45602fa04dafe9c7b9b861512954d70f9b"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/partials.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "2fe9fe6cdfa085eed053894acdd3ef32c5425f7da0aa81ea1043c737fcd7cf41"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/pickomit.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "cd05293952b5fb0ca26eeb9ba6cd69a26f58fa5c62eb35f9ce1eb1ac9e00ccd6"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/pipeline.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "b285aac721b744da8c5a0a093c9ed57244643e1e333df576922e67bfaa9e16ab"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/preprocess.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "7433e95a0504f7a250b7beaac30a5e8f500c315d99b3badb978a0b28ed7a61dd"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/primitive.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d0214e93de931a8e6b89b3cb89df1cbf7299d6be00abcdde71ffdcb811953dea"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/promise.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "c03c19525c56cea7808d982bd23ba89b5a48db13934e8d4824e13ee0a249d19b"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/readonly.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "dc0ffe451674c8938b67bdcb63deff7958dd1f0e5ec69a485bba470c978817c1"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/record.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "ebefc7ad59b2246787408efe7aaf2f7beec0b5c90c70e79990dcbf241c2d6c95"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/recursive.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9ccc037ef698ceeb4e6986e02aaee71ff318c4dc0f875b9253bff6ba14db9137"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/refine.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "2f3a329952b6f0109028a142225d719b05307a18f7395297711f725b599933f8"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/safeparse.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "5aa7597109dea6647d0ab022a4aab694c44acfeae53386ea6366b806fbd3e872"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/set.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "eeadd9dabd30b857c5de8526503cb1e5c8b6aa45a99c4708958ca1f822bb3da2"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/standard-schema.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "f74076e43f44c887b3bf7d26d5ec686b8070359e63fe373e6c45b6c7708c025c"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/string.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d7b03d5aff0fe84fec31779e1f00774a10cb17c47a3f288766835eb5bee9eb5b"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/transformer.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e3da81596e0077326f442153a741c9ba25669b8b5eb025a8ea7fc1eb0106faf7"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/tuple.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e8a48c8791387c94076c7eee8c9b7e18712a45356c7167f7c43bedd54544614f"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/unions.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "0c32f20d663b30438bb8ff834b7f066722160720a25a90e6513a66b9baa4604d"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/validations.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "10ae103a7c7d9e5ce8bdacf9ef30bc44a52cdadf64fe365f492d27dcb432b482"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/tests/void.test.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "6bdad3b7ba624eb3bd03c0bfea611de46c10aba62d03df9bd2ba49bafedc15cb"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/src/v3/types.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "43e7d808270d2521f9969d81fcddce1df165618483454b72d0c19df98f6e61f3"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/ZodError.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "88b9cdd780a91656965e07b94c86c0e4729f97923d45cc9d7944b0973a462503"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/ZodError.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "08b2fae7b0f553ad9f79faec864b179fc58bc172e295a70943e8585dd85f600c"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/ZodError.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "54f6ec6ea75acea6eb23635617252d249145edbc7bcd9d53f2d70280d2aef953"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/ZodError.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "f5ac9e86b92e201d41e294d7aa35986a2aa28829e1bcc8ac25f7c8dce0674b99"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/errors.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "bd32dbc86faeec2de1cc8e42ee3b29af2cbeb24fb5e3b57d7f056bb09cf8d4bd"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/errors.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e3498cf5e428e6c6b9e97bd88736f26d6cf147dedbfa5a8ad3ed8e05e059af8a"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/errors.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "8e71e53b02c152a38af6aec45e288cc65bede077b92b9b43b3cb54a37978bb33"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/errors.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d40831f478288d76e82bbbcc3b7e95c8513b6e76471f2d49a37c979bc57d492d"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/external.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "224ff76e204434ec469f71dbba41d475db1ea873d3f3a5c26d75ab3a9c9f5f11"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/external.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "a9ebb67d6bbead6044b43714b50dcb77b8f7541ffe803046fdec1714c1eba206"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/external.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "5d26d2e47e2352def36f89a3e8bf8581da22b7f857e07ef3114cd52cf4813445"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/external.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "5d26d2e47e2352def36f89a3e8bf8581da22b7f857e07ef3114cd52cf4813445"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/enumUtil.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d43aa81f5bc89faa359e0f97c814ba25155591ff078fbb9bfd40f8c7c9683230"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/enumUtil.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "f672c876c1a04a223cf2023b3d91e8a52bb1544c576b81bf64a8fec82be9969c"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/enumUtil.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "f672c876c1a04a223cf2023b3d91e8a52bb1544c576b81bf64a8fec82be9969c"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/enumUtil.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/errorUtil.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9c9e5dec7d1e9fce6a967735adf0333abd44d5e94a0225537c60ceed0c4f606a"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/errorUtil.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e4b03ddcf8563b1c0aee782a185286ed85a255ce8a30df8453aade2188bbc904"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/errorUtil.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "e4b03ddcf8563b1c0aee782a185286ed85a255ce8a30df8453aade2188bbc904"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/errorUtil.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "68589c0cf44c8b4ad19b77418f53caad2cd1dbc8d714f526e1876ebdee4828c5"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/parseUtil.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "40aaa18765f13ae1a933c6f215ecceb6d3afee89eaa23bb080997e08c30a5b00"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/parseUtil.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "dba3f34531fd9b1b6e072928b6f885aa4d28dd6789cbd0e93563d43f4b62da53"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/parseUtil.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "754a9396b14ca3a4241591afb4edc644b293ccc8a3397f49be4dfd520c08acb3"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/parseUtil.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "b57484013bb360bac2e334d58fcd5f6cbfa63ffcc7d8ff3dbbb3380ca659b956"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/partialUtil.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d43aa81f5bc89faa359e0f97c814ba25155591ff078fbb9bfd40f8c7c9683230"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/partialUtil.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "2329d90062487e1eaca87b5e06abcbbeeecf80a82f65f949fd332cfcf824b87b"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/partialUtil.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "de2316e90fc6d379d83002f04ad9698bc1e5285b4d52779778f454dd12ce9f44"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/partialUtil.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/typeAliases.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d43aa81f5bc89faa359e0f97c814ba25155591ff078fbb9bfd40f8c7c9683230"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/typeAliases.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d3cfde44f8089768ebb08098c96d01ca260b88bccf238d55eee93f1c620ff5a5"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/typeAliases.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d3cfde44f8089768ebb08098c96d01ca260b88bccf238d55eee93f1c620ff5a5"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/typeAliases.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/util.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9b75d4955de684d11371054bbf8e4d747cb1ad7284ae1eda85d4c188b84c47fc"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/util.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "293eadad9dead44c6fd1db6de552663c33f215c55a1bfa2802a1bceed88ff0ec"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/util.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "293eadad9dead44c6fd1db6de552663c33f215c55a1bfa2802a1bceed88ff0ec"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/helpers/util.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "906ef685e5853d496e293ee8f8a2bb8b1ed2d078a1bcdfedb2dfd61d75b6330c"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/index.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d58a1fea61e0f0bccdb2f4fd3b7b098adcfddb44f036302c4d2c4e173540a292"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/index.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "833e92c058d033cde3f29a6c7603f517001d1ddd8020bc94d2067a3bc69b2a8e"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/index.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "3db2efd285e7328d8014b54a7fce3f4861ebcdc655df40517092ed0050983617"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/index.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "3db2efd285e7328d8014b54a7fce3f4861ebcdc655df40517092ed0050983617"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/locales/en.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "9f9d945a9e4c920a0790654b6c213839ad90b7414bada0a23c0284d45c8ed840"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/locales/en.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "f12edf1672a94c578eca32216839604f1e1c16b40a1896198deabf99c882b340"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/locales/en.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "c25ce98cca43a3bfa885862044be0d59557be4ecd06989b2001a83dcf69620fd"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/locales/en.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "51a6dcc5d4bd52a64da127c012c6c963395c1d9a343ad75d4a8eca662fc8b205"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/standard-schema.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "d43aa81f5bc89faa359e0f97c814ba25155591ff078fbb9bfd40f8c7c9683230"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/standard-schema.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "25b3f581e12ede11e5739f57a86e8668fbc0124f6649506def306cad2c59d262"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/standard-schema.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "25b3f581e12ede11e5739f57a86e8668fbc0124f6649506def306cad2c59d262"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/standard-schema.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/types.cjs": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "f4597f1b60eac1287f0549d1285653429d1f73695261f8c6367cd30d2810b08e"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/types.d.cts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "4fdb529707247a1a917a4626bfb6a293d52cd8ee57ccf03830ec91d39d606d6d"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/types.d.ts": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "2da997a01a6aa5c5c09de5d28f0f4407b597c5e1aecfd32f1815809c532650a2"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     },
     "ui/vendor/zod/v3/types.js": {
-      "before": null,
       "after": {
         "mode": "100644",
         "sha256": "46f45bebd1f349bc340c77ae973e22b0a5a184f3683a39cc88e3f4e13c2c21b3"
       },
+      "before": null,
       "reason": "Reviewed MIT Zod3 bounded-collection compatibility backport, provenance and regression; v4 remains separately selected."
     }
   },
@@ -2295,5 +2375,5 @@
   "qualification": "PENDING_EXACT_FINAL_SOURCE_HOSTED_EXECUTION",
   "repository": "MontrealAI/AGIJobManager",
   "schema": "agijobmanager/discovery-release-profile/v1",
-  "version": "1.20.1"
+  "version": "1.20.2"
 }

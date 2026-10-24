@@ -23,14 +23,25 @@ export const JOBS_RC20_COUNTERPART = Object.freeze({
     contractSha256:'98c8de8ce2774b7650bf4ee11eeedfb0a69b75fa6d1b080ef823637d77d0ab47'})
 });
 
+// Pending the exact published rc21 archive/manifest/source receipt. No identities are inferred.
+export const JOBS_RC21_COUNTERPART = null;
+
 // Selection must come from independently authenticated public archive provenance,
-// never from the mission or its receipt. This finite peer does not select code.
+// never from the mission or its receipt. These finite peers do not select code.
+export function qualifiedCounterpartSource(counterpartSelection) {
+  const selected=canonicalContext(counterpartSelection);
+  if(selected===canonicalContext(JOBS_RC20_COUNTERPART))return JOBS_RC20_COUNTERPART.source;
+  assert.ok(JOBS_RC21_COUNTERPART!==null,
+    'Counterpart Jobs rc21 public archive, manifest and source selection is pending');
+  assert.equal(selected,canonicalContext(JOBS_RC21_COUNTERPART),
+    'Counterpart differs from the exact qualified Jobs rc20 or rc21 source and archive selection');
+  return JOBS_RC21_COUNTERPART.source;
+}
+
 export function receiverSourcesForHistory(managerSource,priorSources,counterpartSelection=null) {
   const allowed=[managerSource];
   if(counterpartSelection!==null) {
-    assert.equal(canonicalContext(counterpartSelection),canonicalContext(JOBS_RC20_COUNTERPART),
-      'Counterpart differs from the qualified Jobs rc20 source and archive selection');
-    allowed.push(JOBS_RC20_COUNTERPART.source);
+    allowed.push(qualifiedCounterpartSource(counterpartSelection));
   }
   for(const source of priorSources)assert.ok(allowed.some(expected=>
     canonicalContext(expected)===canonicalContext(source)),

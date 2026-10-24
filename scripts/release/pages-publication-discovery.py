@@ -1,4 +1,4 @@
-"""Authorize Pages only after exact-main publication of the qualified v1.20.1 Discovery release."""
+"""Authorize Pages only after exact-main publication of the qualified v1.20.2 Discovery release."""
 import argparse
 import json
 import os
@@ -21,7 +21,7 @@ PUBLISH_STEPS = ('Verify publication source checkout', 'Install the exact compil
 
 
 def authorize_event(environment, source, api, event):
-    require(TAG == 'v1.20.1' and valid_sha(source), 'Automatic Pages publication is fixed to the authorized release')
+    require(TAG == 'v1.20.2' and valid_sha(source), 'Automatic Pages publication is fixed to the authorized release')
     require(environment.get('GITHUB_EVENT_NAME') == 'workflow_run' and environment.get('GITHUB_REF') == 'refs/heads/main'
         and environment.get('GITHUB_REPOSITORY') == REPOSITORY, 'Pages publication event/repository/ref differs')
     require(event.get('action') == 'completed' and event.get('repository', {}).get('full_name') == REPOSITORY, 'Pages trigger action/repository differs')

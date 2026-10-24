@@ -1,0 +1,29 @@
+{
+  "schema": "agijobsv0/discovery-alpha-source-review/v1",
+  "repository": "MontrealAI/AGI-Alpha-Agent-v0",
+  "decision": "ACCEPTED_FOR_INSTALLED_SOURCE",
+  "commit": "031bdb5d055c8bad896daa076baea2b5e17b242c",
+  "tree": "330e0e58268ed32990f04278fc543c71db45fd46",
+  "sourceHash": "54769dbfde99ae13708a33292866f0ca7e6b8b7792a7a944f76bf2fbf1de1358",
+  "catalogSha256": "d1c3cb9a5c3eb96e9e5eb111b83a713786ec18ed1213a407cd77bbaf018c5adb",
+  "evidence": [
+    "https://github.com/MontrealAI/AGI-Alpha-Agent-v0/issues/4850#issuecomment-6385568620",
+    "https://github.com/MontrealAI/AGI-Alpha-Agent-v0/pull/4869#pullrequestreview-5636108134",
+    "https://github.com/MontrealAI/AGI-Alpha-Agent-v0/pull/4886#issuecomment-6384560472",
+    "https://github.com/MontrealAI/AGI-Alpha-Agent-v0/commit/031bdb5d055c8bad896daa076baea2b5e17b242c"
+  ],
+  "publicationApproved": false,
+  "installedCompatibilityAccepted": false,
+  "externalExecution": "unprovisioned",
+  "authority": "none",
+  "scope": "BOUNDED INSTALLED DISCOVERY SOURCE ONLY: exact 53 catalog sources plus inspector and LICENSE (55 payload inputs, 974132 bytes), with the separately authenticated 6894-byte catalog (56 raw files, 981026 bytes). Static source identities, closed literal module imports, input ownership, bounded Discovery admission and authority controls only. Manager USDC6 and Jobs AGIALPHA18 remain distinct zero-cap DRAFT_NOT_SUBMITTED routes. This is not installed, release, publication, live website, operational or production acceptance.",
+  "qualification": "PENDING_FINAL_SOURCE_NATIVE_COMPATIBILITY",
+  "reviewerRole": "Separate AI technical static reviewer using the shared connected GitHub identity; no human, organizational or economic independence claimed; ordinary evidence COMMENT, not APPROVE.",
+  "sourceEvaluationPerformed": false,
+  "nativeOrBrowserAcceptancePerformed": false,
+  "originalFourBehaviorRestrictionsUnchanged": true,
+  "fiveGuardedFilesPayloadIntersection": [],
+  "fleetHarnessOrOtherHeldOperationsCleared": false,
+  "inventoryReceiptSha256": "ead2663120132d594ef67a2945c599ba4c267ab8f614e82719c256990d10b3e8",
+  "publicCommentBodySha256": "2ab794cc51f3f3be2c7d6c8dd28a42e4b72940479a9461ad1985848bd3aaef20"
+}
