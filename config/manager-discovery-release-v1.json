@@ -788,10 +788,10 @@
     "scripts/release/test-discovery-release-plumbing.py": {
       "after": {
         "mode": "100644",
-        "sha256": "9547ebf1c014b4f570a7691fe2d53f427955b4d7cc827c584dd36278ad33649f"
+        "sha256": "dd70ff5faff34e79eb7aecbcbfabf4da07f4e832acf4565d1bb44e2446b22074"
       },
       "before": null,
-      "reason": "Verify the exact reviewed Next security delta and preserve whole-package comparisons; construct the negative publisher extraction phase locally from its actual AST without unavailable historical Git objects, retaining old refusal and actual qualified rebuild success.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver.; Admit membership only on chain1, preserve current-mainnet checks in the existing verifier, and bind silent refresh to its entry epoch/account/chain/manager before post-await writes and each role launch. Preserve the first deployment-reset fix and every prior before-image; actual successful wrong-chain mock ABI and delayed focus callbacks remain substantive regression controls."
+      "reason": "Verify the exact reviewed Next security delta and preserve whole-package comparisons; construct the negative publisher extraction phase locally from its actual AST without unavailable historical Git objects, retaining old refusal and actual qualified rebuild success.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver.; Admit membership only on chain1, preserve current-mainnet checks in the existing verifier, and bind silent refresh to its entry epoch/account/chain/manager before post-await writes and each role launch. Preserve the first deployment-reset fix and every prior before-image; actual successful wrong-chain mock ABI and delayed focus callbacks remain substantive regression controls.; Extend the exact closed supplemental-original set only to the release VM fixture, requiring its authentic900 blob77e12a6/SHA04e28a4a while preserving all four prior originals and every byte comparison."
     },
     "scripts/release/test-discovery-release-profile.py": {
       "after": {
@@ -835,6 +835,17 @@
         "mode": "100644"
       },
       "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate."
+    },
+    "scripts/release/verify-usdc-ui.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "3ab70f05b7ef94a9dd960b96594f6e1def482be25d33da981ed0be8247509c24"
+      },
+      "before": {
+        "blob": "77e12a60316d1e195f4e8550f5b39d222f8f247f",
+        "mode": "100644"
+      },
+      "reason": "Supply exactly the existing manager constant in the release-copy no-account extracted-function VM fixture after its silent refresh gained a substantive manager/source lease. Preserve all checks and function bodies; bind the distinct authentic original900 release fixture and its exact one-insertion inverse projection. No runtime, browser fixture, authority or qualification change."
     },
     "scripts/release/wait-qualification.py": {
       "after": {

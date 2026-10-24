@@ -56,7 +56,8 @@ class DiscoveryPlumbing(unittest.TestCase):
     def test_current_audit_workflow_projection_preserves_exact_published_beforeimages(self):
         self.assertEqual(set(PROFILE['AUDIT_WORKFLOW_ORIGINALS']), {
             '.github/workflows/ui.yml', '.github/workflows/security-verification.yml',
-            'ui-tests/usdc-console.spec.js', 'scripts/ui/verify-usdc-console.mjs'})
+            'ui-tests/usdc-console.spec.js', 'scripts/ui/verify-usdc-console.mjs',
+            'scripts/release/verify-usdc-ui.mjs'})
         baseline = PROFILE['baseline'](ROOT)
         for name, text in PROFILE['AUDIT_WORKFLOW_ORIGINALS'].items():
             with self.subTest(path=name):
@@ -74,6 +75,11 @@ class DiscoveryPlumbing(unittest.TestCase):
             'mode': '100644', 'blob': '790690539446a6ebcf76897357d52717ec4cfb7a'})
         self.assertEqual(sha(PROFILE['AUDIT_WORKFLOW_ORIGINALS'][fixture].encode()),
             'c4db51621574cb81954d3ceee8a078a17a56ff2317951ae6c6f635d313df39c0')
+        release_fixture = 'scripts/release/verify-usdc-ui.mjs'
+        self.assertEqual(baseline['entries'][release_fixture], {
+            'mode': '100644', 'blob': '77e12a60316d1e195f4e8550f5b39d222f8f247f'})
+        self.assertEqual(sha(PROFILE['AUDIT_WORKFLOW_ORIGINALS'][release_fixture].encode()),
+            '04e28a4a198f8ae08f82bc725f4406906c0af3ba638fc8eeeaad59d00a0419da')
         PROFILE['validate_projections'](ROOT, baseline)
 
     def test_package_and_deployment_changes_restore_exact_predecessor_with_reviewed_security_patches(self):
