@@ -622,7 +622,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "aae10db62d52dd5816b58daf672b1338da331a7a0a850a3c724b052085794b32"
+        "sha256": "a2e89390dbc18d4308dc2859f99117e4669b8a219be0078ea7a6fa11675ac9cb"
       },
       "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim."
     },
@@ -766,7 +766,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "ecc0ba7529df30288bf370ce016f71fa5c00e25f897116fa09997b91fc19036b"
+        "sha256": "260f3bc3f1d72906222d03209c6e21b0f216203c434ca7d1af04cbfa60a3d4ae"
       },
       "reason": "Preserve the latest-run source/status/attempt rejection gate and authenticate the separate exact-attempt response for full original browser metadata equality, with focused regression coverage and unchanged REST budget."
     },
@@ -822,7 +822,7 @@
       "before": null,
       "after": {
         "mode": "100644",
-        "sha256": "bfb41059130d8dc4fdad8d861733109f3068c8cb99aec1111e7a9c190712fb20"
+        "sha256": "d90bb41d3df5da1efe91183360d059b16b261efb197c3fc379eaaf9fdaeb3e47"
       },
       "reason": "Preserve the latest-run source/status/attempt rejection gate and authenticate the separate exact-attempt response for full original browser metadata equality, with focused regression coverage and unchanged REST budget."
     },

@@ -11,6 +11,7 @@ import re
 import runpy
 import stat
 import subprocess
+import sys
 import tempfile
 import zipfile
 from release_common import (DISCOVERY_PROFILE, DISCOVERY_WORKFLOW, DISCOVERY_JOBS,
@@ -334,6 +335,32 @@ def verified_raw_blob(raw_body, entry, *, commit, name, maximum, modes=('100644'
     return raw
 
 
+def compare_browser_metadata_snapshot(name, captured, observed):
+    """Only an associated PR's moving head pointer is not execution-source identity."""
+    before, after = copy.deepcopy(captured), copy.deepcopy(observed)
+    changes = []
+    if name == 'run':
+        require(isinstance(before, dict) and isinstance(after, dict)
+            and isinstance(before.get('pull_requests'), list)
+            and isinstance(after.get('pull_requests'), list)
+            and len(before['pull_requests']) == len(after['pull_requests']),
+            'Public browser associated pull request inventory differs')
+        for index, (recorded, current) in enumerate(zip(before['pull_requests'], after['pull_requests'])):
+            require(isinstance(recorded, dict) and isinstance(current, dict)
+                and isinstance(recorded.get('head'), dict) and isinstance(current.get('head'), dict)
+                and valid_sha(recorded['head'].get('sha')) and valid_sha(current['head'].get('sha')),
+                'Public browser associated pull request head pointer is malformed')
+            if recorded['head']['sha'] != current['head']['sha']:
+                changes.append({'snapshot': name, 'path': '/pull_requests/' + str(index) + '/head/sha',
+                    'captured': recorded['head']['sha'], 'observed': current['head']['sha'],
+                    'role': 'NON_AUTHORITATIVE_ASSOCIATED_PR_HEAD_NOT_EXECUTION_SOURCE'})
+            # Owned copies only. Every other run and association field remains exact.
+            recorded['head']['sha'] = current['head']['sha'] = '<associated PR head pointer>'
+    require(canonical(before) == canonical(after),
+            'Public browser complete metadata snapshot differs: ' + name)
+    return changes
+
+
 def public_browser_packet(binding, api, raw_body, *, snapshots):
     """Read the root-authenticated immutable public packet; never fetch a private Actions ZIP."""
     transport = binding['transport']
@@ -378,9 +405,9 @@ def public_browser_packet(binding, api, raw_body, *, snapshots):
     metadata = {name: captured_json(packet_raw('metadata/' + name + '.json'))
         for name in ('run', 'jobs', 'artifacts', 'checkout-commit', 'public-commit')}
     require(exact(snapshots, metadata), 'Complete live browser metadata snapshots are required')
+    association_changes = []
     for name, captured in metadata.items():
-        require(canonical(captured) == canonical(snapshots[name]),
-                'Public browser complete metadata snapshot differs: ' + name)
+        association_changes.extend(compare_browser_metadata_snapshot(name, captured, snapshots[name]))
     producer = binding['producer']
     require(all(metadata['run'].get(key) == value for key, value in {'id': producer['runId'],
         'run_attempt': producer['runAttempt'], 'workflow_id': producer['workflowId'],
@@ -416,7 +443,12 @@ def public_browser_packet(binding, api, raw_body, *, snapshots):
         and artifacts[0].get('workflow_run', {}).get('head_sha') == producer['headCommit'],
         'Public browser captured artifact metadata differs')
     files = {name: packet_raw(name) for name in sorted(BROWSER_MEMBERS)}
-    return _validate_browser_files(files, binding)
+    result = _validate_browser_files(files, binding)
+    result['browserMetadataObservation'] = {'schema': 'manager/browser-metadata-observation/v1',
+        'format': 'FULL_PARSED_JSON_OBSERVATIONS_NOT_BYTE_IDENTICAL_HTTP_RAW',
+        'associatedPrHeadsUsedAsExecutionSource': False, 'associationChanges': association_changes,
+        'captured': copy.deepcopy(metadata), 'observed': copy.deepcopy(snapshots)}
+    return result
 
 
 def complete_browser_metadata_inventory(record, field):
@@ -524,6 +556,13 @@ def authenticate_browser_input(binding, api, expected, *, raw_body=None):
                 'Alpha browser source input differs from exact Git blob bytes')
     result['rawTransport'] = {'restReads': rest_reads, 'immutableObjects': len(bodies), 'rawBytes': raw_bytes,
         'objects': {blob: {'bytes': len(data), 'sha256': sha(data)} for blob, data in bodies.items()}}
+    observation = result['browserMetadataObservation']
+    if observation['associationChanges']:
+        # Keep complete public JSON observations in the retained workflow log before
+        # capture_browser_input intentionally selects only binding/files for the capsule.
+        sys.stderr.write('DISCOVERY_BROWSER_METADATA_OBSERVATION_BEGIN\n'
+            + json.dumps(observation, sort_keys=True, indent=2)
+            + '\nDISCOVERY_BROWSER_METADATA_OBSERVATION_END\n')
     return result
 
 
