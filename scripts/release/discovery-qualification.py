@@ -92,6 +92,48 @@ BROWSER_CHECKS = ['saved-freeze', 'separate-bank', 'reload-before-execution', 'a
     'malformed-receiver-rejected-without-history-change', 'docket-download', 'reload-after-result',
     '39-recorded-contracts', 'accessibility', '320px']
 
+# One retained original main-release invocation, independent of later branch pointers.
+ALPHA141_PRODUCER = {'runId': 40076340788, 'runAttempt': 1, 'workflowId': 366358276,
+    'event': 'push', 'headBranch': 'main', 'headCommit': '031bdb5d055c8bad896daa076baea2b5e17b242c',
+    'checkoutCommit': '031bdb5d055c8bad896daa076baea2b5e17b242c',
+    'checkoutTree': '330e0e58268ed32990f04278fc543c71db45fd46',
+    'checkoutParents': ['1b693f4895a0da68f5647b55c8cb10e6d234f566',
+                        'e5ecfe96066d687e2fa72cbf1032bda17a450f35']}
+ALPHA141_ARTIFACT = {'id': 12552939436,
+    'name': 'successor-capability-031bdb5d055c8bad896daa076baea2b5e17b242c',
+    'digest': 'sha256:3f0f689fa10aafab8891ebce91a1d421ef0754b2a5ec4551a4d844879041c4b7',
+    'sizeInBytes': 31457545}
+
+
+def browser_producer_profile(binding):
+    producer, artifact = binding.get('producer'), binding.get('artifact')
+    require(isinstance(producer, dict) and isinstance(artifact, dict), 'Alpha browser producer/artifact is malformed')
+    original = (binding.get('workflowPath') != BROWSER_WORKFLOW
+        or producer.get('headCommit') == ALPHA141_PRODUCER['headCommit']
+        or producer.get('checkoutCommit') == ALPHA141_PRODUCER['checkoutCommit']
+        or producer.get('runId') == ALPHA141_PRODUCER['runId']
+        or producer.get('workflowId') == ALPHA141_PRODUCER['workflowId']
+        or artifact.get('id') == ALPHA141_ARTIFACT['id'])
+    if not original:
+        return BROWSER_WORKFLOW, 'capability', None
+    require(binding.get('workflowPath') == '.github/workflows/agent-release.yml'
+        and canonical(producer) == canonical(ALPHA141_PRODUCER)
+        and canonical(artifact) == canonical(ALPHA141_ARTIFACT)
+        and binding.get('sourceHash') == '54769dbfde99ae13708a33292866f0ca7e6b8b7792a7a944f76bf2fbf1de1358'
+        and binding.get('catalogSha256') == 'd1c3cb9a5c3eb96e9e5eb111b83a713786ec18ed1213a407cd77bbaf018c5adb',
+        'Only the retained exact Alpha141 main-release producer/source/artifact tuple is admitted')
+    return '.github/workflows/agent-release.yml', 'successor-capability / capability', 120821426397
+
+
+def browser_capability_jobs(jobs, binding):
+    _, name, identity = browser_producer_profile(binding)
+    selected = [job for job in jobs if job.get('name') == name]
+    if identity is not None:
+        require(len(selected) == 1 and selected[0].get('id') == identity
+            and selected[0].get('run_id') == binding['producer']['runId'],
+                'Retained original Alpha141 capability job identity differs')
+    return selected
+
 
 def browser_pin(root=ROOT):
     path = pathlib.Path(root) / BROWSER_PIN
@@ -108,9 +150,9 @@ def validate_browser_binding(pin):
         'sourceHash', 'pageSha256', 'catalogSha256', 'inventorySha256', 'members', 'campaignDigest',
         'missionId', 'workspaceSha256', 'requestSha256', 'transport'))
         and pin['schema'] == BROWSER_SCHEMA and pin['repository'] == ALPHA_REPOSITORY
-        and pin['workflowPath'] == BROWSER_WORKFLOW
         and pin['state'] == 'REVIEWED_AUTHENTICATED_ALPHA_ARTIFACT',
         'Alpha browser artifact binding is UNSET or unreviewed')
+    browser_producer_profile(pin)
     producer, artifact = pin['producer'], pin['artifact']
     require(exact(producer, ('runId', 'runAttempt', 'workflowId', 'event', 'headBranch', 'headCommit',
         'checkoutCommit', 'checkoutTree', 'checkoutParents'))
@@ -364,6 +406,7 @@ def compare_browser_metadata_snapshot(name, captured, observed):
 def public_browser_packet(binding, api, raw_body, *, snapshots):
     """Read the root-authenticated immutable public packet; never fetch a private Actions ZIP."""
     transport = binding['transport']
+    workflow_path, _, _ = browser_producer_profile(binding)
     commit = api(f'git/commits/{transport["commit"]}')
     require(commit.get('sha') == transport['commit'] and commit.get('tree', {}).get('sha') == transport['tree'],
             'Public browser packet commit/tree differs')
@@ -412,7 +455,7 @@ def public_browser_packet(binding, api, raw_body, *, snapshots):
     require(all(metadata['run'].get(key) == value for key, value in {'id': producer['runId'],
         'run_attempt': producer['runAttempt'], 'workflow_id': producer['workflowId'],
         'head_sha': producer['headCommit'], 'head_branch': producer['headBranch'], 'event': 'push',
-        'path': BROWSER_WORKFLOW, 'status': 'completed', 'conclusion': 'success'}.items()),
+        'path': workflow_path, 'status': 'completed', 'conclusion': 'success'}.items()),
         'Public browser captured run metadata differs')
     for name in ('checkout-commit', 'public-commit'):
         record = metadata[name]
@@ -426,7 +469,7 @@ def public_browser_packet(binding, api, raw_body, *, snapshots):
             and record['total_count'] == len(record[field]) and 0 < len(record[field]) <= 100
             and len({item.get('id') for item in record[field]}) == len(record[field]),
             'Public browser captured metadata inventory is incomplete or duplicated')
-    jobs = [item for item in metadata['jobs']['jobs'] if item.get('name') == 'capability']
+    jobs = browser_capability_jobs(metadata['jobs']['jobs'], binding)
     require(len(jobs) == 1 and jobs[0].get('run_id') == producer['runId']
         and jobs[0].get('head_sha') == producer['headCommit'] and jobs[0].get('status') == 'completed'
         and jobs[0].get('conclusion') == 'success', 'Public browser captured capability job differs')
@@ -494,6 +537,7 @@ def authenticate_browser_input(binding, api, expected, *, raw_body=None):
             bodies[blob] = value
         return bodies[blob]
     validate_browser_binding({key: value for key, value in binding.items() if key != 'pinSha256'})
+    workflow_path, _, _ = browser_producer_profile(binding)
     producer = binding['producer']
     require(producer['event'] == 'push' and producer['headBranch'] == 'main'
         and producer['headCommit'] == producer['checkoutCommit'] == expected['alphaCommit']
@@ -501,10 +545,10 @@ def authenticate_browser_input(binding, api, expected, *, raw_body=None):
         and binding['catalogSha256'] == expected['catalogSha256'], 'Alpha browser input differs from the reviewed shipping source')
     workflow = api(f'actions/workflows/{producer["workflowId"]}')
     run = api(f'actions/runs/{producer["runId"]}')
-    require(workflow.get('path') == BROWSER_WORKFLOW and workflow.get('id') == producer['workflowId']
+    require(workflow.get('path') == workflow_path and workflow.get('id') == producer['workflowId']
         and all(run.get(key) == value for key, value in {'id': producer['runId'], 'run_attempt': producer['runAttempt'],
             'workflow_id': producer['workflowId'], 'head_sha': producer['headCommit'], 'head_branch': producer['headBranch'],
-            'event': producer['event'], 'path': BROWSER_WORKFLOW, 'status': 'completed', 'conclusion': 'success'}.items())
+            'event': producer['event'], 'path': workflow_path, 'status': 'completed', 'conclusion': 'success'}.items())
         and run.get('repository', {}).get('full_name') == ALPHA_REPOSITORY
         and run.get('head_repository', {}).get('full_name') == ALPHA_REPOSITORY,
         'Alpha browser producer workflow/run/source is unqualified')
@@ -512,7 +556,7 @@ def authenticate_browser_input(binding, api, expected, *, raw_body=None):
     attempt_run = api(f'actions/runs/{producer["runId"]}/attempts/{producer["runAttempt"]}')
     jobs_response = api(f'actions/runs/{producer["runId"]}/attempts/{producer["runAttempt"]}/jobs?per_page=100&page=1')
     jobs = complete_browser_metadata_inventory(jobs_response, 'jobs')
-    capability = [job for job in jobs if job.get('name') == 'capability']
+    capability = browser_capability_jobs(jobs, binding)
     require(len(capability) == 1 and capability[0].get('status') == 'completed'
         and capability[0].get('conclusion') == 'success' and capability[0].get('head_sha') == producer['headCommit'],
         'Alpha browser capability job did not succeed on the exact source')

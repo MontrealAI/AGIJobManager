@@ -3,6 +3,16 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { createRequire } = require('node:module');
 const PROFILE_SHA256 = '37339f548db43979d3e12b42547cdce336d1c7c5462ff7a6c78f65bc1b1b6862';
+// One current software edition, reconstructed to the unchanged reviewed profile.
+// These offsets change only the nine root package/lock version fields, not dependencies.
+const EDITION_1202_PACKAGE_FILES = Object.freeze({
+  'package.json': Object.freeze({ sha256: '15d479c9e1306519240bc78b1976a01bd82f474bd47b877e271b720451e107b6', versionOffsets: Object.freeze([43]) }),
+  'package-lock.json': Object.freeze({ sha256: 'f71fa9622c8aa9e5a7da22e94cbdd7083041c696427b3ddd5b2de2a8f52b0bcf', versionOffsets: Object.freeze([43, 171]) }),
+  'hardhat/package.json': Object.freeze({ sha256: 'c6b2f774e4a97979c6fd7f772b99877af9b4e5b1b690eecf155849aa219a9f8f', versionOffsets: Object.freeze([70]) }),
+  'hardhat/package-lock.json': Object.freeze({ sha256: '2bd37a18d6b441f3888d5f38ec62907b79dd16fd908e177538e6192c88e4ea7f', versionOffsets: Object.freeze([51, 187]) }),
+  'ui/package.json': Object.freeze({ sha256: 'bc2844615241df236140046ce8d8055346fcc9ecf7c48b9ad5556f6158e9f5f5', versionOffsets: Object.freeze([48]) }),
+  'ui/package-lock.json': Object.freeze({ sha256: '142f0b4b886649e85f108f2691a7cb010bce9426ef7caceb4ae851eab93e2b57', versionOffsets: Object.freeze([48, 181]) })
+});
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const canonical = value => JSON.stringify(value, function (_key, entry) { return entry && typeof entry === 'object' && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map(key => [key, entry[key]])) : entry; });
 function requireThat(condition, code, message) { if (!condition) throw Object.assign(new Error(message), { code }); }
@@ -32,6 +42,37 @@ function loadProfile() {
   const bytes = readRegular(path.join(__dirname, 'zod-backport-audit-profile.json'));
   requireThat(sha(bytes) === PROFILE_SHA256, 'PROFILE_IDENTITY', 'The reviewed finite profile changed');
   return parseJson(bytes);
+}
+function verifyPackageSources(root, profile) {
+  const names = Object.keys(profile.packageFiles), packageBytes = {}, packageFiles = {};
+  requireThat(canonical([...names].sort()) === canonical(Object.keys(EDITION_1202_PACKAGE_FILES).sort()),
+    'PACKAGE_LOCK_IDENTITY', 'The finite six-file source inventory differs');
+  for (const name of names) { const bytes = readRegular(path.join(root, name)); packageBytes[name] = bytes; packageFiles[name] = sha(bytes); }
+  if (names.every(name => packageFiles[name] === profile.packageFiles[name])) return { packageBytes, packageFiles, packageSourceIdentity: null };
+  // A complete vector is required: a mixture of the two editions is never selected per file.
+  for (const name of names) requireThat(packageFiles[name] === EDITION_1202_PACKAGE_FILES[name].sha256, 'PACKAGE_LOCK_IDENTITY', name);
+  const before = Buffer.from('1.20.1'), after = Buffer.from('1.20.2');
+  let fields = 0;
+  for (const name of names) {
+    const bytes = packageBytes[name], value = parseJson(bytes), offsets = EDITION_1202_PACKAGE_FILES[name].versionOffsets;
+    const lock = name.endsWith('package-lock.json');
+    requireThat(value.version === '1.20.2' && (!lock || value.packages?.['']?.version === '1.20.2')
+      && offsets.length === (lock ? 2 : 1), 'PACKAGE_VERSION_PROJECTION', name);
+    const restored = Buffer.from(bytes); let end = 0;
+    for (const offset of offsets) {
+      requireThat(Number.isSafeInteger(offset) && offset >= end && offset + after.length <= bytes.length
+        && bytes.subarray(offset, offset + after.length).equals(after), 'PACKAGE_VERSION_PROJECTION', name);
+      before.copy(restored, offset); end = offset + after.length; fields++;
+    }
+    requireThat(sha(restored) === profile.packageFiles[name], 'PACKAGE_VERSION_PROJECTION',
+      'Version-only reconstruction differs from the original reviewed bytes: ' + name);
+  }
+  requireThat(fields === 9, 'PACKAGE_VERSION_PROJECTION', 'Exactly nine software version fields are admitted');
+  return { packageBytes, packageFiles, packageSourceIdentity: {
+    schema: 'manager/zod-backport-package-source-identity/v1', version: '1.20.2', previousVersion: '1.20.1',
+    originalProfileSha256: PROFILE_SHA256, versionFields: fields, originalPackageFiles: profile.packageFiles,
+    scope: 'Exact current-edition raw bytes reconstruct the original six-file vector through nine version fields only; no dependency, audit, vendor or installed-resolution waiver.'
+  } };
 }
 function inside(root, filename) {
   const relative = path.relative(root, filename);
@@ -198,8 +239,7 @@ function checkZodBackportAudit({ repositoryRoot, scope: scopeName, auditPath, st
   requireThat(matchedAuditVariant !== -1, 'AUDIT_PROFILE_MISMATCH', 'Raw audit has new, missing or changed risk rows, primitive, via, nodes, severity, ranges, metadata or an error response');
   const auditDiagnostics = validateAuditDiagnostics(audit);
   if (!clean) verifyClosure(audit, profile.primitive);
-  const packageBytes = {};
-  for (const [relative, expectedHash] of Object.entries(profile.packageFiles)) { const bytes = readRegular(path.join(root, relative)); requireThat(sha(bytes) === expectedHash, 'PACKAGE_LOCK_IDENTITY', relative); packageBytes[relative] = bytes; }
+  const { packageBytes, packageFiles, packageSourceIdentity } = verifyPackageSources(root, profile);
   const rootPackage = parseJson(packageBytes['package.json']), spec = rootPackage.devDependencies?.zod || rootPackage.dependencies?.zod;
   requireThat(typeof spec === 'string' && spec.startsWith('file:'), 'LOCAL_BACKPORT_NOT_SELECTED', 'Root must select its exact reviewed local component');
   const vendorDirectory = inside(root, fs.realpathSync(path.resolve(root, spec.slice(5))));
@@ -207,7 +247,7 @@ function checkZodBackportAudit({ repositoryRoot, scope: scopeName, auditPath, st
   for (const [relative, expectedHash] of Object.entries(profile.runtimeFiles)) requireThat(sha(readRegular(path.join(vendorDirectory, relative))) === expectedHash, 'RUNTIME_IDENTITY', relative);
   const lockRelative = scope.directory ? scope.directory + '/package-lock.json' : 'package-lock.json';
   const installed = verifyInstalled(root, scope, profile, vendorDirectory, parseJson(packageBytes[lockRelative]));
-  return { schema: 'manager/zod-bounded-source-audit-disposition/v1', registryAudit: clean ? 'PASS_RAW' : 'FAILED_KNOWN_BACKPORT_MATCH', registryAuditExitCode: auditExitCode, sourceDisposition: 'PASS', auditDiagnostics, hardhatEthersRangeVariant: !clean && scopeName === 'hardhat' && scope.hardhatEthersRangeVariants ? matchedAuditVariant : null, category: 'CODE_BACKPORT_EQUIVALENT_TO_6652_BOUNDED_ONLY', scope: scopeName, raw: { auditSha256: sha(auditBytes), stderrSha256: sha(stderrBytes), exitCodeSha256: sha(exitBytes) }, profileSha256: PROFILE_SHA256, vendorManifestSha256, vendorFiles: Object.keys(profile.vendorFiles).length, runtimeFiles: profile.runtimeFiles, packageFiles: profile.packageFiles, matchedPrimitive: clean ? null : profile.primitive, matchedRows: clean ? [] : Object.keys(audit.vulnerabilities), installed, limits: profile.limits, originalAuditFailurePreserved: !clean, unboundedContainersQualified: false, globalCveEradicationClaimed: false };
+  return { schema: 'manager/zod-bounded-source-audit-disposition/v1', registryAudit: clean ? 'PASS_RAW' : 'FAILED_KNOWN_BACKPORT_MATCH', registryAuditExitCode: auditExitCode, sourceDisposition: 'PASS', auditDiagnostics, hardhatEthersRangeVariant: !clean && scopeName === 'hardhat' && scope.hardhatEthersRangeVariants ? matchedAuditVariant : null, category: 'CODE_BACKPORT_EQUIVALENT_TO_6652_BOUNDED_ONLY', scope: scopeName, raw: { auditSha256: sha(auditBytes), stderrSha256: sha(stderrBytes), exitCodeSha256: sha(exitBytes) }, profileSha256: PROFILE_SHA256, vendorManifestSha256, vendorFiles: Object.keys(profile.vendorFiles).length, runtimeFiles: profile.runtimeFiles, packageFiles, ...(packageSourceIdentity ? { packageSourceIdentity } : {}), matchedPrimitive: clean ? null : profile.primitive, matchedRows: clean ? [] : Object.keys(audit.vulnerabilities), installed, limits: profile.limits, originalAuditFailurePreserved: !clean, unboundedContainersQualified: false, globalCveEradicationClaimed: false };
 }
 if (require.main === module) {
   const args = process.argv.slice(2), options = {};

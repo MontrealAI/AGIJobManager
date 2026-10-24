@@ -1,4 +1,4 @@
-# Start here — AGIJobManager v1.20.1
+# Start here — AGIJobManager v1.20.2
 
 **v1.20.0 Discovery Lab candidate:** [review source-pinned synthetic admission and the qualification boundary](releases/v1.20.0/START_HERE.md). Publication and exact-final-source qualification remain separate.
 

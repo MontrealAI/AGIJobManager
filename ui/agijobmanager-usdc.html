@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v1.20.1</title>
+  <title>AGIJobManager · USDC v1.20.2</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -1183,7 +1183,7 @@
 
     <div class="card" id="usdcDeploymentSection">
       <!-- recorded-deployment-display:start -->
-      <h2>USDC deployment · v1.20.1 software</h2>
+      <h2>USDC deployment · v1.20.2 software</h2>
       <div class="helper" style="margin:14px 0;overflow-wrap:anywhere" aria-labelledby="latestReportedDeployment" data-testid="latest-reported-deployment">
         <h3 id="latestReportedDeployment">Latest reported Manager deployment · 2026-10-17</h3>
         <p>Ethereum mainnet · Chain 1<br>Manager: <a href="https://etherscan.io/address/0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8#code" target="_blank" rel="noopener noreferrer"><code>0x3a9B3A0712e066de4265404Fa5ff4171fE29a3F8</code></a></p>
@@ -5832,6 +5832,19 @@ async function updateSummary(){
 
     async function verifySubdomain(kind, alpha=false){
       if(!requireConnected()) return;
+      const checkedAccount = userAccount;
+      const checkedManager = agiJobManager;
+      const checkedWeb3 = web3;
+      const verificationContext = {
+        epoch: APP_STATE.writeEpoch || 0,
+        account: String(checkedAccount).toLowerCase(),
+        chainId: APP_STATE.wallet.chainId,
+        manager: String(AGI_JOB_MANAGER || '').toLowerCase()
+      };
+      const isCurrentVerification = ()=> (APP_STATE.writeEpoch || 0) === verificationContext.epoch
+        && String(userAccount || '').toLowerCase() === verificationContext.account
+        && APP_STATE.wallet.chainId === verificationContext.chainId
+        && String(AGI_JOB_MANAGER || '').toLowerCase() === verificationContext.manager;
       const isAgent = kind==="agent";
       const input = isAgent ? el("agentSub") : el("clubSub");
       const out = isAgent ? el("agentOut") : el("clubOut");
@@ -5865,25 +5878,32 @@ async function updateSummary(){
       try{
         const full = `${sub}.${suffix}`;
         const tokenID = namehash(full);
-        const managerWrapperAddr = await agiJobManager?.methods?.nameWrapper?.().call().catch(()=> '');
+        const managerWrapperAddr = await checkedManager?.methods?.nameWrapper?.().call().catch(()=> '');
+        if(!isCurrentVerification()) return;
         const wrapperCheckDegraded = !managerWrapperAddr || isZeroAddress(managerWrapperAddr);
         const runtimeNameWrapper = wrapperCheckDegraded ? NAME_WRAPPER : managerWrapperAddr;
-        const nw = new web3.eth.Contract(NameWrapperABI, runtimeNameWrapper);
+        const nw = new checkedWeb3.eth.Contract(NameWrapperABI, runtimeNameWrapper);
         const owner = await nw.methods.ownerOf(tokenID).call();
-        const acct = String(userAccount || '').toLowerCase();
+        if(!isCurrentVerification()) return;
+        const acct = verificationContext.account;
         const ownerLc = String(owner || '').toLowerCase();
         const approved = await nw.methods.getApproved(tokenID).call().catch(()=>"0x0000000000000000000000000000000000000000");
+        if(!isCurrentVerification()) return;
         const approvedLc = String(approved || '').toLowerCase();
-        const approvedForAll = await nw.methods.isApprovedForAll(owner, userAccount).call().catch(()=>false);
+        const approvedForAll = await nw.methods.isApprovedForAll(owner, checkedAccount).call().catch(()=>false);
+        if(!isCurrentVerification()) return;
         let resolverAddrMatch = false;
         try{
-          const ensRegistryAddr = await agiJobManager.methods.ens().call();
+          const ensRegistryAddr = await checkedManager.methods.ens().call();
+          if(!isCurrentVerification()) return;
           if(ensRegistryAddr && !isZeroAddress(ensRegistryAddr)){
-            const ensRegistry = new web3.eth.Contract(ENSRegistryResolverABI, ensRegistryAddr);
+            const ensRegistry = new checkedWeb3.eth.Contract(ENSRegistryResolverABI, ensRegistryAddr);
             const nodeResolver = await ensRegistry.methods.resolver(tokenID).call().catch(()=>"0x0000000000000000000000000000000000000000");
+            if(!isCurrentVerification()) return;
             resolverAddrMatch = !!nodeResolver && String(nodeResolver).toLowerCase() === acct;
           }
         }catch{}
+        if(!isCurrentVerification()) return;
         const isAuthorized = ownerLc === acct || approvedLc === acct || !!approvedForAll || resolverAddrMatch;
 
         if(isAuthorized){
@@ -5904,7 +5924,9 @@ async function updateSummary(){
           pill.className = "pill ok";
           pill.textContent = (isAgent?"Agent":"Club") + (alpha ? " ENS: verified (alpha)" : " ENS: verified");
           await loadJobs();
+          if(!isCurrentVerification()) return;
           await updateDynamicInsights();
+          if(!isCurrentVerification()) return;
         }else{
           clearRoleVerification();
           out.textContent = `Not authorized for this wallet: ${full}`;
@@ -5913,6 +5935,7 @@ async function updateSummary(){
         }
         updateReadinessUI();
       }catch(e){
+        if(!isCurrentVerification()) return;
         console.error(e);
         clearRoleVerification();
         out.textContent = `Verification error: ${e.message || String(e)}`;
@@ -7161,11 +7184,18 @@ function normalizeIpfsToHttp(uri){
           const aab=el("agentAlphaBadge"); if(aab) aab.style.display="none";
           el("clubPill").className="pill"; el("clubPill").textContent="Club ENS: not verified";
           const vb=el("validatorBadge"); if(vb) vb.style.display="none";
+          const cab=el("clubAlphaBadge"); if(cab) cab.style.display="none";
           if(!userAccount){ resetRuntimeState('wallet disconnected'); el("refreshBtn").disabled=true; return; }
           await connectWallet();
         });
         window.ethereum.on("chainChanged", async ()=>{
           resetRuntimeState('chain changed');
+          verified.agent = null; verified.club = null; verified.agentAlpha=false; verified.clubAlpha=false;
+          el("agentPill").className="pill"; el("agentPill").textContent="Agent ENS: not verified";
+          el("clubPill").className="pill"; el("clubPill").textContent="Club ENS: not verified";
+          const vb=el("validatorBadge"); if(vb) vb.style.display="none";
+          const aab=el("agentAlphaBadge"); if(aab) aab.style.display="none";
+          const cab=el("clubAlphaBadge"); if(cab) cab.style.display="none";
           hasAcceptedTerms = false; APP_STATE.wallet.termsAccepted = false;
           if(el('termsAccepted')) el('termsAccepted').checked = false;
           updateWriteGate();
@@ -7501,11 +7531,15 @@ function normalizeIpfsToHttp(uri){
           }
           const saved = readSession();
           const accountHint = String(saved.accountHint || '').toLowerCase();
-          const sameSession = !accountHint || accountHint.includes(account.slice(0,6).toLowerCase());
 
           const wasDisconnected = String(byId('walletStatus')?.textContent || '').toLowerCase().includes('not connected');
           const previousAccount = String(userAccount || '').toLowerCase();
           const accountChanged = !!previousAccount && previousAccount !== account.toLowerCase();
+          // The saved disconnected sentinel contains no prior wallet identity.
+          // Only an already unverified, unchanged account can use this initial path.
+          const firstUnverifiedConnection = accountHint === 'not connected' && !accountChanged
+            && !verified.agent && !verified.club && !verified.agentAlpha && !verified.clubAlpha;
+          const sameSession = !accountHint || firstUnverifiedConnection || accountHint.includes(account.slice(0,6).toLowerCase());
           userAccount = account;
           APP_STATE.wallet.account = account;
           if(byId('walletStatus')) byId('walletStatus').textContent = (typeof shortAddr === 'function') ? shortAddr(account) : account;

@@ -82,9 +82,9 @@ The pinned inspector validates the complete committed request and a private snap
 The shared parser now encodes only captured descriptor values and validates one inert frame before semantic checks or hash suspension. The receiver also validates and retains one inert checker-report snapshot, so a later report view cannot replace accepted fields or recorded costs. Callback-report regression cases cover property traps, negative late resource values and first-frame unknown authority fields. These are admission-policy checks; actual native compatibility remains separately source-pinned.
 
 
-## Continue a mission containing a Jobs receipt (next-edition proposal)
+## Historical v1.20.1: continue a mission containing a Jobs receipt
 
-The published v1.20.0 installed operator retains its original own-receiver-only behavior. The proposed correction permits one explicitly selected Jobs rc.20 context. It preserves the historical mission's Alpha source and the original v1.20.0 assets.
+The published v1.20.1 installed operator supports one explicitly selected Jobs rc.20 context. The earlier v1.20.0 operator retains its own-receiver-only behavior. The original Alpha mission identity and both historical releases remain intact.
 
 First independently authenticate the published Jobs rc.20 archive, its manifest and the exact receiver source against the accepted release provenance. Save the following exact record, including its final newline, as `jobs-rc20-counterpart.json`:
 
@@ -119,3 +119,9 @@ node source/scripts/integrations/discovery-installed-operator.mjs \
 Omitting the two optional arguments retains the own-receiver-only policy. Only the exact reviewed source/archive/manifest tuple is admitted. Missing, unknown, changed or extra fields refuse. Imported history cannot select trusted sources. Prior receipt sources are checked before producing a new receipt. The new Manager receipt is independently inspected against only Manager's own computed source; only complete-docket export and reopening use the explicitly selected Manager+Jobs context. Raw requests and receipts, event prefix, costs, duplicate refusal and separate zero-cap USDC/AGIALPHA routes remain intact.
 
 This local proposal targets the next available patch after v1.20.0 (proposed v1.20.1, unreserved). Exact-source independent review, finite release-policy rebinding, all applicable checks and new publication/installed acceptance remain required. A local correction does not modify or qualify the original v1.20.0 release.
+
+## Proposed v1.20.2 and Alpha v1.41
+
+The next source edition selects exact Alpha 031b using its [genuine bounded static source review](../qualification/alpha-installed-source-review-031b.json). It preserves the original main-release browser run and admits that finite workflow/job tuple without relabelling its source. Static review grants no installed, browser, release or execution acceptance.
+
+The original 031b 17-file public browser packet is selected at immutable commit `f995b97ae9beef118b7705b31b73bfc9ce65c316`. Exact published Jobs rc.21 counterpart archive/manifest/source selection remains pending. The rc.20 record above remains historical v1.20.1 evidence; do not use it to claim the new connected set. Follow the [proposed edition boundary](../releases/v1.20.2/VALIDATION.md). Existing USDC6/AGIALPHA18 zero-cap, unsubmitted routes and all Fleet/Harness/Alpha held operations remain unchanged.

@@ -1,0 +1,9 @@
+# v1.20.2 evidence and software recovery
+
+Stop the affected operation when source, counterpart selection, mission prefix, raw bytes, ancestry, costs or qualification differs. Retain the first failure and its inputs before retrying. A HOLD or rejection is a successful control and grants no new execution authority.
+
+Keep original 031b input bytes and all earlier Alpha 615 histories under their original identities. Do not substitute a new main-branch commit, reconstruct browser inputs, replace the original run's metadata, disable source equality or use the historical Jobs rc.20 tuple as the selected public rc.21 identity. Preserve both distinct currency drafts and all prior receipts. The selected rc.21 record is the exact 640-byte `source/config/discovery-jobs-rc21-counterpart-v1.json`, SHA-256 `b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda`. Keep a failed or partial output directory intact, diagnose it, and select an absent absolute output for any justified retry; do not remove an earlier receipt from the same history to make source admission pass.
+
+For software recovery, use published v1.20.1 with its matching public assets and accepted qualification/installation evidence. Its Alpha 615/Jobs rc.20 connected boundary remains historical. Earlier releases, paper locations and source URLs remain intact. Reverting software does not authorize changes to a deployed contract, owner, intake setting or transaction policy.
+
+Preserve raw registry audits and the separate source-bound dependency disposition. Unknown findings or source/install drift require a focused correction and review. No broad advisory ignore or false clean-audit claim is permitted. Follow the [general release guide](../../RELEASE_GUIDE.md) and [instance operations](../../OPERATIONS/COMMISSIONING.md) within their existing authority boundaries.
