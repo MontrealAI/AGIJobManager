@@ -277,6 +277,26 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/Repository agijobmanager\.html is stale/);
   });
 
+
+  it('fails when icon link refs are present', () => {
+    const run = runVerifierWithHtml(`${secureHtml}<link rel="icon" href="/favicon.ico">`);
+    expect(run).toThrow(/Forbidden link rel references found/);
+  });
+
+  it('fails when manifest link refs are present', () => {
+    const run = runVerifierWithHtml(`${secureHtml}<link rel="manifest" href="/manifest.webmanifest">`);
+    expect(run).toThrow(/Forbidden link rel references found/);
+  });
+
+  it('fails when html contains forbidden data image/font references', () => {
+    const imageScheme = ['data', 'image'].join(':') + '/png;base64,AAA=';
+    const runImage = runVerifierWithHtml(`${secureHtml}<style>.a{background-image:url(${imageScheme})}</style>`);
+    expect(runImage).toThrow(/Forbidden single-file artifact reference detected/);
+
+    const fontScheme = ['data', 'font'].join(':') + '/woff2;base64,AAA=';
+    const runFont = runVerifierWithHtml(`${secureHtml}<style>@font-face{src:url(${fontScheme})}</style>`);
+    expect(runFont).toThrow(/Forbidden single-file artifact reference detected/);
+  });
   it('fails when non-anchor tags reference remote http(s) assets', () => {
     const run = runVerifierWithHtml(`${secureHtml}<img src="https://cdn.example.com/logo.svg">`);
     expect(run).toThrow(/Relative or unsupported asset references found/);
