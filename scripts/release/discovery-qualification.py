@@ -13,6 +13,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import zipfile
 from release_common import (DISCOVERY_PROFILE, DISCOVERY_WORKFLOW, DISCOVERY_JOBS,
                             REPOSITORY, TAG, require, run_jobs, sha, strict_json, valid_sha,
@@ -377,8 +378,17 @@ def verified_raw_blob(raw_body, entry, *, commit, name, maximum, modes=('100644'
     return raw
 
 
+# One unrelated ephemeral Pages artifact disappeared after its recorded expiry.
+# The immutable full snapshot and every selected-input check remain unchanged.
+EXPIRED_PAGES_ARTIFACT_ID = 12555362358
+EXPIRED_PAGES_CAPTURE_SHA256 = '573f4ab96fd16f44a9fe3458d49b0b8b0f2d25eef567dfe5ca1b2dbac08a886c'
+EXPIRED_PAGES_ROW_SHA256 = '210e7eb2f23f759aba9ac83aa947176221634e2664e993b19e304309d2357e40'
+EXPIRED_PAGES_AT = '2026-10-25T09:19:35Z'
+EXPIRED_PAGES_EPOCH = 1792919975
+
+
 def compare_browser_metadata_snapshot(name, captured, observed):
-    """Only an associated PR's moving head pointer is not execution-source identity."""
+    """Only the fixed PR pointer and one proven expired, unrelated Pages row may differ."""
     before, after = copy.deepcopy(captured), copy.deepcopy(observed)
     changes = []
     if name == 'run':
@@ -398,6 +408,26 @@ def compare_browser_metadata_snapshot(name, captured, observed):
                     'role': 'NON_AUTHORITATIVE_ASSOCIATED_PR_HEAD_NOT_EXECUTION_SOURCE'})
             # Owned copies only. Every other run and association field remains exact.
             recorded['head']['sha'] = current['head']['sha'] = '<associated PR head pointer>'
+    if name == 'artifacts' and canonical(before) != canonical(after):
+        require(sha(canonical(before)) == EXPIRED_PAGES_CAPTURE_SHA256
+            and before.get('total_count') == 38 and len(before.get('artifacts', [])) == 38
+            and isinstance(after, dict) and type(after.get('total_count')) is int and after['total_count'] == 37
+            and isinstance(after.get('artifacts'), list) and len(after['artifacts']) == 37,
+            'Public browser complete metadata snapshot differs: artifacts')
+        removed = [item for item in before['artifacts'] if item.get('id') == EXPIRED_PAGES_ARTIFACT_ID]
+        require(len(removed) == 1 and sha(canonical(removed[0])) == EXPIRED_PAGES_ROW_SHA256
+            and removed[0]['name'] == 'github-pages-40076340788-1'
+            and removed[0]['expires_at'] == EXPIRED_PAGES_AT
+            and EXPIRED_PAGES_ARTIFACT_ID != ALPHA141_ARTIFACT['id']
+            and time.time() >= EXPIRED_PAGES_EPOCH,
+            'Public browser Pages omission is not the fixed expired unrelated artifact')
+        before['artifacts'] = [item for item in before['artifacts'] if item['id'] != EXPIRED_PAGES_ARTIFACT_ID]
+        before['total_count'] = 37
+        changes.append({'snapshot': 'artifacts', 'path': '/artifacts/' + str(EXPIRED_PAGES_ARTIFACT_ID),
+            'captured': {'id': EXPIRED_PAGES_ARTIFACT_ID, 'expiresAt': EXPIRED_PAGES_AT,
+                         'rowSha256': EXPIRED_PAGES_ROW_SHA256}, 'observed': None,
+            'capturedSnapshotSha256': EXPIRED_PAGES_CAPTURE_SHA256,
+            'role': 'FIXED_EXPIRED_UNRELATED_PAGES_ARTIFACT_NOT_SELECTED_INPUT'})
     require(canonical(before) == canonical(after),
             'Public browser complete metadata snapshot differs: ' + name)
     return changes

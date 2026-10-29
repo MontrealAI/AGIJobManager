@@ -13,6 +13,9 @@ const EDITION_1202_PACKAGE_FILES = Object.freeze({
   'ui/package.json': Object.freeze({ sha256: 'bc2844615241df236140046ce8d8055346fcc9ecf7c48b9ad5556f6158e9f5f5', versionOffsets: Object.freeze([48]) }),
   'ui/package-lock.json': Object.freeze({ sha256: '142f0b4b886649e85f108f2691a7cb010bce9426ef7caceb4ae851eab93e2b57', versionOffsets: Object.freeze([48, 181]) })
 });
+// Exact reviewed CSS dependency replacement; original audit policy remains immutable.
+const CSS_PATCH = {"ui/package.json":[[["overrides","@vanilla-extract/css"],{"present":false},{"present":true,"value":"1.21.3"}]],"ui/package-lock.json":[[["packages","node_modules/@vanilla-extract/css"],{"present":true,"value":{"version":"1.20.1","resolved":"https://registry.npmjs.org/@vanilla-extract/css/-/css-1.20.1.tgz","integrity":"sha512-5I9RNo5uZW9tsBnqrWzJqELegOqTHBrZyDFnES0gR9gJJHBB9dom1N0bwITM9tKwBcfKrTX4a6DHVeQdJ2ubQA==","license":"MIT","dependencies":{"@emotion/hash":"^0.9.0","@vanilla-extract/private":"^1.0.9","css-what":"^6.1.0","csstype":"^3.2.3","dedent":"^1.5.3","deep-object-diff":"^1.1.9","deepmerge":"^4.2.2","lru-cache":"^10.4.3","media-query-parser":"^2.0.2","modern-ahocorasick":"^1.0.0","picocolors":"^1.0.0"}}},{"present":true,"value":{"version":"1.21.3","resolved":"https://registry.npmjs.org/@vanilla-extract/css/-/css-1.21.3.tgz","integrity":"sha512-h7wXxEowNLjhGfTHqReoSBWjAzxDADM8yUuUL/enDWXQVwy50JnY8xFNaie04XHTmrBPKJjwcwRNuTGlFIJLSA==","license":"MIT","dependencies":{"@emotion/hash":"^0.9.0","@vanilla-extract/private":"^1.0.9","css-what":"^6.1.0","csstype":"^3.2.3","dedent":"^1.5.3","deep-object-diff":"^1.1.9","deepmerge-ts":"^8.0.2","lru-cache":"^10.4.3","media-query-parser":"^2.0.2","modern-ahocorasick":"^3.3.0","picocolors":"^1.0.0"}}}],[["packages","node_modules/deepmerge"],{"present":true,"value":{"version":"4.3.1","resolved":"https://registry.npmjs.org/deepmerge/-/deepmerge-4.3.1.tgz","integrity":"sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==","license":"MIT","engines":{"node":">=0.10.0"}}},{"present":false}],[["packages","node_modules/deepmerge-ts"],{"present":false},{"present":true,"value":{"version":"8.0.2","resolved":"https://registry.npmjs.org/deepmerge-ts/-/deepmerge-ts-8.0.2.tgz","integrity":"sha512-uqbvqLUMrc6p0MO+WBRtTxY55hmyh94WRwI5a++PZe54X+bfVh59FSN7uWCBCW1CCVjzjnrwzfI8zidE2obMMw==","funding":[{"type":"ko-fi","url":"https://ko-fi.com/rebeccastevens"},{"type":"tidelift","url":"https://tidelift.com/funding/github/npm/deepmerge-ts"}],"license":"BSD-3-Clause","engines":{"node":">=16.9.0"}}}],[["packages","node_modules/modern-ahocorasick"],{"present":true,"value":{"version":"1.1.0","resolved":"https://registry.npmjs.org/modern-ahocorasick/-/modern-ahocorasick-1.1.0.tgz","integrity":"sha512-sEKPVl2rM+MNVkGQt3ChdmD8YsigmXdn5NifZn6jiwn9LRJpWm8F3guhaqrJT/JOat6pwpbXEk6kv+b9DMIjsQ==","license":"MIT"}},{"present":true,"value":{"version":"3.3.0","resolved":"https://registry.npmjs.org/modern-ahocorasick/-/modern-ahocorasick-3.3.0.tgz","integrity":"sha512-OEuPxzKD4fG8Zx2dUX8jDP7ArNhRdlHhjLA00k+ZmtXe49Qb6+E/M/ViDYnXOZ9A3uRbRIb1eTKPesQGKd0USA==","license":"MIT"}}]]};
+const CSS_PATCH_HASHES = {"ui/package.json":{"before":"bc2844615241df236140046ce8d8055346fcc9ecf7c48b9ad5556f6158e9f5f5","after":"4b5f5d00d1e01404d4731dc71171cf6c29a2ecaa0f816dbaf5ba022ff999c6b0"},"ui/package-lock.json":{"before":"142f0b4b886649e85f108f2691a7cb010bce9426ef7caceb4ae851eab93e2b57","after":"2401066d4daa411c640e476384c81d70cfd3be501205c9fa922a956ff8d65911"}};
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const canonical = value => JSON.stringify(value, function (_key, entry) { return entry && typeof entry === 'object' && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map(key => [key, entry[key]])) : entry; });
 function requireThat(condition, code, message) { if (!condition) throw Object.assign(new Error(message), { code }); }
@@ -43,11 +46,11 @@ function loadProfile() {
   requireThat(sha(bytes) === PROFILE_SHA256, 'PROFILE_IDENTITY', 'The reviewed finite profile changed');
   return parseJson(bytes);
 }
-function verifyPackageSources(root, profile) {
+function verifyLegacyPackageSources(root, profile, restored = {}) {
   const names = Object.keys(profile.packageFiles), packageBytes = {}, packageFiles = {};
   requireThat(canonical([...names].sort()) === canonical(Object.keys(EDITION_1202_PACKAGE_FILES).sort()),
     'PACKAGE_LOCK_IDENTITY', 'The finite six-file source inventory differs');
-  for (const name of names) { const bytes = readRegular(path.join(root, name)); packageBytes[name] = bytes; packageFiles[name] = sha(bytes); }
+  for (const name of names) { const bytes = restored[name] || readRegular(path.join(root, name)); packageBytes[name] = bytes; packageFiles[name] = sha(bytes); }
   if (names.every(name => packageFiles[name] === profile.packageFiles[name])) return { packageBytes, packageFiles, packageSourceIdentity: null };
   // A complete vector is required: a mixture of the two editions is never selected per file.
   for (const name of names) requireThat(packageFiles[name] === EDITION_1202_PACKAGE_FILES[name].sha256, 'PACKAGE_LOCK_IDENTITY', name);
@@ -73,6 +76,60 @@ function verifyPackageSources(root, profile) {
     originalProfileSha256: PROFILE_SHA256, versionFields: fields, originalPackageFiles: profile.packageFiles,
     scope: 'Exact current-edition raw bytes reconstruct the original six-file vector through nine version fields only; no dependency, audit, vendor or installed-resolution waiver.'
   } };
+}
+function restoreCssSource(name, bytes) {
+  requireThat(CSS_PATCH_HASHES[name] && sha(bytes) === CSS_PATCH_HASHES[name].after, 'CSS_PACKAGE_IDENTITY', name);
+  const value = parseJson(bytes);
+  const packageOrder = value.packages && Object.keys(value.packages).map(key => key === 'node_modules/deepmerge-ts' ? 'node_modules/deepmerge' : key);
+  for (const [parts, before, after] of CSS_PATCH[name]) {
+    let parent = value;
+    for (const key of parts.slice(0, -1)) { requireThat(record(parent) && Object.hasOwn(parent, key), 'CSS_PATCH_FRAME', name); parent = parent[key]; }
+    const key = parts.at(-1), observed = { present: Object.hasOwn(parent, key), ...(Object.hasOwn(parent, key) ? { value: parent[key] } : {}) };
+    requireThat(canonical(observed) === canonical(after), 'CSS_PATCH_SELECTION', name);
+    if (before.present) parent[key] = before.value; else delete parent[key];
+  }
+  if (packageOrder) value.packages = Object.fromEntries(packageOrder.map(key => [key, value.packages[key]]));
+  const restored = Buffer.from(JSON.stringify(value, null, 2) + '\n');
+  requireThat(sha(restored) === CSS_PATCH_HASHES[name].before, 'CSS_PATCH_RECONSTRUCTION', name);
+  return restored;
+}
+function verifyPackageSources(root, profile) {
+  const candidate = Object.keys(CSS_PATCH_HASHES).every(name => sha(readRegular(path.join(root, name))) === CSS_PATCH_HASHES[name].after);
+  if (!candidate) return verifyLegacyPackageSources(root, profile);
+  const restored = Object.fromEntries(Object.keys(CSS_PATCH_HASHES).map(name => [name, restoreCssSource(name, readRegular(path.join(root, name)))]));
+  const prior = verifyLegacyPackageSources(root, profile, restored);
+  const actualBytes = { ...prior.packageBytes, ...Object.fromEntries(Object.keys(restored).map(name => [name, readRegular(path.join(root, name))])) };
+  return { ...prior, packageBytes: actualBytes, packageFiles: Object.fromEntries(Object.entries(actualBytes).map(([name, bytes]) => [name, sha(bytes)])),
+    packageSourceIdentity: { ...prior.packageSourceIdentity, cssDependencyReplacement: { advisory: 'GHSA-gcqx-w48m-w2h4', packageHashes: CSS_PATCH_HASHES, lockNodesChanged: 4, vulnerabilityWaiver: false } } };
+}
+function verifyCssInstalled(root, lock) {
+  const scopeRoot = path.join(root, 'ui');
+  for (const name of ['@vanilla-extract/css', 'deepmerge-ts', 'modern-ahocorasick']) {
+    const node = 'node_modules/' + name, selected = lock.packages[node];
+    const { directory, actual } = installedPackage(root, scopeRoot, lock, node, name);
+    requireThat(canonical(actual.dependencies || {}) === canonical(selected.dependencies || {}), 'CSS_INSTALLED_DEPENDENCIES', name);
+    if (name === '@vanilla-extract/css') {
+      const resolver = createRequire(path.join(directory, 'package.json'));
+      const selectedEntry = fs.realpathSync(resolver.resolve('deepmerge-ts'));
+      inside(fs.realpathSync(path.join(scopeRoot, 'node_modules/deepmerge-ts')), selectedEntry);
+    }
+  }
+  const visited = new Set();
+  function visit(directory) {
+    const real = inside(root, fs.realpathSync(directory));
+    if (visited.has(real)) return; visited.add(real);
+    for (const entry of fs.readdirSync(real, { withFileTypes: true })) {
+      if (entry.name.startsWith('.')) continue;
+      const filename = path.join(real, entry.name);
+      if (!fs.statSync(filename).isDirectory()) continue;
+      if (entry.name.startsWith('@')) { visit(filename); continue; }
+      requireThat(entry.name !== 'deepmerge', 'VULNERABLE_DEEPMERGE_INSTALLED', filename);
+      if (fs.existsSync(path.join(filename, 'node_modules'))) visit(path.join(filename, 'node_modules'));
+    }
+  }
+  visit(path.join(scopeRoot, 'node_modules'));
+  requireThat(!Object.keys(lock.packages).some(name => name.endsWith('/node_modules/deepmerge') || name === 'node_modules/deepmerge'), 'VULNERABLE_DEEPMERGE_LOCKED', 'The vulnerable dependency remains selected');
+  return { advisory: 'GHSA-gcqx-w48m-w2h4', deepmergeInstalled: false, css: '1.21.3', deepmergeTs: '8.0.2', installedResolutionVerified: true };
 }
 function inside(root, filename) {
   const relative = path.relative(root, filename);
@@ -247,7 +304,8 @@ function checkZodBackportAudit({ repositoryRoot, scope: scopeName, auditPath, st
   for (const [relative, expectedHash] of Object.entries(profile.runtimeFiles)) requireThat(sha(readRegular(path.join(vendorDirectory, relative))) === expectedHash, 'RUNTIME_IDENTITY', relative);
   const lockRelative = scope.directory ? scope.directory + '/package-lock.json' : 'package-lock.json';
   const installed = verifyInstalled(root, scope, profile, vendorDirectory, parseJson(packageBytes[lockRelative]));
-  return { schema: 'manager/zod-bounded-source-audit-disposition/v1', registryAudit: clean ? 'PASS_RAW' : 'FAILED_KNOWN_BACKPORT_MATCH', registryAuditExitCode: auditExitCode, sourceDisposition: 'PASS', auditDiagnostics, hardhatEthersRangeVariant: !clean && scopeName === 'hardhat' && scope.hardhatEthersRangeVariants ? matchedAuditVariant : null, category: 'CODE_BACKPORT_EQUIVALENT_TO_6652_BOUNDED_ONLY', scope: scopeName, raw: { auditSha256: sha(auditBytes), stderrSha256: sha(stderrBytes), exitCodeSha256: sha(exitBytes) }, profileSha256: PROFILE_SHA256, vendorManifestSha256, vendorFiles: Object.keys(profile.vendorFiles).length, runtimeFiles: profile.runtimeFiles, packageFiles, ...(packageSourceIdentity ? { packageSourceIdentity } : {}), matchedPrimitive: clean ? null : profile.primitive, matchedRows: clean ? [] : Object.keys(audit.vulnerabilities), installed, limits: profile.limits, originalAuditFailurePreserved: !clean, unboundedContainersQualified: false, globalCveEradicationClaimed: false };
+  const cssInstalled = packageSourceIdentity?.cssDependencyReplacement && scopeName === 'ui' ? verifyCssInstalled(root, parseJson(packageBytes['ui/package-lock.json'])) : null;
+  return { ...(cssInstalled ? { cssInstalled } : {}), schema: 'manager/zod-bounded-source-audit-disposition/v1', registryAudit: clean ? 'PASS_RAW' : 'FAILED_KNOWN_BACKPORT_MATCH', registryAuditExitCode: auditExitCode, sourceDisposition: 'PASS', auditDiagnostics, hardhatEthersRangeVariant: !clean && scopeName === 'hardhat' && scope.hardhatEthersRangeVariants ? matchedAuditVariant : null, category: 'CODE_BACKPORT_EQUIVALENT_TO_6652_BOUNDED_ONLY', scope: scopeName, raw: { auditSha256: sha(auditBytes), stderrSha256: sha(stderrBytes), exitCodeSha256: sha(exitBytes) }, profileSha256: PROFILE_SHA256, vendorManifestSha256, vendorFiles: Object.keys(profile.vendorFiles).length, runtimeFiles: profile.runtimeFiles, packageFiles, ...(packageSourceIdentity ? { packageSourceIdentity } : {}), matchedPrimitive: clean ? null : profile.primitive, matchedRows: clean ? [] : Object.keys(audit.vulnerabilities), installed, limits: profile.limits, originalAuditFailurePreserved: !clean, unboundedContainersQualified: false, globalCveEradicationClaimed: false };
 }
 if (require.main === module) {
   const args = process.argv.slice(2), options = {};
@@ -266,4 +324,4 @@ if (require.main === module) {
     console.error(JSON.stringify(report)); process.exitCode = 1;
   }
 }
-module.exports = { checkZodBackportAudit };
+module.exports = { checkZodBackportAudit, restoreCssSource };

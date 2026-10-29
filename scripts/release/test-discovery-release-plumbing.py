@@ -88,6 +88,7 @@ class DiscoveryPlumbing(unittest.TestCase):
             with self.subTest(path=name):
                 self.assertEqual(current['version'], '1.20.2')
                 restored = version_only(current, old)
+                PROFILE['restore_css_security_patch'](name, restored)
                 PROFILE['restore_advisory_security_patch'](name, restored)
                 PROFILE['restore_zod_security_patch'](name, restored)
                 PROFILE['restore_next_security_patch'](name, old, restored)

@@ -5,7 +5,7 @@ const path = require('node:path');
 const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 const { createHash } = require('node:crypto');
-const { checkZodBackportAudit } = require('../check-zod-backport-audit.cjs');
+const { checkZodBackportAudit, restoreCssSource } = require('../check-zod-backport-audit.cjs');
 const fixtures = path.resolve(__dirname, '../../test/fixtures/zod-backport-audit');
 const repository = process.env.ZOD_AUDIT_TEST_REPOSITORY || path.resolve(__dirname, '../..');
 const registry4Source = process.env.ZOD_AUDIT_TEST_REGISTRY4 || path.join(repository, 'ui/node_modules/@wagmi/connectors/node_modules/zod');
@@ -19,7 +19,9 @@ function constructedTree(scopeName) {
   fs.mkdirSync(root);
   for (const relative of Object.keys(profile.packageFiles)) {
     fs.mkdirSync(path.dirname(path.join(root, relative)), { recursive: true });
-    fs.copyFileSync(path.join(repository, relative), path.join(root, relative));
+    let bytes = fs.readFileSync(path.join(repository, relative));
+    if (relative === 'ui/package.json' || relative === 'ui/package-lock.json') bytes = restoreCssSource(relative, bytes);
+    fs.writeFileSync(path.join(root, relative), bytes);
   }
   fs.cpSync(path.join(repository, 'ui/vendor/zod'), path.join(root, 'ui/vendor/zod'), { recursive: true });
   const scope = profile.scopes[scopeName], scopeRoot = path.resolve(root, scope.directory);
@@ -297,5 +299,41 @@ test('even a mistaken current hash refresh cannot project away a non-version sou
     fs.writeFileSync(checker, original.replace(currentHash, changedHash));
     fs.copyFileSync(path.join(__dirname, '../zod-backport-audit-profile.json'), path.join(fixture.directory, 'zod-backport-audit-profile.json'));
     assert.throws(() => require(checker).checkZodBackportAudit(fixture.options), error => error.code === 'PACKAGE_VERSION_PROJECTION');
+  } finally { fs.rmSync(fixture.directory, { recursive: true }); }
+});
+
+// The old suite above retains original exact source vectors; this suite selects
+// the separately reviewed dependency replacement with real installed resolution.
+function cssFixture() {
+  const fixture = constructedTree('ui');
+  for (const name of ['ui/package.json', 'ui/package-lock.json']) fs.copyFileSync(path.join(repository, name), path.join(fixture.root, name));
+  for (const name of ['@vanilla-extract/css', 'deepmerge-ts', 'modern-ahocorasick']) {
+    const target = path.join(fixture.scopeRoot, 'node_modules', name);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.cpSync(path.join(repository, 'ui/node_modules', name), target, { recursive: true });
+  }
+  return fixture;
+}
+test('exact CSS replacement restores old six-file identity and verifies installed removal without an audit waiver', () => {
+  const fixture = cssFixture();
+  try {
+    const report = checkZodBackportAudit(fixture.options);
+    assert.equal(report.cssInstalled.deepmergeInstalled, false);
+    assert.equal(report.cssInstalled.installedResolutionVerified, true);
+    assert.equal(report.packageSourceIdentity.cssDependencyReplacement.lockNodesChanged, 4);
+    assert.equal(report.packageSourceIdentity.cssDependencyReplacement.vulnerabilityWaiver, false);
+    assert.equal(report.registryAudit, 'FAILED_KNOWN_BACKPORT_MATCH');
+    assert.equal(report.globalCveEradicationClaimed, false);
+  } finally { fs.rmSync(fixture.directory, { recursive: true }); }
+});
+for (const mutation of ['unknown-advisory', 'unaffected-lock', 'mixed-vector', 'stale-css', 'hidden-deepmerge']) test('CSS replacement rejects ' + mutation, () => {
+  const fixture = cssFixture();
+  try {
+    if (mutation === 'unknown-advisory') { const value = JSON.parse(fs.readFileSync(fixture.auditPath)); value.vulnerabilities.zod.via[0].source++; fs.writeFileSync(fixture.auditPath, JSON.stringify(value)); }
+    if (mutation === 'unaffected-lock') { const file = path.join(fixture.scopeRoot, 'package-lock.json'), value = JSON.parse(fs.readFileSync(file)); value.packages['node_modules/viem'].version = '99.0.0'; fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n'); }
+    if (mutation === 'mixed-vector') { const file = path.join(fixture.scopeRoot, 'package.json'); fs.writeFileSync(file, restoreCssSource('ui/package.json', fs.readFileSync(file))); }
+    if (mutation === 'stale-css') { const file = path.join(fixture.scopeRoot, 'node_modules/@vanilla-extract/css/package.json'), value = JSON.parse(fs.readFileSync(file)); value.version = '1.20.1'; fs.writeFileSync(file, JSON.stringify(value)); }
+    if (mutation === 'hidden-deepmerge') { const folder = path.join(fixture.scopeRoot, 'node_modules/@vanilla-extract/css/node_modules/deepmerge'); fs.mkdirSync(folder, { recursive: true }); fs.writeFileSync(path.join(folder, 'package.json'), '{"name":"deepmerge","version":"4.3.1"}'); }
+    assert.throws(() => checkZodBackportAudit(fixture.options));
   } finally { fs.rmSync(fixture.directory, { recursive: true }); }
 });
