@@ -527,10 +527,10 @@
     "scripts/check-zod-backport-audit.cjs": {
       "after": {
         "mode": "100644",
-        "sha256": "116d1692ac1c2bb3fa8c46d4cf17cc01c1627bb7277c06023f6d9455d393560e"
+        "sha256": "d84d0fcfe732c7773c6215e94648f73863cf6d2c9cc0ad7fb350a6203a99a2e7"
       },
       "before": null,
-      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver."
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver. Exact reviewed CSS dependency replacement removes vulnerable deepmerge; original audit risk profile and all qualification denials remain unchanged."
     },
     "scripts/docs/templates/README.md.tpl": {
       "after": {
@@ -828,10 +828,10 @@
     "scripts/release/test-discovery-release-profile.py": {
       "after": {
         "mode": "100644",
-        "sha256": "41ef068dd19f30cf07f8eb1489687845eea7dc7f5fae7f8bc80a33d906f52db9"
+        "sha256": "be48423755897eac46ebeb48adaee4e1c66a7d01bd716c0909baaddbe52f057b"
       },
       "before": null,
-      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+      "reason": "Retain exact reviewed Discovery finite-source, artifact/custody, bounded-I/O and strict-JSON release preparation or regression implementation at this path; historical source profiles remain separate.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates. Exact reviewed CSS dependency replacement removes vulnerable deepmerge; original audit risk profile and all qualification denials remain unchanged."
     },
     "scripts/release/test-discovery-saved-candidate.py": {
       "after": {
@@ -928,10 +928,10 @@
     "scripts/security/zod-audit-disposition.test.cjs": {
       "after": {
         "mode": "100644",
-        "sha256": "07fb35e5464f51afc19b60b64299becff17a38af784e64e6adf3f95f910d5dd6"
+        "sha256": "487738ee6c193ec3ee8676e685bd3ee96a45203d54114e3a68dd9d75d40e7162"
       },
       "before": null,
-      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver."
+      "reason": "Current v1.20.1 source expectations or source-bound dependency disposition; no execution or publication claim.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver. Exact reviewed CSS dependency replacement removes vulnerable deepmerge; original audit risk profile and all qualification denials remain unchanged."
     },
     "scripts/security/zod-constrained-collections.test.cjs": {
       "after": {
@@ -1250,24 +1250,24 @@
     "ui/package-lock.json": {
       "after": {
         "mode": "100644",
-        "sha256": "142f0b4b886649e85f108f2691a7cb010bce9426ef7caceb4ae851eab93e2b57"
+        "sha256": "2401066d4daa411c640e476384c81d70cfd3be501205c9fa922a956ff8d65911"
       },
       "before": {
         "blob": "dc4e014f4572c6f5e555c7c16265391e1418ac53",
         "mode": "100644"
       },
-      "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+      "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates. Exact reviewed CSS dependency replacement removes vulnerable deepmerge; original audit risk profile and all qualification denials remain unchanged."
     },
     "ui/package.json": {
       "after": {
         "mode": "100644",
-        "sha256": "bc2844615241df236140046ce8d8055346fcc9ecf7c48b9ad5556f6158e9f5f5"
+        "sha256": "4b5f5d00d1e01404d4731dc71171cf6c29a2ecaa0f816dbaf5ba022ff999c6b0"
       },
       "before": {
         "blob": "9af0360c06b4ffec9c474056901ab269c0f31d9a",
         "mode": "100644"
       },
-      "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+      "reason": "Retain v1.20.0 software label and exact reviewed Next15.5.28 security dependency graph, preserving all unrelated dependencies, commands and sharp override.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates. Exact reviewed CSS dependency replacement removes vulnerable deepmerge; original audit risk profile and all qualification denials remain unchanged."
     },
     "ui/scripts/singlefile-template.html": {
       "after": {

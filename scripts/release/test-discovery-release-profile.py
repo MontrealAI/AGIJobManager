@@ -565,6 +565,7 @@ class DiscoveryNextSecurityPatch(unittest.TestCase):
             if name.endswith('package-lock.json'):
                 value['packages']['']['version'] = '1.19.6'
         for name in P['PACKAGE_FILES']:
+            P['restore_css_security_patch'](name, self.before[name])
             P['restore_advisory_security_patch'](name, self.before[name])
             P['restore_zod_security_patch'](name, self.before[name])
         for name in ('ui/package.json', 'ui/package-lock.json'):
@@ -599,6 +600,22 @@ class DiscoveryNextSecurityPatch(unittest.TestCase):
 
     def test_exact_security_transition_preserves_published_package_baseline(self):
         self.verify()
+
+    def test_every_css_dependency_selection_is_exact(self):
+        for name, rows in P['CSS_PATCH_INVERSES'].items():
+            for parts, before, selected in rows:
+                with self.subTest(name=name, parts=parts):
+                    original = copy.deepcopy(self.after)
+                    parent = self.after[name]
+                    for part in parts[:-1]:
+                        parent = parent[part]
+                    key = parts[-1]
+                    if selected['present']:
+                        parent[key] = {'unreviewed': True}
+                    else:
+                        parent[key] = {'version': '4.3.1'}
+                    with self.assertRaises(ValueError): self.verify()
+                    self.after = original
 
     def test_wrong_direct_or_root_pin_is_rejected(self):
         for name in ('ui/package.json', 'ui/package-lock.json'):
