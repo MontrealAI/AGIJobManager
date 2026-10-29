@@ -696,10 +696,10 @@
     "scripts/release/discovery-qualification.py": {
       "after": {
         "mode": "100644",
-        "sha256": "7d42759d348f5685d00a64fa83191adcb5f849de84410bede5f0b8f021dfab7d"
+        "sha256": "5fc3bb309cdd658085ce6cacbfe17e4ceb2e1f3e9c3c351d57b79d6b4be1a747"
       },
       "before": null,
-      "reason": "Preserve the latest-run source/status/attempt rejection gate and authenticate the separate exact-attempt response for full original browser metadata equality, with focused regression coverage and unchanged REST budget.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+      "reason": "Preserve immutable original browser custody and exact selected artifact; admit only omission of fixed unrelated Pages artifact12555362358 after its fixed saved expiry, with explicit observation and adversarial tests. No pin, source, selected evidence or qualification authority changes."
     },
     "scripts/release/discovery-saved-candidate.py": {
       "after": {
@@ -812,10 +812,10 @@
     "scripts/release/test-discovery-qualification.py": {
       "after": {
         "mode": "100644",
-        "sha256": "d90bb41d3df5da1efe91183360d059b16b261efb197c3fc379eaaf9fdaeb3e47"
+        "sha256": "d89aba373520831e50c957481637b237c3eae17191b86aa20c16119556243aa3"
       },
       "before": null,
-      "reason": "Preserve the latest-run source/status/attempt rejection gate and authenticate the separate exact-attempt response for full original browser metadata equality, with focused regression coverage and unchanged REST budget."
+      "reason": "Preserve immutable original browser custody and exact selected artifact; admit only omission of fixed unrelated Pages artifact12555362358 after its fixed saved expiry, with explicit observation and adversarial tests. No pin, source, selected evidence or qualification authority changes."
     },
     "scripts/release/test-discovery-release-plumbing.py": {
       "after": {
@@ -970,6 +970,14 @@
         "mode": "100644"
       },
       "reason": "Preserve strict settlement and inclusive dispute semantics; re-pin the actual dispute transaction to end and assert its receipt block timestamp."
+    },
+    "test/fixtures/discovery-browser-pages-expiry/artifacts-original.json": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a62bc0ea92fbfce4f036a99ca2e690694c8915c0f89b3e07a6968386a13cd022"
+      },
+      "before": null,
+      "reason": "Preserve immutable original browser custody and exact selected artifact; admit only omission of fixed unrelated Pages artifact12555362358 after its fixed saved expiry, with explicit observation and adversarial tests. No pin, source, selected evidence or qualification authority changes."
     },
     "test/fixtures/zod-backport-audit/61-hardhat-audit.exit": {
       "after": {

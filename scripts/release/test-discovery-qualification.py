@@ -1272,4 +1272,46 @@ class NativeSourceCustodyTests(unittest.TestCase):
                 self.assert_refused(root, expected)
 
 
+class FixedExpiredPagesCustodyTests(unittest.TestCase):
+    def setUp(self):
+        self.saved = json.loads((HERE.parents[1] / 'test/fixtures/discovery-browser-pages-expiry/artifacts-original.json').read_bytes())
+        self.current = copy.deepcopy(self.saved)
+        self.current['artifacts'] = [item for item in self.current['artifacts'] if item['id'] != 12555362358]
+        self.current['total_count'] -= 1
+
+    def compare(self, before=None, after=None, epoch=None):
+        with patch.object(m.time, 'time', return_value=m.EXPIRED_PAGES_EPOCH + 1 if epoch is None else epoch):
+            return m.compare_browser_metadata_snapshot('artifacts', self.saved if before is None else before, self.current if after is None else after)
+
+    def test_only_exact_expired_unrelated_pages_omission_is_recorded_without_mutating_saved_bytes(self):
+        before, after = copy.deepcopy(self.saved), copy.deepcopy(self.current)
+        record = self.compare()
+        self.assertEqual(len(record), 1)
+        self.assertEqual(record[0]['captured']['id'], 12555362358)
+        self.assertEqual(record[0]['role'], 'FIXED_EXPIRED_UNRELATED_PAGES_ARTIFACT_NOT_SELECTED_INPUT')
+        self.assertEqual(self.saved, before); self.assertEqual(self.current, after)
+        self.assertEqual(self.compare(after=self.saved), [])
+
+    def test_omission_before_recorded_expiry_is_rejected(self):
+        with self.assertRaises(ValueError): self.compare(epoch=m.EXPIRED_PAGES_EPOCH - 1)
+
+    def test_selected_artifact_missing_or_any_field_drift_is_rejected(self):
+        for change in ('missing', 'digest', 'size_in_bytes', 'expired'):
+            observed = copy.deepcopy(self.current)
+            selected = next(item for item in observed['artifacts'] if item['id'] == 12552939436)
+            if change == 'missing': observed['artifacts'].remove(selected); observed['total_count'] -= 1
+            else: selected[change] = 'unexpected'
+            with self.subTest(change=change), self.assertRaises(ValueError): self.compare(after=observed)
+
+    def test_other_omissions_additions_count_types_or_captured_expiry_changes_are_rejected(self):
+        for change in ('other-missing', 'added', 'wrong-count-type', 'captured-expiry', 'source'):
+            before, after = copy.deepcopy(self.saved), copy.deepcopy(self.current)
+            if change == 'other-missing': after['artifacts'].pop(); after['total_count'] -= 1
+            elif change == 'added': after['artifacts'].append(copy.deepcopy(after['artifacts'][0])); after['total_count'] += 1
+            elif change == 'wrong-count-type': after['total_count'] = 37.0
+            elif change == 'captured-expiry': next(x for x in before['artifacts'] if x['id'] == 12555362358)['expires_at'] = '2020-01-01T00:00:00Z'
+            else: after['artifacts'][0]['workflow_run']['head_sha'] = '0' * 40
+            with self.subTest(change=change), self.assertRaises(ValueError): self.compare(before, after)
+
+
 if __name__ == '__main__': unittest.main()
