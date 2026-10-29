@@ -1,0 +1,40 @@
+name: Enterprise receiver source checks
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  source-policy:
+    name: Zero-cap receiver literals (not installed acceptance)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+      - name: Bind exact source and run original receiver controls
+        env:
+          EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          mkdir -p "$RUNNER_TEMP/enterprise-receiver"
+          git rev-parse HEAD > "$RUNNER_TEMP/enterprise-receiver/source.txt"
+          node --version > "$RUNNER_TEMP/enterprise-receiver/runtime.txt"
+          sha256sum scripts/integrations/enterprise-work-request.mjs scripts/integrations/enterprise-work-request.test.mjs scripts/integrations/discovery-lab-contract.mjs > "$RUNNER_TEMP/enterprise-receiver/SHA256SUMS"
+          node --test --test-reporter=tap scripts/integrations/enterprise-work-request.test.mjs 2>&1 | tee "$RUNNER_TEMP/enterprise-receiver/literal-controls.tap"
+          printf '%s\n' 'Actual-Alpha optional cases are NOT_RUN. No installed or runtime qualification claimed.' > "$RUNNER_TEMP/enterprise-receiver/SCOPE.txt"
+      - name: Preserve actual result including failures and skips
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: enterprise-receiver-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/enterprise-receiver
+          if-no-files-found: error
