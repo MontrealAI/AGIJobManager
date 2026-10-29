@@ -21,6 +21,14 @@
       "before": null,
       "reason": "Retain the reviewed Discovery exact-source candidate/native/publication workflow, replacing only its fixed draft Alpha checkout ref with coordinator-selected615.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
     },
+    ".github/workflows/enterprise-receiver.yml": {
+      "after": {
+        "mode": "100644",
+        "sha256": "29bdf1cded56567cc02cfee813dec6c45180b185eb95d26e4959da4508a284da"
+      },
+      "before": null,
+      "reason": "Add only the exact preserved zero-cap enterprise receiver and original tests, current source-only guide and exact-head literal CI; no Alpha pin, authority, deployment, threshold, historic source or release acceptance changes."
+    },
     ".github/workflows/mainnet-fork.yml": {
       "after": {
         "mode": "100644",
@@ -415,6 +423,14 @@
       "before": null,
       "reason": "Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates.; Correct only the1.20.2 finite package source identity: preserve original37339 audit profile and all vendor/query/finding/installed guards; require one complete six-file edition vector and reconstruct the exact predecessor through only nine raw root-version offsets. No dependency, risk or audit-threshold waiver.; Correct only the unverified initial wallet-resume classification and membership invalidation on account/network change; retain Buyer ENS independence, fresh terms, transaction review and synthetic RPC no-sign/no-send controls. Preserve the original browser spec as exact immutable-baseline bytes with a reversible finite projection; no general source exception or hosted qualification waiver.; Bind pending ENS verification reads to their original write epoch, account, chain and manager; discard stale success and failure before credential/UI changes. Preserve the same finite source scope and all original before-images; extend only existing synthetic RPC browser cases, with no live authority or qualification waiver.; Adopt only the actual public Jobs rc21 release422958907/sourcebc4abbd5c28f3672275b13300e40ea26c820b8ee/tree009f11b81c554d80eeddda882c8f91f2e89c8b2e complete640B peer b4be96c8dd1030133b7a0c3335cb6cb8134090300000c34658712a760ac30fda under public handoff6389174231. Preserve original rc20, original031b raw USDC request, all policy/authority/qualification controls and historical records; no installed Manager acceptance is inferred."
     },
+    "docs/successor/AUTONOMOUS_ENTERPRISES.md": {
+      "after": {
+        "mode": "100644",
+        "sha256": "a11c51036b6f8dbacf9fb780985f0bde55520eeafd5dc5586c477989ac9aed0b"
+      },
+      "before": null,
+      "reason": "Add only the exact preserved zero-cap enterprise receiver and original tests, current source-only guide and exact-head literal CI; no Alpha pin, authority, deployment, threshold, historic source or release acceptance changes."
+    },
     "docs/successor/DISCOVERY_LAB.md": {
       "after": {
         "mode": "100644",
@@ -617,6 +633,22 @@
       },
       "before": null,
       "reason": "Retain the reviewed Discovery receiver/native request interface or immutable source baseline at its original source identity; no execution or financial authority."
+    },
+    "scripts/integrations/enterprise-work-request.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "727d2a56bbd2b83d3cfcc2329e58eec6f74734643462751a8019a38772794444"
+      },
+      "before": null,
+      "reason": "Add only the exact preserved zero-cap enterprise receiver and original tests, current source-only guide and exact-head literal CI; no Alpha pin, authority, deployment, threshold, historic source or release acceptance changes."
+    },
+    "scripts/integrations/enterprise-work-request.test.mjs": {
+      "after": {
+        "mode": "100644",
+        "sha256": "19b68da7ff75b0b7e46e018afbd526aacbc8f047078c5d05bdf9027639793f88"
+      },
+      "before": null,
+      "reason": "Add only the exact preserved zero-cap enterprise receiver and original tests, current source-only guide and exact-head literal CI; no Alpha pin, authority, deployment, threshold, historic source or release acceptance changes."
     },
     "scripts/integrations/fixtures/discovery-lab-request.json": {
       "after": {
