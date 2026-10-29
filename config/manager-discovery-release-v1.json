@@ -230,13 +230,13 @@
     "docs/REFERENCE/VERSIONS.md": {
       "after": {
         "mode": "100644",
-        "sha256": "d5e0509f90aebc6b02dc07ead1a77d7fe45f4219412422480981df110c3966c9"
+        "sha256": "f608c03e08cc208a850a69a449ab7ae99fb6ba54400f89b0ff7a6b94f4292df6"
       },
       "before": {
         "blob": "77133ae1c3cd1f83d237bba5cab002629a346368",
         "mode": "100644"
       },
-      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates."
+      "reason": "Retain reviewed v1.20.0 Discovery capability, source/qualification, operator and version documentation with its historical evidence and software/activation boundary.; Prepare proposed1.20.2 exact031b bounded Discovery compatibility without new execution, publication or settlement authority; preserve historical sources and all original qualification gates. Regenerate the two deterministic source-fingerprint labels after the reviewed UI CSS dependency change; all guide contents and validation remain unchanged."
     },
     "docs/RELEASE_GUIDE.md": {
       "after": {
